@@ -27,8 +27,8 @@ jobs:
           cc --version
           c++ --version
           cc -std=c11 -Wall -Wextra -Werror -fPIC -shared tests/contracts/p0_stub_export.c -o libars_p0_contract.so
-          cc -std=c11 -Wall -Wextra -Werror tests/contracts/p0_header_smoke.c -L. -lars_p0_contract -Wl,-rpath,'$ORIGIN' -o p0_c_smoke
-          c++ -std=c++20 -Wall -Wextra -Werror tests/contracts/p0_header_smoke.cpp -L. -lars_p0_contract -Wl,-rpath,'$ORIGIN' -o p0_cpp_smoke
+          cc -std=c11 -Wall -Wextra -Werror -DARS_P0_USE_SHARED tests/contracts/p0_header_smoke.c -L. -lars_p0_contract -Wl,-rpath,'$ORIGIN' -o p0_c_smoke
+          c++ -std=c++20 -Wall -Wextra -Werror -DARS_P0_USE_SHARED tests/contracts/p0_header_smoke.cpp -L. -lars_p0_contract -Wl,-rpath,'$ORIGIN' -o p0_cpp_smoke
           ./p0_c_smoke
           ./p0_cpp_smoke
           c++ -std=c++20 -Wall -Wextra -Werror -pthread tests/contracts/p0_r3_state_machine_model.cpp -o p0_r3_contract_model
@@ -47,9 +47,9 @@ jobs:
           if errorlevel 1 exit /b 3
           cl /nologo /std:c11 /W4 /LD tests\contracts\p0_stub_export.c /link /OUT:ars_p0_contract.dll /IMPLIB:ars_p0_contract.lib
           if errorlevel 1 exit /b 4
-          cl /nologo /std:c11 /W4 tests\contracts\p0_header_smoke.c ars_p0_contract.lib /Fe:p0_c_smoke.exe
+          cl /nologo /std:c11 /W4 /DARS_P0_USE_SHARED tests\contracts\p0_header_smoke.c ars_p0_contract.lib /Fe:p0_c_smoke.exe
           if errorlevel 1 exit /b 5
-          cl /nologo /std:c++20 /EHsc /W4 tests\contracts\p0_header_smoke.cpp ars_p0_contract.lib /Fe:p0_cpp_smoke.exe
+          cl /nologo /std:c++20 /EHsc /W4 /DARS_P0_USE_SHARED tests\contracts\p0_header_smoke.cpp ars_p0_contract.lib /Fe:p0_cpp_smoke.exe
           if errorlevel 1 exit /b 6
           p0_c_smoke.exe
           if errorlevel 1 exit /b 7
