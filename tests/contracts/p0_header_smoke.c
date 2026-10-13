@@ -7,6 +7,11 @@ _Static_assert(sizeof(ars_runtime_h) == sizeof(ars_character_h), "Strong types w
 _Static_assert(offsetof(ars_motion_frame_v1, struct_size) == 0, "Size header first");
 _Static_assert(offsetof(ars_motion_frame_v1, abi_version) == 4, "ABI version second");
 
+_Static_assert(offsetof(ars_source_desc_v1, struct_size) == 0, "Source size first");
+_Static_assert(offsetof(ars_runtime_desc_v1, abi_version) == 4, "Runtime version second");
+_Static_assert(offsetof(ars_close_state_v1, abi_version) == 4, "Close version second");
+_Static_assert(sizeof(ars_utf8_view_v1) == 16, "x64 ABI: ptr and byte length");
+
 int main(void) {
     ars_motion_frame_v1 frame = {0};
     frame.struct_size = (uint32_t)sizeof(frame);
