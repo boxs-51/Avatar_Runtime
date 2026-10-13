@@ -38,6 +38,8 @@ A lookup MUST:
 4. Release both registry locks. Access object through the pin without callbacks under locks.
 5. Release object pin and runtime pin; retire resources only when all snapshots, CPU pins and GPU fences are cleared.
 
+Close-management operations are an explicit exception to the OPEN-only work-pin rule: query_close, drain_gpu and finish_close acquire a separate CLOSE_MANAGEMENT pin while the runtime is QUIESCING/DRAINING. These pins cannot admit new animation work, and finish_close atomically excludes competing management pins before unlinking the router entry. A second begin_close returns CLOSED; it does not reinitialize the object.
+
 A stale/released ID fails before touching freed payload memory. Invalidation increments slot generation; when UINT32_MAX is reached, that slot is never reused. Reuse of slots with new generations is permitted, but reuse of a (runtime_uid,slot,generation) triple is forbidden.
 
 Model asset ownership: ars_model_release_p0 invalidates its USER handle, not the internal model references held by live characters. ars_character_destroy_p0 invalidates the character USER handle, atomically revokes its bound source records, and schedules GPU resource destruction after pins/fences. Repeated destroy returns STALE_HANDLE, not a second free.
@@ -111,7 +113,7 @@ Source transitions:
 - NEW -> ACTIVE on trusted registration (mint fresh random ingress cap, start generation).
 - ACTIVE -> ACTIVE via ROTATE: atomically retire old ingress cap, increment generation, reset sequence window and mint a new independent token without widening scope.
 - ACTIVE -> REVOKED via REVOKE, lease expiry, character close or runtime close.
-- REVOKED -> CLOSED on admin release. Reuse of a source label never restores its earlier capability.
+- REVOKED -> CLOSED on admin release. If admin_release is called while ACTIVE, it MUST first execute the identical synchronous revocation barrier, then close; dropping the last admin handle can never leave an unrevokable live capability. Reuse of a source label never restores its earlier capability.
 - CLOSED is terminal; re-registration creates a distinct source record and capability.
 
 Runtime source generation is uint64_t and MUST never wrap. A frame-supplied generation, if seen in JSON at an adapter, is not authoritative. After rotate, an old cap is rejected regardless of old packet sequence, timestamp or source diagnostic label.
