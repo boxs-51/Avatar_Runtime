@@ -56,6 +56,8 @@ Each report includes test_id, PR, HEAD, build/compiler flags, OS, CPU/GPU where 
 | SRC-018 | source after 2D -> 3D mode switch | same semantic scope; cannot control unspecified native bone/morph |
 | SRC-019 | source-admin handle passed as ingress cap/type confusion | rejected; no implicit role conversion |
 | SRC-020 | trusted clock callback moves backward | CLOCK_REGRESSION, rejects frame/lease anomalies |
+| SRC-021 | source registers mixed-case / Unicode alias channel IDs | reject noncanonical semantic IDs; no grant through aliasing |
+| SRC-022 | force cap mint collision with a retired token, then exhaustion of issuance budget | retry fresh token or fail closed; retired token never valid again |
 
 ## 4. Required controlled concurrency traces
 
@@ -134,7 +136,7 @@ Use deterministic scheduler barriers/latches, not sleeps, and retain exact inter
 
 **G00-P0-A:** reviewed handle and registry design, C ABI type sizes, threading rules, close management exceptions, source capability and publish-gate linearization are unambiguous.  
 **G00-P0-B:** compile-only C11 and C++20 smoke tests on the header (do not mistake compile for security PASS).  
-**G00-P0-C:** before production M1, minimal registry/mixer implementation passes HDL-001..016, SRC-001..020 and RACE-A..E on a declared CI matrix or explicit phased evidence approved by independent reviewer.  
+**G00-P0-C:** before production M1, minimal registry/mixer implementation passes HDL-001..016, SRC-001..022 and RACE-A..E on a declared CI matrix or explicit phased evidence approved by independent reviewer.  
 **G00-P0-D:** architecture ADR-0001 device owner and ADR-0004 threading must lock GPU retirement and thread-safe revoke behavior; demonstrate exact source scopes/owners.  
 **G00-P0-E:** no source/ABI/schema changes are merged until new exact HEAD independent re-audit, with all P0 addressed and tracked P1 still explicitly gated.
 
