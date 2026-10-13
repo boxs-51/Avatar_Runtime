@@ -5,6 +5,8 @@
 **Design-only C interface:** contracts/ars_p0_contract_draft.h  
 **Does not amend G00 PASS automatically.** This is a regression requirement list; tests are pending actual implementation.
 
+**R2 precedence:** docs/P0_OWNER_REMEDIATION_V0.2.md resolves the P0 audit and supplies mandatory provenance/sequence/clock/close/ABI contracts. All dynamic test cases remain HOLD until actual implementation and reproducible logs are available.
+
 ## 1. Evidence and verdict protocol
 
 A case is PASS only with source at exact candidate SHA, reproducible command, deterministic fixture/scheduler trace, status and invariants actually asserted, sanitizer/runner/OS evidence and test result. A proposed algorithm, compiled header or reviewer confidence is NOT test evidence. A case is HOLD until executable implementation and logs exist. Use FAIL for any crash, UAF, incorrect pose publication, authorization widening or unbounded queue.
@@ -31,6 +33,9 @@ Each report includes test_id, PR, HEAD, build/compiler flags, OS, CPU/GPU where 
 | HDL-014 | randomized create/destroy 100,000 times | no live-slot/reference leaks; bounded tombstones, no ABA |
 | HDL-015 | H stops GPU pump before finish_close | BUSY with outstanding_gpu_retires >0, never cross-thread GPU free |
 | HDL-016 | simulated OOM during registry pin/tombstone creation | typed failure; no corrupted slot/free-list |
+| HDL-017 | query_close pinned while two finish_close calls race | one finalizer claim, BUSY while management pin active, no UAF |
+| HDL-018 | render snapshot released after character handle invalidated | direct pinned control-block unpin succeeds; no stale lookup needed |
+| HDL-019 | finalize runtime while GPU retire pending or interrupted GPU callback | BUSY; R-thread-only completion, no leaked finalizer claim |
 
 ## 3. Source authority, capability and replay tests
 
@@ -50,14 +55,24 @@ Each report includes test_id, PR, HEAD, build/compiler flags, OS, CPU/GPU where 
 | SRC-012 | source TTL expires with queue backlog | no post-expiry new pose ownership; fallback on next update |
 | SRC-013 | untrusted frame NaN, INF, invalid quaternion, invalid UTF-8 ID | rejected before queue; source cannot crash |
 | SRC-014 | flood 100x intended rate with 16 sources | bounded queues and per-source quotas; drops visible in counters |
-| SRC-015 | malformed frame array pointer, count overflow, struct_size too short | INVALID_ARGUMENT/INVALID_FRAME before invalid read |
+| SRC-015 | NULL with nonzero count, valid allocated buffer with count overflow, undersized struct, malformed *serialized adapter* lengths | safe rejection before out-of-bounds; arbitrary invalid non-NULL C pointers are outside trusted ABI contract |
 | SRC-016 | same label with different cap ID and different Character generation | no cross-generation authority inheritance |
 | SRC-017 | source descriptor allowed_channel_count=0 | default DENY, not wildcard/all channels |
 | SRC-018 | source after 2D -> 3D mode switch | same semantic scope; cannot control unspecified native bone/morph |
 | SRC-019 | source-admin handle passed as ingress cap/type confusion | rejected; no implicit role conversion |
-| SRC-020 | trusted clock callback moves backward | CLOCK_REGRESSION, rejects frame/lease anomalies |
+| SRC-020 | SDK-owned security monotonic clock unavailable/regresses, simulation callback regresses | reject admission/new publish on security failure; reject or hold malformed simulation time without renewing lease |
 | SRC-021 | source registers mixed-case / Unicode alias channel IDs | reject noncanonical semantic IDs; no grant through aliasing |
 | SRC-022 | force cap mint collision with a retired token, then exhaustion of issuance budget | retry fresh token or fail closed; retired token never valid again |
+| SRC-023 | source N contributes to smoothing/retarget/cache then N revoked | fresh pose carries no N-derived values or memory lineage; affected channels rebuilt from neutral or other live sources |
+| SRC-024 | N queues trigger/delayed animation, mode switch, then revoke | all deferred trigger/integrator effects invalidated; no post-revoke fresh pose tainted by N |
+| SRC-025 | pause simulation immediately before publish until source TTL elapses | SDK monotonic security clock read at publish gate rejects candidate; after expiry no new pose from source |
+| SRC-026 | rotate CSPRNG fails before new token minted / ledger allocation fails after old revoked | old token permanently unusable, source REVOKED, out cap zero; no rollback to old active |
+| SRC-027 | same cap concurrent duplicate seq=100 at highwater=99 | exactly one successful queue append and highwater advance; other rejected; quota charged once |
+| SRC-028 | queue full/temporary append OOM for seq=102 | no highwater or quota consumption; valid seq=102 accepted after capacity restored |
+| SRC-029 | seq=101 wins admission before seq=100 from concurrent thread | seq=100 rejected with deterministic ordering; mixer never reverses accepted order |
+| SRC-030 | admin_release on ACTIVE races with revoke/rotate | one definitive revocation; no orphan active cap; BUSY retains admin right on failure |
+| SRC-031 | identity mismatches across runtime and untrusted serialized packet claims | packet labels confer no authority; bind only registry-owned live char + epoch |
+| SRC-032 | post-revoke old committed frame displayed, then fresh update | historical GPU frame may remain, but new committed pose provenance excludes old source |
 
 ## 4. Required controlled concurrency traces
 
@@ -117,6 +132,55 @@ I: new cap sequence=1 => valid
 ASSERT: no ABA of cap, no replay across generations
 ~~~
 
+### RACE-F: retained smoothing / animation lineage after revocation
+
+    S: accept cap N mouth.open=1; save per-source smoother=1 and composite pose P
+    H: revoke cap N, invalidate dependency epoch under publish_gate
+    S: recompute source-independent baseline and other valid inputs; do NOT use old P as seed
+    S: commit Q with Q.pose_generation > P and no N in transitive provenance
+    ASSERT: Q.mouth.open is neutral/authorized, not the revoked smoother residue
+    TEST: repeat with delayed trigger, mode-switch cache and physics-style integrator
+
+### RACE-G: two ingress threads submit identical sequence
+
+    Source highwater=99, cap ACTIVE, space >=2
+    I1, I2: prevalidate seq=100 concurrently; pause before source ingress_mutex
+    RELEASE both; only one can append seq=100 and update highwater/quota
+    ASSERT: one OK, one INVALID_FRAME/sequence rejection, queue count +=1
+    I3: append higher seq=101; late seq=100 denied
+
+### RACE-H: ingress admission vs rotate/revoke
+
+    I: deep copy seq=200 outside mutex and pause
+    H: revoke/rotate under publish_gate then source ingress_mutex
+    I: resume admission, old cap denied
+    Repeat with I admission under ingress_mutex first; H revoke waits then invalidates epoch
+    S: already queued old epoch must be discarded at prepublish gate
+    ASSERT: no post-revoke fresh pose with retired provenance
+
+### RACE-I: source TTL expires during paused simulation
+
+    S: build candidate using live cap, pause before publish
+    Test clock advances to expiry using controlled monotonic security-clock provider
+    S: read security time under publish gate; candidate rejected and epoch invalidated
+    ASSERT: no new pose_generation with expired provenance
+
+### RACE-J: concurrent close finalizers and late management query
+
+    Q: query_close acquires close-management pin
+    F1, F2: both attempt finish_close; at most one finalizer acquires claim
+    F1: returns BUSY while query pin exists; claim released
+    GPU owner drains outstanding retire after snapshot pin release
+    F2: claims exclusive finalizer, atomic router unlink; old runtime handle now stale
+    ASSERT: no deadlock, double free, stranded query pin or off-thread GPU destruction
+
+### RACE-K: cap rotation failure, admin_release and concurrent revoke
+
+    H: requests security-sensitive rotate, old token revoked under publish gate
+    CSPRNG injection fails; new capability not published; out cap = zero
+    H2: concurrent admin_release tries to close source; must not orphan an ACTIVE token
+    ASSERT: old token denied forever; stale derived caches not committed
+
 Use deterministic scheduler barriers/latches, not sleeps, and retain exact interleaving event logs. Run each at least 1,000 randomized iterations in a stress suite in addition to deterministic controlled cases.
 
 ## 5. Behavioral state tables
@@ -135,8 +199,8 @@ Use deterministic scheduler barriers/latches, not sleeps, and retain exact inter
 ## 6. G00 acceptance slice
 
 **G00-P0-A:** reviewed handle and registry design, C ABI type sizes, threading rules, close management exceptions, source capability and publish-gate linearization are unambiguous.  
-**G00-P0-B:** compile-only C11 and C++20 smoke tests on the header (do not mistake compile for security PASS).  
-**G00-P0-C:** before production M1, minimal registry/mixer implementation passes HDL-001..016, SRC-001..022 and RACE-A..E on a declared CI matrix or explicit phased evidence approved by independent reviewer.  
+**G00-P0-B:** C11/C++20 compile plus linked ABI stub smoke tests on the header (do not mistake compile for security PASS).  
+**G00-P0-C:** before production M1, minimal registry/mixer implementation passes HDL-001..019, SRC-001..032 and RACE-A..K on a declared CI matrix or explicit phased evidence approved by independent reviewer.  
 **G00-P0-D:** architecture ADR-0001 device owner and ADR-0004 threading must lock GPU retirement and thread-safe revoke behavior; demonstrate exact source scopes/owners.  
 **G00-P0-E:** no source/ABI/schema changes are merged until new exact HEAD independent re-audit, with all P0 addressed and tracked P1 still explicitly gated.
 
