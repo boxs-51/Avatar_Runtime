@@ -73,6 +73,11 @@ Each report includes test_id, PR, HEAD, build/compiler flags, OS, CPU/GPU where 
 | SRC-030 | admin_release on ACTIVE races with revoke/rotate | one definitive revocation; no orphan active cap; BUSY retains admin right on failure |
 | SRC-031 | identity mismatches across runtime and untrusted serialized packet claims | packet labels confer no authority; bind only registry-owned live char + epoch |
 | SRC-032 | post-revoke old committed frame displayed, then fresh update | historical GPU frame may remain, but new committed pose provenance excludes old source |
+| SRC-033 | rotate phase B paused; explicit revoke then rotate phase C | reservation ticket/epoch mismatch; remain EXPLICIT_REVOKED; zero cap |
+| SRC-034 | admin_release or begin_close while rotation is pending | no new capability activation after management close |
+| SRC-035 | source security clock sampled backwards under ingress mutex | CLOCK_REGRESSION; no quota or sequence advancement |
+| SRC-036 | source TTL expires before final publish sample | old pose candidate denied; new generation not committed |
+| SRC-037 | clock advances after valid authorization sample but before pointer store | permitted under expressly documented sample-time TTL semantics; next sample rejects expired source |
 
 ## 4. Required controlled concurrency traces
 
@@ -131,6 +136,43 @@ I: old cap sequence=0 or UINT64_MAX again => denied
 I: new cap sequence=1 => valid
 ASSERT: no ABA of cap, no replay across generations
 ~~~
+
+### RACE-L: phase B rotate paused then explicit revoke (P0)
+
+    T1: rotate phase A takes commit_gate->pose_gate->source_mutex; reserves ticket T, epoch E; releases locks
+    T1: PAUSE in CSPRNG phase B
+    T2: explicit_revoke acquires pose_gate->source_mutex; invalidates ticket T and epochs; enters EXPLICIT_REVOKED, returns
+    T1: resume phase C, compare ticket+epoch+admin/state; MUST FAIL with out_cap zero
+    ASSERT: source cannot reenter ACTIVE, even if CSPRNG minted token and admin handle is still valid
+    VARIANTS: concurrent admin_release and begin_close; reverse ordering with rotate phase C first then revoke
+
+### RACE-M: begin_close vs already pinned simulation
+
+    S: simulation update obtains operation pin; computes pose; PAUSE before runtime commit_gate
+    H: begin_close takes commit_gate, marks QUIESCING under router_lock; invalidates source generations; returns
+    S: resume, take commit_gate and reject publish because runtime != RUNNING
+    ASSERT: no new pose_generation after begin_close linearization; no UAF of pre-close operation pin
+
+### RACE-N: monotonic security-time admission
+
+    I1/I2: interleave submissions so an earlier observed clock sample could otherwise enter mutex later
+    ASSERT: clock must be sampled IN ingress_mutex and checked against last_seen_security_ns
+    Test clock regression after accepted admission -> deny; no quota refill or lease extension
+
+### RACE-O: expiry before final pose authorization
+
+    S: compute candidate and pause BEFORE commit_gate authorization sample
+    security_clock: advance to expiry
+    S: resume and sample security time in commit_gate+pose_gate
+    ASSERT: no fresh pose commit with expired source epoch
+
+### RACE-P: post-time-sample preemption demonstrates precise TTL promise
+
+    S: take commit_gate+pose_gate; sample security_clock < expiry; TEST-ONLY hook simulates preemption
+    test clock: advances beyond expiry after sample but before pointer store
+    S: may install authorized snapshot based on sample-time semantics
+    ASSERT: test does NOT claim strict wall-clock erasure; NEXT publish with expired time fails
+    PRODUCTION: no user callbacks or blocking work between final authorization sample and pointer store
 
 ### RACE-F: retained smoothing / animation lineage after revocation
 
@@ -200,8 +242,8 @@ Use deterministic scheduler barriers/latches, not sleeps, and retain exact inter
 
 **G00-P0-A:** reviewed handle and registry design, C ABI type sizes, threading rules, close management exceptions, source capability and publish-gate linearization are unambiguous.  
 **G00-P0-B:** C11/C++20 compile plus linked ABI stub smoke tests on the header (do not mistake compile for security PASS).  
-**G00-P0-C:** before production M1, minimal registry/mixer implementation passes HDL-001..019, SRC-001..032 and RACE-A..K on a declared CI matrix or explicit phased evidence approved by independent reviewer.  
+**G00-P0-C:** before production M1, minimal registry/mixer implementation passes HDL-001..019, SRC-001..037 and RACE-A..P on a declared CI matrix or explicit phased evidence approved by independent reviewer.  
 **G00-P0-D:** architecture ADR-0001 device owner and ADR-0004 threading must lock GPU retirement and thread-safe revoke behavior; demonstrate exact source scopes/owners.  
 **G00-P0-E:** no source/ABI/schema changes are merged until new exact HEAD independent re-audit, with all P0 addressed and tracked P1 still explicitly gated.
 
-**Audit status at creation:** all runtime tests HOLD (there is no implementation); C header declaration-only GCC/G++ syntax smoke may have local evidence but is not a full ABI consumer implementation.
+**Audit status at creation:** all production runtime tests HOLD; R3 contract-model interleavings (separate from runtime) may pass under ABI workflow (there is no implementation); C header declaration-only GCC/G++ syntax smoke may have local evidence but is not a full ABI consumer implementation.
