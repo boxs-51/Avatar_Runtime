@@ -1,4 +1,4 @@
-name: P0 Draft ABI Link Contract
+name: P0 Draft ABI and R3 Contract Model
 on:
   push:
     branches:
@@ -16,7 +16,7 @@ permissions:
   contents: read
 jobs:
   linux-c-cpp:
-    name: Linux C11 / C++20 ABI link smoke
+    name: Linux C11/C++20 ABI + R3 contract-model
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -31,8 +31,10 @@ jobs:
           c++ -std=c++20 -Wall -Wextra -Werror tests/contracts/p0_header_smoke.cpp -L. -lars_p0_contract -Wl,-rpath,'$ORIGIN' -o p0_cpp_smoke
           ./p0_c_smoke
           ./p0_cpp_smoke
+          c++ -std=c++20 -Wall -Wextra -Werror -pthread tests/contracts/p0_r3_state_machine_model.cpp -o p0_r3_contract_model
+          ./p0_r3_contract_model
   windows-msvc:
-    name: Windows MSVC x64 ABI link smoke
+    name: Windows MSVC x64 ABI + R3 contract-model
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -53,3 +55,7 @@ jobs:
           if errorlevel 1 exit /b 7
           p0_cpp_smoke.exe
           if errorlevel 1 exit /b 8
+          cl /nologo /std:c++20 /EHsc /W4 tests\contracts\p0_r3_state_machine_model.cpp /Fe:p0_r3_contract_model.exe
+          if errorlevel 1 exit /b 9
+          p0_r3_contract_model.exe
+          if errorlevel 1 exit /b 10
