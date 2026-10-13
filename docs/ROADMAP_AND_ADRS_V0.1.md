@@ -26,6 +26,8 @@ M0 is specification-first and MUST NOT be counted as implemented. Each code work
 
 Suggested coupling rules: importer never calls GPU; GPU may only consume validated immutable CPU assets; camera adapter only submits normalized frames; render consumes committed pose; no feature branch modifies public header without ABI reviewer approval.
 
+**P0-R2 Owner ADR candidate pack:** docs/ADR_P0_SECURITY_R2.md provides detailed proposed decisions for ADR-0004-R2/0005-R2 plus new ADR-0009 through ADR-0012. These decisions are NOT independently approved. ADR-0001 D3D11 GPU retirement remains HOLD. The linked R2 contract is docs/P0_OWNER_REMEDIATION_V0.2.md.
+
 ## 3. Architecture Decision Records pending (ADR-0001..0008)
 
 | ADR | Question and options | Proposed default | Required proof before lock |
