@@ -5,6 +5,14 @@
 **Normative implementation design:** docs/P0_OWNER_REMEDIATION_V0.2.md
 **Architecture context:** docs/ROADMAP_AND_ADRS_V0.1.md and docs/SPECIFICATION_V0.1.md
 
+## R3 ADR amendments (OWNER PROPOSED, NOT ACCEPTED)
+
+- **ADR-0004-R3:** A runtime-wide commit_gate is always acquired before character pose_publish_gate for pose commits, source activation and begin_close. Character gate precedes source ingress mutex. Brief router_lock can be acquired under commit_gate only by begin_close; ordinary lookup releases router lock before waiting on commit_gate. begin_close sets QUIESCING and closes work-pin admission under commit_gate, and any pre-close update not yet committed is barred from publishing afterward. Tests RACE-M.
+- **ADR-0005-R3:** Lease/ingress quota samples use SDK monotonic security clock under per-source ingress mutex (with last-observed high-water). Pose publication validates lease at a final authorization clock sample inside commit_gate+pose gate, immediately before pointer swap. This guarantees security at sample time, not absolute physical-time pixel erasure in presence of scheduler preemption. Tests RACE-N/O/P.
+- **ADR-0011-R3:** Pending rotate stores rotation_ticket, source/control epochs and admin generation at phase A; phase C must compare all and require ROTATING_OLD_REVOKED. Explicit revoke invalidates ticket and is terminal for that admin/source registration. Failed rotate is separately ROTATE_FAILED and may retry only with trusted active admin. Tests RACE-L.
+- **ADR-0001 remains unresolved:** host D3D11 device, GPU completion and physically safe retirement need independent decision and native evidence.
+- Exact normative owner design: docs/P0_OWNER_REMEDIATION_V0.3.md. All R3 ADR items are PROPOSED and require independent re-audit.
+
 ## ADR-0004-R2 — Concurrency and handle lifecycle
 - Decision proposed: typed by-value runtime UID/slot/generation handles; registry pin acquisition before payload access; logical close distinct from delayed CPU/GPU reclamation. Control, simulation and GPU threads obey owner rules. Only ingress and security revoke are concurrently callable exceptions.
 - Lock order: router -> handle registry only during pin acquisition, release before character publish gate -> source ingress mutex. No inverse nested acquisition; never host callback while holding these locks.
