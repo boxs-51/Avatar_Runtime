@@ -16,5 +16,22 @@ int main(void) {
     if (frame.abi_version != ARS_P0_ABI_V1) return 1;
     if (ars_get_abi_version_p0() != ARS_P0_ABI_V1) return 2;
     if (ars_source_revoke_p0(runtime, admin) != ARS_E_UNSUPPORTED) return 3;
+    ars_character_h character = {0};
+    ars_model_h model = {0};
+    ars_ingress_cap_v1 cap = {0};
+    ars_close_state_v1 close_state = {0};
+    if (ars_runtime_create_p0(0, &runtime) != ARS_E_UNSUPPORTED) return 4;
+    if (ars_character_destroy_p0(runtime, character) != ARS_E_UNSUPPORTED) return 5;
+    if (ars_model_release_p0(runtime, model) != ARS_E_UNSUPPORTED) return 6;
+    if (ars_source_register_p0(runtime, character, 0, &admin, &cap) != ARS_E_UNSUPPORTED) return 7;
+    if (ars_source_admin_release_p0(runtime, admin) != ARS_E_UNSUPPORTED) return 8;
+    if (ars_source_rotate_p0(runtime, admin, &cap) != ARS_E_UNSUPPORTED) return 9;
+    if (ars_motion_submit_p0(runtime, cap, &frame) != ARS_E_UNSUPPORTED) return 10;
+    if (ars_runtime_update_p0(runtime, 0) != ARS_E_UNSUPPORTED) return 11;
+    if (ars_runtime_begin_close_p0(runtime) != ARS_E_UNSUPPORTED) return 12;
+    if (ars_runtime_drain_gpu_p0(runtime) != ARS_E_UNSUPPORTED) return 13;
+    if (ars_runtime_query_close_p0(runtime, &close_state) != ARS_E_UNSUPPORTED) return 14;
+    if (ars_runtime_finish_close_p0(runtime) != ARS_E_UNSUPPORTED) return 15;
+    if (runtime.id.runtime_uid != 0 || cap.hi != 0 || cap.lo != 0) return 16;
     return 0;
 }
