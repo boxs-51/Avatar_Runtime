@@ -5,6 +5,8 @@
 **Scope:** P0-ARS-01, P0-ARS-02 from ARS-G00-2026-10-13-01 at Draft PR #1 HEAD 93858416dfdd0d6b7f0e10c8e524da4324dd9dc4  
 **Associated interface:** contracts/ars_p0_contract_draft.h  
 **Acceptance matrix:** docs/P0_SECURITY_REGRESSION_GATES_V0.1.md  
+> **R3 contract precedence:** docs/P0_OWNER_REMEDIATION_V0.3.md overrides R2/v0.1 on rotation/revoke race, explicit revoke terminality, security-time and begin_close publication barriers. Both earlier versions remain as historical design trace; do not implement contradictory rules.
+
 **No merge or G00 PASS is authorized by this proposal.**
 
 > **R2 AUTHORITY OVERRIDE (2026-10-13):** The audited-owner replacement contract docs/P0_OWNER_REMEDIATION_V0.2.md is NORMATIVE for this PR proposal and **supersedes** contradictory provisions below regarding motion lineage, concurrent sequence admission, rotation failure, TTL security clock, finalizer pins, fixed-width ABI and pointer safety. Original v0.1 text is retained for review traceability, not as an alternative protocol. Regression gates and C header must conform to R2. Owner has not approved G00.
