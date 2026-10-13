@@ -1,0 +1,55 @@
+name: P0 Draft ABI Link Contract
+on:
+  push:
+    branches:
+      - docs/p0-handle-source-authority-v0.1
+    paths:
+      - "contracts/**"
+      - "tests/contracts/**"
+      - ".github/workflows/p0-contract-smoke.yml"
+  pull_request:
+    paths:
+      - "contracts/**"
+      - "tests/contracts/**"
+      - ".github/workflows/p0-contract-smoke.yml"
+permissions:
+  contents: read
+jobs:
+  linux-c-cpp:
+    name: Linux C11 / C++20 ABI link smoke
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Build link-only ABI stub and C/C++ consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          cc --version
+          c++ --version
+          cc -std=c11 -Wall -Wextra -Werror -fPIC -shared tests/contracts/p0_stub_export.c -o libars_p0_contract.so
+          cc -std=c11 -Wall -Wextra -Werror tests/contracts/p0_header_smoke.c -L. -lars_p0_contract -Wl,-rpath,'$ORIGIN' -o p0_c_smoke
+          c++ -std=c++20 -Wall -Wextra -Werror tests/contracts/p0_header_smoke.cpp -L. -lars_p0_contract -Wl,-rpath,'$ORIGIN' -o p0_cpp_smoke
+          ./p0_c_smoke
+          ./p0_cpp_smoke
+  windows-msvc:
+    name: Windows MSVC x64 ABI link smoke
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Build exported DLL and link C/C++ consumers
+        shell: cmd
+        run: |
+          for /f "delims=" %%V in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath') do @set "VS_PATH=%%V"
+          if not defined VS_PATH exit /b 2
+          call "%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
+          if errorlevel 1 exit /b 3
+          cl /nologo /std:c11 /W4 /LD tests\contracts\p0_stub_export.c /link /OUT:ars_p0_contract.dll
+          if errorlevel 1 exit /b 4
+          cl /nologo /std:c11 /W4 tests\contracts\p0_header_smoke.c ars_p0_contract.lib /Fe:p0_c_smoke.exe
+          if errorlevel 1 exit /b 5
+          cl /nologo /std:c++20 /EHsc /W4 tests\contracts\p0_header_smoke.cpp ars_p0_contract.lib /Fe:p0_cpp_smoke.exe
+          if errorlevel 1 exit /b 6
+          p0_c_smoke.exe
+          if errorlevel 1 exit /b 7
+          p0_cpp_smoke.exe
+          if errorlevel 1 exit /b 8
