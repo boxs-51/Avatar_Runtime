@@ -7,6 +7,8 @@
 **Acceptance matrix:** docs/P0_SECURITY_REGRESSION_GATES_V0.1.md  
 **No merge or G00 PASS is authorized by this proposal.**
 
+> **R2 AUTHORITY OVERRIDE (2026-10-13):** The audited-owner replacement contract docs/P0_OWNER_REMEDIATION_V0.2.md is NORMATIVE for this PR proposal and **supersedes** contradictory provisions below regarding motion lineage, concurrent sequence admission, rotation failure, TTL security clock, finalizer pins, fixed-width ABI and pointer safety. Original v0.1 text is retained for review traceability, not as an alternative protocol. Regression gates and C header must conform to R2. Owner has not approved G00.
+
 ## 1. Normative safety invariants
 
 H1: A public handle is a by-value ID; NEVER a dereferenceable caller-supplied pointer.
