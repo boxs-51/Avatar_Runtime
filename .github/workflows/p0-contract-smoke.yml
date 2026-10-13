@@ -7,11 +7,21 @@ on:
       - "contracts/**"
       - "tests/contracts/**"
       - ".github/workflows/p0-contract-smoke.yml"
+      - "docs/P0_OWNER_REMEDIATION_V0.3.md"
+      - "docs/ADR_P0_SECURITY_R2.md"
+      - "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md"
+      - "docs/ACCEPTANCE_GATES_V0.1.md"
+      - "docs/SPECIFICATION_V0.1.md"
   pull_request:
     paths:
       - "contracts/**"
       - "tests/contracts/**"
       - ".github/workflows/p0-contract-smoke.yml"
+      - "docs/P0_OWNER_REMEDIATION_V0.3.md"
+      - "docs/ADR_P0_SECURITY_R2.md"
+      - "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md"
+      - "docs/ACCEPTANCE_GATES_V0.1.md"
+      - "docs/SPECIFICATION_V0.1.md"
 permissions:
   contents: read
 jobs:
