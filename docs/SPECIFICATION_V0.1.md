@@ -3,6 +3,8 @@
 **ID:** ARS-SPEC-0001 | **Status:** PROPOSED / DESIGN REVIEW | **Target repo:** boxs-51/Avatar_Runtime
 **Objective:** an embeddable C/C++ library to load, animate, layer and render user-authored 2D/3D characters on a host-owned update loop. This is an SDK, not a standalone avatar, camera, AI or game application.
 
+> **M0 P0 owner amendment:** On this stacked draft branch, docs/P0_OWNER_REMEDIATION_V0.2.md and docs/ADR_P0_SECURITY_R2.md supplement/override these first-stage design sketches for handle lifetime, source authorization, retained motion provenance, atomic ingestion sequence admission, dual security/simulation clocks, fail-closed rotation, and closing semantics. These are proposed contracts pending independent review; no G00 PASS.
+
 ## 1. Normative goals and non-goals
 MUST / MUST NOT denote required obligations at the indicated stage. SHOULD expresses a design preference; MAY expresses optional extension. Acceptance evidence is in docs/ACCEPTANCE_GATES_V0.1.md.
 
