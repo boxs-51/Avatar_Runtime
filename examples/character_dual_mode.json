@@ -1,0 +1,84 @@
+{
+  "schema_version": "0.1.0",
+  "bundle_id": "org.example.dualmode",
+  "display_name": "Example Dual-Mode Avatar",
+  "license": "Sample only - no asset rights granted",
+  "author": "ARS documentation",
+  "default_mode": "2d",
+  "units": "meters",
+  "representations": {
+    "2d": {
+      "format": "ars2d-rig-v0.1",
+      "asset": "assets/character2d.ars2d.json",
+      "atlas": "assets/atlas.png",
+      "mappings": [
+        {
+          "semantic": "eye.blink.left",
+          "target": "EyeLeftBlink"
+        },
+        {
+          "semantic": "mouth.open",
+          "target": "MouthOpen"
+        }
+      ]
+    },
+    "3d": {
+      "format": "glb-gltf2",
+      "asset": "assets/character3d.glb",
+      "mappings": [
+        {
+          "semantic": "head.yaw_rad",
+          "target": "bone:Head.yaw"
+        },
+        {
+          "semantic": "mouth.open",
+          "target": "morph:MouthOpen"
+        }
+      ]
+    }
+  },
+  "rig_semantics": [
+    {
+      "id": "head.yaw_rad",
+      "type": "float",
+      "units": "radians",
+      "min": -1,
+      "max": 1,
+      "default": 0
+    },
+    {
+      "id": "eye.blink.left",
+      "type": "float",
+      "units": "normalized",
+      "min": 0,
+      "max": 1,
+      "default": 0
+    },
+    {
+      "id": "mouth.open",
+      "type": "float",
+      "units": "normalized",
+      "min": 0,
+      "max": 1,
+      "default": 0
+    }
+  ],
+  "visual_layers": [
+    {
+      "id": "base.body",
+      "mode_scope": "both",
+      "z_index": 0,
+      "visible": true,
+      "opacity": 1,
+      "blend_mode": "normal"
+    },
+    {
+      "id": "accessory.hat",
+      "mode_scope": "2d",
+      "z_index": 10,
+      "visible": true,
+      "opacity": 1,
+      "blend_mode": "normal"
+    }
+  ]
+}
