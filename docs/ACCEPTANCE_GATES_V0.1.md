@@ -8,6 +8,8 @@ Each gate has PASS, FAIL, HOLD, or NOT_APPLICABLE. PASS requires reproducible co
 
 Every gate report records: gate_id, PR/HEAD, tested platform, hardware, compiler/driver, command, exit code, artifact URL, conclusion, reviewer, time. Release requires ALL v0.1 baseline gates PASS, no unresolved P0/P1, and a signed release decision. A code-review approval alone never authorizes merge/release.
 
+**Stacked PR #2 P0 contract gating amendment:** G00 architecture freeze MUST include the normative owner design in docs/P0_OWNER_REMEDIATION_V0.2.md, the proposed ADR pack, and G00-P0-A..E from docs/P0_SECURITY_REGRESSION_GATES_V0.1.md. Runtime/source security is NOT considered PASS until dynamic race/lineage/source-authorization evidence exists. Linked ABI stub smoke tests only prove C ABI symbols, not lifetime or security. Existing M0 gate remains HOLD pending independent re-audit.
+
 ## 2. Stage gates
 
 | Gate | Objective | Required objective evidence | Failure/hold triggers |
