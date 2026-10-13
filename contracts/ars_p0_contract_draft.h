@@ -150,6 +150,15 @@ typedef struct ars_close_state_v1 {
  * Validate NULL/count/overflow; arbitrary non-NULL invalid pointers are not safe.
  * Untrusted serialized inputs require a separate bounded adapter/IPC decoder.
  * Capability rotation revokes old token FIRST; any failure leaves source REVOKED.
+
+ * R3 source states: ACTIVE, ROTATING_OLD_REVOKED, ROTATE_FAILED,
+ * EXPLICIT_REVOKED (terminal), CLOSED. Revoke invalidates pending rotation ticket.
+ * Rotation phase C checks the exact reserved ticket/source/control epochs,
+ * admin and character generations and runtime RUNNING before activation.
+ * Begin_close and PoseSnapshot publication share runtime-wide commit_gate.
+ * security TTL admission sampled under ingress_mutex; publication TTL sampled
+ * under runtime_commit_gate + pose_gate (logical sample-time semantics only).
+ * Failed/revoked rotation always zeros the output capability.
  * Source ingress uses per-source mutex for atomic epoch/sequence/quota/queue commit.
  * Revoke and pose publish synchronize on one character publish gate, validating
  * transitive provenance of persistent motion states as well as current frames.
