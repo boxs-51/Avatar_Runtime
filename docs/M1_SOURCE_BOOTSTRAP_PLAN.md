@@ -5,6 +5,8 @@
 **Status:** \`PRE_CLAIM\` / independent G00 and owner signoff required; no production code, no merge.  
 **Gate dependency:** \`G00 CONTRACT\` before **M1 production implementation**; G01 BUILD/G02 ASSET and real security gates assessed only after executable code exists.
 
+**Contract decisions to resolve before M1:** `docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md` (complete public C API) and `docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md` (schema+semantic validation). Neither is released by the prep-only CMake tests.
+
 ## 1. Proposed implementation branch topology
 
 | Stage | Proposed child branch / separate Draft PR | Exact prospective source ownership | Dependency | Required evidence |
