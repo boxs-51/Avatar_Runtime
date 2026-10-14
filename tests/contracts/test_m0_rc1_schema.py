@@ -121,6 +121,26 @@ def check_semantics(manifest: dict, rig: dict, atlas_dimensions=None):
         return
     params = unique_ids(rig["parameters"])
     part_ids = unique_ids(rig["parts"])
+    # Owner-approved Profile B requires explicit cross-file identity. This is
+    # intentionally NOT inferred from coincident layer/part name spelling.
+    layer_by_id = {layer["id"]: layer for layer in manifest["visual_layers"]}
+    seen_layers, seen_parts = set(), set()
+    for binding in representations["2d"]["layer_bindings"]:
+        lid = binding["layer_id"]
+        require(lid in layers and lid not in seen_layers)
+        require(layer_by_id[lid]["mode_scope"] in ("2d", "both"))
+        seen_layers.add(lid)
+        require(bool(binding["part_ids"]))
+        for part_id in binding["part_ids"]:
+            require(part_id in part_ids and part_id not in seen_parts)
+            seen_parts.add(part_id)
+    drawable = {layer["id"] for layer in manifest["visual_layers"]
+                if layer["mode_scope"] in ("2d", "both")}
+    require(seen_layers == drawable and seen_parts == part_ids)
+    for layer in manifest["visual_layers"]:
+        if (layer["mode_scope"] != "2d" or
+            layer.get("blend_mode", "normal") != "normal"):
+            disabled_feature = True  # after validating malformed bindings
     for repmap in representations["2d"]["mappings"]:
         require(repmap["target"] in params)
     for param in rig["parameters"]:
@@ -217,7 +237,32 @@ class RC1SchemaContracts(unittest.TestCase):
     def test_duplicate_visual_layer(self):
         m=copy.deepcopy(self.manifest);m["visual_layers"].append(copy.deepcopy(m["visual_layers"][0]));self.verify(m,expected="ARS_E_BAD_ASSET")
     def test_layer_parent_cycle(self):
-        m=copy.deepcopy(self.manifest);m["visual_layers"][0]["parent"]="accessory.hat";m["visual_layers"][1]["parent"]="base.body";self.verify(m,expected="ARS_E_BAD_ASSET")
+        m=copy.deepcopy(self.manifest);m["visual_layers"][0]["parent"]="face.mouth";m["visual_layers"][1]["parent"]="base.body";self.verify(m,expected="ARS_E_BAD_ASSET")
+    def test_profile_b_missing_layer_binding(self):
+        m=copy.deepcopy(self.manifest)
+        m["representations"]["2d"]["layer_bindings"].pop()
+        self.verify(m,expected="ARS_E_BAD_ASSET")
+    def test_profile_b_unknown_rig_part(self):
+        m=copy.deepcopy(self.manifest)
+        m["representations"]["2d"]["layer_bindings"][0]["part_ids"]=["unregistered"]
+        self.verify(m,expected="ARS_E_BAD_ASSET")
+    def test_profile_b_duplicate_part_owner(self):
+        m=copy.deepcopy(self.manifest)
+        m["representations"]["2d"]["layer_bindings"][1]["part_ids"]=["base.body"]
+        self.verify(m,expected="ARS_E_BAD_ASSET")
+    def test_profile_b_duplicate_layer_assignment(self):
+        m=copy.deepcopy(self.manifest)
+        m["representations"]["2d"]["layer_bindings"][1]["layer_id"]="base.body"
+        self.verify(m,expected="ARS_E_BAD_ASSET")
+    def test_profile_b_disabled_both_scope_after_validation(self):
+        m=copy.deepcopy(self.manifest)
+        m["visual_layers"][0]["mode_scope"]="both"
+        self.verify(m,expected="ARS_E_UNSUPPORTED")
+    def test_profile_b_malformed_part_precedes_disabled_mask(self):
+        m=copy.deepcopy(self.manifest)
+        m["visual_layers"][0]["mask"]="face.mouth"
+        m["representations"]["2d"]["layer_bindings"][0]["part_ids"]=["missing"]
+        self.verify(m,expected="ARS_E_BAD_ASSET")
     def test_default_mode_must_exist(self):
         m=copy.deepcopy(self.manifest);del m["representations"]["2d"];self.verify(m,expected="ARS_E_BAD_ASSET")
     def test_unknown_format_is_malformed(self):
