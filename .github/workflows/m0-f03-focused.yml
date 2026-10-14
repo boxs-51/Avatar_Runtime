@@ -1,0 +1,44 @@
+name: M0 F03 direct-dict finite-tree focused regression (DESIGN ONLY)
+
+on:
+  pull_request:
+    paths:
+      - 'tests/contracts/test_m0_rc1_schema.py'
+      - '.github/workflows/m0-f03-focused.yml'
+  push:
+    branches:
+      - 'dev/m0-f03-finite-tree-20261014'
+    paths:
+      - 'tests/contracts/test_m0_rc1_schema.py'
+      - '.github/workflows/m0-f03-focused.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  negative-fixtures:
+    name: ${{ matrix.os }} F03 focused design fixtures
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    defaults:
+      run:
+        shell: bash
+        working-directory: tests/contracts
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install pinned design-only schema checker
+        run: python -m pip install --disable-pip-version-check jsonschema==4.23.0
+      - name: Run focused positive and negative fixtures (not SDK or full G00)
+        run: |
+          set -euo pipefail
+          python -m unittest -v \
+            test_m0_rc1_schema.RC1SchemaContracts.test_reference_json_schema_and_semantics \
+            test_m0_rc1_schema.RC1SchemaContracts.test_red_f01_bad_asset_precedes_recognized_unsupported \
+            test_m0_rc1_schema.RC1SchemaContracts.test_red_f02_atlas_pixels_not_canvas \
+            test_m0_rc1_schema.RC1SchemaContracts.test_red_f03_json_exponent_overflow \
+            test_m0_rc1_schema.RC1SchemaContracts.test_red_f03_uv_infinity \
+            test_m0_rc1_schema.RC1SchemaContracts.test_red_f03_direct_dict_nonfinite_visual_opacity \
+            test_m0_rc1_schema.RC1SchemaContracts.test_red_f03_nonfinite_opacity_precedes_disabled_vrm1

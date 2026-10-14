@@ -1,0 +1,30 @@
+{
+  "contract_candidate": "M0_RC1",
+  "stack": {
+    "pr1_number": 1,
+    "pr1_head": "93858416dfdd0d6b7f0e10c8e524da4324dd9dc4",
+    "pr2_number": 2,
+    "pr2_head": "16abfb058a90f90f4ed89f6b6ced2000bff0b30f",
+    "pr3_number": 3
+  },
+  "source_blobs": {
+    "schemas/character_manifest_v0.1.schema.json": "3e8a42c9ef380a4bd3bbd4507e76daf71b67b2ea",
+    "schemas/ars2d_rig_v0.1.schema.json": "5ea105e5282ba0c9e137306c83bdb3a67e902607",
+    "examples/character_dual_mode.json": "eb89c3efeccfe2adf877728c29df76ffb6eb9051",
+    "examples/character2d.ars2d.json": "f8e22a7d225cda731b4bbc23b1cc88e01dc18782",
+    "contracts/ars_p0_contract_draft.h": "6a82f96f95390697d28d0b0acf3470108ee00f22",
+    "docs/P0_OWNER_REMEDIATION_V0.5.md": "37837d4c7ebf5c7f7f5bd9094eea31e4da3b98ca",
+    "docs/ADR_P0_SECURITY_R2.md": "493a9bf100f308c1751a0e62ccfb0fb9a4205244",
+    "docs/ACCEPTANCE_GATES_V0.1.md": "2e9fd5acc8e5864affd7fcbf37263c6411c8bc3d",
+    "docs/SPECIFICATION_V0.1.md": "1edfe6ab0730db672b1b805cdb1cd1ef82496153"
+  },
+  "stage_status": {
+    "G00": "HOLD_DESIGN",
+    "G01": "NOT_IMPLEMENTED",
+    "G02": "NOT_IMPLEMENTED",
+    "G10": "NOT_IMPLEMENTED",
+    "ADR_0001": "OWNER_DESIGN_PROPOSED",
+    "FORMAT_PROFILE": "B_OWNER_PROPOSED",
+    "VRM_1_0": "UNSUPPORTED"
+  }
+}
