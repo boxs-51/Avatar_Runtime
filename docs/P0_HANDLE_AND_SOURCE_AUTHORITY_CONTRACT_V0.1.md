@@ -5,6 +5,8 @@
 **Scope:** P0-ARS-01, P0-ARS-02 from ARS-G00-2026-10-13-01 at Draft PR #1 HEAD 93858416dfdd0d6b7f0e10c8e524da4324dd9dc4  
 **Associated interface:** contracts/ars_p0_contract_draft.h  
 **Acceptance matrix:** docs/P0_SECURITY_REGRESSION_GATES_V0.1.md  
+> **R5 supersession:** docs/P0_OWNER_REMEDIATION_V0.5.md is latest for writer-priority close, expiry tombstone and checked exhaustion. Earlier contracts retained for audit trace only.
+
 > **R4 supersession:** docs/P0_OWNER_REMEDIATION_V0.4.md is the latest design-only security amendment. Terminal expiry and runtime clock poison prohibit any v0.1/R2/R3 legacy reopening semantics.
 
 > **R3 contract precedence:** docs/P0_OWNER_REMEDIATION_V0.3.md overrides R2/v0.1 on rotation/revoke race, explicit revoke terminality, security-time and begin_close publication barriers. Both earlier versions remain as historical design trace; do not implement contradictory rules.
