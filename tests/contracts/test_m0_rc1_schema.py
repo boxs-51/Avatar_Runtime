@@ -258,6 +258,22 @@ class RC1SchemaContracts(unittest.TestCase):
         rig["parts"][0]["uv"][0][0] = float("inf")
         self.verify(rig=rig, expected="ARS_E_BAD_ASSET")
 
+    # F03: Python dict callers must reject NaN/Inf at the entry boundary.
+    # jsonschema numeric bounds alone can let a NaN opacity pass.
+    def test_red_f03_direct_dict_nonfinite_visual_opacity(self):
+        for invalid in (float("nan"), float("inf"), float("-inf")):
+            with self.subTest(value=repr(invalid)):
+                m = copy.deepcopy(self.manifest)
+                m["visual_layers"][0]["opacity"] = invalid
+                self.verify(m, expected="ARS_E_BAD_ASSET")
+
+    # F03: malformed numeric data takes priority over a recognized unsupported feature.
+    def test_red_f03_nonfinite_opacity_precedes_disabled_vrm1(self):
+        m = copy.deepcopy(self.manifest)
+        m["visual_layers"][0]["opacity"] = float("nan")
+        m["representations"]["3d"]["format"] = "vrm1"
+        self.verify(m, expected="ARS_E_BAD_ASSET")
+
     # F02: validated PNG actual pixels, not rig canvas, bound atlas rectangles.
     def test_red_f02_atlas_pixels_not_canvas(self):
         with self.assertRaises(AssetError) as ctx:
