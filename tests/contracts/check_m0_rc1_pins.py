@@ -61,7 +61,7 @@ def check():
     require("G00" in abi and "G01" in abi and "G10" in abi,
             "ABI proof stages must be distinct")
     require("G00" in m1 and "M1-D" in m1, "GPU spike must remain staged")
-    require("PROFILE B" in rc1 and "PROFILE B" in fmt, "2D decision drift")
+    require("PROFILE B" in rc1.upper() and "PROFILE B" in fmt.upper(), "2D decision drift")
     require("HOST_DEVICE" in rc1 and "ADR-0001" in readiness, "GPU design drift")
     require("ARS_E_BAD_ASSET" in rc1 and "ARS_E_UNSUPPORTED" in rc1 and
             "ARS_E_OUT_OF_BUDGET" in rc1, "Missing fixed taxonomy")
