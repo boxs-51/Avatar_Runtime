@@ -3,6 +3,8 @@
 **ID:** ARS-SPEC-0001 | **Status:** PROPOSED / DESIGN REVIEW | **Target repo:** boxs-51/Avatar_Runtime
 **Objective:** an embeddable C/C++ library to load, animate, layer and render user-authored 2D/3D characters on a host-owned update loop. This is an SDK, not a standalone avatar, camera, AI or game application.
 
+> **R5 security design addendum:** docs/P0_OWNER_REMEDIATION_V0.5.md supersedes R4 on close writer fairness, source-to-pose expiry tombstone/retained provenance and counter exhaustion. R4 irreversible expiry and clock poison remain mandatory; G00 still HOLD pending independent review and production evidence.
+
 > **R4 security contract addendum:** docs/P0_OWNER_REMEDIATION_V0.4.md supersedes R3 on irrevocable source expiry, shared per-runtime security-clock watermark and admission-vs-begin_close fence. Terminal EXPIRED and sticky CLOCK_FAULT must not be bypassed by older motion/reconnect rules. G00 remains HOLD pending independent re-audit and runtime tests.
 
 > **M0 P0 R3 security amendment:** docs/P0_OWNER_REMEDIATION_V0.3.md supersedes R2 on rotation reservation/explicit revoke precedence, security clock authorization sampling and begin_close/publish barrier. Versioned ABI and prior lineage/sequence contracts remain governed by R2 where not overridden. These are still draft contracts; G00 HOLD.
