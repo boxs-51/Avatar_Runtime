@@ -35,6 +35,7 @@ struct Source {
     uint64_t epoch = 1;
     uint64_t control_epoch = 1;
     uint64_t ticket = 0;
+    std::atomic<uint64_t> invalidated_through{0}; // release tombstone
     uint64_t active_cap = 111;
     uint64_t accepted_seq = 0;
     uint64_t last_seen_security_ns = 0;
@@ -131,6 +132,7 @@ struct ContractModel {
     // Exhaustion is terminal; it never wraps and never needs a successful ++
     // to invalidate an existing token.
     void exhaust_source_locked() {
+        source.invalidated_through.store(source.epoch, std::memory_order_release);
         source.active_cap = 0;
         source.queue_count = 0;
         source.state = SourceState::exhausted;
@@ -152,7 +154,9 @@ struct ContractModel {
             source.state == SourceState::explicit_revoked ||
             source.state == SourceState::exhausted ||
             source.state == SourceState::closed) return;
+        const auto prior_epoch = source.epoch;
         if (!advance_epoch_locked()) return; // typed HANDLE_EXHAUSTED in real ABI
+        source.invalidated_through.store(prior_epoch, std::memory_order_release);
         source.active_cap = 0;
         source.queue_count = 0;
         source.state = SourceState::expired; // terminal for this registration
@@ -221,7 +225,9 @@ struct ContractModel {
         if (source.state == SourceState::closed ||
             source.state == SourceState::explicit_revoked ||
             source.state == SourceState::expired) return;
+        const auto prior_epoch = source.epoch;
         if (!advance_epoch_locked()) return;
+        source.invalidated_through.store(prior_epoch, std::memory_order_release);
         source.active_cap = 0;
         source.state = SourceState::explicit_revoked;
         source.queue_count = 0;
@@ -727,6 +733,7 @@ static void race_w_terminal_epoch_exhaustion() {
         m.revoke();
         assert(m.source.state == SourceState::exhausted);
         assert(m.source.active_cap == 0 && !m.start_rotate().valid);
+        assert(m.source.invalidated_through.load(std::memory_order_acquire) == UINT64_MAX);
         assert(!m.admit(111, 1));
     }
     {
@@ -735,6 +742,7 @@ static void race_w_terminal_epoch_exhaustion() {
         m.security_now.store(200);
         assert(!m.publish(m.source.epoch));
         assert(m.source.state == SourceState::exhausted);
+        assert(m.source.invalidated_through.load(std::memory_order_acquire) == 1);
         assert(m.source.active_cap == 0 && !m.admit(111, 1));
     }
     {
