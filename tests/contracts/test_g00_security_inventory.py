@@ -12,9 +12,9 @@ DATA = ROOT / "docs/G00_SECURITY_87_CASE_INVENTORY.json"
 OS = {"ubuntu-24.04/GCC", "ubuntu-24.04/Clang", "windows-2022/MSVC"}
 
 def from_normative_text(raw):
-    rows = re.findall(r"^\\|\\s*(HDL-\\d{3}|SRC-\\d{3})\\s*\\|\\s*([^|]+)\\|\\s*([^|]+)\\|", raw, re.M)
+    rows = re.findall(r"^\|\s*(HDL-\d{3}|SRC-\d{3})\s*\|\s*([^|]+)\|\s*([^|]+)\|", raw, re.M)
     source = {item.strip(): oracle.strip() for item, _, oracle in rows}
-    races = list(re.finditer(r"^### RACE-([A-W]):\\s*([^\\n]*)", raw, re.M))
+    races = list(re.finditer(r"^### RACE-([A-W]):\s*([^\n]*)", raw, re.M))
     for idx, hit in enumerate(races):
         segment = raw[hit.start(): races[idx+1].start() if idx+1<len(races) else raw.index("## 5. Behavioral", hit.start())]
         assertions = [line.strip()[7:].strip() for line in segment.splitlines() if line.strip().startswith("ASSERT:")]
