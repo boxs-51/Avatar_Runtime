@@ -38,14 +38,34 @@ def verify_design(manifest, rig):
     require(len(layer_ids) == len(set(layer_ids)))
     require(len(part_ids) == len(set(part_ids)))
     by_layer = {x["id"]: x for x in layers}
+    # Independent bounded walk oracle: every parent/mask edge is resolvable
+    # and the union graph must not contain a cycle, even for disabled masks.
     for layer in layers:
-        seen = set()
-        current = layer["id"]
-        while current:
-            require(current not in seen)
-            seen.add(current)
-            current = by_layer[current].get("parent", "") if current in by_layer else None
-            require(current is not None)
+        pending = [layer["id"]]
+        visited = set()
+        # Per-root walk is bounded by the max 128 visual layers and 2 edges.
+        # A node reachable twice through independent paths is allowed; only
+        # nodes already on the current ancestry path form a cycle.
+        stack = [(layer["id"], False)]
+        active = set()
+        done = set()
+        while stack:
+            current, exiting = stack.pop()
+            if exiting:
+                active.remove(current)
+                done.add(current)
+                continue
+            require(current in by_layer)
+            require(current not in active)
+            if current in done:
+                continue
+            active.add(current)
+            stack.append((current, True))
+            for key in ("parent", "mask"):
+                other = by_layer[current].get(key)
+                if other is not None:
+                    require(other in by_layer and other != current)
+                    stack.append((other, False))
     representation = manifest["representations"]["2d"]
     bindings = representation["layer_bindings"]
     seen_layers = set(); seen_parts = set()

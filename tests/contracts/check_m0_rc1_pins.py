@@ -37,10 +37,19 @@ def check():
                    cwd=ROOT, check=True)
     if os.getenv("GITHUB_EVENT_NAME") == "pull_request":
         expected_parent = git("rev-parse", "HEAD^1")
-        # Composed RC1 is stacked on exact Security successor, not old PR3.
-        # A changed predecessor MUST produce a new pin and CI failure.
-        require(expected_parent == pr2,
-                f"RC1 base drift: expected {pr2}, got {expected_parent}")
+        # Exact authorization is per candidate kind, never a broad audit-branch bypass.
+        child = obj.get("audit_child", {})
+        if os.getenv("GITHUB_HEAD_REF") == child.get("head_branch"):
+            expected = child["exact_parent_head"]
+            require(re.fullmatch(r"[0-9a-f]{40}", expected) is not None,
+                    "Malformed audit-child parent pin")
+            git("cat-file", "-e", expected + "^{commit}")
+            subprocess.run(["git", "merge-base", "--is-ancestor", pr2, expected],
+                           cwd=ROOT, check=True)
+        else:
+            expected = pr2
+        require(expected_parent == expected,
+                f"RC1 base drift: expected {expected}, got {expected_parent}")
     else:
         subprocess.run(["git", "merge-base", "--is-ancestor", pr2, "HEAD"],
                        cwd=ROOT, check=True)

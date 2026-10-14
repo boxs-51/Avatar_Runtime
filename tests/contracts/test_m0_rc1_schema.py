@@ -69,19 +69,32 @@ def check_semantics(manifest: dict, rig: dict, atlas_dimensions=None):
     layers = unique_ids(manifest["visual_layers"])
     disabled_feature = False
     layer_dict = {x["id"]: x for x in manifest["visual_layers"]}
+    # Structural integrity of BOTH hierarchy and mask references must be
+    # checked before reporting a recognized-but-disabled mask capability.
+    # Combining these edges prevents cycles hidden across mask/parent links.
+    edges = {}
     for layer in manifest["visual_layers"]:
-        parent = layer.get("parent")
-        if parent is not None:
-            require(parent in layers and parent != layer["id"])
+        refs = []
+        for key in ("parent", "mask"):
+            value = layer.get(key)
+            if value is not None:
+                require(value in layers and value != layer["id"])
+                refs.append(value)
+        edges[layer["id"]] = refs
         if "mask" in layer:
-            disabled_feature = True  # Reject only AFTER complete semantic validation
-    for layer in manifest["visual_layers"]:
-        seen = set()
-        cur = layer["id"]
-        while cur:
-            require(cur not in seen)
-            seen.add(cur)
-            cur = layer_dict[cur].get("parent")
+            disabled_feature = True
+    color = {}
+    def visit(node):
+        state = color.get(node, 0)
+        require(state != 1)  # visiting -> cycle: BAD_ASSET
+        if state == 2:
+            return
+        color[node] = 1
+        for target in edges[node]:
+            visit(target)
+        color[node] = 2
+    for node in layer_dict:
+        visit(node)
     for value in manifest["rig_semantics"]:
         typ, default = value["type"], value.get("default")
         if typ == "float":
@@ -233,7 +246,7 @@ class RC1SchemaContracts(unittest.TestCase):
     def test_vrm_recognized_disabled(self):
         m=copy.deepcopy(self.manifest);m["representations"]["3d"]["format"]="vrm1";self.verify(m,expected="ARS_E_UNSUPPORTED")
     def test_mask_recognized_disabled(self):
-        m=copy.deepcopy(self.manifest);m["visual_layers"][0]["mask"]="base.body";self.verify(m,expected="ARS_E_UNSUPPORTED")
+        m=copy.deepcopy(self.manifest);m["visual_layers"][0]["mask"]="face.mouth";self.verify(m,expected="ARS_E_UNSUPPORTED")
     # RED-first ARS-G00-FMT-P1-01: malformed mask graph precedes disabled feature.
     def test_mask_missing_target_bad_asset(self):
         m=copy.deepcopy(self.manifest)
@@ -307,7 +320,7 @@ class RC1SchemaContracts(unittest.TestCase):
     # F01: corrupted semantic cannot be masked by a disabled capability.
     def test_red_f01_bad_asset_precedes_recognized_unsupported(self):
         m = copy.deepcopy(self.manifest)
-        m["visual_layers"][0]["mask"] = "base.body"
+        m["visual_layers"][0]["mask"] = "face.mouth"
         m["rig_semantics"][0]["default"] = 99
         self.verify(m, expected="ARS_E_BAD_ASSET")
 

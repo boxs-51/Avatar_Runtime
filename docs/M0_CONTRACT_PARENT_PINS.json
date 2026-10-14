@@ -27,5 +27,11 @@
     "FORMAT_PROFILE": "B_OWNER_ACCEPTED_REVIEW_HOLD",
     "VRM_1_0": "UNSUPPORTED"
   },
-  "owner_selection_record": "Sole repository owner explicitly approved Profile B + PR8 adoption, PR5 security G00/G07/G08 stage split, ABI20 and D3D11 HOST_DEVICE QUERY_EVENT in active conversation on 2026-10-14. Not actor-distinct technical approval or merge."
+  "owner_selection_record": "Sole repository owner explicitly approved Profile B + PR8 adoption, PR5 security G00/G07/G08 stage split, ABI20 and D3D11 HOST_DEVICE QUERY_EVENT in active conversation on 2026-10-14. Not actor-distinct technical approval or merge.",
+  "audit_child": {
+    "head_branch": "audit/m0-g00-solo-redfirst-mask-graph-20261014",
+    "exact_parent_head": "d90393d7ec8556b7c69bf1e1cd468150f8728d93",
+    "pr_number": 12,
+    "scope": "design mask graph and exact predecessor regression; no G00 approval"
+  }
 }
