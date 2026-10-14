@@ -21,6 +21,17 @@ class AssetError(Exception):
         self.status = status
         super().__init__(status)
 
+def require_finite_tree(node):
+    """Reject non-finite numbers for both JSON-loaded and direct-dict fixtures."""
+    if type(node) is float and not math.isfinite(node):
+        raise AssetError("ARS_E_BAD_ASSET")
+    if isinstance(node, dict):
+        for item in node.values():
+            require_finite_tree(item)
+    elif isinstance(node, list):
+        for item in node:
+            require_finite_tree(item)
+
 def strict_json(path: Path):
     def unique_pairs(items):
         result = {}
@@ -34,18 +45,8 @@ def strict_json(path: Path):
     parsed = json.loads(path.read_text(encoding="utf-8"),
                         object_pairs_hook=unique_pairs,
                         parse_constant=reject_constant)
-    # Python accepts exponent overflow like 1e400 as float("inf").
-    # Reject all non-finite parsed values before any schema/feature dispatch.
-    def finite_tree(node):
-        if type(node) is float and not math.isfinite(node):
-            raise AssetError("ARS_E_BAD_ASSET")
-        if isinstance(node, dict):
-            for item in node.values():
-                finite_tree(item)
-        elif isinstance(node, list):
-            for item in node:
-                finite_tree(item)
-    finite_tree(parsed)
+    # Reject JSON exponent overflow (1e400) before schema/feature dispatch.
+    require_finite_tree(parsed)
     return parsed
 
 def require(cond, status="ARS_E_BAD_ASSET"):
@@ -158,6 +159,10 @@ def check_semantics(manifest: dict, rig: dict, atlas_dimensions=None):
         raise AssetError("ARS_E_UNSUPPORTED")
 
 def validate_design_fixture(manifest: dict, rig: dict, manifest_schema, rig_schema, atlas_dimensions=None):
+    # Direct-dict callers bypass strict_json; finite checks must be enforced
+    # at this entry point, before JSON Schema or unsupported feature dispatch.
+    require_finite_tree(manifest)
+    require_finite_tree(rig)
     # G00 design witness: validated atlas image dimensions are explicit.
     # A real PNG decoder and bounds are intentionally postponed to G02.
     # Structural validation precedes recognized-but-disabled features.
