@@ -8,6 +8,16 @@ Each gate has PASS, FAIL, HOLD, or NOT_APPLICABLE. PASS requires reproducible co
 
 Every gate report records: gate_id, PR/HEAD, tested platform, hardware, compiler/driver, command, exit code, artifact URL, conclusion, reviewer, time. Release requires ALL v0.1 baseline gates PASS, no unresolved P0/P1, and a signed release decision. A code-review approval alone never authorizes merge/release.
 
+**G00-P0-C stage boundary (2026-10-14 remediation proposal):** G00 requires the reviewed 87-case design inventory, source ownership/expected oracles and a scoped contract-model CI; it MUST NOT require real registry/mixer implementation that can only begin in M1. Actual HDL/SRC/RACE production cases, sanitizers, OS CSPRNG/nonreuse and registry/pose proofs remain M1-B G07/G08 HOLD until executed. No discretionary phased waiver is an implementation security PASS.
+
+**R5 security acceptance amendment:** docs/P0_OWNER_REMEDIATION_V0.5.md requires writer-priority bounded close, atomic expiry epoch-tombstone handoff to retained-pose provenance and typed counter exhaustion. Gate matrix: HDL-001..019 + SRC-001..045 + RACE-A..W = **87 specified cases**, not 87 executed. RACE-T/V/W executable contract model subset only. Production runtime security, GPU/ADR-0001 and independent audit remain HOLD; DO NOT MERGE.
+
+**R4 security regression addendum:** docs/P0_OWNER_REMEDIATION_V0.4.md requires terminal expiry, a global sticky security-clock fault and shared/exclusive admission fence. Gate matrix: HDL-001..019, SRC-001..042, RACE-A..U (**82 specified cases**). RACE-Q/R/S executable in the contract-model only; full runtime security tests, clock fault injection, sanitizers and GPU evidence remain HOLD. No merge approval.
+
+**R3 staged security validation:** docs/P0_OWNER_REMEDIATION_V0.3.md adds terminal explicit-revoke, rotation reservation compare/commit, runtime-wide publish fence and sample-time TTL. Negative gates now HDL-001..019 + SRC-001..037 + RACE-A..P = 72 specified cases. The executable C++20 state-machine harness is only a contract model and does not replace running production runtime negative gates. G00 HOLD pending ADR-0001 and independent audit.
+
+**Stacked PR #2 P0 contract gating amendment:** G00 architecture freeze MUST include the normative owner design in docs/P0_OWNER_REMEDIATION_V0.2.md, the proposed ADR pack, and G00-P0-A..E from docs/P0_SECURITY_REGRESSION_GATES_V0.1.md. Runtime/source security is NOT considered PASS until dynamic race/lineage/source-authorization evidence exists. Linked ABI stub smoke tests only prove C ABI symbols, not lifetime or security. Existing M0 gate remains HOLD pending independent re-audit.
+
 ## 2. Stage gates
 
 | Gate | Objective | Required objective evidence | Failure/hold triggers |
