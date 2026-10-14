@@ -5,6 +5,8 @@
 **Current decision:** \`HOLD_G00_CONTRACT_FREEZE\`. Do not merge this prep PR or the parent PRs.
 **Read with:** docs/V0_1_CANONICAL_CONTRACT_RC0.md and docs/M1_SOURCE_BOOTSTRAP_PLAN.md.
 
+**GPU design candidate:** `docs/ADR_0001_D3D11_G00_DESIGN_RC1.md` defines HOST_DEVICE-only v0.1 proposal and separates G00 decision from later M1-D hardware proof. No reviewer approval or actual GPU evidence yet.
+
 ## RC1 audit remediation register (owner proposals, no independent approval)
 
 | Audit finding | Remediation | Current disposition |
