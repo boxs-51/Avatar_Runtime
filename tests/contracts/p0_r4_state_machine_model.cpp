@@ -77,7 +77,9 @@ struct ContractModel {
 
     // Call with source ingress mutex; never increments epoch modulo 2^64.
     void expire_locked() {
-        if (source.state != SourceState::active) return;
+        if (source.state == SourceState::expired ||
+            source.state == SourceState::explicit_revoked ||
+            source.state == SourceState::closed) return;
         assert(source.epoch != UINT64_MAX && source.control_epoch != UINT64_MAX);
         ++source.epoch;
         ++source.control_epoch;
@@ -91,7 +93,12 @@ struct ContractModel {
         std::scoped_lock pose(pose_gate);
         std::scoped_lock ingress(source.ingress);
         std::scoped_lock clock(security_clock_gate);
-        if (security_clock_poisoned) return {};
+        const auto now = sample_security_locked();
+        if (!now) return {};
+        if (*now >= source.expiry_ns) {
+            expire_locked(); // may expire ACTIVE or ROTATE_FAILED
+            return {};
+        }
         if (!running.load() ||
             (source.state != SourceState::active &&
              source.state != SourceState::rotate_failed)) {
@@ -118,7 +125,13 @@ struct ContractModel {
         std::scoped_lock pose(pose_gate);
         std::scoped_lock ingress(source.ingress);
         std::scoped_lock clock(security_clock_gate);
-        const bool matches = !security_clock_poisoned && reservation.valid && running.load() &&
+        const auto now = sample_security_locked();
+        if (!now) return false;
+        if (*now >= source.expiry_ns) {
+            expire_locked(); // phase-B expiry defeats phase-C reactivation
+            return false;
+        }
+        const bool matches = reservation.valid && running.load() &&
             source.state == SourceState::rotating_old_revoked &&
             reservation.ticket == source.ticket &&
             reservation.epoch == source.epoch &&
@@ -411,6 +424,20 @@ static void race_q_pending_rotate_denied_after_clock_fault() {
     std::cout << "PASS RACE-Q clock fault denies pending token activation\n";
 }
 
+static void race_u_rotation_mint_crosses_expiry() {
+    ContractModel m;
+    m.security_now.store(150);
+    auto pending = m.start_rotate();
+    assert(pending.valid);
+    m.security_now.store(200); // source expires while Phase B mints cap
+    assert(!m.finish_rotate(pending, 222));
+    assert(m.source.state == SourceState::expired);
+    assert(m.source.active_cap == 0);
+    assert(!m.start_rotate().valid); // terminal expired registration
+    assert(!m.admit(222, 1));
+    std::cout << "PASS RACE-U: rotation phase C cannot reactivate expired lease\n";
+}
+
 static void race_r_admission_vs_close_commit_barrier() {
     ContractModel m;
     std::latch admission_inside(1), resume_admission(1), close_invoked(1);
@@ -464,6 +491,7 @@ int main() {
     failclosed_rotate_rng();
     race_q_irrevocable_expiry_and_clock_fault();
     race_q_pending_rotate_denied_after_clock_fault();
+    race_u_rotation_mint_crosses_expiry();
     race_r_admission_vs_close_commit_barrier();
     race_s_global_clock_watermark_shared_by_ingress_publish();
     std::cout << "PASS ALL R4 CONTRACT MODEL TESTS (NOT production runtime)\n";
