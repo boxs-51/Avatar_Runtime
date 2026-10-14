@@ -55,6 +55,38 @@ class InventoryContract(unittest.TestCase):
         cls.source = from_normative_text(DOC.read_text(encoding="utf-8"))
     def test_complete_exact_owner_oracle_matrix(self):
         self.assertTrue(validate(self.data, self.source))
+    # P1 RED-first: the Markdown source must not silently duplicate a case ID.
+    def test_raw_duplicate_hdl_row_fails_closed(self):
+        raw = DOC.read_text(encoding="utf-8")
+        source_line = next(line for line in raw.splitlines()
+                           if line.startswith("| HDL-001 |"))
+        with self.assertRaises((AssertionError, ValueError)):
+            from_normative_text(raw.replace(source_line,
+                                             source_line + "\n" + source_line))
+    def test_raw_duplicate_race_heading_fails_closed(self):
+        raw = DOC.read_text(encoding="utf-8")
+        with self.assertRaises((AssertionError, ValueError)):
+            from_normative_text(raw.replace("### RACE-K:",
+                                             "### RACE-K:\n    ASSERT: duplicate\n\n### RACE-K:"))
+    # P2: expected scenario/custody/test-mode/platforms are part of oracle.
+    def test_mutated_scenario_must_fail(self):
+        bad = copy.deepcopy(self.data)
+        bad["cases"][0]["scenario"] = "silent acceptance"
+        with self.assertRaises(AssertionError): validate(bad,self.source)
+    def test_mutated_custody_must_fail(self):
+        bad = copy.deepcopy(self.data)
+        bad["cases"][0]["owner_scope"] = "Nobody"
+        with self.assertRaises(AssertionError): validate(bad,self.source)
+    def test_downgraded_race_test_mode_fails(self):
+        bad = copy.deepcopy(self.data)
+        hit = next(x for x in bad["cases"] if x["id"]=="RACE-K")
+        hit["test_mode"] = "one mock test"
+        with self.assertRaises(AssertionError): validate(bad,self.source)
+    def test_gpu_sensitive_case_without_gpu_runner_fails(self):
+        bad = copy.deepcopy(self.data)
+        hit = next(x for x in bad["cases"] if x["id"]=="HDL-009")
+        hit["required_platforms"].remove("Windows D3D11 GPU/M1-D")
+        with self.assertRaises(AssertionError): validate(bad,self.source)
     def test_missing_case_fails_closed(self):
         bad = copy.deepcopy(self.data); bad["cases"].pop()
         with self.assertRaises(AssertionError): validate(bad,self.source)
