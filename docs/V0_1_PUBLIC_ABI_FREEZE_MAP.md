@@ -45,6 +45,21 @@ These are **completion requirements**, not permission to publish ABI signatures 
 9. Return/lease ownership of model buffers, graphics device, render-target textures, snapshots, telemetry and diagnostic strings is documented. Avoid compiler-ABI STL sharing and cross-boundary free.
 10. Version availability must be testable; unsupported optional APIs MUST return \`ARS_E_UNSUPPORTED\` without advertising feature readiness.
 
+## Audit child complete declaration candidate (NOT frozen)
+
+Draft PR #4 adds `include/ars/ars.h` with all 21 proposed v0.1
+symbols: lifecycle/close, model load/release, character create/destroy/mode/
+layers, source registration/rotation/revoke, motion submit/update, capabilities,
+HOST_DEVICE render and optional bounded diagnostics. `tests/abi/design_stub.c`
+exports NONFUNCTIONAL UNSUPPORTED placeholders; `design_smoke.c/.cpp`
+signature and layout smoke assert 16-byte typed IDs and 128-bit ingress caps.
+Neither actual source behavior nor GPU/effect security is implemented.
+
+ABI owner must ratify the optional diagnostic symbol and the exact
+allocator/callback, borrowed COM target lifetime, struct_size minor-version
+behavior and stable mode/capability enums. All function declarations exist for
+review, but **G00 DESIGN PASS / ABI FREEZE remain HOLD** until review and CI.
+
 ## RC1 G00/G01/G10 evidence separation — owner disposition (independent review pending)
 
 **G00 / ABI_DESIGN_FROZEN** requires a complete compilable declaration-only public C header (all model/character/capabilities/render/security/close operations), C11+C++20 signature smoke against a NONFUNCTIONAL stub, fixed-width layout and version/size negotiation *specifications*, allocator/borrow/error/thread ownership tables and independent ABI DESIGN review. Stub linking does **not** demonstrate functioning runtime. An implementer is allowed to create a header-only design candidate under M0 without claiming real M1-A.
