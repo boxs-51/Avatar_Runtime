@@ -153,6 +153,13 @@ typedef struct ars_close_state_v1 {
  * Untrusted serialized inputs require a separate bounded adapter/IPC decoder.
  * Capability rotation revokes old token FIRST; any failure leaves source REVOKED.
 
+ * R5: Writer-closing admission barrier uses a bounded reader counter + CV,
+ * sets CLOSE_REQUESTED BEFORE draining readers, no fairness assumption on
+ * std::shared_mutex. An ingress operation lease always unpins on exit.
+ * Source expiry publishes a release-ordered epoch tombstone under source lock;
+ * S acquire-reads and cleans transitive retained pose data under pose gate.
+ * Expiry MUST NOT acquire pose lock from source/clock critical section.
+ * Exhausted epoch/control/ticket counters terminate source grants, never wrap.
  * R4: Runtime security_clock_gate serializes clock observations and a sticky
  * security_highwater_ns. Clock regression/failure poisons runtime permanently.
  * Rotate phase C MUST check security clock and lease after phase B token mint.
