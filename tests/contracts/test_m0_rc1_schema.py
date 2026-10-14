@@ -31,9 +31,22 @@ def strict_json(path: Path):
         return result
     def reject_constant(value):
         raise AssetError("ARS_E_BAD_ASSET")
-    return json.loads(path.read_text(encoding="utf-8"),
-                      object_pairs_hook=unique_pairs,
-                      parse_constant=reject_constant)
+    parsed = json.loads(path.read_text(encoding="utf-8"),
+                        object_pairs_hook=unique_pairs,
+                        parse_constant=reject_constant)
+    # Python accepts exponent overflow like 1e400 as float("inf").
+    # Reject all non-finite parsed values before any schema/feature dispatch.
+    def finite_tree(node):
+        if type(node) is float and not math.isfinite(node):
+            raise AssetError("ARS_E_BAD_ASSET")
+        if isinstance(node, dict):
+            for item in node.values():
+                finite_tree(item)
+        elif isinstance(node, list):
+            for item in node:
+                finite_tree(item)
+    finite_tree(parsed)
+    return parsed
 
 def require(cond, status="ARS_E_BAD_ASSET"):
     if not cond:
@@ -47,19 +60,20 @@ def unique_ids(rows):
 def check_numeric(value):
     require(type(value) in (int, float) and math.isfinite(value))
 
-def check_semantics(manifest: dict, rig: dict):
+def check_semantics(manifest: dict, rig: dict, atlas_dimensions=None):
     # This is a DESIGN FIXTURE CHECK ONLY: referenced atlas/GLB bytes do not
     # exist in this repository. Do not confuse with full asset validation.
     require(manifest["default_mode"] in manifest["representations"])
     sem = unique_ids(manifest["rig_semantics"])
     layers = unique_ids(manifest["visual_layers"])
+    disabled_feature = False
     layer_dict = {x["id"]: x for x in manifest["visual_layers"]}
     for layer in manifest["visual_layers"]:
         parent = layer.get("parent")
         if parent is not None:
             require(parent in layers and parent != layer["id"])
         if "mask" in layer:
-            raise AssetError("ARS_E_UNSUPPORTED")  # RC1 Profile B
+            disabled_feature = True  # Reject only AFTER complete semantic validation
     for layer in manifest["visual_layers"]:
         seen = set()
         cur = layer["id"]
@@ -97,9 +111,12 @@ def check_semantics(manifest: dict, rig: dict):
             require(mapping["semantic"] in sem)
         if mode == "3d":
             if rep["format"] == "vrm1":
-                raise AssetError("ARS_E_UNSUPPORTED")
-            require(rep["format"] == "glb-gltf2")
+                disabled_feature = True
+            else:
+                require(rep["format"] == "glb-gltf2")
     if "2d" not in representations:
+        if disabled_feature:
+            raise AssetError("ARS_E_UNSUPPORTED")
         return
     params = unique_ids(rig["parameters"])
     part_ids = unique_ids(rig["parts"])
@@ -112,8 +129,20 @@ def check_semantics(manifest: dict, rig: dict):
     for part in rig["parts"]:
         x, y, width, height = part["atlas_rect_px"]
         require(width > 0 and height > 0)
-        require(x + width <= rig["canvas"]["width"])
-        require(y + height <= rig["canvas"]["height"])
+        # Canvas is rig coordinate space, NOT actual atlas pixel dimensions.
+        # G00 fixture can supply a trusted PNG dimension witness. Full
+        # PNG IHDR/decode validation is M1-C/G02 and explicitly HOLD.
+        if atlas_dimensions is not None:
+            aw, ah = atlas_dimensions
+            require(type(aw) is int and type(ah) is int and aw > 0 and ah > 0)
+            require(x + width <= aw and y + height <= ah)
+        for pair in part["vertices_px"] + part["uv"]:
+            for scalar in pair:
+                check_numeric(scalar)
+        if "pivot_normalized" in part:
+            for scalar in part["pivot_normalized"]:
+                check_numeric(scalar)
+                require(0.0 <= scalar <= 1.0)
         v = len(part["vertices_px"])
         require(len(part["uv"]) == v)
         for triangle in part["triangles"]:
@@ -121,17 +150,22 @@ def check_semantics(manifest: dict, rig: dict):
         for deform in part.get("deform_targets", []):
             require(deform["parameter"] in params)
             require(len(deform["vertex_deltas_px"]) == v)
+            for pair in deform["vertex_deltas_px"]:
+                for scalar in pair:
+                    check_numeric(scalar)
     require(len(part_ids) > 0)
+    if disabled_feature:
+        raise AssetError("ARS_E_UNSUPPORTED")
 
 def validate_design_fixture(manifest: dict, rig: dict, manifest_schema, rig_schema, atlas_dimensions=None):
-    # RED-first: dimensions are a trusted validation input; intentionally not
-    # enforced until source semantics are fixed on this audit branch.
+    # G00 design witness: validated atlas image dimensions are explicit.
+    # A real PNG decoder and bounds are intentionally postponed to G02.
     # Structural validation precedes recognized-but-disabled features.
     if list(Draft202012Validator(manifest_schema).iter_errors(manifest)):
         raise AssetError("ARS_E_BAD_ASSET")
     if list(Draft202012Validator(rig_schema).iter_errors(rig)):
         raise AssetError("ARS_E_BAD_ASSET")
-    check_semantics(manifest, rig)
+    check_semantics(manifest, rig, atlas_dimensions=atlas_dimensions)
 
 class RC1SchemaContracts(unittest.TestCase):
     @classmethod
