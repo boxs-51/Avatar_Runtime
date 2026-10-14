@@ -12,6 +12,9 @@ def source(path):
 class BadAsset(ValueError):
     pass
 
+class Unsupported(ValueError):
+    pass
+
 def require(value):
     if not value: raise BadAsset("ARS_E_BAD_ASSET")
 
@@ -49,15 +52,20 @@ def verify_design(manifest, rig):
     for binding in bindings:
         lid = binding["layer_id"]
         require(lid in by_layer and lid not in seen_layers)
-        require(by_layer[lid]["mode_scope"] == "2d")
+        require(by_layer[lid]["mode_scope"] in ("2d", "both"))
         seen_layers.add(lid)
         require(len(binding["part_ids"]) >= 1)
         for part in binding["part_ids"]:
             require(part in part_ids and part not in seen_parts)
             seen_parts.add(part)
     # Each drawable 2D layer and each rig part has one unambiguous owner.
-    require(seen_layers == {x["id"] for x in layers if x["mode_scope"] == "2d"})
+    require(seen_layers == {x["id"] for x in layers if x["mode_scope"] in ("2d", "both")})
     require(seen_parts == set(part_ids))
+    # Semantic BAD_ASSET checks precede disabled-feature reporting.
+    disabled = any(x["mode_scope"] != "2d" or x.get("mask") is not None
+                   or x.get("blend_mode", "normal") != "normal" for x in layers)
+    disabled |= manifest["representations"].get("3d", {}).get("format") == "vrm1"
+    if disabled: raise Unsupported("ARS_E_UNSUPPORTED")
     return True
 
 class ProfileBContract(unittest.TestCase):
@@ -68,7 +76,7 @@ class ProfileBContract(unittest.TestCase):
     def verify_mutation(self, change):
         m, r = copy.deepcopy(self.m), copy.deepcopy(self.r)
         change(m, r)
-        with self.assertRaises((BadAsset, KeyError, TypeError)): verify_design(m, r)
+        with self.assertRaises(BadAsset): verify_design(m, r)
     def test_reference_linked(self):
         self.assertTrue(verify_design(self.m, self.r))
     def test_missing_layer_binding(self):
@@ -93,6 +101,17 @@ class ProfileBContract(unittest.TestCase):
     def test_disallow_shared_or_unmapped_part(self):
         self.verify_mutation(lambda m,r: m["representations"]["2d"]["layer_bindings"][0].update(part_ids=["base.body","face.mouth"]))
     def test_no_silent_both_mode_scope(self):
-        self.verify_mutation(lambda m,r: m["visual_layers"][0].update(mode_scope="both"))
+        m = copy.deepcopy(self.m); m["visual_layers"][0]["mode_scope"]="both"
+        with self.assertRaises(Unsupported): verify_design(m, self.r)
+    def test_wellformed_mask_is_unsupported(self):
+        m = copy.deepcopy(self.m); m["visual_layers"][0]["mask"]="face.mouth"
+        with self.assertRaises(Unsupported): verify_design(m, self.r)
+    def test_invalid_binding_precedes_disabled_mask(self):
+        m = copy.deepcopy(self.m); m["visual_layers"][0]["mask"]="face.mouth"
+        m["representations"]["2d"]["layer_bindings"][0]["part_ids"]=["does.not.exist"]
+        with self.assertRaises(BadAsset): verify_design(m, self.r)
+    def test_vrm1_wellformed_but_disabled(self):
+        m = copy.deepcopy(self.m); m["representations"]["3d"]["format"]="vrm1"
+        with self.assertRaises(Unsupported): verify_design(m, self.r)
 
 if __name__ == "__main__": unittest.main()
