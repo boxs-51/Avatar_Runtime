@@ -1,5 +1,5 @@
 /*
- * DESIGN CONTRACT MODEL, NOT production Avatar Runtime code.
+ * R4 DESIGN CONTRACT MODEL, NOT production Avatar Runtime code.
  * Exercises orderings required by the R3 security specification.
  * This model deliberately does not implement public C ABI, GPU or native registry.
  */
@@ -11,10 +11,13 @@
 #include <latch>
 #include <limits>
 #include <mutex>
+#include <shared_mutex>
+#include <optional>
 #include <thread>
 
 enum class SourceState {
-    active, rotating_old_revoked, rotate_failed, explicit_revoked, closed
+    active, rotating_old_revoked, rotate_failed,
+    explicit_revoked, expired, closed
 };
 
 struct Rotation {
@@ -39,15 +42,49 @@ struct Source {
 };
 
 struct ContractModel {
-    // Required nesting: commit -> pose -> source. Source-only ingress is allowed.
+    // Lock paths:
+    //   publish: commit -> pose -> source -> security_clock
+    //   admit: admission(shared) -> source -> security_clock
+    //   begin_close: commit -> admission(exclusive) -> router(short) -> pose -> source
+    //   revoke: pose -> source
     std::mutex commit_gate;
+    std::shared_mutex admission_gate;
     std::mutex pose_gate;
     std::mutex router_gate;
+    std::mutex security_clock_gate;
     std::atomic<bool> running{true};
+    std::atomic<bool> closing_intent{false};
     std::atomic<uint64_t> security_now{100};
+    // Protected by security_clock_gate, not by a caller-provided clock callback:
+    uint64_t security_highwater_ns = 0;
+    bool security_clock_poisoned = false;
     Source source;
     uint64_t pose_generation = 0;
     uint64_t current_pose_epoch = 0;
+
+    // Call ONLY with security_clock_gate held; guarantee global ordering
+    // across both ingress and publish in this runtime.
+    std::optional<uint64_t> sample_security_locked() {
+        if (security_clock_poisoned) return std::nullopt;
+        const auto now = security_now.load(std::memory_order_relaxed);
+        if (now < security_highwater_ns) {
+            security_clock_poisoned = true; // sticky until runtime destruction
+            return std::nullopt;
+        }
+        security_highwater_ns = now;
+        return now;
+    }
+
+    // Call with source ingress mutex; never increments epoch modulo 2^64.
+    void expire_locked() {
+        if (source.state != SourceState::active) return;
+        assert(source.epoch != UINT64_MAX && source.control_epoch != UINT64_MAX);
+        ++source.epoch;
+        ++source.control_epoch;
+        source.active_cap = 0;
+        source.queue_count = 0;
+        source.state = SourceState::expired; // terminal for this registration
+    }
 
     Rotation start_rotate() {
         std::scoped_lock commit(commit_gate);
@@ -74,7 +111,7 @@ struct ContractModel {
     }
 
     bool finish_rotate(const Rotation &reservation, uint64_t cap, bool rng_ok = true) {
-        // Model phase B token generation (no mutex held).
+        // Model phase B token mint, not actual CSPRNG or nonreuse ledger.
         std::scoped_lock commit(commit_gate);
         std::scoped_lock pose(pose_gate);
         std::scoped_lock ingress(source.ingress);
@@ -98,7 +135,8 @@ struct ContractModel {
         std::scoped_lock pose(pose_gate);
         std::scoped_lock ingress(source.ingress);
         if (source.state == SourceState::closed ||
-            source.state == SourceState::explicit_revoked) return;
+            source.state == SourceState::explicit_revoked ||
+            source.state == SourceState::expired) return;
         assert(source.epoch != UINT64_MAX && source.control_epoch != UINT64_MAX);
         ++source.epoch;
         ++source.control_epoch;
@@ -112,55 +150,73 @@ struct ContractModel {
         std::scoped_lock ingress(source.ingress);
         source.active_cap = 0;
         source.state = SourceState::closed;
+        assert(source.control_epoch != UINT64_MAX);
         ++source.control_epoch;
         source.queue_count = 0;
     }
 
     void begin_close() {
         std::scoped_lock commit(commit_gate);
+        // Writer-intent prevents a continuing stream of new entrants from
+        // starving close while it waits for prior admission readers.
+        closing_intent.store(true);
+        std::unique_lock<std::shared_mutex> admission_exclusive(admission_gate);
         {
             std::scoped_lock router(router_gate);
-            running.store(false);
+            running.store(false); // begin_close linearization
         }
         std::scoped_lock pose(pose_gate);
         std::scoped_lock ingress(source.ingress);
         source.active_cap = 0;
         source.state = SourceState::closed;
         source.queue_count = 0;
+        assert(source.control_epoch != UINT64_MAX);
         ++source.control_epoch;
     }
 
-    bool admit(uint64_t cap, uint64_t sequence) {
+    bool admit(uint64_t cap, uint64_t sequence,
+               const std::function<void()> &test_only_before_append = {}) {
+        // Test-only callback is forbidden in production admission critical path.
+        std::shared_lock<std::shared_mutex> admission_shared(admission_gate);
+        if (!running.load() || closing_intent.load()) return false;
         std::scoped_lock ingress(source.ingress);
-        const auto now = security_now.load();
-        if (now < source.last_seen_security_ns) return false; // CLOCK_REGRESSION
-        source.last_seen_security_ns = now;
+        std::scoped_lock clock(security_clock_gate);
+        const auto now = sample_security_locked();
+        if (!now) return false; // runtime-wide sticky clock fault
+        source.last_seen_security_ns = *now;
+        if (source.state == SourceState::active && *now >= source.expiry_ns)
+            expire_locked(); // irrevocable epoch/cap invalidation
         if (!running.load() || source.state != SourceState::active ||
-            cap != source.active_cap || now >= source.expiry_ns ||
-            sequence <= source.accepted_seq || source.queue_count >= 64) {
+            cap != source.active_cap || sequence <= source.accepted_seq ||
+            source.queue_count >= 64) {
             return false;
         }
+        if (test_only_before_append) test_only_before_append();
+        // Admission gate cannot be exclusively acquired until this append
+        // finishes, so this OK necessarily precedes begin_close linearization.
         ++source.queue_count;
         ++source.quota_spent;
-        source.accepted_seq = sequence; // same critical section as append
+        source.accepted_seq = sequence;
         return true;
     }
 
     bool publish(uint64_t contributing_epoch,
                  const std::function<void()> &test_only_after_clock = {}) {
-        // Test-only callback is used to demonstrate a scheduler pause after sample.
-        // It is explicitly forbidden in the production publish critical section.
+        // Test-only callback documents authorization at sample time, NOT
+        // physically instantaneous TTL erasure. Prohibited in production.
         std::scoped_lock commit(commit_gate);
         std::scoped_lock pose(pose_gate);
-        const auto auth_sample = security_now.load();
-        if (test_only_after_clock) test_only_after_clock();
         std::scoped_lock ingress(source.ingress);
-        if (!running.load() || source.state != SourceState::active ||
-            contributing_epoch != source.epoch || auth_sample >= source.expiry_ns) {
-            return false;
-        }
+        std::scoped_lock clock(security_clock_gate);
+        const auto sampled = sample_security_locked();
+        if (!sampled || !running.load()) return false;
+        if (test_only_after_clock) test_only_after_clock();
+        if (source.state == SourceState::active && *sampled >= source.expiry_ns)
+            expire_locked(); // no later rollback can revive this epoch
+        if (source.state != SourceState::active ||
+            contributing_epoch != source.epoch) return false;
         current_pose_epoch = contributing_epoch;
-        ++pose_generation;
+        ++pose_generation; // modelled immutable PoseSnapshot swap
         return true;
     }
 };
@@ -304,6 +360,81 @@ static void failclosed_rotate_rng() {
     std::cout << "PASS failed rotation cannot re-enable old cap\n";
 }
 
+static void race_q_irrevocable_expiry_and_clock_fault() {
+    {
+        ContractModel m;
+        m.security_now.store(150);
+        const auto old_epoch = m.source.epoch;
+        assert(m.publish(old_epoch));
+        m.security_now.store(200);
+        assert(!m.publish(old_epoch)); // causes terminal source expiration
+        assert(m.source.state == SourceState::expired);
+        assert(m.source.epoch != old_epoch && m.source.active_cap == 0);
+        const auto after_expiry_generation = m.pose_generation;
+        m.security_now.store(120); // injected clock rollback
+        assert(!m.publish(old_epoch) && !m.admit(111, 2));
+        assert(m.security_clock_poisoned);
+        assert(m.pose_generation == after_expiry_generation);
+        assert(m.source.state == SourceState::expired);
+        assert(!m.start_rotate().valid);
+    }
+    {
+        ContractModel m;
+        m.security_now.store(150);
+        assert(m.publish(m.source.epoch));
+        m.security_now.store(120); // regression even BEFORE expiry
+        assert(!m.publish(m.source.epoch));
+        assert(m.security_clock_poisoned);
+        m.security_now.store(160);
+        assert(!m.publish(m.source.epoch));
+        assert(!m.admit(111, 1)); // no automatic recovery
+        assert(m.pose_generation == 1);
+    }
+    std::cout << "PASS RACE-Q: terminal expiry and sticky clock-regression denial\n";
+}
+
+static void race_r_admission_vs_close_commit_barrier() {
+    ContractModel m;
+    std::latch admission_inside(1), resume_admission(1), close_invoked(1);
+    bool accepted = false;
+    std::thread submitter([&] {
+        accepted = m.admit(111, 17, [&] {
+            admission_inside.count_down();
+            resume_admission.wait(); // holds admission shared, source, clock
+        });
+    });
+    admission_inside.wait();
+    std::thread closer([&] {
+        close_invoked.count_down();
+        m.begin_close(); // must acquire exclusive admission_gate
+    });
+    close_invoked.wait();
+    assert(m.running.load()); // H cannot linearize close while shared is held
+    resume_admission.count_down();
+    submitter.join();
+    closer.join();
+    assert(accepted && !m.running.load()); // accepted BEFORE close
+    assert(m.source.accepted_seq == 17 && m.source.queue_count == 0);
+    assert(!m.admit(111, 18)); // NO append after close
+    ContractModel close_first;
+    close_first.begin_close();
+    assert(!close_first.admit(111, 1)); // reverse order
+    std::cout << "PASS RACE-R: admission commits before close or is denied\n";
+}
+
+static void race_s_global_clock_watermark_shared_by_ingress_publish() {
+    ContractModel m;
+    m.security_now.store(180);
+    assert(m.admit(111, 1)); // ingress samples 180
+    assert(m.security_highwater_ns == 180);
+    m.security_now.store(170);
+    assert(!m.publish(m.source.epoch)); // publish observes regression
+    assert(m.security_clock_poisoned);
+    m.security_now.store(190);
+    assert(!m.admit(111, 2) && !m.publish(m.source.epoch));
+    std::cout << "PASS RACE-S: ingress/publish share sticky clock watermark\n";
+}
+
 int main() {
     race_l_revoke_wins();
     race_l_release_and_close();
@@ -313,6 +444,9 @@ int main() {
     race_p_sample_time_not_physical_erasure();
     provenance_revoke_cannot_republish();
     failclosed_rotate_rng();
-    std::cout << "PASS ALL R3 CONTRACT MODEL TESTS (NOT production runtime)\n";
+    race_q_irrevocable_expiry_and_clock_fault();
+    race_r_admission_vs_close_commit_barrier();
+    race_s_global_clock_watermark_shared_by_ingress_publish();
+    std::cout << "PASS ALL R4 CONTRACT MODEL TESTS (NOT production runtime)\n";
     return 0;
 }
