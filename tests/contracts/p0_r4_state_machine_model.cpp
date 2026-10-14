@@ -1,6 +1,6 @@
 /*
- * R4 DESIGN CONTRACT MODEL, NOT production Avatar Runtime code.
- * Exercises orderings required by the R3 security specification.
+ * R5 CONTRACT MODEL, NOT production Avatar Runtime code.
+ * Exercises owner R5 close-fairness, source-expiry provenance and overflow design.
  * This model deliberately does not implement public C ABI, GPU or native registry.
  */
 #include <atomic>
@@ -11,13 +11,15 @@
 #include <latch>
 #include <limits>
 #include <mutex>
-#include <shared_mutex>
+#include <condition_variable>
+#include <array>
+#include <vector>
 #include <optional>
 #include <thread>
 
 enum class SourceState {
     active, rotating_old_revoked, rotate_failed,
-    explicit_revoked, expired, closed
+    explicit_revoked, expired, exhausted, closed
 };
 
 struct Rotation {
@@ -41,14 +43,64 @@ struct Source {
     uint32_t queue_count = 0;
 };
 
+
+/*
+ * Writer-priority admission barrier. A closing writer changes OPEN->CLOSING
+ * under this mutex BEFORE waiting. No newly-arriving ingress can increase
+ * reader count after that transition, even on reader-favoring platforms.
+ * No source, clock, pose or router lock is taken while gate mutex is held.
+ */
+class AdmissionGate {
+    std::mutex state_mutex_;
+    std::condition_variable drained_;
+    unsigned readers_ = 0;
+    bool closing_ = false;
+public:
+    bool enter() {
+        std::lock_guard lock(state_mutex_);
+        if (closing_) return false;
+        ++readers_;
+        return true;
+    }
+    void leave() {
+        std::lock_guard lock(state_mutex_);
+        assert(readers_ > 0);
+        --readers_;
+        if (readers_ == 0) drained_.notify_all();
+    }
+    void close_and_wait(std::atomic<bool>& visible_closing_intent) {
+        std::unique_lock lock(state_mutex_);
+        closing_ = true;
+        visible_closing_intent.store(true, std::memory_order_release);
+        visible_closing_intent.notify_all();  // deterministic test-only observer
+        drained_.wait(lock, [&]{ return readers_ == 0; }); // releases mutex
+    }
+    bool is_closing() {
+        std::lock_guard lock(state_mutex_);
+        return closing_;
+    }
+    unsigned active_readers() {
+        std::lock_guard lock(state_mutex_);
+        return readers_;
+    }
+};
+struct AdmissionLease {
+    AdmissionGate& gate;
+    const bool acquired;
+    explicit AdmissionLease(AdmissionGate& g): gate(g), acquired(gate.enter()) {}
+    ~AdmissionLease() { if (acquired) gate.leave(); }
+    AdmissionLease(const AdmissionLease&) = delete;
+    AdmissionLease& operator=(const AdmissionLease&) = delete;
+};
+
 struct ContractModel {
     // Lock paths:
     //   publish: commit -> pose -> source -> security_clock
-    //   admit: admission(shared) -> source -> security_clock
-    //   begin_close: commit -> admission(exclusive) -> router(short) -> pose -> source
+    //   admit: bounded admission reader lease -> source -> security_clock
+    //   begin_close: commit -> close_and_drain admission readers -> router -> pose -> source
     //   revoke: pose -> source
     std::mutex commit_gate;
-    std::shared_mutex admission_gate;
+    AdmissionGate admission_gate;
     std::mutex pose_gate;
     std::mutex router_gate;
     std::mutex security_clock_gate;
@@ -75,14 +127,32 @@ struct ContractModel {
         return now;
     }
 
+    // Requires source ingress lock, and (for dirty handoff) release ordering.
+    // Exhaustion is terminal; it never wraps and never needs a successful ++
+    // to invalidate an existing token.
+    void exhaust_source_locked() {
+        source.active_cap = 0;
+        source.queue_count = 0;
+        source.state = SourceState::exhausted;
+    }
+    bool advance_epoch_locked() {
+        if (source.epoch == UINT64_MAX ||
+            source.control_epoch == UINT64_MAX) {
+            exhaust_source_locked();
+            return false;
+        }
+        ++source.epoch;
+        ++source.control_epoch;
+        return true;
+    }
+
     // Call with source ingress mutex; never increments epoch modulo 2^64.
     void expire_locked() {
         if (source.state == SourceState::expired ||
             source.state == SourceState::explicit_revoked ||
+            source.state == SourceState::exhausted ||
             source.state == SourceState::closed) return;
-        assert(source.epoch != UINT64_MAX && source.control_epoch != UINT64_MAX);
-        ++source.epoch;
-        ++source.control_epoch;
+        if (!advance_epoch_locked()) return; // typed HANDLE_EXHAUSTED in real ABI
         source.active_cap = 0;
         source.queue_count = 0;
         source.state = SourceState::expired; // terminal for this registration
@@ -104,13 +174,11 @@ struct ContractModel {
              source.state != SourceState::rotate_failed)) {
             return {};
         }
-        if (source.epoch == UINT64_MAX ||
-            source.control_epoch == UINT64_MAX ||
-            source.ticket == UINT64_MAX) {
+        if (source.ticket == UINT64_MAX) {
+            exhaust_source_locked();
             return {};
         }
-        ++source.epoch;
-        ++source.control_epoch;
+        if (!advance_epoch_locked()) return {};
         ++source.ticket;
         source.active_cap = 0;
         source.state = SourceState::rotating_old_revoked;
@@ -153,9 +221,7 @@ struct ContractModel {
         if (source.state == SourceState::closed ||
             source.state == SourceState::explicit_revoked ||
             source.state == SourceState::expired) return;
-        assert(source.epoch != UINT64_MAX && source.control_epoch != UINT64_MAX);
-        ++source.epoch;
-        ++source.control_epoch;
+        if (!advance_epoch_locked()) return;
         source.active_cap = 0;
         source.state = SourceState::explicit_revoked;
         source.queue_count = 0;
@@ -166,8 +232,7 @@ struct ContractModel {
         std::scoped_lock ingress(source.ingress);
         source.active_cap = 0;
         source.state = SourceState::closed;
-        assert(source.control_epoch != UINT64_MAX);
-        ++source.control_epoch;
+        if (source.control_epoch != UINT64_MAX) ++source.control_epoch;
         source.queue_count = 0;
     }
 
@@ -175,9 +240,7 @@ struct ContractModel {
         std::scoped_lock commit(commit_gate);
         // Writer-intent prevents a continuing stream of new entrants from
         // starving close while it waits for prior admission readers.
-        closing_intent.store(true);
-        closing_intent.notify_all(); // allows deterministic test handshake
-        std::unique_lock<std::shared_mutex> admission_exclusive(admission_gate);
+        admission_gate.close_and_wait(closing_intent); // writer preference + bounded readers
         {
             std::scoped_lock router(router_gate);
             running.store(false); // begin_close linearization
@@ -187,15 +250,14 @@ struct ContractModel {
         source.active_cap = 0;
         source.state = SourceState::closed;
         source.queue_count = 0;
-        assert(source.control_epoch != UINT64_MAX);
-        ++source.control_epoch;
+        if (source.control_epoch != UINT64_MAX) ++source.control_epoch;
     }
 
     bool admit(uint64_t cap, uint64_t sequence,
                const std::function<void()> &test_only_before_append = {}) {
         // Test-only callback is forbidden in production admission critical path.
-        std::shared_lock<std::shared_mutex> admission_shared(admission_gate);
-        if (!running.load() || closing_intent.load()) return false;
+        AdmissionLease lease(admission_gate);
+        if (!lease.acquired || !running.load()) return false;
         std::scoped_lock ingress(source.ingress);
         std::scoped_lock clock(security_clock_gate);
         const auto now = sample_security_locked();
