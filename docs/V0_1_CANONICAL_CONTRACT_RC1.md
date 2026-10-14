@@ -43,6 +43,8 @@ Required design invariants:
 
 **ADR-0001 G00 DESIGN proof:** approved state/lifetime diagrams, borrower obligations, failure/interleaving matrix and a reproducible planned hardware experiment. **M1-D physical proof:** Windows D3D11 host integration, state diff/readback, 100x resize/close, device loss and native GPU resource retirement after source implementation. These are distinct decisions.
 
+**Detailed proposed GPU decision:** `docs/ADR_0001_D3D11_G00_DESIGN_RC1.md` provides the HOST_DEVICE ownership matrix and explicit G00 design versus M1-D physical proof. It is NOT ratified.
+
 ## 4. Proposed format, semantic validator and error taxonomy (F-05/F-07/F-09 HOLD pending independent acceptance)
 
 **Owner selects native 2D profile B for candidate v0.1**: PNG atlas with rect, pivot, vertices, UV, triangle indices and bounded vertex-delta deform targets. Weighted deform meshes, relative-transform hierarchy, part masks and mask compositing are NOT advertised/accepted in v0.1. The original product specification's broader 2D ambition must be explicitly narrowed in capabilities/ABI and release docs before freeze. 2D visual layer ordering/visibility/opacity is allowed without mask features.
