@@ -26,6 +26,8 @@ M0 is specification-first and MUST NOT be counted as implemented. Each code work
 
 Suggested coupling rules: importer never calls GPU; GPU may only consume validated immutable CPU assets; camera adapter only submits normalized frames; render consumes committed pose; no feature branch modifies public header without ABI reviewer approval.
 
+**R5 latest proposed security ADRs:** docs/P0_OWNER_REMEDIATION_V0.5.md, ADR-0004-R5/0009-R5/0010-R5 in docs/ADR_P0_SECURITY_R2.md; no production implementation, independent PASS or merge authorization. ADR-0001 GPU remains HOLD.
+
 **R4 security design:** docs/P0_OWNER_REMEDIATION_V0.4.md and ADR-0004-R4/0005-R4 in docs/ADR_P0_SECURITY_R2.md supersede R3 TTL/admission-close descriptions. Proposed only; source security and D3D11 ADR-0001 remain G00 HOLD.
 
 **R3 cross-workstream architecture gate:** docs/P0_OWNER_REMEDIATION_V0.3.md is the latest security contract amendment; ADR-0004-R3, ADR-0005-R3, ADR-0011-R3 are proposed in docs/ADR_P0_SECURITY_R2.md. None is approved and ADR-0001 GPU retirement remains HOLD. Reviewers must not implement contradictory R2 default behavior on rotate/revoke/TTL/close.
