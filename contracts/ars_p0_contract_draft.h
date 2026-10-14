@@ -70,7 +70,9 @@ enum ars_status_codes_v1 {
     ARS_E_HANDLE_EXHAUSTED = 15,
     ARS_E_CLOCK_FAILURE = 16,
     ARS_E_RATE_LIMIT = 17,
-    ARS_E_QUEUE_FULL = 18
+    ARS_E_QUEUE_FULL = 18,
+    ARS_E_SOURCE_EXPIRED = 19,
+    ARS_E_SECURITY_CLOCK_FAULT = 20
 };
 
 typedef struct ars_runtime_desc_v1 {
@@ -151,6 +153,15 @@ typedef struct ars_close_state_v1 {
  * Untrusted serialized inputs require a separate bounded adapter/IPC decoder.
  * Capability rotation revokes old token FIRST; any failure leaves source REVOKED.
 
+ * R4: Runtime security_clock_gate serializes clock observations and a sticky
+ * security_highwater_ns. Clock regression/failure poisons runtime permanently.
+ * Source lease expiry is terminal EXPIRED (new registration required) and
+ * invalidates source/control epoch, active cap and retained-motion lineage.
+ * Ingress: admission_gate SHARED -> source_mutex -> security_clock_gate.
+ * begin_close: commit_gate -> admission_gate EXCLUSIVE -> router_lock (brief)
+ * -> each pose_gate -> source_mutex. No queue admission linearizes after close.
+ * Pose publish: commit_gate -> pose_gate -> source_mutex -> clock_gate.
+ * Fixed TTL guarantee is authorization at final clock sample, not pixel scrub.
  * R3 source states: ACTIVE, ROTATING_OLD_REVOKED, ROTATE_FAILED,
  * EXPLICIT_REVOKED (terminal), CLOSED. Revoke invalidates pending rotation ticket.
  * Rotation phase C checks the exact reserved ticket/source/control epochs,
