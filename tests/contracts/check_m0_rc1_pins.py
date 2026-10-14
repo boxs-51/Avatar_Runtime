@@ -37,8 +37,13 @@ def check():
                    cwd=ROOT, check=True)
     if os.getenv("GITHUB_EVENT_NAME") == "pull_request":
         expected_parent = git("rev-parse", "HEAD^1")
-        require(expected_parent == pr2,
-                f"PR3 base drift: expected PR2 {pr2}, got {expected_parent}")
+        # Scoped audit-child PR #4 is deliberately stacked ON TOP OF frozen PR3.
+        # Keep exact PR3 parent check for regular PR3; never relax parent drift.
+        audit_child = os.getenv("GITHUB_HEAD_REF", "").startswith("audit/rc1-f01-f08-red-first-")
+        expected = ("2d4906ea07052540ff1330f2a93034fe0fccffb7"
+                    if audit_child else pr2)
+        require(expected_parent == expected,
+                f"PR audit-child/base drift: expected {expected}, got {expected_parent}")
     else:
         subprocess.run(["git", "merge-base", "--is-ancestor", pr2, "HEAD"],
                        cwd=ROOT, check=True)
