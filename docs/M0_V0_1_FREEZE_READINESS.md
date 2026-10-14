@@ -21,6 +21,8 @@
 | F-10 | G00 decision with exact merged design candidate HEAD, reviewer, raw evidence and sign-off | no independent pass; PR #1/#2 both DRAFT | HOLD | release/governance owner |
 | F-11 | M1 source scopes and non-production build bootstrap | scope proposal in M1 plan; CMake prep-only scaffold | PREPARED, not G01 PASS | implementation owner |
 
+**Decision details:** F-02/F-08 require `docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md`; F-05/F-07/F-09 require `docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md`. Neither document represents an accepted/frozen API or parser.
+
 ## What is verified (limited scope)
 
 - PR #2 head \`16abfb058a90f90f4ed89f6b6ced2000bff0b30f\`, Draft and not merged at preparation.
