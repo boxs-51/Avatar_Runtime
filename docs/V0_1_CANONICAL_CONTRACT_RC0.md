@@ -1,5 +1,7 @@
 # Avatar Runtime SDK v0.1 — Canonical Contract Candidate (M0 RC0)
 
+> **SUPERSEDED for freeze decisions:** `docs/V0_1_CANONICAL_CONTRACT_RC1.md` is the latest Owner candidate. RC0 remains historical trace only. No G00 PASS or ABI freeze.
+
 **ID:** ARS-M0-CONTRACT-RC0  
 **Status:** REVIEW CANDIDATE / **NOT FROZEN** / no G00 approval  
 **Parent design:** Draft PR #1, \`93858416dfdd0d6b7f0e10c8e524da4324dd9dc4\`  
