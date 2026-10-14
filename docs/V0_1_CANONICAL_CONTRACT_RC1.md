@@ -1,5 +1,8 @@
 # Avatar Runtime SDK v0.1 — M0 Canonical Contract RC1
 
+> **SOLO OWNER / CURRENT RC1 2026-10-14:** Owner explicitly approved Profile B layer_bindings, 87 G00 design oracles (all runtime G07/G08 HOLD), ABI20 with optional diagnostic #21 deferred, and D3D11 HOST_DEVICE/QUERY_EVENT. Historical pre-approval proposal/21-symbol/actor-distinct language below is not current authority. ARS-SOLO-OWNER-001 allows independently designed RED-first technical-method audit, not a second GitHub actor, fake approval, production certification or automatic merge. G00 design verification and owner merge decision remain separate.
+
+
 **ID:** ARS-M0-CONTRACT-RC1 | **Status:** OWNER PROPOSED / INDEPENDENT RE-AUDIT REQUIRED / NOT FROZEN
 **Addresses:** ARS-G00-PR3-FREEZE-REVIEW-2026-10-14-01 (three P1, one P2)
 **Pinned parents:**

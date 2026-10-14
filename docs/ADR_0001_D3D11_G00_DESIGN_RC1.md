@@ -1,7 +1,10 @@
 # ADR-0001-RC1 — D3D11 Host-Owned Device Contract (DESIGN CANDIDATE)
 
-**Status:** PROPOSED FOR G00 DESIGN REVIEW, NOT RATIFIED, NOT GPU-TESTED
-**Decision owner:** Graphics architecture owner; independent reviewer must be distinct
+> **SOLO OWNER / CURRENT RC1 2026-10-14:** Owner explicitly approved Profile B layer_bindings, 87 G00 design oracles (all runtime G07/G08 HOLD), ABI20 with optional diagnostic #21 deferred, and D3D11 HOST_DEVICE/QUERY_EVENT. Historical pre-approval proposal/21-symbol/actor-distinct language below is not current authority. ARS-SOLO-OWNER-001 allows independently designed RED-first technical-method audit, not a second GitHub actor, fake approval, production certification or automatic merge. G00 design verification and owner merge decision remain separate.
+
+
+**Status:** OWNER DESIGN YES; G00 TECHNICAL REVIEW HOLD; ACTOR-DISTINCT NOT RATIFIED; NATIVE GPU M1-D HOLD
+**Decision owner:** sole repository owner YES, with ARS-SOLO-OWNER-001 transparent methodological review exception (not an actor-distinct approval).
 **Parent contract:** docs/V0_1_CANONICAL_CONTRACT_RC1.md
 **Legacy ADR:** docs/ROADMAP_AND_ADRS_V0.1.md (both HOST_DEVICE and SDK_DEVICE were proposed)
 **Stage split:** G00 acceptance of this ADR's DESIGNED behavior is distinct from M1-D physical D3D11 validation. No implementation or merge authorized.

@@ -1,5 +1,8 @@
 # M0 v0.1 Freeze-Readiness Ledger RC1 — Candidate, NOT Approved
 
+> **SOLO OWNER / CURRENT RC1 2026-10-14:** Owner explicitly approved Profile B layer_bindings, 87 G00 design oracles (all runtime G07/G08 HOLD), ABI20 with optional diagnostic #21 deferred, and D3D11 HOST_DEVICE/QUERY_EVENT. Historical pre-approval proposal/21-symbol/actor-distinct language below is not current authority. ARS-SOLO-OWNER-001 allows independently designed RED-first technical-method audit, not a second GitHub actor, fake approval, production certification or automatic merge. G00 design verification and owner merge decision remain separate.
+
+
 **ID:** ARS-M0-G00-FREEZE-RC1  
 **Security parent:** Draft PR #2 @ b80997192d14fbc7c40055300931e33727ac8674
 **Current decision:** \`HOLD_G00_CONTRACT_FREEZE\`. Do not merge this prep PR or the parent PRs.

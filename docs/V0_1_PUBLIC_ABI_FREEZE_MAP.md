@@ -1,5 +1,8 @@
 # Avatar Runtime v0.1 — Public C ABI Completion Map (DESIGN ONLY)
 
+> **SOLO OWNER / CURRENT RC1 2026-10-14:** Owner explicitly approved Profile B layer_bindings, 87 G00 design oracles (all runtime G07/G08 HOLD), ABI20 with optional diagnostic #21 deferred, and D3D11 HOST_DEVICE/QUERY_EVENT. Historical pre-approval proposal/21-symbol/actor-distinct language below is not current authority. ARS-SOLO-OWNER-001 allows independently designed RED-first technical-method audit, not a second GitHub actor, fake approval, production certification or automatic merge. G00 design verification and owner merge decision remain separate.
+
+
 **ID:** ARS-ABI-M0-01 | **Status:** BLOCKED / not frozen / not shipping  
 **Inputs:** SPECIFICATION_V0.1 section 5; \`contracts/ars_p0_contract_draft.h\`; R2–R5 P0 amendments.
 **Never** install the \`_p0\` proposal as \`ars/ars.h\` without the independent ABI/design gate.
