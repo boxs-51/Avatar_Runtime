@@ -39,5 +39,15 @@
     "exact_parent_head": "6c790b239d2af47f534ab78d4aaa386cc86b63db",
     "pr_number": 13,
     "scope": "P1 G00 provenance/source inventory fixed-path immutable negative tests; not merge authority"
+  },
+  "reviewed_g00_blobs": {
+    "include/ars/ars.h": "1c61da4a48c9faf2001fc98ad4c084413781e61c",
+    "docs/ADR_0001_D3D11_G00_DESIGN_RC1.md": "88c93d5c949b0eb2d205162bf5951f09d4ef0ca2",
+    "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md": "5abf89c11f12f5b191534acfa7cb2762408e3bd0",
+    "docs/V0_1_CANONICAL_CONTRACT_RC1.md": "e5701279b468614b98c5fc1b288a0494496de2a1",
+    "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md": "a9b2e190db367dd5fdba547c9689c8fd0f92aa85",
+    "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md": "d7f93baee7a59e1bf8764452d98c93915769eb9f",
+    "tests/contracts/p0_r5_state_machine_model.cpp": "fb2802db2b1bf8ead6ad23341bf2026ed6fdd4be",
+    "tests/abi/design_smoke.c": "91957916a06274929ae068030f48dd491ae30e49"
   }
 }

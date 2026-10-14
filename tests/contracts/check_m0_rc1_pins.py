@@ -17,12 +17,58 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 PINS = ROOT / "docs" / "M0_CONTRACT_PARENT_PINS.json"
 
+# Reviewed keysets are code-owned, not loaded from the mutable pin JSON.
+# A missing field must NEVER silently shrink the claimed evidence surface.
+REQUIRED_PREDECESSOR = frozenset((
+    "schemas/character_manifest_v0.1.schema.json",
+    "schemas/ars2d_rig_v0.1.schema.json",
+    "examples/character_dual_mode.json",
+    "examples/character2d.ars2d.json",
+    "contracts/ars_p0_contract_draft.h",
+    "docs/P0_OWNER_REMEDIATION_V0.5.md",
+    "docs/ADR_P0_SECURITY_R2.md",
+    "docs/ACCEPTANCE_GATES_V0.1.md",
+    "docs/SPECIFICATION_V0.1.md",
+))
+REQUIRED_G00 = frozenset((
+    "include/ars/ars.h",
+    "docs/ADR_0001_D3D11_G00_DESIGN_RC1.md",
+    "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+    "docs/V0_1_CANONICAL_CONTRACT_RC1.md",
+    "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md",
+    "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md",
+    "tests/contracts/p0_r5_state_machine_model.cpp",
+    "tests/abi/design_smoke.c",
+))
+
 def git(*args: str) -> str:
     return subprocess.check_output(["git", *args], cwd=ROOT, text=True, stderr=subprocess.STDOUT).strip()
 
 def require(condition, message):
     if not condition:
         raise AssertionError(message)
+
+def validate_blob_manifest(obj):
+    """Check immutable required paths, blob syntax and Git tree contents.
+
+    The two keysets are deliberately defined in CODE, not in the editable
+    manifest. This is a source identity gate, not a GitHub actor review.
+    """
+    for field, expected in (("source_blobs", REQUIRED_PREDECESSOR),
+                            ("reviewed_g00_blobs", REQUIRED_G00)):
+        paths = obj.get(field)
+        require(type(paths) is dict, f"Missing required {field} manifest")
+        require(set(paths) == expected and len(paths) == len(expected),
+                f"{field}: required immutable path set/count differs")
+        for path, sha in paths.items():
+            require(re.fullmatch(r"[0-9a-f]{40}", sha) is not None,
+                    f"Invalid SHA for {path}")
+            require(not path.startswith("/") and ".." not in Path(path).parts,
+                    f"Unsafe provenance path: {path}")
+            actual = git("rev-parse", "HEAD:" + path)
+            require(actual == sha,
+                    f"Incorrect {field} blob: {path}; expected {sha}, got {actual}")
+    return True
 
 def check():
     obj = json.loads(PINS.read_text(encoding="utf-8"))
@@ -61,12 +107,7 @@ def check():
     else:
         subprocess.run(["git", "merge-base", "--is-ancestor", pr2, "HEAD"],
                        cwd=ROOT, check=True)
-    for path, sha in obj["source_blobs"].items():
-        require(re.fullmatch(r"[0-9a-f]{40}", sha) is not None, f"Invalid pin {path}")
-        require(not path.startswith("/") and ".." not in Path(path).parts, "Invalid path")
-        actual = git("rev-parse", "HEAD:" + path)
-        require(actual == sha,
-                f"Pinned parent blob changed {path}: wanted {sha}, got {actual}")
+    validate_blob_manifest(obj)
     rc1 = (ROOT / "docs/V0_1_CANONICAL_CONTRACT_RC1.md").read_text("utf-8")
     readiness = (ROOT / "docs/M0_V0_1_FREEZE_READINESS.md").read_text("utf-8")
     abi = (ROOT / "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md").read_text("utf-8")
@@ -93,7 +134,7 @@ def check():
     require(obj["stage_status"]["G00"] == "HOLD_DESIGN", "G00 status not hold")
     require(obj["stage_status"]["ADR_0001"] == "OWNER_DESIGN_ACCEPTED_REVIEW_HOLD",
             "ADR cannot be auto-approved")
-    print("PASS RC1 provenance: PR1/PR2 ancestry and 9 exact blob pins")
+    print("PASS RC1 provenance: PR8/PR9 ancestry, 9 predecessor and 8 reviewed G00 blob pins")
     print("PASS RC1 consistency: G00 design vs implementation, format/ABI/HOLD")
     print("NOTE: no GPU/runtime, hostile asset decoder or real SDK claim")
 
