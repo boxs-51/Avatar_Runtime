@@ -3,7 +3,7 @@
 **ID:** ARS-M0-G00-FREEZE-RC1  
 **Security parent:** Draft PR #2 @ 16abfb058a90f90f4ed89f6b6ced2000bff0b30f
 **Current decision:** \`HOLD_G00_CONTRACT_FREEZE\`. Do not merge this prep PR or the parent PRs.
-**Read with:** docs/V0_1_CANONICAL_CONTRACT_RC0.md and docs/M1_SOURCE_BOOTSTRAP_PLAN.md.
+**Read with:** docs/V0_1_CANONICAL_CONTRACT_RC1.md (normative candidate) and docs/M1_SOURCE_BOOTSTRAP_PLAN.md. RC0 is historical/superseded.
 
 **GPU design candidate:** `docs/ADR_0001_D3D11_G00_DESIGN_RC1.md` defines HOST_DEVICE-only v0.1 proposal and separates G00 decision from later M1-D hardware proof. No reviewer approval or actual GPU evidence yet.
 
@@ -14,7 +14,7 @@
 | G00-PR3-01 P1 | G00 ABI declaration-only design and signature smoke; G01 actual library, G10 real C consumer | DESIGN_PROPOSED; full ABI still HOLD |
 | G00-PR3-02 P1 | G00 ADR-0001 HOST_DEVICE design + experiment manifest; M1-D physical GPU validation later | DESIGN_PROPOSED; ADR owner/reviewer HOLD |
 | G00-PR3-03 P1 | Select 2D PROFILE B, VRM1 disabled, semantic validator phases and exact BAD_ASSET/UNSUPPORTED/OUT_OF_BUDGET taxonomy; add executable schema/semantic design checks | DESIGN_PROPOSED; format reviewer HOLD |
-| G00-PR3-04 P2 | Pin parent SHA and nine schema/ABI/security blobs; CI checks schema examples, negative mutations and cross-document precedence | CI IMPLEMENTATION PENDING until terminal run |
+| G00-PR3-04 P2 | Pin parent SHA and nine schema/ABI/security blobs; CI checks schema examples, negative mutations and cross-document precedence | PREP CI PASS at #38515015803, but design findings remain HOLD |
 
 **Current canonical candidate:** `docs/V0_1_CANONICAL_CONTRACT_RC1.md`; previous RC0 is historical. Parent pin is `docs/M0_CONTRACT_PARENT_PINS.json`. F-01..F-10 remain HOLD until independent approvals; F-11 remains PREPARED. M0 G00 is a DESIGN gate, not a demand for native D3D11 hardware or runtime parser validation.
 
