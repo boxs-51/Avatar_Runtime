@@ -13,7 +13,8 @@
 2. **Proposed** security and lifetime contract: \`docs/P0_OWNER_REMEDIATION_V0.5.md\`, then the unmodified provisions of R4 -> R3 -> R2 -> v0.1 in that precedence. Relevant R5 ADR proposals are in \`docs/ADR_P0_SECURITY_R2.md\`.
 3. **Actual draft declarations:** \`contracts/ars_p0_contract_draft.h\`. The legacy pointer-based function sketch in SPECIFICATION section 5 is **superseded as a public-handle proposal**; it is neither compilable nor a valid reason to implement pointer handles. The draft \`_p0\` functions are **not complete**.
 4. JSON-schema validation: \`schemas/character_manifest_v0.1.schema.json\` and \`schemas/ars2d_rig_v0.1.schema.json\`, PLUS a mandatory semantic/cross-file validator not yet implemented; fixture examples are illustrative, not proofs of semantic validity.
-5. Evidence: \`docs/ACCEPTANCE_GATES_V0.1.md\` and \`docs/P0_SECURITY_REGRESSION_GATES_V0.1.md\`; pass/hold states in \`docs/M0_V0_1_FREEZE_READINESS.md\` are authoritative for this proposed freeze attempt.
+5. Full public ABI completion conditions: `docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md`. Semantic/cross-file format gate detail: `docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md`.
+6. Evidence: \`docs/ACCEPTANCE_GATES_V0.1.md\` and \`docs/P0_SECURITY_REGRESSION_GATES_V0.1.md\`; pass/hold states in \`docs/M0_V0_1_FREEZE_READINESS.md\` are authoritative for this proposed freeze attempt.
 
 **Conflict handling:** fail closed and record \`BLOCKED_CONTRACT_CONFLICT\`. Do not quietly choose whichever R2/R3/R4 paragraph is convenient or emit a second divergent ABI. A change to material ABI, model format, source authority, threading/clock, GPU ownership or deterministic pose rules requires matching ADR/gates and a fresh source-pinned review.
 
