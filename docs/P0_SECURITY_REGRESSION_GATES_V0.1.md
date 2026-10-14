@@ -7,6 +7,8 @@
 
 > **R4 AUTHORITY:** docs/P0_OWNER_REMEDIATION_V0.4.md supersedes R3/R2 on terminal expiry, global clock highwater and shared/exclusive admission close barrier. Executable contract-model uses tests/contracts/p0_r4_state_machine_model.cpp; full production runtime tests remain HOLD.
 
+> **R5 authoritative amendment:** docs/P0_OWNER_REMEDIATION_V0.5.md supersedes previous closure writer fairness, expiry cross-lock provenance propagation and overflow semantics; executable model: tests/contracts/p0_r5_state_machine_model.cpp. Production runtime evidence HOLD.
+
 **R2 precedence:** docs/P0_OWNER_REMEDIATION_V0.2.md resolves the P0 audit and supplies mandatory provenance/sequence/clock/close/ABI contracts. All dynamic test cases remain HOLD until actual implementation and reproducible logs are available.
 
 ## 1. Evidence and verdict protocol
@@ -85,6 +87,9 @@ Each report includes test_id, PR, HEAD, build/compiler flags, OS, CPU/GPU where 
 | SRC-040 | ingress samples security clock at 180, publisher next samples 170 | global security_highwater detects backwards time and permanently rejects new authorizations |
 | SRC-041 | sustained ingress flood while begin_close sets writer intent | close cannot be starved; all post-close queue admissions denied |
 | SRC-042 | pending phase-B rotation continues after lease expiry | phase C samples clock, marks terminal EXPIRED, denies activation and refuses subsequent rotate |
+| SRC-043 | source A expires on ingress while cached A+B candidate/trigger/mode-switch retarget is staged | publish reads tombstone and rejects A provenance; next S update resets A cache and commits B only, no source->pose lock acquisition |
+| SRC-044 | source/control epoch or rotation ticket at UINT64_MAX on revoke/expire/rotate | terminal EXHAUSTED, prior token denied, no wrap, no assertion crash |
+| SRC-045 | close requester sets closing-intent under writer-priority gate with eight admitted ingress workers | later ingress attempts denied; existing readers drain and close completes without writer starvation |
 
 ## 4. Required controlled concurrency traces
 
@@ -143,6 +148,23 @@ I: old cap sequence=0 or UINT64_MAX again => denied
 I: new cap sequence=1 => valid
 ASSERT: no ABA of cap, no replay across generations
 ~~~
+
+### RACE-V: expiry tombstone vs multi-source retained pose
+
+    S: prior committed pose has A+B provenance, retained smoothing + delayed trigger + 2D/3D retarget cache from A
+    S: prepare next candidate using A+B and PAUSE before final pose gate
+    I: expire A under A source mutex and security clock only; release-publish tombstone
+    S: resume under pose -> source A -> source B -> security clock; acquire-observe tombstone
+    ASSERT: staged candidate rejected; no fresh A provenance
+    S: retire A-owned smoother/trigger/retarget under simulation ownership; recompute neutral + active B
+    ASSERT: fresh pose contains B only, B remains valid, no source->pose lock inversion
+
+### RACE-W: exhaustion is terminal rather than assert or epoch wrap
+
+    Force source epoch=UINT64_MAX then revoke; terminal EXHAUSTED, cap denied
+    Force control epoch=UINT64_MAX then expiry; terminal EXHAUSTED, no future pose
+    Force rotation ticket=UINT64_MAX then rotate; terminal EXHAUSTED, no token activation
+    ASSERT: no assertion crash/double invalidation, no stale token or ABA
 
 ### RACE-U: source lease expires during rotate phase B
 
@@ -288,7 +310,7 @@ Use deterministic scheduler barriers/latches, not sleeps, and retain exact inter
 
 **G00-P0-A:** reviewed handle and registry design, C ABI type sizes, threading rules, close management exceptions, source capability and publish-gate linearization are unambiguous.  
 **G00-P0-B:** C11/C++20 compile plus linked ABI stub smoke tests on the header (do not mistake compile for security PASS).  
-**G00-P0-C:** before production M1, minimal registry/mixer implementation passes HDL-001..019, SRC-001..042 and RACE-A..U on a declared CI matrix or explicit phased evidence approved by independent reviewer.  
+**G00-P0-C:** before production M1, minimal registry/mixer implementation passes HDL-001..019, SRC-001..045 and RACE-A..W on a declared CI matrix or explicit phased evidence approved by independent reviewer.  
 **G00-P0-D:** architecture ADR-0001 device owner and ADR-0004 threading must lock GPU retirement and thread-safe revoke behavior; demonstrate exact source scopes/owners.  
 **G00-P0-E:** no source/ABI/schema changes are merged until new exact HEAD independent re-audit, with all P0 addressed and tracked P1 still explicitly gated.
 
