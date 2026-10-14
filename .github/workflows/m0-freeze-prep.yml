@@ -87,6 +87,7 @@ jobs:
           python3 tests/contracts/g00_stage_gate_contract.py
           python3 -m unittest discover -s tests/contracts -p 'test_g00_security_inventory.py' -v
           python3 -m unittest discover -s tests/contracts -p 'test_g00_final_guards.py' -v
+          python3 -m unittest discover -s tests/contracts -p 'test_g00_canonical_spec.py' -v
 
   windows:
     name: Windows 2022 / MSVC x64 PREP-ONLY
@@ -123,4 +124,6 @@ jobs:
           python -m unittest discover -s tests/contracts -p "test_g00_security_inventory.py" -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -m unittest discover -s tests/contracts -p "test_g00_final_guards.py" -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s tests/contracts -p "test_g00_canonical_spec.py" -v
           exit $LASTEXITCODE

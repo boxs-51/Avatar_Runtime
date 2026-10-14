@@ -49,5 +49,11 @@
     "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md": "d7f93baee7a59e1bf8764452d98c93915769eb9f",
     "tests/contracts/p0_r5_state_machine_model.cpp": "fb2802db2b1bf8ead6ad23341bf2026ed6fdd4be",
     "tests/abi/design_smoke.c": "91957916a06274929ae068030f48dd491ae30e49"
+  },
+  "audit_p204": {
+    "head_branch": "audit/g00-p204-canonical-abi20-host-device-20261014",
+    "exact_parent_head": "24c6afad69c4bcb1a86743d91edc4706a1ba5ca1",
+    "scope": "P2-04 exact ABI20 HOST_DEVICE canonical spec review; no G00 owner acceptance",
+    "pr_number": 14
   }
 }

@@ -100,6 +100,15 @@ def check():
             git("cat-file", "-e", expected + "^{commit}")
             subprocess.run(["git", "merge-base", "--is-ancestor",
                             child["exact_parent_head"], expected], cwd=ROOT, check=True)
+        elif os.getenv("GITHUB_HEAD_REF") == obj.get("audit_p204", {}).get("head_branch"):
+            successor = obj["audit_p204"]
+            expected = successor["exact_parent_head"]
+            require(re.fullmatch(r"[0-9a-f]{40}", expected) is not None,
+                    "Malformed P2-04 audit parent")
+            git("cat-file", "-e", expected+"^{commit}")
+            subprocess.run(["git", "merge-base", "--is-ancestor",
+                            obj["audit_successor"]["exact_parent_head"], expected],
+                           cwd=ROOT, check=True)
         else:
             expected = pr2
         require(expected_parent == expected,
