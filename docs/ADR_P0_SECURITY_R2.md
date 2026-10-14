@@ -5,6 +5,13 @@
 **Normative implementation design:** docs/P0_OWNER_REMEDIATION_V0.2.md
 **Architecture context:** docs/ROADMAP_AND_ADRS_V0.1.md and docs/SPECIFICATION_V0.1.md
 
+## R4 ADR amendments (OWNER PROPOSED — NOT ACCEPTED)
+
+- **ADR-0005-R4 — monotonic security authority:** One runtime security_clock_gate serializes all admission and pose-publish OS monotonic clock samples and advances runtime security_highwater_ns. Any regression/failure permanently poisons that runtime, denying admission/activation/publish. Source expiry is terminal EXPIRED with epoch/capability and transitive cache invalidation; no refresh/rotate reactivates it. New trusted registration required.
+- **ADR-0004-R4 — exact admission/close fence:** Ingress uses admission_gate SHARED -> source_ingress_mutex -> security_clock_gate; begin_close uses runtime_commit_gate -> admission_gate EXCLUSIVE -> router_lock (brief) -> character_pose_gate -> source_ingress_mutex. An atomic close-intent bit prevents new readers from starving exclusive close. Admissions holding the shared gate can commit only before close linearizes; no post-close successful queue append. Preparsed frames not yet admitted are rejected.
+- **ADR-0011-R4 interaction:** R3 terminal explicit revoke and phase-C rotation reservations remain mandatory, but EXPIRED/SECURITY_CLOCK_FAULT cannot be used as a recovery state by rotate/registration within a poisoned runtime.
+- **Evidence:** RACE-Q/R/S contract-model and SRC-038..041 are design-only. Real runtime and GPU ADR-0001 remain HOLD; require fresh independent review.
+
 ## R3 ADR amendments (OWNER PROPOSED, NOT ACCEPTED)
 
 - **ADR-0004-R3:** A runtime-wide commit_gate is always acquired before character pose_publish_gate for pose commits, source activation and begin_close. Character gate precedes source ingress mutex. Brief router_lock can be acquired under commit_gate only by begin_close; ordinary lookup releases router lock before waiting on commit_gate. begin_close sets QUIESCING and closes work-pin admission under commit_gate, and any pre-close update not yet committed is barred from publishing afterward. Tests RACE-M.
