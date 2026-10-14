@@ -53,6 +53,7 @@ def check():
     abi = (ROOT / "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md").read_text("utf-8")
     fmt = (ROOT / "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md").read_text("utf-8")
     m1 = (ROOT / "docs/M1_SOURCE_BOOTSTRAP_PLAN.md").read_text("utf-8")
+    gpu = (ROOT / "docs/ADR_0001_D3D11_G00_DESIGN_RC1.md").read_text("utf-8")
     for doc in (rc1, readiness, abi, fmt, m1):
         require("G00" in doc and ("HOLD" in doc or "NOT FROZEN" in doc or "pending" in doc.lower()),
                 "Freeze doc incorrectly omits G00/HOLD boundary")
@@ -63,6 +64,10 @@ def check():
     require("G00" in m1 and "M1-D" in m1, "GPU spike must remain staged")
     require("PROFILE B" in rc1.upper() and "PROFILE B" in fmt.upper(), "2D decision drift")
     require("HOST_DEVICE" in rc1 and "ADR-0001" in readiness, "GPU design drift")
+    require("HOST_DEVICE" in gpu and "M1-D" in gpu and "NOT RATIFIED" in gpu,
+            "ADR-0001 design/physical split drift")
+    require("BAD_ASSET / UNSUPPORTED" not in fmt and "No implicit choice" not in fmt,
+            "Format error/profile selection remains ambiguous")
     require("ARS_E_BAD_ASSET" in rc1 and "ARS_E_UNSUPPORTED" in rc1 and
             "ARS_E_OUT_OF_BUDGET" in rc1, "Missing fixed taxonomy")
     require("87" in readiness, "R5 security case count drift")
