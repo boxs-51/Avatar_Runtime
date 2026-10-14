@@ -3,25 +3,25 @@
 > **SOLO OWNER / CURRENT RC1 2026-10-14:** Owner explicitly approved Profile B layer_bindings, 87 G00 design oracles (all runtime G07/G08 HOLD), ABI20 with optional diagnostic #21 deferred, and D3D11 HOST_DEVICE/QUERY_EVENT. Historical pre-approval proposal/21-symbol/actor-distinct language below is not current authority. ARS-SOLO-OWNER-001 allows independently designed RED-first technical-method audit, not a second GitHub actor, fake approval, production certification or automatic merge. G00 design verification and owner merge decision remain separate.
 
 
-**ID:** ARS-M0-CONTRACT-RC1 | **Status:** OWNER PROPOSED / INDEPENDENT RE-AUDIT REQUIRED / NOT FROZEN
+**ID:** ARS-M0-CONTRACT-RC1 | **Status:** OWNER DESIGN YES; SOLO TECHNICAL-METHOD REVIEW IN PROGRESS; NOT FROZEN
 **Addresses:** ARS-G00-PR3-FREEZE-REVIEW-2026-10-14-01 (three P1, one P2)
 **Pinned parents:**
-- Draft PR #1 design `2301aa101b46aba545c76047a0e4f7315a1a3222`
-- Draft PR #2 R5 security `b80997192d14fbc7c40055300931e33727ac8674`
-- Candidate PR #3 is valid ONLY while these parents remain pinned; a changed upstream HEAD requires a new material-drift review and CI.
+- Draft PR #8 Profile B `2301aa101b46aba545c76047a0e4f7315a1a3222`
+- Draft PR #9 composed R5 `b80997192d14fbc7c40055300931e33727ac8674`
+- Draft PR #10 composed RC1 `d90393d7ec8556b7c69bf1e1cd468150f8728d93`; PR #12/#13/#14 are review-only stacked successors with exact separate parent pins. Updated downstream heads require new ancestry and CI evidence, never inherited approval.
 
-**Normative scope:** RC1 is the **single proposed freeze-index**, not a replacement for compiler checked interfaces. The R5 > R4 > R3 > R2 > P0 security rules still apply where explicitly superseding older material, with `docs/P0_OWNER_REMEDIATION_V0.5.md` as most recent source-security proposal. Original `docs/SPECIFICATION_V0.1.md` governs product intent only; its pointer-style C sketch MUST NOT be implemented. Public header `contracts/ars_p0_contract_draft.h` is still incomplete and NOT shipping. ABI and format decisions below are **candidate owner dispositions**, NOT independent approval.
+**Normative scope:** RC1 is the **single proposed freeze-index**, not a replacement for compiler checked interfaces. The R5 > R4 > R3 > R2 > P0 security rules still apply where explicitly superseding older material, with `docs/P0_OWNER_REMEDIATION_V0.5.md` as most recent source-security proposal. `docs/SPECIFICATION_V0.1.md` now directly indexes the 20 exact public signatures, with `include/ars/ars.h` the single declaration authority. The older `contracts/ars_p0_contract_draft.h` remains an explicitly nonshipping historical P0 proposal. Both docs must be reviewed together for ABI and HOST_DEVICE compatibility. ABI and format decisions below are **candidate owner dispositions**, NOT independent approval.
 
 ## 1. Stage gates: G00 design proof is NOT runtime proof
 
-G00 must establish an independently reviewed **complete, internally consistent and compilable design**, with explicit C ABI declarations, format/semantic profile, host/GPU ownership rules, concurrency semantics, failure behavior, schema examples, negative design gates and exact evidence. G00 does **not** require real SDK rendering, linked production C consumer, GPU hardware tests or fuzzed parsers.
+G00 must establish a **complete, internally consistent and compilable design** with RED-first technical-method review under owner-approved ARS-SOLO-OWNER-001 (no actor-distinct reviewer), with explicit C ABI declarations, format/semantic profile, host/GPU ownership rules, concurrency semantics, failure behavior, schema examples, negative design gates and exact evidence. G00 does **not** require real SDK rendering, linked production C consumer, GPU hardware tests or fuzzed parsers.
 
 | Obligation | G00 DESIGN exit (before source) | After G00 implementation proof |
 | --- | --- | --- |
-| ABI | One complete `include/ars/ars.h` declaration-only RC; by-value handles; statuses; all v0.1 symbols, struct/major-minor/layout, allocator/callback, ownership and failure contracts; C11/C++20 header/symbol signature smoke; independent ABI approval | **G01** real library/toolchain build; **G10** real C host/consumer, packaging, ABI behavioral/version tests |
+| ABI | One complete `include/ars/ars.h` declaration-only RC; by-value handles; statuses; all v0.1 symbols, struct/major-minor/layout, allocator/callback, ownership and failure contracts; C11/C++20 header/symbol signature smoke; owner G00 technical-method decision | **G01** real library/toolchain build; **G10** real C host/consumer, packaging, ABI behavioral/version tests |
 | D3D11 | ADR-0001 approved **design** for device ownership, immediate-context serialization, target state restoration, GPU retirement/fence and device-loss; exact GPU-spike negative matrix accepted | **M1-D / rendering gates:** real D3D11 host embed, 100x resize/shutdown, device loss, offscreen readback and resource retirement |
 | Format | Selected native 2D subset + glTF capability profile, constrained ZIP and schema/semantic validator design, error taxonomy, positive/negative fixture expectations, schema parsed/validated with Draft 2020-12 | **G02/G08:** actual ZIP/GLB/PNG parser + hostile corpus/fuzz/budgets on both OS and no early GPU upload |
-| Motion/security | Exact R5 authority/capability/clock/close/provenance contract independently accepted with deterministic model/negative spec | **G07/G08:** real HDL/SRC/RACE, source CSPRNG token ledger, sanitizers and native OS clock behavior |
+| Motion/security | Exact R5 authority/capability/clock/close/provenance contract independently tested by RED-first method with owner approval and deterministic model/negative spec (same-account exception disclosed) | **G07/G08:** real HDL/SRC/RACE, source CSPRNG token ledger, sanitizers and native OS clock behavior |
 
 **Dependency order:** G00 DESIGN -> M1-A real BUILD -> M1-B/C and design-approved M1-D GPU SPIKE -> stage evidence -> G10/Release. Neither a stub CI PASS nor hardware-spike proposal counts as G00 PASS. A nonshipping pre-G00 spike MAY be explicitly source scoped for feasibility, but its result may only inform the design review and never activate production SDK authority.
 
@@ -33,9 +33,9 @@ G00 must establish an independently reviewed **complete, internally consistent a
 - Keep `contracts/ars_p0_contract_draft.h` nonshipping. Naming `_p0` and legacy `ars_runtime_t*` are not aliases for the approved v0.1 surface. See `docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md`.
 - Error taxonomy candidate in section 4 is normative for RC1 review, not numeric reallocation of the existing `ARS_E_*` codes; numeric stability is a separate ABI decision.
 
-## 3. Proposed ADR-0001 D3D11 DESIGN decision (F-04 HOLD pending independent acceptance)
+## 3. Owner-approved ADR-0001 D3D11 DESIGN (F-04 G00 method review HOLD; M1-D hardware HOLD)
 
-**Primary v0.1 advertised path:** `HOST_DEVICE` only, if owner/reviewer accepts reduction from the original dual ownership promise. SDK-owned D3D11 creation (`SDK_DEVICE`) is *explicitly NOT advertised* in baseline v0.1, kept as a later separately negotiated capability. The host creates device, immediate context and render target; SDK borrows them only for a bounded render call. No implicit GPU ownership transfer.
+**Primary v0.1 design path:** `HOST_DEVICE` only, as explicitly accepted by the sole owner. SDK-owned D3D11 creation (`SDK_DEVICE`) is *explicitly NOT advertised* in baseline v0.1, kept as a later separately negotiated capability. The host creates device, immediate context and render target; SDK borrows them only for a bounded render call. No implicit GPU ownership transfer.
 
 Required design invariants:
 1. Device identity verified; immediate context owned/serialized by the host's graphics R thread, or by an explicit single-owner callback policy. SDK MUST NOT drive the borrowed immediate context concurrently.
@@ -46,7 +46,7 @@ Required design invariants:
 
 **ADR-0001 G00 DESIGN proof:** approved state/lifetime diagrams, borrower obligations, failure/interleaving matrix and a reproducible planned hardware experiment. **M1-D physical proof:** Windows D3D11 host integration, state diff/readback, 100x resize/close, device loss and native GPU resource retirement after source implementation. These are distinct decisions.
 
-**Detailed proposed GPU decision:** `docs/ADR_0001_D3D11_G00_DESIGN_RC1.md` provides the HOST_DEVICE ownership matrix and explicit G00 design versus M1-D physical proof. It is NOT ratified.
+**Detailed proposed GPU decision:** `docs/ADR_0001_D3D11_G00_DESIGN_RC1.md` provides the HOST_DEVICE ownership matrix and explicit G00 design versus M1-D physical proof. Owner approved the HOST_DEVICE / QUERY_EVENT design; G00 technical-method approval remains HOLD and actual M1-D GPU proof is absent.
 
 ## 4. Proposed format, semantic validator and error taxonomy (F-05/F-07/F-09 HOLD pending independent acceptance)
 
@@ -101,4 +101,4 @@ F-01 security R5 still requires an independent DESIGN verdict at the current PR 
 
 ## Approved owner design choices and independent gates (2026-10-14)
 
-Sole project owner explicitly selected native Profile B mandatory one-owner `representations["2d"].layer_bindings` (PR8), staged Security R5/PR5 G00 design oracles with 87 actual tests deferred to G07/G08 (PR9), 20 public ABI declarations with optional diagnostics removed and HOST_DEVICE-only D3D11 QUERY_EVENT retirement (this PR10). This is **owner design authorization**, not G00 independent PASS or merge authorization. Source ancestry is PR8 `2301aa101b46aba545c76047a0e4f7315a1a3222` → PR9 `b80997192d14fbc7c40055300931e33727ac8674` → composed RC1; all 9 blob SHA checks must pass on its exact synthetic merge. Actual SDK, hostile parser, GPU and runtime security remain NOT IMPLEMENTED/HOLD.
+Sole project owner explicitly selected native Profile B mandatory one-owner `representations["2d"].layer_bindings` (PR8), staged Security R5/PR5 G00 design oracles with 87 actual tests deferred to G07/G08 (PR9), 20 public ABI declarations with optional diagnostics removed and HOST_DEVICE-only D3D11 QUERY_EVENT retirement (this PR10). This is **owner design authorization**, not G00 independent PASS or merge authorization. Source ancestry is PR8 `2301aa101b46aba545c76047a0e4f7315a1a3222` → PR9 `b80997192d14fbc7c40055300931e33727ac8674` → composed RC1; all 9 predecessor plus 8 canonical G00 blob SHA checks must pass on its exact synthetic merge. Actual SDK, hostile parser, GPU and runtime security remain NOT IMPLEMENTED/HOLD.

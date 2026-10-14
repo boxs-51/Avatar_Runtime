@@ -16,7 +16,7 @@
     "docs/P0_OWNER_REMEDIATION_V0.5.md": "37837d4c7ebf5c7f7f5bd9094eea31e4da3b98ca",
     "docs/ADR_P0_SECURITY_R2.md": "493a9bf100f308c1751a0e62ccfb0fb9a4205244",
     "docs/ACCEPTANCE_GATES_V0.1.md": "b912d8fc60a1e334a261def623c59d58b0ac7d56",
-    "docs/SPECIFICATION_V0.1.md": "5a75aa36f692e3ee4c6b0739852423609b78beb8"
+    "docs/SPECIFICATION_V0.1.md": "f0559b8c4435ca84fdd722198464e5932767cf5a"
   },
   "stage_status": {
     "G00": "HOLD_DESIGN",
@@ -44,8 +44,8 @@
     "include/ars/ars.h": "1c61da4a48c9faf2001fc98ad4c084413781e61c",
     "docs/ADR_0001_D3D11_G00_DESIGN_RC1.md": "88c93d5c949b0eb2d205162bf5951f09d4ef0ca2",
     "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md": "5abf89c11f12f5b191534acfa7cb2762408e3bd0",
-    "docs/V0_1_CANONICAL_CONTRACT_RC1.md": "e5701279b468614b98c5fc1b288a0494496de2a1",
-    "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md": "a9b2e190db367dd5fdba547c9689c8fd0f92aa85",
+    "docs/V0_1_CANONICAL_CONTRACT_RC1.md": "612a0a3a129537a35ed96e5df80cdba7a32293e6",
+    "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md": "2b6730a85158f80b2a4c8ff05a16fcf9ae5e3708",
     "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md": "d7f93baee7a59e1bf8764452d98c93915769eb9f",
     "tests/contracts/p0_r5_state_machine_model.cpp": "fb2802db2b1bf8ead6ad23341bf2026ed6fdd4be",
     "tests/abi/design_smoke.c": "91957916a06274929ae068030f48dd491ae30e49"

@@ -68,7 +68,7 @@ Semantic parameter: ID, type (float/bool/vec2/vec3/quaternion/trigger), optional
 
 ### 3.1 Visual layer
 
-**M0 Profile B layer-binding candidate (requires owner and independent G00 ratification):** `VisualLayer = {id, parent?, mode_scope, z_index, visible, opacity, blend_mode?}`. The `visual_layers[].id` and native `rig.parts[].id` are **different namespaces**, even if sample IDs happen to match. Native 2D representation MUST explicitly carry `representations["2d"].layer_bindings[] = {layer_id, part_ids:[...]}`: exactly one binding per drawable 2D visual layer, at least one existing part in each binding, and every rig part assigned to exactly one drawable layer. Reject duplicate, missing, unknown, or multiply owned bindings with `ARS_E_BAD_ASSET`; never silently assign by matching string IDs. A parent layer may be drawable and/or group descendant layers; parent edges form an acyclic graph, never imply vertex/part transforms. All layers declared `mode_scope="2d"` are drawable in this baseline. The visibility of a child is its visibility AND the visibility of every ancestor; effective opacity multiplies all ancestor opacities and its own (finite numbers in [0,1]). Stable 2D drawing order is ascending (layer z_index, layer declaration index, part z_index, part declaration index); transparent composition uses normal premultiplied alpha. A child may draw before its parent if z ordering requests this; ancestry only gates visibility and opacity, it does not reorder. No hidden part assignment, no implicit 3D mapping.
+**M0 Profile B owner-approved design (G00 technical-method review under ARS-SOLO-OWNER-001; not a production capability):** `VisualLayer = {id, parent?, mode_scope, z_index, visible, opacity, blend_mode?}`. The `visual_layers[].id` and native `rig.parts[].id` are **different namespaces**, even if sample IDs happen to match. Native 2D representation MUST explicitly carry `representations["2d"].layer_bindings[] = {layer_id, part_ids:[...]}`: exactly one binding per drawable 2D visual layer, at least one existing part in each binding, and every rig part assigned to exactly one drawable layer. Reject duplicate, missing, unknown, or multiply owned bindings with `ARS_E_BAD_ASSET`; never silently assign by matching string IDs. A parent layer may be drawable and/or group descendant layers; parent edges form an acyclic graph, never imply vertex/part transforms. All layers declared `mode_scope="2d"` are drawable in this baseline. The visibility of a child is its visibility AND the visibility of every ancestor; effective opacity multiplies all ancestor opacities and its own (finite numbers in [0,1]). Stable 2D drawing order is ascending (layer z_index, layer declaration index, part z_index, part declaration index); transparent composition uses normal premultiplied alpha. A child may draw before its parent if z ordering requests this; ancestry only gates visibility and opacity, it does not reorder. No hidden part assignment, no implicit 3D mapping.
 
 **Deliberately unsupported in v0.1 Profile B:** relative part-transform hierarchies, weighted mesh deformation, texture masks/clipping and `add`/`multiply` blend modes. The schema may recognize `mask` or non-2D `mode_scope`, but if semantically well-formed they produce `ARS_E_UNSUPPORTED` (after `ARS_E_BAD_ASSET` semantic checks). `mode_scope="both"` and `mode_scope="3d"` require a separately reviewed glTF node/morph-to-layer binding contract before advertising 3D visual-layer control. Dual-mode assets may render 3D through the GLB renderer but layer hide/opacity is defined only in 2D until that contract exists. Disabled features must never silently no-op.
 
@@ -88,35 +88,30 @@ Package validator MUST reject: absolute/UNC/drive/device paths, traversal, norma
 
 ## 5. Render API and ABI contract
 
-Production header belongs under include/ars/ars.h. Export C calling convention with platform symbol visibility. Public structs have struct_size + version; ABI major mismatch MUST fail, minor extension is negotiated. Opaque generation-checked handles; explicit create/destroy; no exceptions, STL, compiler-dependent types, callback under mutex, cross-boundary free, or hidden global window. Application-provided callbacks/allocators must have documented lifetime and thread affinity.
+Production v0.1 **design authority** is the declaration-only header `include/ars/ars.h` (owner-approved ABI20), not an older pointer-based sketch. The exported C ABI uses `ars_status` as fixed-width `int32_t` (never an enum-width return), `ARS_CALL` with explicit Windows/non-Windows linkage, and typed by-value `ars_handle_id` fields `runtime_uid`, `slot` and `generation`. IDs are process-local, generation-checked and cannot be dereferenced as pointers. `ARS_ABI_MAJOR`/`ARS_ABI_MINOR` encode `abi_version`; extensible records start with `struct_size`, and incompatible major versions, unrecognized reserved bits and undersized required prefixes fail closed. Higher minor versions must not accidentally enable unsupported features.
 
-Proposed C signature sketch (design only, types to be formally defined in M0 gate):
+### 5.1 Canonical v0.1 ABI20 declaration index (G00 only)
 
-~~~c
-typedef struct ars_runtime_t ars_runtime_t;
-typedef struct ars_model_t ars_model_t;
-typedef struct ars_character_t ars_character_t;
-typedef enum {
-  ARS_OK=0, ARS_E_INVALID_ARGUMENT, ARS_E_UNSUPPORTED,
-  ARS_E_BAD_ASSET, ARS_E_OUT_OF_BUDGET, ARS_E_WRONG_THREAD,
-  ARS_E_DEVICE_LOST, ARS_E_STALE_HANDLE, ARS_E_BUSY, ARS_E_INTERNAL
-} ars_result_t;
-uint32_t ars_get_abi_version(void);
-ars_result_t ars_runtime_create(const ars_runtime_desc_t*, ars_runtime_t**);
-ars_result_t ars_get_capabilities(ars_runtime_t*, ars_caps_t*);
-ars_result_t ars_model_load(ars_runtime_t*, const ars_asset_source_t*, ars_model_t**);
-ars_result_t ars_character_create(ars_runtime_t*, ars_model_t*, ars_character_t**);
-ars_result_t ars_character_set_mode(ars_character_t*, ars_mode_t);
-ars_result_t ars_character_set_visual_layer(ars_character_t*, const ars_layer_change_t*);
-ars_result_t ars_motion_submit(ars_character_t*, const ars_motion_frame_t*);
-ars_result_t ars_runtime_update(ars_runtime_t*, uint64_t now_monotonic_ns);
-ars_result_t ars_runtime_render(ars_runtime_t*, const ars_render_target_t*);
-ars_result_t ars_runtime_destroy(ars_runtime_t*);
-~~~
+The following **exact 20 symbols** are the design contract. Their function signatures, status values and argument types are owned only by `include/ars/ars.h`; the older `contracts/ars_p0_contract_draft.h` is a nonshipping historical proposal and must not be installed or aliased.
 
-The C sketch is not an implemented header and MUST NOT be represented as shipping.
+<!-- G00_CANONICAL_ABI20_START -->
+- Version and capabilities: `ars_get_abi_version`, `ars_runtime_get_capabilities`
+- Runtime and GPU close: `ars_runtime_create`, `ars_runtime_update`, `ars_runtime_render`, `ars_runtime_begin_close`, `ars_runtime_drain_gpu`, `ars_runtime_query_close`, `ars_runtime_finish_close`
+- Model and character: `ars_model_load`, `ars_model_release`, `ars_character_create`, `ars_character_destroy`, `ars_character_set_mode`, `ars_character_set_visual_layer`
+- Trusted source and motion: `ars_source_register`, `ars_source_admin_release`, `ars_source_rotate`, `ars_source_revoke`, `ars_motion_submit`
+<!-- G00_CANONICAL_ABI20_END -->
 
-Host/device ownership modes: **HOST_DEVICE** takes a borrowed D3D11 device and negotiated immediate-context access; **SDK_DEVICE** creates a private device. Explicitly validate device identity, render target dimensions/format, sample count, resource lifetime, color space, and alpha mode. v0.1 offscreen output uses premultiplied alpha with declared sRGB/linear conversion. State restoration in host mode is required: ARS restores modified D3D11 state, or host wraps ARS with a documented isolated pass verified by tests. No unguarded GPU ownership transfer or cross-device sharing. GPU resources are retired on GPU-owner thread behind fence/deferred safe point; device reset invalidates caches, not CPU model assets.
+An additional diagnostic function is **deferred**, not part of ABI20. Output handles and source capabilities are cleared on failure; caller-owned data and buffers must remain accessible for the synchronous call and are never retained unpinned. Output `struct_size` bounds writable fields. Registered source capabilities grant **source authority** only; `ARS_CAP_HOST_SCOPED_MOTION_INGRESS` means trusted in-process host registration, **not remote authentication**. A trusted adapter authenticates remote traffic before it can invoke privileged source registration. Statuses including `ARS_E_UNSUPPORTED` and `ARS_E_BAD_ASSET` are stable numeric values in the canonical header. Callbacks/allocators are host-owned, paired and lifetime-bound, never called under source/pose/render locks; no cross-boundary C++ exceptions, implicit buffer retention or cross-boundary free.
+
+### 5.2 D3D11 ownership and GPU retirement
+
+The v0.1 Windows D3D11 baseline is **HOST_DEVICE-only** and advertises `ARS_CAP_D3D11_HOST_DEVICE` only after genuine implementation. **SDK_DEVICE is deferred**: it is not advertised, initialized or implied by the current public render target. The host provides a borrowed device, serialized immediate context and render target, and keeps their COM lifetime valid through GPU completion. SDK-owned COM references and render snapshot pins stay retained until the corresponding GPU completion witness and are released on the graphics R thread. Validate device identity/generation, target bounds/format/sample count, sRGB/linear space and premultiplied alpha before mutating host state. Restore every touched IA, shader, RS and OM state after an SDK pass, including recoverable failures.
+
+The owner-selected completion design uses **D3D11_QUERY_EVENT**, `End(event_query)` after the final SDK submission, R-thread `GetData` with initial `DONOTFLUSH` and bounded progress/explicit flush if necessary. Incomplete queries return BUSY and must not free in-flight allocations; failed query, device removal and abandoned host target require fail-closed DEVICE_LOST/quarantine rather than synthetic completion. Resize/reset invalidates GPU cache generations, not immutable CPU assets. A query does not prove host presentation erasure. The exact experiment matrix and resource custody are specified by `docs/ADR_0001_D3D11_G00_DESIGN_RC1.md`. Windows native GPU evidence remains **M1-D HOLD**, not a G00 design prerequisite.
+
+### 5.3 Evidence and approval boundary
+
+**G00** is a source/architecture DESIGN gate: ABI20 declaration compilation, Profile B format and cross-file validation fixtures, R5/87-case design oracles, D3D11 ADR and exact ancestry/provenance. These checks do not implement a runtime; the G00 stub is NONFUNCTIONAL and advertises no completed capability. **G01** requires a real built SDK and behavioral ABI checks; **G10** requires a functional embedded C consumer; real R5 source/security 87-case checks are G07/G08, and GPU retirement is M1-D. Under the sole-account **ARS-SOLO-OWNER-001** exception a RED-first technical-method audit is not an actor-distinct GitHub APPROVED review. **NO MERGE** without separate owner authorization and compatible GitHub branch rules.
 
 Backend interface must express caps: max texture/bone/RT format, render-to-texture, skeleton/morph support, stencil/mask, timer query, GPU memory estimates, device-loss handling. D3D11 first; bgfx adoption depends on an interop spike (backend swap is design goal, not achieved). Quality tiers LOW/BALANCED/HIGH/CUSTOM use LOD, texture caps, update frequencies, culling, batching and optional effects; absent features trigger bounded fallback or ARS_E_UNSUPPORTED. Changes use hysteresis; never degrade silently without telemetry.
 

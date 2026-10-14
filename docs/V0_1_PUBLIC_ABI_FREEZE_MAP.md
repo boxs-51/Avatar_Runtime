@@ -50,7 +50,7 @@ These are **completion requirements**, not permission to publish ABI signatures 
 
 ## Audit child complete declaration candidate (NOT frozen)
 
-Draft PR #4 adds `include/ars/ars.h` with all 20 owner-selected v0.1
+The owner-approved RC1 composed stack adds `include/ars/ars.h` with all 20 owner-selected v0.1
 symbols: lifecycle/close, model load/release, character create/destroy/mode/
 layers, source registration/rotation/revoke, motion submit/update, capabilities,
 HOST_DEVICE render and bounded non-sensitive status and close-state reporting (diagnostic API deferred). `tests/abi/design_stub.c`
@@ -58,7 +58,7 @@ exports NONFUNCTIONAL UNSUPPORTED placeholders; `design_smoke.c/.cpp`
 signature and layout smoke assert 16-byte typed IDs and 128-bit ingress caps.
 Neither actual source behavior nor GPU/effect security is implemented.
 
-ABI owner must ratify the deferred diagnostic symbol (ars_get_last_error_info) and the exact
+The owner has already deferred optional diagnostic symbol (ars_get_last_error_info). Any future addition requires separate versioned approval; the exact
 allocator/callback, borrowed COM target lifetime, struct_size minor-version
 behavior and stable mode/capability enums. All function declarations exist for
 review, but **G00 DESIGN PASS / ABI FREEZE remain HOLD** until review and CI.
@@ -71,16 +71,16 @@ review, but **G00 DESIGN PASS / ABI FREEZE remain HOLD** until review and CI.
 
 **G10 / ABI_RUNTIME_CONSUMER_VALIDATED** requires an actual embedded C consumer linked to the implementation, runtime create/close/mode/render/asset and size/version/error behavior, packaging and compatibility. G10 is not a G00 prerequisite.
 
-**No circular proof:** Remove any G00 condition that demands the actual real linked SDK. F-02/F-08 remain HOLD because the complete declaration-only surface, ownership details and ABI reviewer approval are not yet present; the 14-symbol P0 stub is partial.
+**No circular proof:** Remove any G00 condition that demands the actual real linked SDK. F-02/F-08 remain G00 FINAL HOLD pending exact-head technical-method design decision, while the complete ABI20 declaration surface and compiler/link stub smoke exist. The legacy 14-symbol P0 stub does not establish runtime behavior.
 
 ## 4. Required proof before \`F-02/F-08\` may PASS
 
 - One canonical \`include/ars/ars.h\` with no conflicting legacy pointer handle sketch.
 - Compile plain C11 and C++20 consumers on MSVC/GCC/Clang and link ALL functions, including new model/render/character/capabilities operations.
 - Test major/minor negotiation, old/short/long \`struct_size\`, wrong types, C layout, zero-on-failure, ABI caller/callee release and concurrency.
-- Independent ABI reviewer signs a pinned candidate HEAD and publishes divergence mapping from the two original API sketches.
+- Under ARS-SOLO-OWNER-001, retain a pinned exact-HEAD independently designed RED-first technical-method review, explicitly record no actor-distinct GitHub reviewer, and obtain a separate owner G00 acceptance and later MERGE YES.
 
-**Current disposition: HOLD.** The existing 14-symbol stub CI proves only limited ABI declaration/linkage, never security/runtime behavior.
+**Current disposition: G00 FINAL HOLD, ABI20 COMPILER/DESIGN PASS only.** The complete twenty-symbol NONFUNCTIONAL stub CI proves signature/linkage and layout, never production security/runtime behavior.
 
 ## Owner-approved v0.1 ABI20 decision (2026-10-14; independent G00 review HOLD)
 

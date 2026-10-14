@@ -5,7 +5,7 @@
 
 **ID:** ARS-M0-G00-FREEZE-RC1  
 **Security parent:** Draft PR #2 @ b80997192d14fbc7c40055300931e33727ac8674
-**Current decision:** \`HOLD_G00_CONTRACT_FREEZE\`. Do not merge this prep PR or the parent PRs.
+**Current decision:** `HOLD_G00_CONTRACT_FREEZE` pending new exact-HEAD G00 technical method and owner acceptance. Do not merge this prep PR or the parent PRs.
 **Read with:** docs/V0_1_CANONICAL_CONTRACT_RC1.md (normative candidate) and docs/M1_SOURCE_BOOTSTRAP_PLAN.md. RC0 is historical/superseded.
 
 **GPU design candidate:** `docs/ADR_0001_D3D11_G00_DESIGN_RC1.md` defines HOST_DEVICE-only v0.1 proposal and separates G00 decision from later M1-D hardware proof. No reviewer approval or actual GPU evidence yet.
@@ -74,3 +74,7 @@
 - A **prep-only, nonshipping** CMake + CTest harness for original C/C++ ABI smoke and R5 contract-model, with mandatory opt-in wording. No production \`ars/ars.h\` or engine code is defined by this preparation.
 
 **Owner status:** READY FOR FREEZE REVIEW, **NOT FROZEN**; external independent design review still required, and no merge is authorized.
+
+## G00 P2-04 canonical-spec reconciliation (2026-10-14)
+
+Owner ABI20 and HOST_DEVICE/QUERY_EVENT design are written directly in specification section 5 and indexed against the exact `include/ars/ars.h` symbol set. Pointer-based `ars_runtime_t*`, legacy `ars_runtime_destroy` and SDK_DEVICE baseline advertisements have been removed from the active specification. The old P0 header remains historical, not a second implementation authority. Audit successor PR14 enforces exact twenty symbol names in CI; all 9 predecessor and 8 reviewed G00 blobs are re-pinned when normative docs change. **This reconciles documentation only; G00 technical-method FINAL, governance PR11 adoption, GitHub protection and owner merge approval remain distinct; G01/G02/G07/G08/M1-D remain HOLD.**
