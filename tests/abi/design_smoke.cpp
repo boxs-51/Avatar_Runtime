@@ -1,6 +1,7 @@
 /* G00 C++20 compatibility layout smoke, no runtime SDK implementation. */
 #include "ars/ars.h"
 #include <cstddef>
+#include <cstdint>
 #include <type_traits>
 static_assert(sizeof(ars_handle_id)==16);
 static_assert(sizeof(ars_runtime_h)==16);
