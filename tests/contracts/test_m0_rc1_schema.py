@@ -123,7 +123,9 @@ def check_semantics(manifest: dict, rig: dict):
             require(len(deform["vertex_deltas_px"]) == v)
     require(len(part_ids) > 0)
 
-def validate_design_fixture(manifest: dict, rig: dict, manifest_schema, rig_schema):
+def validate_design_fixture(manifest: dict, rig: dict, manifest_schema, rig_schema, atlas_dimensions=None):
+    # RED-first: dimensions are a trusted validation input; intentionally not
+    # enforced until source semantics are fixed on this audit branch.
     # Structural validation precedes recognized-but-disabled features.
     if list(Draft202012Validator(manifest_schema).iter_errors(manifest)):
         raise AssetError("ARS_E_BAD_ASSET")
@@ -197,6 +199,44 @@ class RC1SchemaContracts(unittest.TestCase):
             return result
         with self.assertRaises(AssetError):
             json.loads('{"schema_version":"0.1.0","schema_version":"0.1.0"}',object_pairs_hook=unique_pairs)
+
+
+    # F01: corrupted semantic cannot be masked by a disabled capability.
+    def test_red_f01_bad_asset_precedes_recognized_unsupported(self):
+        m = copy.deepcopy(self.manifest)
+        m["visual_layers"][0]["mask"] = "base.body"
+        m["rig_semantics"][0]["default"] = 99
+        self.verify(m, expected="ARS_E_BAD_ASSET")
+
+    # F03: JSON numeric exponent overflow is an invalid asset, not an infinity.
+    def test_red_f03_json_exponent_overflow(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "over.json"
+            path.write_text('{"value":1e400}', encoding="utf-8")
+            with self.assertRaises(AssetError) as ctx:
+                strict_json(path)
+            self.assertEqual(ctx.exception.status, "ARS_E_BAD_ASSET")
+
+    # F03: every mesh numeric field must reject non-finite values.
+    def test_red_f03_uv_infinity(self):
+        rig = copy.deepcopy(self.rig)
+        rig["parts"][0]["uv"][0][0] = float("inf")
+        self.verify(rig=rig, expected="ARS_E_BAD_ASSET")
+
+    # F02: validated PNG actual pixels, not rig canvas, bound atlas rectangles.
+    def test_red_f02_atlas_pixels_not_canvas(self):
+        with self.assertRaises(AssetError) as ctx:
+            validate_design_fixture(copy.deepcopy(self.manifest),
+                                    copy.deepcopy(self.rig),
+                                    self.manifest_schema, self.rig_schema,
+                                    atlas_dimensions=(300, 300))
+        self.assertEqual(ctx.exception.status, "ARS_E_BAD_ASSET")
+
+    # F08: M0/G00 security DESIGN cannot demand a production registry/mixer.
+    def test_red_f08_g00_p0_c_no_production_implementation_deadlock(self):
+        gates = (ROOT / "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md").read_text(encoding="utf-8")
+        self.assertNotIn("before production M1, minimal registry/mixer implementation passes", gates)
 
 if __name__ == "__main__":
     unittest.main()
