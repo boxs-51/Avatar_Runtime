@@ -84,6 +84,7 @@ Each report includes test_id, PR, HEAD, build/compiler flags, OS, CPU/GPU where 
 | SRC-039 | ingress holds shared admission gate while begin_close requests exclusive gate | earlier ingress append can finish BEFORE close linearization; no append/OK after QUIESCING |
 | SRC-040 | ingress samples security clock at 180, publisher next samples 170 | global security_highwater detects backwards time and permanently rejects new authorizations |
 | SRC-041 | sustained ingress flood while begin_close sets writer intent | close cannot be starved; all post-close queue admissions denied |
+| SRC-042 | pending phase-B rotation continues after lease expiry | phase C samples clock, marks terminal EXPIRED, denies activation and refuses subsequent rotate |
 
 ## 4. Required controlled concurrency traces
 
@@ -142,6 +143,14 @@ I: old cap sequence=0 or UINT64_MAX again => denied
 I: new cap sequence=1 => valid
 ASSERT: no ABA of cap, no replay across generations
 ~~~
+
+### RACE-U: source lease expires during rotate phase B
+
+    H: rotate phase A reserves ticket at security_now=150, old cap revoked
+    Phase B: CSPRNG mint pauses while lease expires at security_now=200
+    H: phase C reacquires commit->pose->source->security_clock; sample now>=expiry
+    ASSERT: source enters terminal EXPIRED; no ACTIVE_NEW; minted cap discarded
+    RETRY: old admin may not rotate EXPIRED source; only new trusted registration
 
 ### RACE-Q: expiry, rollback and no source resurrection
 
@@ -279,7 +288,7 @@ Use deterministic scheduler barriers/latches, not sleeps, and retain exact inter
 
 **G00-P0-A:** reviewed handle and registry design, C ABI type sizes, threading rules, close management exceptions, source capability and publish-gate linearization are unambiguous.  
 **G00-P0-B:** C11/C++20 compile plus linked ABI stub smoke tests on the header (do not mistake compile for security PASS).  
-**G00-P0-C:** before production M1, minimal registry/mixer implementation passes HDL-001..019, SRC-001..041 and RACE-A..T on a declared CI matrix or explicit phased evidence approved by independent reviewer.  
+**G00-P0-C:** before production M1, minimal registry/mixer implementation passes HDL-001..019, SRC-001..042 and RACE-A..U on a declared CI matrix or explicit phased evidence approved by independent reviewer.  
 **G00-P0-D:** architecture ADR-0001 device owner and ADR-0004 threading must lock GPU retirement and thread-safe revoke behavior; demonstrate exact source scopes/owners.  
 **G00-P0-E:** no source/ABI/schema changes are merged until new exact HEAD independent re-audit, with all P0 addressed and tracked P1 still explicitly gated.
 
