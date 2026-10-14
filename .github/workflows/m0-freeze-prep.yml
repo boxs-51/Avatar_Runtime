@@ -10,6 +10,8 @@ on:
       - "docs/V0_1_CANONICAL_CONTRACT_RC0.md"
       - "docs/M0_V0_1_FREEZE_READINESS.md"
       - "docs/M1_SOURCE_BOOTSTRAP_PLAN.md"
+      - "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md"
+      - "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md"
       - ".github/workflows/m0-freeze-prep.yml"
   pull_request:
     paths:
@@ -19,6 +21,8 @@ on:
       - "docs/V0_1_CANONICAL_CONTRACT_RC0.md"
       - "docs/M0_V0_1_FREEZE_READINESS.md"
       - "docs/M1_SOURCE_BOOTSTRAP_PLAN.md"
+      - "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md"
+      - "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md"
       - ".github/workflows/m0-freeze-prep.yml"
 
 permissions:
