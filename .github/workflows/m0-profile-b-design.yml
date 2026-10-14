@@ -1,0 +1,31 @@
+name: M0 Profile B design binding contract (PREP ONLY)
+on:
+  push:
+    paths:
+      - "schemas/**"
+      - "examples/**"
+      - "tests/contracts/test_m0_profile_b_contract.py"
+      - ".github/workflows/m0-profile-b-design.yml"
+  pull_request:
+    paths:
+      - "schemas/**"
+      - "examples/**"
+      - "tests/contracts/test_m0_profile_b_contract.py"
+      - ".github/workflows/m0-profile-b-design.yml"
+jobs:
+  profile-b-design:
+    name: "${{ matrix.os }} Profile B contract only"
+    runs-on: "${{ matrix.os }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dependencies
+        run: python -m pip install jsonschema==4.23.0
+      - name: Schema + cross-file negative fixtures (not production parser)
+        run: python -m unittest discover -s tests/contracts -p test_m0_profile_b_contract.py -v
