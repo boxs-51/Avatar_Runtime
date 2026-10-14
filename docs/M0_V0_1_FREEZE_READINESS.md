@@ -5,6 +5,17 @@
 **Current decision:** \`HOLD_G00_CONTRACT_FREEZE\`. Do not merge this prep PR or the parent PRs.
 **Read with:** docs/V0_1_CANONICAL_CONTRACT_RC0.md and docs/M1_SOURCE_BOOTSTRAP_PLAN.md.
 
+## RC1 audit remediation register (owner proposals, no independent approval)
+
+| Audit finding | Remediation | Current disposition |
+| --- | --- | --- |
+| G00-PR3-01 P1 | G00 ABI declaration-only design and signature smoke; G01 actual library, G10 real C consumer | DESIGN_PROPOSED; full ABI still HOLD |
+| G00-PR3-02 P1 | G00 ADR-0001 HOST_DEVICE design + experiment manifest; M1-D physical GPU validation later | DESIGN_PROPOSED; ADR owner/reviewer HOLD |
+| G00-PR3-03 P1 | Select 2D PROFILE B, VRM1 disabled, semantic validator phases and exact BAD_ASSET/UNSUPPORTED/OUT_OF_BUDGET taxonomy; add executable schema/semantic design checks | DESIGN_PROPOSED; format reviewer HOLD |
+| G00-PR3-04 P2 | Pin parent SHA and nine schema/ABI/security blobs; CI checks schema examples, negative mutations and cross-document precedence | CI IMPLEMENTATION PENDING until terminal run |
+
+**Current canonical candidate:** `docs/V0_1_CANONICAL_CONTRACT_RC1.md`; previous RC0 is historical. Parent pin is `docs/M0_CONTRACT_PARENT_PINS.json`. F-01..F-10 remain HOLD until independent approvals; F-11 remains PREPARED. M0 G00 is a DESIGN gate, not a demand for native D3D11 hardware or runtime parser validation.
+
 ## Exact decisions still required
 
 | ID | Required artifact / question | Available evidence | Disposition | Decision owner |
