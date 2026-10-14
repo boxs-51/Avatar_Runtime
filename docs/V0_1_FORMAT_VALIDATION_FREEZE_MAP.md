@@ -23,14 +23,14 @@
 | FMT-005 | UV array count != vertex count | BAD_ASSET |
 | FMT-006 | mesh triangle index >= number of vertices, or arithmetic overflow | BAD_ASSET |
 | FMT-007 | vertex-delta deformation array length mismatches mesh vertices | BAD_ASSET |
-| FMT-008 | \`vrm1\` representation/required extension when runtime does not advertise importer | BAD_ASSET / UNSUPPORTED as formally chosen; must NOT accept as supported |
+| FMT-008 | well-formed `vrm1` representation with disabled VRM importer | ARS_E_UNSUPPORTED; never silently import using GLB fallback |
 | FMT-009 | visual layer parent cycle or mask cycle | BAD_ASSET |
 | FMT-010 | rig mapping refers to unknown semantic channel/part | BAD_ASSET |
 | FMT-011 | duplicate ZIP entries under case-folding/Unicode normalization alias | BAD_ASSET |
 | FMT-012 | absolute/UNC/device/traversal asset path or symlink | BAD_ASSET before extraction |
 | FMT-013 | embedded GLB external http/data/file URI or oversized buffer | BAD_ASSET, zero network accesses |
 | FMT-014 | mode default 2D but representation absent, or 3D unavailable | BAD_ASSET |
-| FMT-015 | malformed JSON schema version, unknown required capability | BAD_ASSET or formal UNSUPPORTED result |
+| FMT-015 | malformed schema version, unknown format ID, or recognized-but-disabled required feature | malformed/unknown: ARS_E_BAD_ASSET; recognized disabled: ARS_E_UNSUPPORTED |
 | FMT-016 | malformed PNG dimensions/GLB accessor offsets causing integer overflow | BAD_ASSET with bounded allocations |
 | FMT-017 | duplicate parameter values in different files with conflicting type/unit | BAD_ASSET |
 | FMT-018 | safe reference \`examples/character_dual_mode.json\` + \`character2d.ars2d.json\` with available referenced assets | accepted only after complete cross-file validation and runtime caps |
@@ -39,11 +39,7 @@
 
 ## 3. Two design choices that must be explicitly ratified
 
-**F-05 native 2D design:** baseline spec calls for relative part transforms, weighted deform mesh, masks and hierarchy, while the current native-2D schema centers on vertices/UV/triangles and vertex deltas. Either:
-- **A — extend schema/validator** for transforms/weights/masks/hierarchy with explicit finite bounds; OR
-- **B — narrow v0.1 advertised capabilities** to vertex-delta deformation only and postpone advanced 2D features.
-
-Do **not** advertise weighted 2D/masking if neither schema nor renderer enforces it. Proposed preference for M0: **A if reference fixtures+validator can be delivered at G00; otherwise B explicitly with reduced v0.1 feature flags**. No implicit choice.
+**F-05 proposed native 2D disposition: PROFILE B selected for RC1 review.** Atlas/pivot/vertices/UV/triangles and per-parameter vertex deltas only. Weighted meshes, part-transform hierarchy and masks are **disabled** and must not be advertised. Option A (extended schema/renderer) is deferred. This is an explicit Owner selection **pending independent format reviewer ratification**, not a shipping capability declaration. Under the current schemas, known `visual_layers.mask` is denied as ARS_E_UNSUPPORTED; arbitrary unknown mesh keys are malformed and return ARS_E_BAD_ASSET until a typed extension descriptor is ratified.
 
 **Format-capability registration:** GLB 2.0 subset is baseline; VRM 1.0 importer is deferred and must be gated by negotiated capabilities. The manifest \`default_mode\` (2d/3d) is not the runtime AUTO selection mode. Mandatory unsupported representation must be rejected, not silently accepted.
 
