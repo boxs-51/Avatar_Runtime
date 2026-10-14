@@ -2,6 +2,8 @@
 
 **Stage:** M0 design-only; proposed, not G00-approved.
 **Audit input:** ARS-P0-PR2-AUDIT-2026-10-13-01, candidate 1891b711df8f474ff34241382b0e0268c07bb81d.
+> **R5 SUPERSESSION:** docs/P0_OWNER_REMEDIATION_V0.5.md supersedes earlier close-liveness, expiry dirty-provenance and counter-exhaustion wording.
+
 > **R4 SUPERSESSION:** docs/P0_OWNER_REMEDIATION_V0.4.md governs expiry and admission-close and has highest precedence over R3/R2/v0.1.
 
 > **R3 supersession (2026-10-14):** docs/P0_OWNER_REMEDIATION_V0.3.md is the authoritative amendment for explicit revoke vs pending rotate, rotation reservation epochs, dual-clock TTL sample semantics, runtime-wide begin_close/publish commit_gate, and lock hierarchy. R2 continues to govern transitive provenance, atomic ingress sequence, close-management and ABI rules only where compatible with R3. No design or implementation approval is claimed.
