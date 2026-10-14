@@ -33,5 +33,11 @@
     "exact_parent_head": "d90393d7ec8556b7c69bf1e1cd468150f8728d93",
     "pr_number": 12,
     "scope": "design mask graph and exact predecessor regression; no G00 approval"
+  },
+  "audit_successor": {
+    "head_branch": "audit/g00-final-p1-manifest-oracles-20261014",
+    "exact_parent_head": "6c790b239d2af47f534ab78d4aaa386cc86b63db",
+    "pr_number": 13,
+    "scope": "P1 G00 provenance/source inventory fixed-path immutable negative tests; not merge authority"
   }
 }
