@@ -109,6 +109,30 @@ def check():
             subprocess.run(["git", "merge-base", "--is-ancestor",
                             obj["audit_successor"]["exact_parent_head"], expected],
                            cwd=ROOT, check=True)
+        elif os.getenv("GITHUB_HEAD_REF") == obj.get("main_integration", {}).get("head_branch"):
+            integration = obj["main_integration"]
+            expected = integration["main_base_head"]
+            frozen = integration["owner_approved_g00_sha"]
+            require(re.fullmatch(r"[0-9a-f]{40}", expected) is not None,
+                    "Malformed main integration pin")
+            require(re.fullmatch(r"[0-9a-f]{40}", frozen) is not None,
+                    "Malformed frozen G00 source SHA")
+            require(frozen == "fe3e680a44ac4e71ef57dc177e73ae31198fcbd0",
+                    "G00 owner-freeze SHA changed without a new owner decision")
+            require(expected == "637bdae7373aecbf50b18834f3118421d921fe3a",
+                    "Main target SHA changed without fresh integration review")
+            git("cat-file", "-e", frozen + "^{commit}")
+            git("cat-file", "-e", expected + "^{commit}")
+            subprocess.run(["git", "merge-base", "--is-ancestor", expected, frozen],
+                           cwd=ROOT, check=True)
+            candidate = git("rev-parse", "HEAD^2")
+            subprocess.run(["git", "merge-base", "--is-ancestor", frozen, candidate],
+                           cwd=ROOT, check=True)
+            allowed = {"tests/contracts/check_m0_rc1_pins.py",
+                       "docs/M0_CONTRACT_PARENT_PINS.json"}
+            changed = set(git("diff", "--name-only", frozen, candidate).splitlines())
+            require(changed == allowed,
+                    f"Material G00 source drift after freeze: {sorted(changed ^ allowed)}")
         else:
             expected = pr2
         require(expected_parent == expected,

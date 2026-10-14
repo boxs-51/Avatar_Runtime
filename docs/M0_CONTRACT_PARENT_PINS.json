@@ -55,5 +55,16 @@
     "exact_parent_head": "24c6afad69c4bcb1a86743d91edc4706a1ba5ca1",
     "scope": "P2-04 exact ABI20 HOST_DEVICE canonical spec review; no G00 owner acceptance",
     "pr_number": 14
+  },
+  "main_integration": {
+    "head_branch": "integration/g00-design-freeze-main-20261015",
+    "owner_approved_g00_sha": "fe3e680a44ac4e71ef57dc177e73ae31198fcbd0",
+    "main_base_head": "637bdae7373aecbf50b18834f3118421d921fe3a",
+    "pr_number": 15,
+    "delta_allowed": [
+      "docs/M0_CONTRACT_PARENT_PINS.json",
+      "tests/contracts/check_m0_rc1_pins.py"
+    ],
+    "scope": "PREP ONLY synthetic-main-parent custody; frozen G00 source unchanged, no M1, no merge"
   }
 }
