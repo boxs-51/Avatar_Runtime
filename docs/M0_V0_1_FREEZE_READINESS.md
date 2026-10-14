@@ -1,6 +1,6 @@
-# M0 v0.1 Freeze-Readiness Ledger — Candidate, NOT Approved
+# M0 v0.1 Freeze-Readiness Ledger RC1 — Candidate, NOT Approved
 
-**ID:** ARS-M0-G00-FREEZE-RC0  
+**ID:** ARS-M0-G00-FREEZE-RC1  
 **Security parent:** Draft PR #2 @ 16abfb058a90f90f4ed89f6b6ced2000bff0b30f
 **Current decision:** \`HOLD_G00_CONTRACT_FREEZE\`. Do not merge this prep PR or the parent PRs.
 **Read with:** docs/V0_1_CANONICAL_CONTRACT_RC0.md and docs/M1_SOURCE_BOOTSTRAP_PLAN.md.
