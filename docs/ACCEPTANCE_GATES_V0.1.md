@@ -12,7 +12,7 @@ Every gate report records: gate_id, PR/HEAD, tested platform, hardware, compiler
 
 | Gate | Objective | Required objective evidence | Failure/hold triggers |
 | --- | --- | --- | --- |
-| G00 CONTRACT | Freeze semantics for API, model, pose, clock, thread, render, and security | reviewed spec/schema/reference example; ABI prototype and ADRs | unsigned architectural decisions; incompatible sample/schema |
+| G00 CONTRACT | Freeze semantics for API, model, pose, clock, thread, render, and security | reviewed spec/schema/reference example; ABI prototype and ADRs; Profile B explicit layer_bindings and signed 2D/3D layer-capability disposition | unsigned architectural decisions; incompatible sample/schema or orphan/duplicate 2D layer-to-part mapping |
 | G01 BUILD | Reproducible toolchain | CMake clean configure/build C++20; Windows x64 MSVC, Linux x64 Clang/GCC; CTest | hidden setup/SDK binary deps; source build failure |
 | G02 ASSET | Import validated user bundles | accepted ARSCHAR + GLB/2D fixtures; JSON Schema validator; corruption corpus | traversal, zip-bomb bypass, unbounded decode, crash |
 | G03 RENDER2D | Host can render 2D layers | pixel/reference output, layer hide/show/opacity/Z tests, resize | blank output, wrong composition, leaks |
@@ -75,7 +75,7 @@ CI matrix: Windows (MSVC), Ubuntu (Clang+ASan+UBSan), Ubuntu (GCC release). Nati
 
 ## 6. Workstream dependencies and stage authorization
 
-- M0 -> G00 before production backend/public format implementation.
+- M0 -> G00 design-only Profile B schema/reference mapping proof before production backend/public format implementation. Actual validated PNG atlas dimensions and renderer ordering/opacity require later G02/G03 evidence; these are NOT G00 runtime PASS.
 - M1 -> G01, G02 and render context proof; no runtime networking.
 - M2 -> G03, G04, G05; mode switch cannot be called ready before both required renderers exist.
 - M3 -> G06, G07, G08; no camera adapter can bypass normalized ingestion.

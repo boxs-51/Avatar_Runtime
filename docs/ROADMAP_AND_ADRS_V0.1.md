@@ -19,7 +19,7 @@ M0 is specification-first and MUST NOT be counted as implemented. Each code work
 - WS-01 Foundation/API: exported C ABI, typed statuses, version/struct_size negotiation, generation-tagged opaque handles, host callbacks and CMake package; guard interface change with compatibility tests.
 - WS-02 Model Import/Security: .arschar ZIP, schema, 2D rig descriptor parser, embedded GLB parser, bounds/ratios/fuzz, hash and reference fixtures; CPU-only.
 - WS-03 Graphics: D3D11 host-owned device/target path, offscreen premultiplied alpha, capability probing, state save/restore, lost-device/resize and GPU-thread deferred release.
-- WS-04 Native 2D: atlas sprites/weighted mesh deformation, layering and clipping, reference-pixel screenshots, golden scenes.
+- WS-04 Native 2D Profile B: atlas meshes with finite vertex deltas, explicit visual-layer-to-rig-part binding, inherited visibility/opacity and stable 2D order; weighted deformation/clipping/relative transforms deferred. Reference-pixel screenshots and golden scenes belong to post-G00 G03.
 - WS-05 GLB 3D: transform hierarchy, PBR base materials, skins, morphs, camera, draw ordering and import validation.
 - WS-06 Motion: typed frames, timestamping, source generation/seq, queue overflow, interpolation, smoothing, semantic retarget, layer arbitration, immutable pose snapshots.
 - WS-07 Verification/Performance: Windows/Linux CI, CTest, sanitizer, fuzz corpus, performance scene and metrics, SDK consumer example; independently verifies other streams.
@@ -32,7 +32,7 @@ Suggested coupling rules: importer never calls GPU; GPU may only consume validat
 | --- | --- | --- | --- |
 | ADR-0001 | Host-owned vs SDK-owned D3D11 device | support both, host-owned primary | single-frame host embed, state restore, 100x resize/shutdown |
 | ADR-0002 | bgfx vs custom D3D11 | small D3D11 initially, backend interface portable | bgfx external-device/render-target interop spike; dependency/license review |
-| ADR-0003 | Native 2D rig descriptor | JSON mesh/atlas bounded schema | 2-3 rig samples incl deformation/masking validated |
+| ADR-0003 | Native 2D rig descriptor | Profile B atlas/mesh/vertex-delta with mandatory layer_bindings; masks/weights not in v0.1 | cross-file IDs, cycles, missing/duplicate bindings, inherited opacity and real atlas PNG bounds at G02/G03 |
 | ADR-0004 | API control threading | serialize structural changes to H/S quiescent point | concurrent ingress and destructor race tests |
 | ADR-0005 | Clock | host monotonic ns, per-adapter conversion | stale/reconnect and jitter reference traces |
 | ADR-0006 | Runtime memory budgets | preflight CPU/GPU estimates + device cap | fail without scene corruption/partial GPU upload |

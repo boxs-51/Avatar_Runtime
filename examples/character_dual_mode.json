@@ -20,6 +20,20 @@
           "semantic": "mouth.open",
           "target": "MouthOpen"
         }
+      ],
+      "layer_bindings": [
+        {
+          "layer_id": "base.body",
+          "part_ids": [
+            "base.body"
+          ]
+        },
+        {
+          "layer_id": "face.mouth",
+          "part_ids": [
+            "face.mouth"
+          ]
+        }
       ]
     },
     "3d": {
@@ -66,16 +80,16 @@
   "visual_layers": [
     {
       "id": "base.body",
-      "mode_scope": "both",
+      "mode_scope": "2d",
       "z_index": 0,
       "visible": true,
       "opacity": 1,
       "blend_mode": "normal"
     },
     {
-      "id": "accessory.hat",
+      "id": "face.mouth",
       "mode_scope": "2d",
-      "z_index": 10,
+      "z_index": 5,
       "visible": true,
       "opacity": 1,
       "blend_mode": "normal"

@@ -38,7 +38,7 @@ Normalizer -> Retarget -> Motion Mixer -> Pose Snapshot
 | core | runtime lifetime, clock, character graph, diagnostics | graphics API implementations |
 | assets | ARSCHAR, JSON schema, limits, importers, CPU asset cache | GPU calls, implicit internet |
 | character | logical state, representation choice, rig bindings | data-source connectivity |
-| layers | visible parts/order/masks; animation ownership/blend | adapter-specific parsing |
+| layers | validated 2D layer/part assignment, visible parts/order/opacity; animation ownership/blend | implicit rig ID mapping, unimplemented masks/transforms |
 | motion | typed frames, queues, smoothing, arbitration, retargeting | OS camera APIs |
 | render2d | sprite atlas, 2D deform mesh, alpha/mask passes | network logic |
 | render3d | GLB mesh/skin/morph, camera, materials, transparent passes | camera tracking |
@@ -60,7 +60,9 @@ Semantic parameter: ID, type (float/bool/vec2/vec3/quaternion/trigger), optional
 
 ### 3.1 Visual layer
 
-VisualLayer = {id, parent, mode_scope, z_index, stable_order, visible, opacity, blend_mode, mask, slot_id}. Required v0.1 behavior: consistent stable Z order, visibility, opacity, normal alpha compositing, configurable part grouping; blend modes add/multiply and complex masks feature-gated. Cyclic hierarchy/mask edges invalid. 2D order and 3D depth sorting MUST NOT be conflated.
+**M0 Profile B layer-binding candidate (requires owner and independent G00 ratification):** `VisualLayer = {id, parent?, mode_scope, z_index, visible, opacity, blend_mode?}`. The `visual_layers[].id` and native `rig.parts[].id` are **different namespaces**, even if sample IDs happen to match. Native 2D representation MUST explicitly carry `representations["2d"].layer_bindings[] = {layer_id, part_ids:[...]}`: exactly one binding per drawable 2D visual layer, at least one existing part in each binding, and every rig part assigned to exactly one drawable layer. Reject duplicate, missing, unknown, or multiply owned bindings with `ARS_E_BAD_ASSET`; never silently assign by matching string IDs. A parent layer may be drawable and/or group descendant layers; parent edges form an acyclic graph, never imply vertex/part transforms. All layers declared `mode_scope="2d"` are drawable in this baseline. The visibility of a child is its visibility AND the visibility of every ancestor; effective opacity multiplies all ancestor opacities and its own (finite numbers in [0,1]). Stable 2D drawing order is ascending (layer z_index, layer declaration index, part z_index, part declaration index); transparent composition uses normal premultiplied alpha. A child may draw before its parent if z ordering requests this; ancestry only gates visibility and opacity, it does not reorder. No hidden part assignment, no implicit 3D mapping.
+
+**Deliberately unsupported in v0.1 Profile B:** relative part-transform hierarchies, weighted mesh deformation, texture masks/clipping and `add`/`multiply` blend modes. The schema may recognize `mask` or non-2D `mode_scope`, but if semantically well-formed they produce `ARS_E_UNSUPPORTED` (after `ARS_E_BAD_ASSET` semantic checks). `mode_scope="both"` and `mode_scope="3d"` require a separately reviewed glTF node/morph-to-layer binding contract before advertising 3D visual-layer control. Dual-mode assets may render 3D through the GLB renderer but layer hide/opacity is defined only in 2D until that contract exists. Disabled features must never silently no-op.
 
 ### 3.2 Motion layer
 
@@ -70,7 +72,7 @@ MotionLayer = {id, source_id, priority, weight, blend, channel_mask, bone_mask, 
 
 Bundle extension **.arschar** is a constrained ZIP with root **character.json**, relative assets and optional digest list. Bundle is untrusted. Mandatory manifest fields: schema_version 0.1.0, bundle_id, display_name, default_mode, units, representations, rig_semantics, visual_layers and mappings; optional license/author/quality variants/digests. JSON Schema: schemas/character_manifest_v0.1.schema.json; reference: examples/character_dual_mode.json.
 
-2D v0.1 data: PNG atlas + JSON part definitions (texture rect, pivot, relative transform, mesh vertices/weights, named deformer channels). GLB subset v0.1: embedded glTF 2.0 geometry, hierarchy, skins, morphs, PBR-base materials, basic animation; extensions are capability-listed, not silently ignored if required. VRM 1.0 is not implicitly complete merely because a GLB can be opened. A later VRM importer MUST implement its humanoid/expressions/lookAt/constraint/springBone ordering where features are advertised. Proprietary formats require separate licensed adapters.
+2D v0.1 Profile B: PNG atlas + JSON per-part rectangle, pivot, finite mesh vertices/UV/indexed triangles and bounded per-parameter vertex deltas. No weighted vertices, relative part transforms, masks or proprietary 2D format. Structural schema and semantic cross-file validation require explicit layer-to-part bindings and referenced rig part identity; actual atlas rectangle bounds MUST use decoded/validated PNG dimensions (not rig canvas). GLB subset v0.1: embedded glTF 2.0 geometry, hierarchy, skins, morphs, PBR-base materials, basic animation; extensions are capability-listed, not silently ignored if required. VRM 1.0 is not implicitly complete merely because a GLB can be opened. A later VRM importer MUST implement its humanoid/expressions/lookAt/constraint/springBone ordering where features are advertised. Proprietary formats require separate licensed adapters.
 
 Package validator MUST reject: absolute/UNC/drive/device paths, traversal, normalization collisions, symlinks, duplicate entries, external URI fetching, unsupported required extensions, decompression bombs, excessive entries, recursively nested payloads, nonfinite numbers, buffer overflows, mesh index errors, oversized images, invalid skinning data and embedded code/shaders.
 
@@ -124,7 +126,7 @@ Rules:
 - Drop wrong generation, duplicate or backward sequence, NaN/Inf, malformed quaternion, stale/future skewed frames. A stale source cannot retain exclusive channel ownership.
 - Interpolation: scalars lerp, rotations normalized slerp; smoothing has configurable cutoff and reset on disconnect or source generation change. Never extrapolate indefinitely.
 - PoseSnapshot carries simulation timestamp + monotonic pose generation; source replay MUST NOT rewind committed pose. Lost tracking fades toward idle, not frozen forever.
-- Native 2D binding maps semantic parameters to deform mesh/parts; 3D maps to bone transform/morph target. Unmapped optional semantics are safe no-ops with counters.
+- Native 2D semantic mappings bind parameter IDs to verified rig deformer channels; separate explicit layer_bindings assign each drawable 2D visual layer to verified rig part IDs. Unknown/duplicate/unbound part ownership is BAD_ASSET, never a silent optional semantic no-op. 3D semantic mapping targets bones/morphs, but 3D visual-layer control is disabled until independently specified.
 
 ## 7. Thread model, ownership, lifecycle
 
