@@ -43,6 +43,32 @@
 
 **Format-capability registration:** GLB 2.0 subset is baseline; VRM 1.0 importer is deferred and must be gated by negotiated capabilities. The manifest \`default_mode\` (2d/3d) is not the runtime AUTO selection mode. Mandatory unsupported representation must be rejected, not silently accepted.
 
+## RED-first independent fixture findings (audit child only, owner signoff pending)
+
+The initial design checker incorrectly classified **malformed semantic + disabled
+mask** as UNSUPPORTED because it evaluated capability rejection too early.
+It also compared atlas rectangles against canvas dimensions, which are NOT
+the PNG image's actual pixel bounds. NaN/Inf may enter through JSON exponent
+overflow such as `1e400` and through UV/vertex/delta/pivot fields that pass
+structural schema shape validation.
+
+Required G00 semantics: validate all structural and cross-file referential,
+type, finite, range and geometry rules first; if malformed return BAD_ASSET
+even when a recognized-but-disabled feature is requested. After semantic
+validation, well-formed required disabled VRM1/mask/weighted features return
+UNSUPPORTED. Apply budget preflight before expensive parsing, preserving the
+OUT_OF_BUDGET limit category. A design fixture may supply a separately
+trusted `atlas_dimensions=(width,height)` witness; this does NOT substitute
+for actual PNG decode/IHDR budget proof at G02. The implementation must
+require actual atlas pixel dimensions and reject unknown dimensions, not
+silently fall back to canvas geometry.
+
+Keep Profile B narrow: atlas rect/pivot/mesh UV/index/vertex delta only; no
+weighted vertices, relative-transform hierarchy or visual mask compositing.
+Positive dual-mode example references assets absent from this documentation
+repository, so G00 schema-level PASS cannot be interpreted as fully validated
+renderable ARSCHAR asset.
+
 ## RC1 proposed format decision and typed errors (Owner proposal, not frozen)
 
 **Native 2D choice: PROFILE B.** v0.1 accepts bounded atlas rectangle/pivot, vertices, UV, triangle indices and parameter-associated vertex-delta deform arrays. **No** weighted deformation, relative part-transform hierarchy, 2D part masks or mask compositing is advertised; manifest visual-layer ordering/visibility/opacity remains supported without masks. New input asking for recognized but disabled mask/weighted capabilities returns `ARS_E_UNSUPPORTED` after validating structural input. This explicitly narrows the broad M0 specification; before freeze the public capabilities/ABI and product specification must agree.
