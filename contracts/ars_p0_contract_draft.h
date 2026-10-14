@@ -155,6 +155,7 @@ typedef struct ars_close_state_v1 {
 
  * R4: Runtime security_clock_gate serializes clock observations and a sticky
  * security_highwater_ns. Clock regression/failure poisons runtime permanently.
+ * Rotate phase C MUST check security clock and lease after phase B token mint.
  * Source lease expiry is terminal EXPIRED (new registration required) and
  * invalidates source/control epoch, active cap and retained-motion lineage.
  * Ingress: admission_gate SHARED -> source_mutex -> security_clock_gate.
