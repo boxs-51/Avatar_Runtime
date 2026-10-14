@@ -3,6 +3,8 @@
 **ID:** ARS-P0-PR2-R4-OWNER-2026-10-14 | **Status:** PROPOSED / independent review pending
 **Input:** ARS-P0-PR2-R3-REAUDIT-2026-10-14-02, audited HEAD bd16136dc8994dd0746bf2b652b4703b79b9ba7f.
 
+> **R5 SUPERSESSION:** docs/P0_OWNER_REMEDIATION_V0.5.md now governs bounded writer-priority admission barrier, expiry dirty-epoch handoff across source/pose locks and typed epoch exhaustion. Remaining R4 global clock poison, terminal EXPIRED and TTL rotation barriers are retained. R4 is historical review trace, not an alternative to R5.
+
 **Normative order:** R4 supersedes R3/R2/v0.1 on security clock observation, expiry/fault terminal states and ingress-admission vs begin_close. R3 continues to govern rotation_ticket, terminal explicit revoke, source/character epoch reservations and commit/publish fences; R2 continues to govern transitive retained-pose provenance and registry pins, except where superseded. This is an OWNER design proposal and does not establish G00 or implementation security PASS.
 
 ## 1. Invariants
