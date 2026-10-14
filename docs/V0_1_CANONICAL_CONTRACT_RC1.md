@@ -79,6 +79,17 @@ When malformed asset and unsupported capability coexist, return BAD_ASSET first 
 - ensure RC1, ledger, ABI map, format map, stage plan and ADR design decision doc agree about HOLD, chosen profile, unsupported features and G00-vs-G01 separation;
 - rerun for `schemas/**`, `examples/**`, security contract/ADR/spec/acceptance files; on a changed parent HEAD, require rebase and new independent exact-source review, not inherited-green approval.
 
+## Audit-child remediation status (not accepted on parent PRs)
+
+Proposed declaration-only `include/ars/ars.h` exists in the separate
+audit Draft PR #4, with complete C ABI review inventory and fake
+UNSUPPORTED symbol stub; this is not the shipping header until independent
+signoff. RED-first F01/F02/F03 demonstrate why all semantic validity must be
+checked before unsupported-capability resolution, why actual PNG dimensions
+must be a separate witness and why all parsed numeric data must be finite.
+F08 G00-P0-C predecessor clause has a separate security-owned Draft PR #5
+proposal; until ACK/re-pin, this remains a material dependency and G00 HOLD.
+
 ## 6. Explicit remaining conditions for freeze
 
 F-01 security R5 still requires an independent DESIGN verdict at the current PR #2 HEAD. F-02/F-08 full ABI declarations and ownership not yet final. F-04 ADR-0001 is proposed above, not approved. F-05/F-07/F-09 profile B and semantic taxonomy proposed above, require owner/reviewer signoff and negative fixture design ratification. F-03/F-06 R5 authority/clock semantics need acceptance. F-10 G00 signoff requires a new exact SHA and zero material P0/P1 design blocker. F-11 M1 source scopes are PREPARED only.
