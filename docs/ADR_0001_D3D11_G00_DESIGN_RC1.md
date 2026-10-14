@@ -36,6 +36,35 @@ Choose this reduced profile to avoid untestable dual-ownership lifetime/compatib
 
 No blocking external callbacks, file reads, ZIP/GLB parsing or user-code reentry while R/GPU critical section is held.
 
+## RC1 candidate implementation-independent retirement rule (not ratified)
+
+For baseline D3D11 feature-level compatibility, propose **D3D11_QUERY_EVENT**
+with `ID3D11DeviceContext::End(query)` after SDK GPU submissions and
+`GetData(query, ...)` polled ONLY by the graphics R-thread until success.
+Submission completion is not implied by CPU return from `Draw` or
+`Flush`. Do not busy-wait under a runtime/source/pose lock, and never
+assume the event query synchronizes host presentation; presentation erasure
+requires a separate host-facing fence.
+
+SDK-owned COM references (device, context as needed, commands' input buffers,
+RTV/textures if retained) and snapshot pins remain alive until the completion
+witness is observed; `Release` happens on the graphics owner thread after the
+observed safe point. Handle device removal/failed GetData by fail-closed
+GPU quarantine or explicit safe device teardown, never by treating error as
+COMPLETED. `ID3D11Fence` remains an optional separately negotiated feature,
+not a minimum baseline.
+
+Require a normative **touched-state restore list** (all IA bindings/topology,
+shader and resource stages actually touched, RS viewport/scissor/state, OM
+render/depth/blend bindings and state) and a reliable cleanup path even
+after a recoverable GPU draw failure; disallow host immediate-context
+concurrency. D3D11 resource refcounts and safe target lifetime across
+in-flight draws are HOST obligations negotiated in the public descriptor;
+SDK must take its own needed refs for asynchronous work.
+
+**Design choice:** PROPOSED, subject to graphics-owner + actor-distinct
+independent ratification; native GPU tests remain M1-D HOLD.
+
 ## G00 DESIGN acceptance matrix (NO GPU required)
 
 - Source/target ownership and borrowed lifetime annotated for every public descriptor.
