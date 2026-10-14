@@ -545,6 +545,210 @@ static void race_s_global_clock_watermark_shared_by_ingress_publish() {
     std::cout << "PASS RACE-S: ingress/publish share sticky clock watermark\n";
 }
 
+
+/*
+ * RACE-V: two independent authorized semantic sources and a retained
+ * source-dependent cache. Source A's TTL is detected on ingress (source+clock
+ * locks ONLY). Its tombstone is published via release ordering. S obtains
+ * pose->source A->source B->clock, acquire-reads tombstone, discards the stale
+ * A+B pose and retires S-owned smoothing/trigger/retarget state.
+ *
+ * This is a model of the cross-lock contract, not a real character renderer.
+ */
+struct MultiSourceModel {
+    struct Input {
+        std::mutex ingress;
+        uint64_t epoch = 1;
+        std::atomic<uint64_t> invalidated_through{0};
+        bool live = true;
+        uint64_t expiry = 200;
+        float value = 1.0F;
+    };
+    struct Candidate {
+        std::array<uint64_t, 2> ancestry{1, 1};
+        float blended = 0;
+        bool deferred_a_trigger = false;
+        bool retarget_a = false;
+    };
+    std::mutex commit;
+    std::mutex pose;
+    std::mutex security_clock;
+    std::atomic<uint64_t> now{100};
+    Input a, b;
+    uint64_t pose_generation = 0;
+    float published = 0;
+    std::array<uint64_t, 2> published_ancestry{0, 0};
+    bool smoothing_a = false;
+    bool trigger_a = false;
+    bool retarget_a = false;
+
+    MultiSourceModel() {
+        a.expiry = 200; a.value = 1.0F;
+        b.expiry = 400; b.value = 2.0F;
+    }
+    Candidate stage() const {
+        Candidate staged{};
+        staged.ancestry = {1,1};
+        staged.blended = 3.0F;
+        staged.deferred_a_trigger = true;
+        staged.retarget_a = true;
+        return staged;
+    }
+    void expire_a_on_ingress() {
+        std::scoped_lock source(a.ingress);
+        std::scoped_lock clock(security_clock);
+        assert(now.load() >= a.expiry);
+        const auto old = a.epoch;
+        a.live = false;
+        if (a.epoch != UINT64_MAX) ++a.epoch;
+        a.invalidated_through.store(old, std::memory_order_release);
+        // Never acquire pose lock or mutate S-owned retained state here.
+    }
+    bool commit_candidate(const Candidate& candidate) {
+        std::scoped_lock commit_lock(commit);
+        std::scoped_lock pose_lock(pose);
+        std::scoped_lock source_a(a.ingress);
+        std::scoped_lock source_b(b.ingress);
+        std::scoped_lock clock(security_clock);
+        // Acquire tombstone and revalidate TRANSITIVE lineage at publication.
+        const auto invalidated = a.invalidated_through.load(std::memory_order_acquire);
+        if (!a.live || !b.live ||
+            candidate.ancestry[0] <= invalidated ||
+            candidate.ancestry[0] != a.epoch ||
+            candidate.ancestry[1] != b.epoch ||
+            now.load() >= a.expiry || now.load() >= b.expiry) {
+            return false; // staged writes are discarded, no pose_generation++
+        }
+        ++pose_generation;
+        published = candidate.blended;
+        published_ancestry = candidate.ancestry;
+        smoothing_a = true;
+        trigger_a = candidate.deferred_a_trigger;
+        retarget_a = candidate.retarget_a;
+        return true;
+    }
+    bool recompute_after_invalidated_a() {
+        std::scoped_lock commit_lock(commit);
+        std::scoped_lock pose_lock(pose);
+        std::scoped_lock source_a(a.ingress);
+        std::scoped_lock source_b(b.ingress);
+        std::scoped_lock clock(security_clock);
+        const auto invalidated = a.invalidated_through.load(std::memory_order_acquire);
+        if (invalidated == 0 || a.live || !b.live || now.load() >= b.expiry)
+            return false;
+        // S exclusively owns the cache fields under the pose gate; B remains.
+        smoothing_a = false;
+        trigger_a = false;
+        retarget_a = false;
+        published = b.value; // neutral + authorized B, never last pose A+B
+        published_ancestry = {0, b.epoch};
+        ++pose_generation;
+        return true;
+    }
+};
+
+static void race_t_writer_fairness_under_ingress_flood() {
+    AdmissionGate gate;
+    std::atomic<bool> close_intent{false};
+    std::atomic<bool> writer_completed{false};
+    constexpr int ingress_workers = 8;
+    std::latch all_inside(ingress_workers), release_initial(1);
+    std::vector<std::thread> admitted;
+    for (int i=0; i<ingress_workers; ++i) {
+        admitted.emplace_back([&] {
+            AdmissionLease lease(gate);
+            assert(lease.acquired);
+            all_inside.count_down();
+            release_initial.wait();
+        });
+    }
+    all_inside.wait();
+    assert(gate.active_readers() == ingress_workers);
+    std::thread closer([&] {
+        gate.close_and_wait(close_intent);
+        writer_completed.store(true);
+    });
+    close_intent.wait(false); // exact writer-intent barrier
+    assert(gate.is_closing() && !writer_completed.load());
+    std::atomic<int> illegal_admissions{0};
+    std::vector<std::thread> flood;
+    for (int i=0; i<ingress_workers; ++i) {
+        flood.emplace_back([&] {
+            for (int n=0; n<256; ++n) {
+                AdmissionLease lease(gate);
+                if (lease.acquired) ++illegal_admissions;
+            }
+        });
+    }
+    for (auto& thread : flood) thread.join();
+    assert(illegal_admissions == 0);
+    release_initial.count_down();
+    for (auto& thread : admitted) thread.join();
+    closer.join();
+    assert(writer_completed.load() && gate.active_readers() == 0);
+    assert(!gate.enter());
+    std::cout << "PASS RACE-T: writer intent excludes ingress flood; closer drains bounded readers\n";
+}
+
+static void race_v_expiry_vs_multisource_cached_pose() {
+    MultiSourceModel model;
+    const auto before_expiry = model.stage();
+    assert(model.commit_candidate(before_expiry));
+    assert(model.smoothing_a && model.trigger_a && model.retarget_a);
+    std::latch staged(1), resume(1);
+    bool stale_committed = true;
+    std::thread simulation([&] {
+        const auto stale = model.stage();
+        staged.count_down();
+        resume.wait();
+        stale_committed = model.commit_candidate(stale);
+    });
+    staged.wait();
+    model.now.store(200);
+    std::thread ingress([&] { model.expire_a_on_ingress(); });
+    ingress.join();
+    // Ingress MUST NOT mutate simulation-owned cached state.
+    assert(model.smoothing_a && model.trigger_a && model.retarget_a);
+    assert(model.a.invalidated_through.load(std::memory_order_acquire) == 1);
+    resume.count_down();
+    simulation.join();
+    assert(!stale_committed && model.pose_generation == 1);
+    assert(model.recompute_after_invalidated_a());
+    assert(model.pose_generation == 2 && model.published == 2.0F);
+    assert(model.published_ancestry[0] == 0 && model.published_ancestry[1] == 1);
+    assert(!model.smoothing_a && !model.trigger_a && !model.retarget_a);
+    std::cout << "PASS RACE-V: ingress expiry tombstone aborts A+B cache; only B republished\n";
+}
+
+static void race_w_terminal_epoch_exhaustion() {
+    {
+        ContractModel m;
+        m.source.epoch = UINT64_MAX;
+        m.revoke();
+        assert(m.source.state == SourceState::exhausted);
+        assert(m.source.active_cap == 0 && !m.start_rotate().valid);
+        assert(!m.admit(111, 1));
+    }
+    {
+        ContractModel m;
+        m.source.control_epoch = UINT64_MAX;
+        m.security_now.store(200);
+        assert(!m.publish(m.source.epoch));
+        assert(m.source.state == SourceState::exhausted);
+        assert(m.source.active_cap == 0 && !m.admit(111, 1));
+    }
+    {
+        ContractModel m;
+        m.source.ticket = UINT64_MAX;
+        assert(!m.start_rotate().valid);
+        assert(m.source.state == SourceState::exhausted);
+        assert(!m.admit(111, 1));
+        m.begin_close();
+        assert(!m.running.load());
+    }
+    std::cout << "PASS RACE-W: epoch/control/ticket overflow fail closed without assertion\n";
+}
+
 int main() {
     race_l_revoke_wins();
     race_l_release_and_close();
@@ -559,6 +763,9 @@ int main() {
     race_u_rotation_mint_crosses_expiry();
     race_r_admission_vs_close_commit_barrier();
     race_s_global_clock_watermark_shared_by_ingress_publish();
-    std::cout << "PASS ALL R4 CONTRACT MODEL TESTS (NOT production runtime)\n";
+    race_t_writer_fairness_under_ingress_flood();
+    race_v_expiry_vs_multisource_cached_pose();
+    race_w_terminal_epoch_exhaustion();
+    std::cout << "PASS ALL R5 CONTRACT MODEL TESTS (NOT production runtime)\n";
     return 0;
 }
