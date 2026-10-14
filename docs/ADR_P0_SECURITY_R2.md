@@ -5,6 +5,13 @@
 **Normative implementation design:** docs/P0_OWNER_REMEDIATION_V0.2.md
 **Architecture context:** docs/ROADMAP_AND_ADRS_V0.1.md and docs/SPECIFICATION_V0.1.md
 
+## R5 ADR amendments (OWNER PROPOSED — NOT ACCEPTED)
+
+- **ADR-0004-R5 (writer-closing admission):** Use admission-gate mutex, CV and bounded active reader count rather than assuming std::shared_mutex writer fairness. Closing sets sticky CLOSE_REQUESTED under the gate mutex, prevents all new admissions, waits via CV (gate mutex released) until already-admitted bounded critical sections drain; only then transitions RUNNING->QUIESCING under router lock while runtime commit gate is held. Gate mutex never nests with source/pose/clock locks. Ingress owns RAII admission lease, released on every return. Controlled multi-ingress RACE-T required; scheduler-stalled trusted host is outside unconditional wall-clock progress guarantees.
+- **ADR-0009-R5 (cross-lock expiry provenance):** Ingress-side expiry under source->clock locks publishes an epoch tombstone/dirty marker with release semantics; it MUST NOT acquire pose gate or mutate S-owned smoothing/retarget/trigger caches. Publisher/S under commit->pose->source locks acquire-reads tombstone, validates transitive provenance and discards stale staged writes before pose swap; recomputes neutral plus still-authorized source inputs. Controlled A+B RACE-V required.
+- **ADR-0010-R5 (counter exhaustion):** Source/control epochs and rotation tickets never wrap; exhaustion is terminal EXHAUSTED, clears authority and release-publishes tombstone without requiring a successful increment. Tests RACE-W, SRC-044. ABI HANDLE_EXHAUSTED already declared. Real code must have equivalent typed failure, not assert.
+- **Evidence:** tests/contracts/p0_r5_state_machine_model.cpp only; ADR-0001 D3D11 still OPEN, production HDL/SRC/RACE and sanitizer HOLD. Normative design: docs/P0_OWNER_REMEDIATION_V0.5.md.
+
 ## R4 ADR amendments (OWNER PROPOSED — NOT ACCEPTED)
 
 - **ADR-0005-R4 — monotonic security authority:** One runtime security_clock_gate serializes all admission and pose-publish OS monotonic clock samples and advances runtime security_highwater_ns. Any regression/failure permanently poisons that runtime, denying admission/activation/publish. Source expiry is terminal EXPIRED with epoch/capability and transitive cache invalidation; no refresh/rotate reactivates it. New trusted registration required.
