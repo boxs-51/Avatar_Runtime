@@ -176,6 +176,7 @@ struct ContractModel {
         // Writer-intent prevents a continuing stream of new entrants from
         // starving close while it waits for prior admission readers.
         closing_intent.store(true);
+        closing_intent.notify_all(); // allows deterministic test handshake
         std::unique_lock<std::shared_mutex> admission_exclusive(admission_gate);
         {
             std::scoped_lock router(router_gate);
@@ -454,6 +455,8 @@ static void race_r_admission_vs_close_commit_barrier() {
         m.begin_close(); // must acquire exclusive admission_gate
     });
     close_invoked.wait();
+    m.closing_intent.wait(false); // ensures closer announced intent, not just scheduled
+    assert(m.closing_intent.load());
     assert(m.running.load()); // H cannot linearize close while shared is held
     resume_admission.count_down();
     submitter.join();
