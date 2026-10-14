@@ -37,13 +37,10 @@ def check():
                    cwd=ROOT, check=True)
     if os.getenv("GITHUB_EVENT_NAME") == "pull_request":
         expected_parent = git("rev-parse", "HEAD^1")
-        # Scoped audit-child PR #4 is deliberately stacked ON TOP OF frozen PR3.
-        # Keep exact PR3 parent check for regular PR3; never relax parent drift.
-        audit_child = os.getenv("GITHUB_HEAD_REF", "").startswith("audit/rc1-f01-f08-red-first-")
-        expected = ("2d4906ea07052540ff1330f2a93034fe0fccffb7"
-                    if audit_child else pr2)
-        require(expected_parent == expected,
-                f"PR audit-child/base drift: expected {expected}, got {expected_parent}")
+        # Composed RC1 is stacked on exact Security successor, not old PR3.
+        # A changed predecessor MUST produce a new pin and CI failure.
+        require(expected_parent == pr2,
+                f"RC1 base drift: expected {pr2}, got {expected_parent}")
     else:
         subprocess.run(["git", "merge-base", "--is-ancestor", pr2, "HEAD"],
                        cwd=ROOT, check=True)
@@ -77,7 +74,7 @@ def check():
             "ARS_E_OUT_OF_BUDGET" in rc1, "Missing fixed taxonomy")
     require("87" in readiness, "R5 security case count drift")
     require(obj["stage_status"]["G00"] == "HOLD_DESIGN", "G00 status not hold")
-    require(obj["stage_status"]["ADR_0001"] == "OWNER_DESIGN_PROPOSED",
+    require(obj["stage_status"]["ADR_0001"] == "OWNER_DESIGN_ACCEPTED_REVIEW_HOLD",
             "ADR cannot be auto-approved")
     print("PASS RC1 provenance: PR1/PR2 ancestry and 9 exact blob pins")
     print("PASS RC1 consistency: G00 design vs implementation, format/ABI/HOLD")

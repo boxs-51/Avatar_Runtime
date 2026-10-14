@@ -96,3 +96,7 @@ Required evidence before FORMAT G00 design PASS:
 Required evidence for implementation \`G02\`: negative fixtures actually executed across Linux/Windows with real parser, fuzzing and CPU memory bounds. G00 format design review is not a substitute for production security tests.
 
 **Current verdict:** \`HOLD_FORMAT_SEMANTIC_CONTRACT\`. Do not freeze format or approve M1-C importer until above design obligations are closed.
+
+## Profile B layer-to-part authoritative linkage (owner YES, independent format review HOLD)
+
+The two namespaces `visual_layers[].id` and `rig.parts[].id` MUST NOT be implicitly unified. Native v0.1 2D representation MUST specify `layer_bindings[] = {layer_id, part_ids:[...]}`, every drawable 2D layer appears exactly once, every rig part belongs to exactly one such binding, and all references are validated before any unsupported-feature dispatch. Parent edges are logical DAG grouping only, visibility is conjunction of ancestor visibility and opacity multiplies along ancestry. Draw order is ascending (layer z-index, layer declaration index, part z-index, part declaration index); no relative part-transform or mask/weighted deformation. Well-formed non-2D layer control is UNSUPPORTED, not silently acted upon. If binding IDs are missing/ambiguous/duplicate, report `ARS_E_BAD_ASSET`. Full PNG pixel dimensions are G02 and real renderer effect is G03; G00 validates only this design oracle.

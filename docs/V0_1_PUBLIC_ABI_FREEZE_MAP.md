@@ -47,15 +47,15 @@ These are **completion requirements**, not permission to publish ABI signatures 
 
 ## Audit child complete declaration candidate (NOT frozen)
 
-Draft PR #4 adds `include/ars/ars.h` with all 21 proposed v0.1
+Draft PR #4 adds `include/ars/ars.h` with all 20 owner-selected v0.1
 symbols: lifecycle/close, model load/release, character create/destroy/mode/
 layers, source registration/rotation/revoke, motion submit/update, capabilities,
-HOST_DEVICE render and optional bounded diagnostics. `tests/abi/design_stub.c`
+HOST_DEVICE render and bounded non-sensitive status and close-state reporting (diagnostic API deferred). `tests/abi/design_stub.c`
 exports NONFUNCTIONAL UNSUPPORTED placeholders; `design_smoke.c/.cpp`
 signature and layout smoke assert 16-byte typed IDs and 128-bit ingress caps.
 Neither actual source behavior nor GPU/effect security is implemented.
 
-ABI owner must ratify the optional diagnostic symbol and the exact
+ABI owner must ratify the deferred diagnostic symbol (ars_get_last_error_info) and the exact
 allocator/callback, borrowed COM target lifetime, struct_size minor-version
 behavior and stable mode/capability enums. All function declarations exist for
 review, but **G00 DESIGN PASS / ABI FREEZE remain HOLD** until review and CI.
@@ -78,3 +78,13 @@ review, but **G00 DESIGN PASS / ABI FREEZE remain HOLD** until review and CI.
 - Independent ABI reviewer signs a pinned candidate HEAD and publishes divergence mapping from the two original API sketches.
 
 **Current disposition: HOLD.** The existing 14-symbol stub CI proves only limited ABI declaration/linkage, never security/runtime behavior.
+
+## Owner-approved v0.1 ABI20 decision (2026-10-14; independent G00 review HOLD)
+
+Exactly 20 C functions are declared in `include/ars/ars.h`. Optional 21st `ars_get_last_error_info` is **not exported, aliased, or advertised** in v0.1. Capability bit `ARS_CAP_HOST_SCOPED_MOTION_INGRESS` describes trusted in-process registration, **never network/client authentication**; the host adapter authenticates remote principals separately. Do not silently renumber current `int32_t` status values.
+
+**Descriptor inputs:** an accessible caller-owned prefix of two `uint32_t` fields (`struct_size`, `abi_version`) is mandatory; inaccessible/null pointers or size below the known required prefix return `ARS_E_INVALID_ARGUMENT` without reads beyond caller-provided readable bounds. Reject incompatible major versions and nonzero recognized reserved fields; permit longer caller buffers only by reading the known layout, ignoring unknown suffix, and do not infer feature support from higher minor version. Version encoding is `(major << 16) | minor`.
+
+**Output records:** the caller supplies a writable known `struct_size` capacity; never exceed declared writable capacity. On failure, zero only documented known writable outputs or return a typed size error before touching an undersized object; the exact required-size negotiation behavior must be validated in G01/G10. Successful create/rotate outputs are fully initialized; failed handles/tokens never retain authorized values. The nonfunctional G00 stub only proves declaration/link compatibility and deliberately returns `ARS_E_UNSUPPORTED`.
+
+**Allocator/callback:** alloc/free must be paired from the same host, use matching byte count and alignment, and outlive all runtime/asset/retained GPU allocations; allocation failures cannot publish partial resources. No callbacks under security/pose/GPU locks, and C callbacks cannot throw across ABI or reenter disallowed control/GPU methods. Async render uses host R-thread serialized immediate context and explicit borrowed COM/target lifetime; durable GPU completion evidence is **M1-D**, not proved by this C11/C++20 symbol smoke. Numeric `struct_size` behavior, callback reentrancy, ABI compatibility and failure-zero requirements remain runtime implementation proof at G01/G10.

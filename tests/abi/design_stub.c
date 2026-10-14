@@ -24,4 +24,3 @@ ARS_API ars_status ARS_CALL ars_runtime_begin_close(ars_runtime_h r){U(r);return
 ARS_API ars_status ARS_CALL ars_runtime_drain_gpu(ars_runtime_h r){U(r);return ARS_E_UNSUPPORTED;}
 ARS_API ars_status ARS_CALL ars_runtime_query_close(ars_runtime_h r, ars_close_state *o){U(r);ZERO(o);return ARS_E_UNSUPPORTED;}
 ARS_API ars_status ARS_CALL ars_runtime_finish_close(ars_runtime_h r){U(r);return ARS_E_UNSUPPORTED;}
-ARS_API ars_status ARS_CALL ars_get_last_error_info(ars_runtime_h r, char *buf, uint32_t cap, uint32_t *required){U(r);if(buf&&cap)buf[0]=0;if(required)*required=0;return ARS_E_UNSUPPORTED;}

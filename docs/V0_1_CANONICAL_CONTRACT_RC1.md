@@ -3,8 +3,8 @@
 **ID:** ARS-M0-CONTRACT-RC1 | **Status:** OWNER PROPOSED / INDEPENDENT RE-AUDIT REQUIRED / NOT FROZEN
 **Addresses:** ARS-G00-PR3-FREEZE-REVIEW-2026-10-14-01 (three P1, one P2)
 **Pinned parents:**
-- Draft PR #1 design `93858416dfdd0d6b7f0e10c8e524da4324dd9dc4`
-- Draft PR #2 R5 security `16abfb058a90f90f4ed89f6b6ced2000bff0b30f`
+- Draft PR #1 design `2301aa101b46aba545c76047a0e4f7315a1a3222`
+- Draft PR #2 R5 security `b80997192d14fbc7c40055300931e33727ac8674`
 - Candidate PR #3 is valid ONLY while these parents remain pinned; a changed upstream HEAD requires a new material-drift review and CI.
 
 **Normative scope:** RC1 is the **single proposed freeze-index**, not a replacement for compiler checked interfaces. The R5 > R4 > R3 > R2 > P0 security rules still apply where explicitly superseding older material, with `docs/P0_OWNER_REMEDIATION_V0.5.md` as most recent source-security proposal. Original `docs/SPECIFICATION_V0.1.md` governs product intent only; its pointer-style C sketch MUST NOT be implemented. Public header `contracts/ars_p0_contract_draft.h` is still incomplete and NOT shipping. ABI and format decisions below are **candidate owner dispositions**, NOT independent approval.
@@ -95,3 +95,7 @@ proposal; until ACK/re-pin, this remains a material dependency and G00 HOLD.
 F-01 security R5 still requires an independent DESIGN verdict at the current PR #2 HEAD. F-02/F-08 full ABI declarations and ownership not yet final. F-04 ADR-0001 is proposed above, not approved. F-05/F-07/F-09 profile B and semantic taxonomy proposed above, require owner/reviewer signoff and negative fixture design ratification. F-03/F-06 R5 authority/clock semantics need acceptance. F-10 G00 signoff requires a new exact SHA and zero material P0/P1 design blocker. F-11 M1 source scopes are PREPARED only.
 
 **FINAL RC1 OWNER STATE:** `REVIEW_READY_CANDIDATE`, `G00_HOLD`, `IMPLEMENTATION_HOLD`, `NO_MERGE`. This file does NOT confer freeze, production admission or merge authority.
+
+## Approved owner design choices and independent gates (2026-10-14)
+
+Sole project owner explicitly selected native Profile B mandatory one-owner `representations["2d"].layer_bindings` (PR8), staged Security R5/PR5 G00 design oracles with 87 actual tests deferred to G07/G08 (PR9), 20 public ABI declarations with optional diagnostics removed and HOST_DEVICE-only D3D11 QUERY_EVENT retirement (this PR10). This is **owner design authorization**, not G00 independent PASS or merge authorization. Source ancestry is PR8 `2301aa101b46aba545c76047a0e4f7315a1a3222` → PR9 `b80997192d14fbc7c40055300931e33727ac8674` → composed RC1; all 9 blob SHA checks must pass on its exact synthetic merge. Actual SDK, hostile parser, GPU and runtime security remain NOT IMPLEMENTED/HOLD.

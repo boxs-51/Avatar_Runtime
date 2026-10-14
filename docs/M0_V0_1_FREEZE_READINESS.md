@@ -1,7 +1,7 @@
 # M0 v0.1 Freeze-Readiness Ledger RC1 — Candidate, NOT Approved
 
 **ID:** ARS-M0-G00-FREEZE-RC1  
-**Security parent:** Draft PR #2 @ 16abfb058a90f90f4ed89f6b6ced2000bff0b30f
+**Security parent:** Draft PR #2 @ b80997192d14fbc7c40055300931e33727ac8674
 **Current decision:** \`HOLD_G00_CONTRACT_FREEZE\`. Do not merge this prep PR or the parent PRs.
 **Read with:** docs/V0_1_CANONICAL_CONTRACT_RC1.md (normative candidate) and docs/M1_SOURCE_BOOTSTRAP_PLAN.md. RC0 is historical/superseded.
 
@@ -38,7 +38,7 @@
 
 ## What is verified (limited scope)
 
-- PR #2 head \`16abfb058a90f90f4ed89f6b6ced2000bff0b30f\`, Draft and not merged at preparation.
+- PR #2 head \`b80997192d14fbc7c40055300931e33727ac8674\`, Draft and not merged at preparation.
 - GitHub Actions run \`38512133801\` at that head is GREEN for Linux C11/C++20 and Windows MSVC x64 **stub-linked ABI and deterministic R5 contract-model only**. Raw logs include RACE-T/V/W PASS. No production runtime.
 - The source/security negative matrix consists of **19 HDL + 45 SRC + 23 RACE = 87 specified cases**. Treat all real runtime assertions as HOLD until an implementation with reproducible CI exists.
 - Proposed normative precedence is R5 > R4 > R3 > R2 > first P0 design > baseline sketch, *only where revisions explicitly supersede older paragraphs*. A consolidated candidate entry point now exists; the historical documents still need reviewer disposition.

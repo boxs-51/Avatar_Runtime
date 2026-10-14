@@ -32,7 +32,7 @@ else()
     target_compile_options(ars_contract_test_stub PRIVATE -Wall -Wextra -Werror)
 endif()
 
-# Declaration-only v0.1 candidate: 21 symbolic exports, NO engine behavior.
+# Declaration-only v0.1 candidate: 20 symbolic exports, NO engine behavior.
 add_library(ars_abi_design_stub SHARED tests/abi/design_stub.c)
 target_include_directories(ars_abi_design_stub PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_compile_definitions(ars_abi_design_stub PRIVATE ARS_BUILD_SHARED=1)
@@ -84,9 +84,9 @@ if(ARS_ENABLE_PREP_TESTS)
     add_test(NAME prep_abi_c11 COMMAND ars_contract_smoke_c)
     add_test(NAME prep_abi_cpp20 COMMAND ars_contract_smoke_cpp)
     add_test(NAME prep_r5_state_machine COMMAND ars_contract_r5_model)
-    add_test(NAME prep_abi21_c11 COMMAND ars_abi_design_smoke_c)
-    add_test(NAME prep_abi21_cpp20 COMMAND ars_abi_design_smoke_cpp)
-    set_tests_properties(prep_abi21_c11 prep_abi21_cpp20
+    add_test(NAME prep_abi20_c11 COMMAND ars_abi_design_smoke_c)
+    add_test(NAME prep_abi20_cpp20 COMMAND ars_abi_design_smoke_cpp)
+    set_tests_properties(prep_abi20_c11 prep_abi20_cpp20
         PROPERTIES LABELS "contract-prep;NON_PRODUCTION")
     set_tests_properties(prep_abi_c11 prep_abi_cpp20 prep_r5_state_machine
         PROPERTIES LABELS "contract-prep;NON_PRODUCTION")

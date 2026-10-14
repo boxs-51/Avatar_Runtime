@@ -69,7 +69,8 @@ typedef struct {
 #define ARS_CAP_NATIVE_2D_PROFILE_B (UINT64_C(1) << 1)
 #define ARS_CAP_GLTF2_GLB_SUBSET (UINT64_C(1) << 2)
 #define ARS_CAP_DUAL_MODE (UINT64_C(1) << 3)
-#define ARS_CAP_AUTHENTICATED_MOTION_INGRESS (UINT64_C(1) << 4)
+/* Capability means trusted host-scoped bearer registration, NOT remote user authentication. */
+#define ARS_CAP_HOST_SCOPED_MOTION_INGRESS (UINT64_C(1) << 4)
 typedef struct {
   uint32_t struct_size, abi_version;
   uint64_t feature_bits;
@@ -167,11 +168,6 @@ ARS_API ars_status ARS_CALL ars_runtime_begin_close(ars_runtime_h);
 ARS_API ars_status ARS_CALL ars_runtime_drain_gpu(ars_runtime_h);
 ARS_API ars_status ARS_CALL ars_runtime_query_close(ars_runtime_h, ars_close_state *);
 ARS_API ars_status ARS_CALL ars_runtime_finish_close(ars_runtime_h);
-/* Bounded caller-owned diagnostic buffer. No secret tokens or asset bytes.
- * out_required reports required bytes incl NUL; NULL+0 capacity queries size.
- * This is a proposed optional surface: ratify before freezing this ABI.
- */
-ARS_API ars_status ARS_CALL ars_get_last_error_info(ars_runtime_h, char *, uint32_t, uint32_t *);
 #ifdef __cplusplus
 }
 #endif
