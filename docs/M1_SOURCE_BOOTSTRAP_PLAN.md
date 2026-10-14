@@ -10,7 +10,7 @@
 ## RC1 dependency clarification (supersedes older circular prerequisite wording)
 
 - `G00_ABI_DESIGN`: complete declaration-only public C header and reviewer acceptance; **G01** tests actual SDK build, **G10** proves real consumer. Do not demand actual library before authorizing M1-A.
-- `G00_ADR0001_DESIGN`: approve HOST_DEVICE-first design, R-thread ownership, state restoration, device loss, GPU safe-retirement and exact Windows experiment matrix. **M1-D GPU SPIKE** collects real hardware evidence **after** this approval, not before it. SDK_DEVICE is deferred/not advertised in the proposed RC1 profile.
+- `G00_ADR0001_DESIGN` (source: `docs/ADR_0001_D3D11_G00_DESIGN_RC1.md`): approve HOST_DEVICE-first design, R-thread ownership, state restoration, device loss, GPU safe-retirement and exact Windows experiment matrix. **M1-D GPU SPIKE** collects real hardware evidence **after** this approval, not before it. SDK_DEVICE is deferred/not advertised in the proposed RC1 profile.
 - `G00_FORMAT_DESIGN`: select proposed 2D PROFILE B (mesh/atlas/vertex delta only), disable VRM1, specify semantic validator and taxonomy. **M1-C G02** provides real parser/fuzz evidence later.
 - `PR3 parent pin`: `docs/M0_CONTRACT_PARENT_PINS.json` pins PR #1/#2 exact HEADs and security/schema/ABI blobs. On drift, rebase and independently re-audit before authority changes.
 - `M1-A` implementation remains unauthorized until **independent G00 DESIGN PASS**; preparation CMake/CTest is not G01.
