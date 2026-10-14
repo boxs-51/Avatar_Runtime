@@ -47,6 +47,20 @@ Do **not** advertise weighted 2D/masking if neither schema nor renderer enforces
 
 **Format-capability registration:** GLB 2.0 subset is baseline; VRM 1.0 importer is deferred and must be gated by negotiated capabilities. The manifest \`default_mode\` (2d/3d) is not the runtime AUTO selection mode. Mandatory unsupported representation must be rejected, not silently accepted.
 
+## RC1 proposed format decision and typed errors (Owner proposal, not frozen)
+
+**Native 2D choice: PROFILE B.** v0.1 accepts bounded atlas rectangle/pivot, vertices, UV, triangle indices and parameter-associated vertex-delta deform arrays. **No** weighted deformation, relative part-transform hierarchy, 2D part masks or mask compositing is advertised; manifest visual-layer ordering/visibility/opacity remains supported without masks. New input asking for recognized but disabled mask/weighted capabilities returns `ARS_E_UNSUPPORTED` after validating structural input. This explicitly narrows the broad M0 specification; before freeze the public capabilities/ABI and product specification must agree.
+
+**3D:** embedded `glb-gltf2` subset only; `vrm1` remains a recognizable **disabled capability**, returns `ARS_E_UNSUPPORTED` for an otherwise well-formed manifest. Unknown or malformed format identifiers return `ARS_E_BAD_ASSET`. Required glTF extensions not advertised in capabilities return UNSUPPORTED; corrupted accessor/index/skin data return BAD_ASSET.
+
+**Design-only validator contract:**
+`validate_bundle(bytes, limits, caps) -> ValidatedCpuModel | ValidationError`.
+Phases: V0 bounded ZIP name/member/canonicalization -> V1 strict JSON duplicate-key + Draft 2020-12 schema validation -> V2 semantic/cross-file identity, layer DAG, type/domain, default ranges, mapped 2D parameters -> V3 2D mesh/atlas index and GLB CPU validation -> V4 immutable validated CPU asset publication. CPU validator never performs GPU calls, network requests or writes partial models. Any source/format capability is evaluated against explicit caps; `default_mode` must be backed by an actual representation.
+
+**Error precedence:** INVALID_ARGUMENT for malformed caller ABI pointers/lengths/struct_size/reserved flags; OUT_OF_BUDGET for preflight/ZIP/texture/object ceilings; BAD_ASSET for malformed JSON/ZIP, duplicate keys/entries, traversal/alias, unknown format, invalid references/ranges/geometry; UNSUPPORTED for well-formed recognized but disabled VRM/mask/weighted extension; INTERNAL only for unexpected internal failure with cleanup. For structurally malformed + unsupported combinations, BAD_ASSET wins after budget checks. All output handles zero on failure, no GPU upload.
+
+**G00 format DESIGN proof:** Draft2020-12 meta-validate both schemas, validate reference JSON fixtures, define a deterministic negative mutation corpus and this exact error taxonomy, ratify PROFILE B and glTF capability subset independently. **G02/G08** later require real ZIP/GLB/PNG parser, runtime error behavior and fuzzing. No claim that the current M0 CI implements parser.
+
 ## 4. Validation API and proof boundary
 
 \`validate_asset(const bytes, limits, capability_set) -> expected<ValidatedCpuModel, ValidationError>\` is a **conceptual internal contract**, not a public shipping C++ signature. It returns an immutable parsed CPU model with validated identity tables, bounded resources, verified references and no GPU effect. The renderer must not consume unvalidated source bytes.
