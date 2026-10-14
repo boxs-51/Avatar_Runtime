@@ -106,6 +106,21 @@ class ProfileBContract(unittest.TestCase):
     def test_wellformed_mask_is_unsupported(self):
         m = copy.deepcopy(self.m); m["visual_layers"][0]["mask"]="face.mouth"
         with self.assertRaises(Unsupported): verify_design(m, self.r)
+    # Independent reference oracle must agree on malformed disabled mask edges.
+    def test_mask_unknown_reference_malformed(self):
+        self.verify_mutation(lambda m,r: m["visual_layers"][0].update(mask="no.such.layer"))
+    def test_mask_self_reference_malformed(self):
+        self.verify_mutation(lambda m,r: m["visual_layers"][0].update(mask="base.body"))
+    def test_mask_two_cycle_malformed(self):
+        def change(m,r):
+            m["visual_layers"][0]["mask"]="face.mouth"
+            m["visual_layers"][1]["mask"]="base.body"
+        self.verify_mutation(change)
+    def test_parent_mask_cycle_malformed(self):
+        def change(m,r):
+            m["visual_layers"][1]["parent"]="base.body"
+            m["visual_layers"][0]["mask"]="face.mouth"
+        self.verify_mutation(change)
     def test_invalid_binding_precedes_disabled_mask(self):
         m = copy.deepcopy(self.m); m["visual_layers"][0]["mask"]="face.mouth"
         m["representations"]["2d"]["layer_bindings"][0]["part_ids"]=["does.not.exist"]

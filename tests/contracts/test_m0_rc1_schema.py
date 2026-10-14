@@ -234,6 +234,25 @@ class RC1SchemaContracts(unittest.TestCase):
         m=copy.deepcopy(self.manifest);m["representations"]["3d"]["format"]="vrm1";self.verify(m,expected="ARS_E_UNSUPPORTED")
     def test_mask_recognized_disabled(self):
         m=copy.deepcopy(self.manifest);m["visual_layers"][0]["mask"]="base.body";self.verify(m,expected="ARS_E_UNSUPPORTED")
+    # RED-first ARS-G00-FMT-P1-01: malformed mask graph precedes disabled feature.
+    def test_mask_missing_target_bad_asset(self):
+        m=copy.deepcopy(self.manifest)
+        m["visual_layers"][0]["mask"]="no.such.layer"
+        self.verify(m,expected="ARS_E_BAD_ASSET")
+    def test_mask_self_loop_bad_asset(self):
+        m=copy.deepcopy(self.manifest)
+        m["visual_layers"][0]["mask"]="base.body"
+        self.verify(m,expected="ARS_E_BAD_ASSET")
+    def test_mask_two_node_cycle_bad_asset(self):
+        m=copy.deepcopy(self.manifest)
+        m["visual_layers"][0]["mask"]="face.mouth"
+        m["visual_layers"][1]["mask"]="base.body"
+        self.verify(m,expected="ARS_E_BAD_ASSET")
+    def test_parent_mask_mixed_cycle_bad_asset(self):
+        m=copy.deepcopy(self.manifest)
+        m["visual_layers"][1]["parent"]="base.body"
+        m["visual_layers"][0]["mask"]="face.mouth"
+        self.verify(m,expected="ARS_E_BAD_ASSET")
     def test_duplicate_visual_layer(self):
         m=copy.deepcopy(self.manifest);m["visual_layers"].append(copy.deepcopy(m["visual_layers"][0]));self.verify(m,expected="ARS_E_BAD_ASSET")
     def test_layer_parent_cycle(self):
