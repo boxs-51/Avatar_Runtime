@@ -2,6 +2,8 @@
 
 **Status:** OWNER PROPOSAL / NOT INDEPENDENTLY APPROVED. **Input audit:** ARS-P0-PR2-R2-REAUDIT-2026-10-14-01 at a9ab2a60a3f83196eae08cc5de995865c5f579cd.
 
+> **R5 SUPERSESSION:** docs/P0_OWNER_REMEDIATION_V0.5.md is latest for close fairness, cross-lock cached-state expiry and overflow; R3 reservation/terminal explicit revoke remains where compatible.
+
 > **R4 SUPERSESSION:** docs/P0_OWNER_REMEDIATION_V0.4.md is authoritative for security clock highwater/fault, irreversible source EXPIRED state and admission vs begin_close fence. Unmodified R3 epoch reservations/terminal explicit revoke remain active. This older document must not be implemented in conflict with R4.
 
 **Normative precedence:** R3 overrides conflicting R2/v0.1 text for rotation vs revoke, TTL and runtime-close publication; unchanged R2 provisions remain in force. NO MERGE and NO G00 PASS.
