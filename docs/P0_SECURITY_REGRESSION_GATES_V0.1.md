@@ -5,6 +5,8 @@
 **Design-only C interface:** contracts/ars_p0_contract_draft.h  
 **Does not amend G00 PASS automatically.** This is a regression requirement list; tests are pending actual implementation.
 
+> **R4 AUTHORITY:** docs/P0_OWNER_REMEDIATION_V0.4.md supersedes R3/R2 on terminal expiry, global clock highwater and shared/exclusive admission close barrier. Executable contract-model uses tests/contracts/p0_r4_state_machine_model.cpp; full production runtime tests remain HOLD.
+
 **R2 precedence:** docs/P0_OWNER_REMEDIATION_V0.2.md resolves the P0 audit and supplies mandatory provenance/sequence/clock/close/ABI contracts. All dynamic test cases remain HOLD until actual implementation and reproducible logs are available.
 
 ## 1. Evidence and verdict protocol
@@ -78,6 +80,10 @@ Each report includes test_id, PR, HEAD, build/compiler flags, OS, CPU/GPU where 
 | SRC-035 | source security clock sampled backwards under ingress mutex | CLOCK_REGRESSION; no quota or sequence advancement |
 | SRC-036 | source TTL expires before final publish sample | old pose candidate denied; new generation not committed |
 | SRC-037 | clock advances after valid authorization sample but before pointer store | permitted under expressly documented sample-time TTL semantics; next sample rejects expired source |
+| SRC-038 | source accepts pose at 150, observes expiry at 200, then clock regresses to 120 | source enters terminal EXPIRED and epoch invalidated; sticky CLOCK_FAULT; no new publish on old cap/epoch |
+| SRC-039 | ingress holds shared admission gate while begin_close requests exclusive gate | earlier ingress append can finish BEFORE close linearization; no append/OK after QUIESCING |
+| SRC-040 | ingress samples security clock at 180, publisher next samples 170 | global security_highwater detects backwards time and permanently rejects new authorizations |
+| SRC-041 | sustained ingress flood while begin_close sets writer intent | close cannot be starved; all post-close queue admissions denied |
 
 ## 4. Required controlled concurrency traces
 
@@ -136,6 +142,37 @@ I: old cap sequence=0 or UINT64_MAX again => denied
 I: new cap sequence=1 => valid
 ASSERT: no ABA of cap, no replay across generations
 ~~~
+
+### RACE-Q: expiry, rollback and no source resurrection
+
+    S: authorize source epoch N at security sample 150; commit P
+    S: sample expiry=200; terminally set EXPIRED, increment epoch, revoke token and invalidate retained provenance
+    Clock: inject rollback to 120, then request fresh pose commit/ingress with old cap
+    ASSERT: new pose generation never committed; old cap denied; runtime security_clock_fault sticky
+    VARIANT: regression before expiry poisons clock and blocks later higher timestamps
+
+### RACE-R: admission vs begin_close linearization
+
+    I: obtain admission_gate SHARED + source mutex; pause AFTER RUNNING check BEFORE queue append
+    H: begin_close sets closing-intent and waits for admission_gate EXCLUSIVE
+    I: resume and append; this OK linearizes BEFORE H changes RUNNING -> QUIESCING
+    H: obtains exclusive admission gate, under commit/router locks marks QUIESCING; completes close barrier
+    I: later submit with old/new sequence denied; no enqueue after close
+    INVERSE: close linearizes first, paused prevalidation cannot obtain shared admission and commit
+    ASSERT: bounded close, no accepted post-close ingress or queue resurrection
+
+### RACE-S: shared runtime authorization clock watermark
+
+    I: admission samples 180 via security_clock_gate, sets global highwater=180
+    S: publish attempts sampling 170 via SAME clock gate
+    ASSERT: sticky clock fault; pose/queue never accepted even when clock subsequently rises to 190
+
+### RACE-T: sustained multi-source ingress pressure vs begin_close
+
+    Multiple sources saturate ingress admission gate with bounded operations
+    H: sets closing-intent then waits for admission_gate EXCLUSIVE
+    ASSERT: close obtains exclusive gate, shuts admission; later ingress denied; no starvation/double free
+    NOTE: multi-source production proof HOLD until runtime implementation
 
 ### RACE-L: phase B rotate paused then explicit revoke (P0)
 
@@ -242,7 +279,7 @@ Use deterministic scheduler barriers/latches, not sleeps, and retain exact inter
 
 **G00-P0-A:** reviewed handle and registry design, C ABI type sizes, threading rules, close management exceptions, source capability and publish-gate linearization are unambiguous.  
 **G00-P0-B:** C11/C++20 compile plus linked ABI stub smoke tests on the header (do not mistake compile for security PASS).  
-**G00-P0-C:** before production M1, minimal registry/mixer implementation passes HDL-001..019, SRC-001..037 and RACE-A..P on a declared CI matrix or explicit phased evidence approved by independent reviewer.  
+**G00-P0-C:** before production M1, minimal registry/mixer implementation passes HDL-001..019, SRC-001..041 and RACE-A..T on a declared CI matrix or explicit phased evidence approved by independent reviewer.  
 **G00-P0-D:** architecture ADR-0001 device owner and ADR-0004 threading must lock GPU retirement and thread-safe revoke behavior; demonstrate exact source scopes/owners.  
 **G00-P0-E:** no source/ABI/schema changes are merged until new exact HEAD independent re-audit, with all P0 addressed and tracked P1 still explicitly gated.
 
