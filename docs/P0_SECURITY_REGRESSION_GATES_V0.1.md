@@ -310,7 +310,7 @@ Use deterministic scheduler barriers/latches, not sleeps, and retain exact inter
 
 **G00-P0-A:** reviewed handle and registry design, C ABI type sizes, threading rules, close management exceptions, source capability and publish-gate linearization are unambiguous.  
 **G00-P0-B:** C11/C++20 compile plus linked ABI stub smoke tests on the header (do not mistake compile for security PASS).  
-**G00-P0-C:** before production M1, minimal registry/mixer implementation passes HDL-001..019, SRC-001..045 and RACE-A..W on a declared CI matrix or explicit phased evidence approved by independent reviewer.  
+**G00-P0-C (DESIGN ONLY):** before starting M1 source implementation, independently review and freeze the complete 19 HDL + 45 SRC + 23 RACE = 87-case negative-test inventory with explicit oracle, ownership, OS/compiler matrix, planned controlled interleavings and stage assignment. Execute the standalone deterministic contract-model subset on Linux/Windows as DESIGN evidence only. A functional registry/mixer is NOT a G00 prerequisite. Every production-runtime HDL/SRC/RACE assertion, process concurrency test and sanitizer remains **HOLD until M1-B / G07/G08** and cannot be waived by a generic phased-evidence exception. G00 design PASS cannot be reused as runtime/security/release PASS.  
 **G00-P0-D:** architecture ADR-0001 device owner and ADR-0004 threading must lock GPU retirement and thread-safe revoke behavior; demonstrate exact source scopes/owners.  
 **G00-P0-E:** no source/ABI/schema changes are merged until new exact HEAD independent re-audit, with all P0 addressed and tracked P1 still explicitly gated.
 
