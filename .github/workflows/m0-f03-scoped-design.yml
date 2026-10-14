@@ -1,0 +1,42 @@
+name: M0 F03 scoped finite design tests (nonproduction)
+on:
+  pull_request:
+    paths:
+      - "tests/contracts/test_m0_rc1_schema.py"
+      - ".github/workflows/m0-f03-scoped-design.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  f03-linux:
+    name: Linux Python F03 design-only
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install pinned validation dependency
+        run: python3 -m pip install --disable-pip-version-check jsonschema==4.23.0
+      - name: F03 direct-dict negative and semantic-priority tests (not production)
+        run: |
+          python3 tests/contracts/test_m0_rc1_schema.py \
+            RC1SchemaContracts.test_red_f03_direct_dict_nonfinite_visual_opacity \
+            RC1SchemaContracts.test_red_f03_nonfinite_opacity_precedes_disabled_vrm1 \
+            RC1SchemaContracts.test_red_f03_json_exponent_overflow \
+            RC1SchemaContracts.test_red_f03_uv_infinity
+
+  f03-windows:
+    name: Windows Python F03 design-only
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install pinned validation dependency
+        shell: pwsh
+        run: |
+          python -m pip install --disable-pip-version-check jsonschema==4.23.0
+          exit $LASTEXITCODE
+      - name: F03 direct-dict negative and semantic-priority tests (not production)
+        shell: pwsh
+        run: |
+          python tests/contracts/test_m0_rc1_schema.py RC1SchemaContracts.test_red_f03_direct_dict_nonfinite_visual_opacity RC1SchemaContracts.test_red_f03_nonfinite_opacity_precedes_disabled_vrm1 RC1SchemaContracts.test_red_f03_json_exponent_overflow RC1SchemaContracts.test_red_f03_uv_infinity
+          exit $LASTEXITCODE
