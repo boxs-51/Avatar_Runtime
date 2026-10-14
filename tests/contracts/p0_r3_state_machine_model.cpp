@@ -90,6 +90,8 @@ struct ContractModel {
         std::scoped_lock commit(commit_gate);
         std::scoped_lock pose(pose_gate);
         std::scoped_lock ingress(source.ingress);
+        std::scoped_lock clock(security_clock_gate);
+        if (security_clock_poisoned) return {};
         if (!running.load() ||
             (source.state != SourceState::active &&
              source.state != SourceState::rotate_failed)) {
@@ -115,7 +117,8 @@ struct ContractModel {
         std::scoped_lock commit(commit_gate);
         std::scoped_lock pose(pose_gate);
         std::scoped_lock ingress(source.ingress);
-        const bool matches = reservation.valid && running.load() &&
+        std::scoped_lock clock(security_clock_gate);
+        const bool matches = !security_clock_poisoned && reservation.valid && running.load() &&
             source.state == SourceState::rotating_old_revoked &&
             reservation.ticket == source.ticket &&
             reservation.epoch == source.epoch &&
@@ -393,6 +396,21 @@ static void race_q_irrevocable_expiry_and_clock_fault() {
     std::cout << "PASS RACE-Q: terminal expiry and sticky clock-regression denial\n";
 }
 
+static void race_q_pending_rotate_denied_after_clock_fault() {
+    ContractModel m;
+    auto pending = m.start_rotate();
+    assert(pending.valid);
+    m.security_now.store(170);
+    // A publish sample from any source is sufficient to register high-water.
+    assert(!m.publish(pending.epoch)); // rotating state; records highwater
+    m.security_now.store(120);
+    assert(!m.publish(pending.epoch)); // poison during in-flight mint
+    assert(m.security_clock_poisoned);
+    assert(!m.finish_rotate(pending, 222)); // cannot grant fresh token
+    assert(!m.start_rotate().valid);
+    std::cout << "PASS RACE-Q clock fault denies pending token activation\n";
+}
+
 static void race_r_admission_vs_close_commit_barrier() {
     ContractModel m;
     std::latch admission_inside(1), resume_admission(1), close_invoked(1);
@@ -445,6 +463,7 @@ int main() {
     provenance_revoke_cannot_republish();
     failclosed_rotate_rng();
     race_q_irrevocable_expiry_and_clock_fault();
+    race_q_pending_rotate_denied_after_clock_fault();
     race_r_admission_vs_close_commit_barrier();
     race_s_global_clock_watermark_shared_by_ingress_publish();
     std::cout << "PASS ALL R4 CONTRACT MODEL TESTS (NOT production runtime)\n";
