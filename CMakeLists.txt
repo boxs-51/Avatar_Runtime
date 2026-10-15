@@ -76,9 +76,10 @@ if(ARS_ENABLE_PREP_TESTS)
 
     target_link_libraries(ars_contract_r5_model PRIVATE Threads::Threads)
     if(MSVC)
-        target_compile_options(ars_contract_r5_model PRIVATE /W4 /WX)
+        # Keep the historical model's assert oracles active in ASan release builds.
+        target_compile_options(ars_contract_r5_model PRIVATE /W4 /WX /UNDEBUG)
     else()
-        target_compile_options(ars_contract_r5_model PRIVATE -Wall -Wextra -Werror)
+        target_compile_options(ars_contract_r5_model PRIVATE -Wall -Wextra -Werror -UNDEBUG)
     endif()
 
     add_test(NAME prep_abi_c11 COMMAND ars_contract_smoke_c)

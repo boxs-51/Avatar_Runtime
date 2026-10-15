@@ -48,6 +48,10 @@ Local Windows x64 MSVC 19.51 / Visual Studio 18 2026:
 
 - Shared Debug: 13/13 CTest tests passed, including exact 20 exports for both libraries.
 - Static Debug: 11/11 CTest tests passed.
+- Static RelWithDebInfo ASan: 11/11 passed; dumpbin confirms
+  `clang_rt.asan_dynamic-x86_64.dll` and `__asan_*` imports. The historical PREP
+  model keeps assertions enabled in release configurations, preserving its oracles.
+- Four external plain-C consumers (foundation/core, shared/static) each passed.
 - Both runs preserve the original 189-case foundation contract and five PREP tests.
 - Public C exercises successful CPU create/capabilities/close, malformed inputs,
   stale handles, zero outputs, bounded prefix reads and future-tail preservation.
