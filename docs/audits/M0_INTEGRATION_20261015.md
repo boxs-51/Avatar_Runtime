@@ -55,10 +55,22 @@ configuration or repository rules were modified.
 ## Technical acceptance and decisions
 
 Initial six new consolidation tests fail on missing `check_consolidation` before
-repair (local RED, exit 1). Tests exercise missing source ancestry, unexpected
+repair (local RED, exit 1). Real CI RED at
+`3dc943ee8bf7ef78da2eff3075b8dab4b267e83d`,
+[PREP #38767384552](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38767384552),
+failed the new custody step on GCC, Clang and Windows MSVC after the native build
+passed. Windows raw job `116534034186` confirms the missing-function errors,
+not an unrelated infrastructure failure. Tests exercise missing source ancestry, unexpected
 runtime paths, missing required scope/evidence, changed main, and governance
 blob rewriting. The new branch-specific transition is exact, not `integration/*`.
 PR17 CI runs these tests before the original provenance gate.
+
+After repair, local unittest discovery passed 83/83 contract tests (exit 0) and
+9/9 governance tests (exit 0). Original provenance and stage-boundary scripts
+also passed. Local contract logs are in the ignored
+`build/integration-evidence/contracts-green.txt`; RED output is retained beside
+it. The previous handoff's 5/5 native MSVC2026 CTest run remains supplemental;
+fresh cross-platform PR17 native results must come from its final CI below.
 
 Acceptance requires fresh PREP Linux GCC/Clang + Windows MSVC, Profile B, F03,
 R5, and governance workflows on the exact final PR17 head. Record completed run
