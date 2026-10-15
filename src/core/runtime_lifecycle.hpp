@@ -36,8 +36,9 @@ class RuntimeRouter {
     void release(Runtime *,LeaseKind) noexcept;
     void cancel_reservation(std::uint32_t) noexcept;
     friend class RuntimeLease;
+    friend struct ComponentFixture;
 public:
-    explicit RuntimeRouter(RuntimeBudget budget={},std::uint64_t initial_uid=1);
+    explicit RuntimeRouter(RuntimeBudget budget={});
     ars_status create(const ars_runtime_desc &,ars_runtime_h *);
     ars_status acquire(ars_runtime_h,LeaseKind,RuntimeLease *);
     ars_status begin_close(ars_runtime_h);

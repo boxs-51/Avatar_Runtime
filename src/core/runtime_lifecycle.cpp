@@ -42,12 +42,11 @@ void RuntimeLease::reset() noexcept {
     // control block until root unpin is complete, including after close intent.
     root_.reset(); if(owner) owner->release(runtime,kind_);
 }
-RuntimeRouter::RuntimeRouter(RuntimeBudget budget,std::uint64_t initial_uid)
-    :budget_(budget),next_uid_(initial_uid) {
+RuntimeRouter::RuntimeRouter(RuntimeBudget budget)
+    :budget_(budget),next_uid_(1) {
     if(!budget_.runtimes || !budget_.slots || !budget_.pins ||
        budget_.runtimes>max_runtime_count || budget_.slots>max_slot_count || budget_.pins>max_pin_count)
         budget_={0,0,0};
-    if(initial_uid==0) uid_exhausted_=true;
 }
 void RuntimeRouter::cancel_reservation(std::uint32_t index) noexcept {
     std::lock_guard lock(mutex_); entries_[index]={};

@@ -34,7 +34,8 @@ int main() {
     test::status(ARS_E_STALE_HANDLE,registry.pin(a,ObjectType::character,&pin),"REG-old-generation-never-aliases");
     test::status(ARS_OK,registry.invalidate(b,ObjectType::model),"REG-second-invalidate");
     {
-        HandleRegistry exhausted(15,1,2,std::numeric_limits<std::uint32_t>::max());
+        HandleRegistry exhausted(15,1,2);
+        ComponentFixture::initial_generation(exhausted,std::numeric_limits<std::uint32_t>::max());
         test::status(ARS_OK,exhausted.insert(ObjectType::model,&first,&a),"REG-max-generation-issued-once");
         test::status(ARS_OK,exhausted.invalidate(a,ObjectType::model),"REG-terminal-generation-retirement");
         test::status(ARS_E_OUT_OF_BUDGET,exhausted.insert(ObjectType::model,&first,&b),"REG-retired-slot-not-recycled");

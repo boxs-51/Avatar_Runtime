@@ -41,9 +41,10 @@ class HandleRegistry {
     ars_status check_locked(ars_handle_id,ObjectType) const noexcept;
     void unpin(std::uint32_t) noexcept;
     friend class RegistryLease;
+    friend struct ComponentFixture;
 public:
     explicit HandleRegistry(std::uint64_t uid,std::uint32_t capacity=max_slot_count,
-                            std::uint32_t pin_limit=max_pin_count,std::uint32_t initial_generation=1);
+                            std::uint32_t pin_limit=max_pin_count);
     ars_status insert(ObjectType,void *payload,ars_handle_id *);
     ars_status check(ars_handle_id,ObjectType) const;
     ars_status pin(ars_handle_id,ObjectType,RegistryLease *);

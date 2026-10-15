@@ -98,6 +98,11 @@ jobs:
           $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
           $tool = Get-ChildItem "$vs\VC\Tools\MSVC" -Directory | Sort-Object Name -Descending | Select-Object -First 1
           $env:PATH = "$($tool.FullName)\bin\Hostx64\x64;$env:PATH"
+          if ('${{ matrix.sanitizer }}' -eq 'ADDRESS') {
+            dumpbin /imports "build/b1/bin/${{ matrix.config }}/ars_runtime_lifecycle_tests.exe" | Tee-Object build/b1/instrumentation.txt
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            if (-not (Select-String -Path build/b1/instrumentation.txt -Pattern '__asan_|clang_rt.asan')) { throw 'ASan instrumentation missing' }
+          }
           ctest --test-dir build/b1 -C ${{ matrix.config }} --verbose
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           foreach ($kind in @('foundation','core')) {
@@ -112,4 +117,6 @@ jobs:
         if: always()
         with:
           name: b1-windows-${{ matrix.shared }}-${{ matrix.sanitizer }}
-          path: build/**/Testing/Temporary/LastTest.log
+          path: |
+            build/**/Testing/Temporary/LastTest.log
+            build/b1/instrumentation.txt

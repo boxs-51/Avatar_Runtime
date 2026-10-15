@@ -1,9 +1,25 @@
 #pragma once
 #include "ars/ars.h"
+#include "runtime_lifecycle.hpp"
 #include <condition_variable>
 #include <cstdio>
 #include <cstdlib>
 #include <mutex>
+
+namespace ars::core {
+// Defined only in test translation units, before any fixture handle/lease exists.
+// There is no production counter override, reset entry point or test export.
+struct ComponentFixture {
+    static void initial_uid(RuntimeRouter &router,std::uint64_t uid) {
+        router.next_uid_=uid; router.uid_exhausted_=uid==0;
+    }
+    static void initial_generation(HandleRegistry &registry,std::uint32_t generation) {
+        for(auto &slot:registry.slots_) {
+            slot.generation=generation; slot.retired=generation==0;
+        }
+    }
+};
+}
 
 namespace test {
 inline void check(bool ok,const char *id) {

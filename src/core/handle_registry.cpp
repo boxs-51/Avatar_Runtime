@@ -19,14 +19,9 @@ void RegistryLease::reset() noexcept {
     if(owner) owner->unpin(slot_);
 }
 HandleRegistry::HandleRegistry(std::uint64_t uid,std::uint32_t capacity,
-                               std::uint32_t pin_limit,std::uint32_t initial_generation)
+                               std::uint32_t pin_limit)
     :uid_(uid),capacity_(capacity<=max_slot_count?capacity:0),
-     pin_limit_(pin_limit<=max_pin_count?pin_limit:0) {
-    for(auto &slot:slots_) {
-        slot.generation=initial_generation;
-        if(initial_generation==0) slot.retired=true;
-    }
-}
+     pin_limit_(pin_limit<=max_pin_count?pin_limit:0) {}
 ars_status HandleRegistry::check_locked(ars_handle_id id,ObjectType type) const noexcept {
     if(id.runtime_uid==0) return ARS_E_INVALID_ARGUMENT;
     if(id.runtime_uid!=uid_ || id.slot>=capacity_) return ARS_E_STALE_HANDLE;

@@ -89,7 +89,8 @@ int main() {
     }
     {
         // Isolated real router instance, never a reset of global authority.
-        RuntimeRouter router({1,1,2},std::numeric_limits<std::uint64_t>::max()); ars_runtime_h runtime{},out{};
+        RuntimeRouter router({1,1,2}); ars_runtime_h runtime{},out{};
+        ComponentFixture::initial_uid(router,std::numeric_limits<std::uint64_t>::max());
         test::status(ARS_OK,router.create(desc,&runtime),"UID-last-value");
         test::status(ARS_OK,router.begin_close(runtime),"UID-close-last");
         test::status(ARS_OK,router.finish_close(runtime),"UID-finish-last");
