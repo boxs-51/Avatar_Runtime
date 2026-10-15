@@ -100,7 +100,30 @@ def check_consolidation(base, candidate):
                     f"Consolidation altered preserved source: {path}")
     return True
 
-def validate_blob_manifest(obj):
+M1_A_BRANCH = "m1/a-build-foundation"
+M1_A_BASE = "a307c6775388a507aeacb5fbeb09479633c20f58"
+M1_A_PATHS = frozenset((
+    "CMakeLists.txt", "src/abi/abi_version.cpp", "src/abi/unsupported.cpp",
+    "cmake/ars_compiler_options.cmake", "cmake/ars_verify_exports.cmake",
+    "tests/abi/foundation_contract.c", "tests/abi/foundation_cpp.cpp",
+    "examples/plain_c/CMakeLists.txt", "examples/plain_c/main.c",
+    ".github/workflows/m1-build.yml", "docs/audits/M1_A_BUILD_EVIDENCE.md",
+    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m1_a_custody.py",
+    "tests/contracts/test_m0_consolidation.py",
+))
+
+def check_m1_a(base, candidate):
+    """Approved PR18 scope: exact target, 14 paths, M0 ancestry and design blobs."""
+    require(base == M1_A_BASE, "M1-A main moved: fresh exact-target review required")
+    git("merge-base", "--is-ancestor", M1_A_BASE, candidate)
+    changed = set(git("diff", "--name-only", M1_A_BASE, candidate).splitlines())
+    require(changed == M1_A_PATHS, f"M1-A source path drift: {sorted(changed ^ M1_A_PATHS)}")
+    # Read the historical manifest, never accept new current-branch SHA values.
+    frozen = json.loads(git("show", M1_A_BASE + ":docs/M0_CONTRACT_PARENT_PINS.json"))
+    validate_blob_manifest(frozen, candidate)
+    return True
+
+def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
     The two keysets are deliberately defined in CODE, not in the editable
@@ -117,7 +140,7 @@ def validate_blob_manifest(obj):
                     f"Invalid SHA for {path}")
             require(not path.startswith("/") and ".." not in Path(path).parts,
                     f"Unsafe provenance path: {path}")
-            actual = git("rev-parse", "HEAD:" + path)
+            actual = git("rev-parse", revision + ":" + path)
             require(actual == sha,
                     f"Incorrect {field} blob: {path}; expected {sha}, got {actual}")
     return True
@@ -137,7 +160,10 @@ def check():
         expected_parent = git("rev-parse", "HEAD^1")
         # Exact authorization is per candidate kind, never a broad audit-branch bypass.
         child = obj.get("audit_child", {})
-        if os.getenv("GITHUB_HEAD_REF") == CONSOLIDATION_BRANCH:
+        if os.getenv("GITHUB_HEAD_REF") == M1_A_BRANCH:
+            expected = M1_A_BASE
+            check_m1_a(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == CONSOLIDATION_BRANCH:
             expected = CONSOLIDATION_MAIN
             check_consolidation(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == child.get("head_branch"):
