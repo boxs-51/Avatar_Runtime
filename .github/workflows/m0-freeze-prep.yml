@@ -81,6 +81,8 @@ jobs:
             -DARS_PREP_ONLY=ON -DARS_ENABLE_PREP_TESTS=ON
           cmake --build build/prep --parallel
           ctest --test-dir build/prep --output-on-failure
+      - name: Consolidated M0 source custody (not merge permission)
+        run: python -m unittest discover -s tests/contracts -p test_m0_consolidation.py -v
       - name: RC1 parent SHA / blob pin check
         shell: bash
         run: python3 tests/contracts/check_m0_rc1_pins.py
@@ -111,6 +113,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           ctest --test-dir build/prep -C Debug --output-on-failure
           exit $LASTEXITCODE
+      - name: Consolidated M0 source custody (not merge permission)
+        run: python -m unittest discover -s tests/contracts -p test_m0_consolidation.py -v
       - name: RC1 parent SHA / blob pin check
         shell: pwsh
         run: |
