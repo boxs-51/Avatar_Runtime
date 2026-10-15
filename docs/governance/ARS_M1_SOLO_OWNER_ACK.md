@@ -1,6 +1,6 @@
 # ARS-M1 — Solo Human Owner, direct decisions and permission tiers
 
-**ADOPTION_STATE=PROPOSED_NOT_CANONICAL** — OWNER REFERENCE YES ONLY; no merge/policy activation.
+**ADOPTION_STATE=OWNER_ADOPTED_PENDING_MAIN** — Human Owner approved local governance v0.1 in chat; Draft PR not landed, no merge/M1/Wave authorization.
 
 **Source:** https://github.com/boxs-51/assistant/issues/526 — M1 of Policy #85 v3.0. Local existing procedural exception: docs/GOVERNANCE_ARS_SOLO_OWNER_001.md (Draft PR #11). **OWNER_DIRECT_ACK** is the proposed Avatar_Runtime decision interface.
 

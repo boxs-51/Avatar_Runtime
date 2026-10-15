@@ -1,6 +1,6 @@
 # ARS-M2 — GPT Developer lifecycle and continuous self-checks
 
-**ADOPTION_STATE=PROPOSED_NOT_CANONICAL** — OWNER REFERENCE YES ONLY; no merge/policy activation.
+**ADOPTION_STATE=OWNER_ADOPTED_PENDING_MAIN** — Human Owner approved local governance v0.1 in chat; Draft PR not landed, no merge/M1/Wave authorization.
 
 **Source:** https://github.com/boxs-51/assistant/issues/527 — M2 of Policy #85 v3.0. The single GPT_DEVELOPER is the technical implementer during explicit sessions, not a 24/7 unattended worker or a distinct GitHub identity.
 

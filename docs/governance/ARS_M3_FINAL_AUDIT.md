@@ -1,6 +1,6 @@
 # ARS-M3 — Final-only comprehensive audit and transparent solo exception
 
-**ADOPTION_STATE=PROPOSED_NOT_CANONICAL** — OWNER REFERENCE YES ONLY; no merge/policy activation.
+**ADOPTION_STATE=OWNER_ADOPTED_PENDING_MAIN** — Human Owner approved local governance v0.1 in chat; Draft PR not landed, no merge/M1/Wave authorization.
 
 **Source:** https://github.com/boxs-51/assistant/issues/528 — M3 of Policy #85 v3.0. Local procedural authority requested/approved by owner: docs/GOVERNANCE_ARS_SOLO_OWNER_001.md in Draft PR #11.
 

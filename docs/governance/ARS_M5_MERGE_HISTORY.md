@@ -1,6 +1,6 @@
 # ARS-M5 — Single-PR merge approval and immutable history custody
 
-**ADOPTION_STATE=PROPOSED_NOT_CANONICAL** — OWNER REFERENCE YES ONLY; no merge/policy activation.
+**ADOPTION_STATE=OWNER_ADOPTED_PENDING_MAIN** — Human Owner approved local governance v0.1 in chat; Draft PR not landed, no merge/M1/Wave authorization.
 
 **Source:** https://github.com/boxs-51/assistant/issues/530 — M5 of Policy #85 v3.0.
 
