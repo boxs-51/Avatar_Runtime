@@ -87,7 +87,9 @@ P0 DLL and correctly rejected its wrong symbol set. Logs are retained in ignored
 Final review added actual eight-byte heap allocations for both sized output
 APIs, checking INVALID_ARGUMENT and zero writes rather than only using a short
 declared capacity inside a full-size object. The final C behavioral suite has
-189 checks and also asserts all nine descriptor/output layouts in C11. Final CI
+189 checks and also asserts all nine descriptor/output layouts in C11. Prefix
+negotiation reads size/version through bounded byte copies before accessing
+typed tail fields, so a full T object is not assumed for prefix-only storage. Final CI
 must re-attest these new prefix-only cases under ASan/UBSan and both linkages.
 
 Reproduction, from the source root (use VS2022 in CI, VS2026 on this workstation):

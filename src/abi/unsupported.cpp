@@ -6,8 +6,15 @@ namespace {
 template<class T> bool prefix(const T *p) {
     // The caller supplies an accessible size/version prefix. Never read a tail
     // before full known size validation, including reserved fields.
-    return p && p->struct_size >= sizeof(T) &&
-           (p->abi_version >> 16) == ARS_ABI_MAJOR;
+    if (!p) return false;
+    uint32_t size = 0, version = 0;
+    // Byte reads also support the prefix-only C buffers used for negotiation;
+    // they do not assume a complete T object exists before checking capacity.
+    std::memcpy(&size, p, sizeof(size));
+    if (size < sizeof(T)) return false;
+    const auto *bytes = static_cast<const unsigned char *>(static_cast<const void *>(p));
+    std::memcpy(&version, bytes + sizeof(size), sizeof(version));
+    return (version >> 16) == ARS_ABI_MAJOR;
 }
 template<class T> void clear(T *p) {
     if (p) std::memset(p, 0, sizeof(T));
