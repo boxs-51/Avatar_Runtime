@@ -1,0 +1,102 @@
+name: M1-A Build Foundation (NOT runtime certification)
+on:
+  pull_request:
+    paths:
+      - 'CMakeLists.txt'
+      - 'src/abi/**'
+      - 'cmake/**'
+      - 'include/**'
+      - 'tests/**'
+      - 'examples/plain_c/**'
+      - 'docs/audits/M1_A_BUILD_EVIDENCE.md'
+      - '.github/workflows/m1-build.yml'
+  push:
+    branches: ['m1/a-build-foundation']
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {cc: gcc, cxx: g++, shared: 'ON', sanitize: 'OFF'}
+          - {cc: gcc, cxx: g++, shared: 'OFF', sanitize: 'OFF'}
+          - {cc: clang, cxx: clang++, shared: 'ON', sanitize: 'OFF'}
+          - {cc: clang, cxx: clang++, shared: 'OFF', sanitize: 'OFF'}
+          - {cc: gcc, cxx: g++, shared: 'ON', sanitize: 'ON'}
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {fetch-depth: 0}
+      - name: Exact source custody and all design regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "M1_SOURCE_HEAD=${{ github.event.pull_request.head.sha || github.sha }}"
+          python -m pip install --disable-pip-version-check jsonschema==4.23.0
+          python tests/contracts/check_m0_rc1_pins.py
+          python -m unittest discover -s tests/contracts -p 'test_*.py' -v
+          python -m unittest discover -s tests/governance -p 'test_*.py' -v
+          python tests/contracts/g00_stage_gate_contract.py
+      - name: Shared or static foundation and PREP regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S . -B build/foundation -DCMAKE_BUILD_TYPE=Debug -DARS_BUILD_FOUNDATION=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_ENABLE_FOUNDATION_SANITIZERS=${{ matrix.sanitize }}
+          cmake --build build/foundation --parallel
+          ctest --test-dir build/foundation --verbose
+          cmake -S examples/plain_c -B build/consumer -DARS_FOUNDATION_INFO="$PWD/build/foundation/foundation-Debug.cmake"
+          cmake --build build/consumer --parallel
+          ctest --test-dir build/consumer --verbose
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m1-linux-${{ matrix.cc }}-shared-${{ matrix.shared }}-sanitize-${{ matrix.sanitize }}
+          path: build/**/Testing/Temporary/LastTest.log
+  windows:
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        shared: ['ON', 'OFF']
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {fetch-depth: 0}
+      - name: Exact source custody and all design regressions
+        shell: pwsh
+        run: |
+          Write-Output "M1_SOURCE_HEAD=${{ github.event.pull_request.head.sha || github.sha }}"
+          python -m pip install --disable-pip-version-check jsonschema==4.23.0
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tests/contracts/check_m0_rc1_pins.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s tests/contracts -p 'test_*.py' -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s tests/governance -p 'test_*.py' -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tests/contracts/g00_stage_gate_contract.py
+          exit $LASTEXITCODE
+      - name: Shared or static foundation and PREP regressions
+        shell: pwsh
+        run: |
+          cmake -S . -B build/foundation -G "Visual Studio 17 2022" -A x64 -DARS_BUILD_FOUNDATION=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }}
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build build/foundation --config Debug --parallel
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ctest --test-dir build/foundation -C Debug --verbose
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake -S examples/plain_c -B build/consumer -G "Visual Studio 17 2022" -A x64 "-DARS_FOUNDATION_INFO=$PWD/build/foundation/foundation-Debug.cmake"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build build/consumer --config Debug --parallel
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ctest --test-dir build/consumer -C Debug --verbose
+          exit $LASTEXITCODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m1-windows-shared-${{ matrix.shared }}
+          path: build/**/Testing/Temporary/LastTest.log
