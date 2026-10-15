@@ -6,7 +6,10 @@ on:
     paths:
       - "CMakeLists.txt"
       - "contracts/**"
+      - "include/**"
+      - "tests/abi/**"
       - "tests/contracts/**"
+      - "docs/G00_SECURITY_87_CASE_INVENTORY.json"
       - "docs/V0_1_CANONICAL_CONTRACT_RC0.md"
       - "docs/M0_V0_1_FREEZE_READINESS.md"
       - "docs/M1_SOURCE_BOOTSTRAP_PLAN.md"
@@ -26,7 +29,10 @@ on:
     paths:
       - "CMakeLists.txt"
       - "contracts/**"
+      - "include/**"
+      - "tests/abi/**"
       - "tests/contracts/**"
+      - "docs/G00_SECURITY_87_CASE_INVENTORY.json"
       - "docs/V0_1_CANONICAL_CONTRACT_RC0.md"
       - "docs/M0_V0_1_FREEZE_READINESS.md"
       - "docs/M1_SOURCE_BOOTSTRAP_PLAN.md"
