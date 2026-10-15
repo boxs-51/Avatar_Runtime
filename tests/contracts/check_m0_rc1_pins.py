@@ -123,6 +123,45 @@ def check_m1_a(base, candidate):
     validate_blob_manifest(frozen, candidate)
     return True
 
+M1_B1_BRANCH = "m1/b1-runtime-lifecycle"
+M1_B1_BASE = "ab21908310d48466b27bb06c92ea1623353c79f5"
+M1_B1_PATHS = frozenset((
+    "CMakeLists.txt", "src/abi/unsupported.cpp", "src/abi/runtime_api.cpp",
+    "src/abi/api_validation.hpp", "src/core/handle_registry.hpp",
+    "src/core/handle_registry.cpp", "src/core/runtime_lifecycle.hpp",
+    "src/core/runtime_lifecycle.cpp", "src/core/runtime_budget.hpp",
+    "tests/security/handle_registry_tests.cpp", "tests/security/runtime_lifecycle_tests.cpp",
+    "tests/security/runtime_test_support.hpp", "tests/abi/runtime_core_contract.c",
+    "tests/abi/runtime_core_cpp.cpp", "examples/plain_c/CMakeLists.txt",
+    "examples/plain_c/main.c", "cmake/ars_compiler_options.cmake",
+    ".github/workflows/m1-build.yml", ".github/workflows/m1-b-security.yml",
+    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m1_a_custody.py",
+    "tests/contracts/test_m1_b_custody.py", "docs/audits/M1_B1_BUILD_EVIDENCE.md",
+    "docs/audits/M1_B_CASE_EXECUTION.json",
+))
+
+def check_m1_b1(base, candidate):
+    """Owner-approved B1 only; component tests cannot clear whole security cases."""
+    require(base == M1_B1_BASE, "B1 main moved: fresh exact-target review required")
+    git("merge-base", "--is-ancestor", M1_B1_BASE, candidate)
+    changed = set(git("diff", "--name-only", M1_B1_BASE, candidate).splitlines())
+    require(changed == M1_B1_PATHS, f"B1 source path drift: {sorted(changed ^ M1_B1_PATHS)}")
+    frozen = json.loads(git("show", M1_B1_BASE + ":docs/M0_CONTRACT_PARENT_PINS.json"))
+    validate_blob_manifest(frozen, candidate)
+    require(git("rev-parse", candidate + ":include/ars/ars.h") ==
+            git("rev-parse", M1_B1_BASE + ":include/ars/ars.h"), "B1 changed frozen public ABI")
+    inventory = json.loads(git("show", M1_B1_BASE + ":docs/G00_SECURITY_87_CASE_INVENTORY.json"))
+    ledger = json.loads(git("show", candidate + ":docs/audits/M1_B_CASE_EXECUTION.json"))
+    require(ledger["scope"] == "M1-B1_CPU_COMPONENTS_ONLY", "B1 ledger scope drift")
+    cases = ledger["cases"]
+    require(len(cases) == 87 and len({c["id"] for c in cases}) == 87, "B1 case inventory drift")
+    originals = {c["id"]: c for c in inventory["cases"]}
+    require({c["id"] for c in cases} == set(originals), "B1 missing original cases")
+    for case in cases:
+        require(case["original"] == originals[case["id"]], "B1 altered frozen case/oracle")
+        require(case["whole_case_verdict"] == "HOLD", "B1 cannot clear whole security cases")
+    return True
+
 def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -160,7 +199,10 @@ def check():
         expected_parent = git("rev-parse", "HEAD^1")
         # Exact authorization is per candidate kind, never a broad audit-branch bypass.
         child = obj.get("audit_child", {})
-        if os.getenv("GITHUB_HEAD_REF") == M1_A_BRANCH:
+        if os.getenv("GITHUB_HEAD_REF") == M1_B1_BRANCH:
+            expected = M1_B1_BASE
+            check_m1_b1(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M1_A_BRANCH:
             expected = M1_A_BASE
             check_m1_a(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == CONSOLIDATION_BRANCH:

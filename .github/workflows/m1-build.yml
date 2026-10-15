@@ -46,7 +46,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cmake -S . -B build/foundation -DCMAKE_BUILD_TYPE=Debug -DARS_BUILD_FOUNDATION=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_ENABLE_FOUNDATION_SANITIZERS=${{ matrix.sanitize }}
+          cmake -S . -B build/foundation -DCMAKE_BUILD_TYPE=Debug -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=OFF -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_ENABLE_FOUNDATION_SANITIZERS=${{ matrix.sanitize }}
           cmake --build build/foundation --parallel
           ctest --test-dir build/foundation --verbose
           cmake -S examples/plain_c -B build/consumer -DARS_FOUNDATION_INFO="$PWD/build/foundation/foundation-Debug.cmake"
@@ -83,7 +83,7 @@ jobs:
       - name: Shared or static foundation and PREP regressions
         shell: pwsh
         run: |
-          cmake -S . -B build/foundation -G "Visual Studio 17 2022" -A x64 -DARS_BUILD_FOUNDATION=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }}
+          cmake -S . -B build/foundation -G "Visual Studio 17 2022" -A x64 -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=OFF -DBUILD_SHARED_LIBS=${{ matrix.shared }}
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cmake --build build/foundation --config Debug --parallel
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
