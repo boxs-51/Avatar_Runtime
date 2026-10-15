@@ -1,0 +1,43 @@
+{
+  "kind": "proposed-implementation-manifest",
+  "state": "PREPARED_NOT_AUTHORIZED_FOR_IMPLEMENTATION",
+  "stage": "M1-A_BUILD_FOUNDATION",
+  "baseline_main_sha": "a307c6775388a507aeacb5fbeb09479633c20f58",
+  "baseline_header_blob": "1c61da4a48c9faf2001fc98ad4c084413781e61c",
+  "historical_m0_snapshot_sha": "a307c6775388a507aeacb5fbeb09479633c20f58",
+  "proposed_branch": "m1/a-build-foundation",
+  "scope_reference": "docs/M1_A_SCOPE_V0.1.md",
+  "readiness_reference": "docs/M1_IMPLEMENTATION_READINESS.md",
+  "base_refresh_required_at_kickoff": true,
+  "original_scope_path_count": 13,
+  "proposed_implementation_paths": [
+    "CMakeLists.txt",
+    "src/abi/abi_version.cpp",
+    "src/abi/unsupported.cpp",
+    "cmake/ars_compiler_options.cmake",
+    "cmake/ars_verify_exports.cmake",
+    "tests/abi/foundation_contract.c",
+    "tests/abi/foundation_cpp.cpp",
+    "examples/plain_c/CMakeLists.txt",
+    "examples/plain_c/main.c",
+    ".github/workflows/m1-build.yml",
+    "docs/audits/M1_A_BUILD_EVIDENCE.md",
+    "tests/contracts/check_m0_rc1_pins.py",
+    "tests/contracts/test_m1_a_custody.py",
+    "tests/contracts/test_m0_consolidation.py"
+  ],
+  "proposed_scope_extension": {
+    "path": "tests/contracts/test_m0_consolidation.py",
+    "reason": "Pin the historical M0 composition cases and mock targets to the landed M0 snapshot; preserve all negative oracles while current M1 source receives a separate custody check.",
+    "approval_state": "PENDING_M1_A_KICKOFF_SCOPE_DECISION"
+  },
+  "public_header_edit_allowed": false,
+  "preserve_design_blob_pins": true,
+  "merge_authorized": false,
+  "runtime_registry_authorized": false,
+  "asset_parser_authorized": false,
+  "gpu_implementation_authorized": false,
+  "source_authority_implementation_authorized": false,
+  "acceptance_label": "BUILD_FOUNDATION_PASS",
+  "release_or_runtime_gate_pass": false
+}
