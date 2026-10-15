@@ -184,6 +184,15 @@ if(ARS_BUILD_RUNTIME_CORE)
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
     if(BUILD_SHARED_LIBS)
         target_compile_definitions(ars_runtime_core PRIVATE ARS_BUILD_SHARED=1 INTERFACE ARS_USE_SHARED=1)
+        if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+            # Some libstdc++ inline declarations have explicit default visibility
+            # even with hidden inlines. The unchanged exact-20 checker remains
+            # the authority for the public ars_* symbol set.
+            file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/ars_runtime_core.map"
+                CONTENT "{ global: ars_*; local: *; };\n")
+            target_link_options(ars_runtime_core PRIVATE
+                "LINKER:--version-script,${CMAKE_BINARY_DIR}/ars_runtime_core.map")
+        endif()
     endif()
     ars_runtime_options(ars_runtime_core)
     enable_testing()

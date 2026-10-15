@@ -70,6 +70,12 @@ and TSan configurations, plus external plain-C consumers for foundation and core
 Sanitizer and final-source CI results must be checked on PR21; declaring a matrix
 does not itself establish execution or success.
 
+The first full candidate exposed four libstdc++ inline symbols on Clang shared
+despite hidden visibility. Linux shared linking now restricts visibility with
+a version script; the original strict exact-20 export checker is unchanged.
+This correction requires fresh same-source CI, rather than inheriting earlier
+worker results.
+
 ## Security and governance limits
 
 `M1_B_CASE_EXECUTION.json` retains every original scenario/oracle/platform record,
