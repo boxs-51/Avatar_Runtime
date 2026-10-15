@@ -80,6 +80,9 @@ rotation/close/sample-time/clock/revision/reader/order cuts). Race seed is
 `0x4152534232330001`, 1000 iterations per required grouped family, barriers/CVs
 instead of sleeps. Local MSVC shared passed 19/19 groups, static 17/17 and
 ASAN 17/17, with actual ASAN imports inspected on ars_publish_race_tests.
+Those counts describe the initial combined race executable registration. Final
+CTest registers all nine race families separately (25 static / 27 shared groups),
+each still running 1000 controlled iterations with its own 300-second timeout.
 Initial exact-source CI at aa3b2903bc677027c280c58d1f24a93e61c4a7f9 passed
 21/21 jobs, including all nine B3 native/sanitizer workers and both external
 C consumers per worker. Additional callback-entry, source-generation and host
@@ -114,6 +117,14 @@ callback/mutator admission race; the shared/exclusive atomic admission word fixe
 that window, with 1000 controlled mutator-before-callback native iterations and
 the inverse callback-before-mutator trace. Earlier source CI is historical only;
 the repaired final source must pass its own complete matrix.
+
+Repaired source 1f44ba5c7d22de83f8bef2c63377e599efc2f5af passed 20/21
+workers but its combined nine-family TSan test exceeded 300 seconds. This is a
+failed gate, not TSan PASS. Raw failure log is retained under
+`build/integration-evidence/b3-repaired-116704135803-failure.log`. The final
+harness splits the same full workload into nine independently reported tests
+and flushes family progress; no iteration, assertion or per-family timeout is
+reduced. Each instrumented family must actually complete successfully.
 
 Allocator fault coverage includes NULL, exception, misalignment, close reentry,
 recursive context preparation, retry, matching sizes/alignment and all final

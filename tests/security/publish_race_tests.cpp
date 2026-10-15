@@ -156,8 +156,22 @@ void order_cut() {
 }
 }
 int main(int argc,char **argv) {
+    std::setvbuf(stdout,nullptr,_IONBF,0);
     if(argc>1 && std::strcmp(argv[1],"epoch")==0) { terminal_cut(2); return 0; }
     std::printf("B3 RACE seed=%llx iterations=%u/family; real components, no sleeps\n",static_cast<unsigned long long>(seed),iterations);
+    if(argc>1) {
+        if(std::strcmp(argv[1],"revoke")==0) terminal_cut(0);
+        else if(std::strcmp(argv[1],"expiry")==0) terminal_cut(1);
+        else if(std::strcmp(argv[1],"rotate")==0) terminal_cut(2);
+        else if(std::strcmp(argv[1],"close")==0) close_cut();
+        else if(std::strcmp(argv[1],"time")==0) time_cut();
+        else if(std::strcmp(argv[1],"clock")==0) clock_cut();
+        else if(std::strcmp(argv[1],"atomic")==0) conflict_cut();
+        else if(std::strcmp(argv[1],"reader")==0) reader_cut();
+        else if(std::strcmp(argv[1],"order")==0) order_cut();
+        else return 2;
+        return 0;
+    }
     terminal_cut(0); terminal_cut(1); terminal_cut(2); close_cut(); time_cut(); clock_cut(); conflict_cut(); reader_cut(); order_cut();
     std::puts("PASS B3 production CPU publication races; all 87 whole-case verdicts remain HOLD");
 }
