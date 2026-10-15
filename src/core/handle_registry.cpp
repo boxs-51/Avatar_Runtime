@@ -34,14 +34,16 @@ ars_status HandleRegistry::insert(ObjectType type,void *payload,ars_handle_id *o
     if(!out || !payload || !uid_ || type<ObjectType::runtime || type>ObjectType::source_admin)
         return ARS_E_INVALID_ARGUMENT;
     std::lock_guard lock(mutex_);
+    bool all_retired=capacity_!=0;
     for(std::uint32_t i=0;i<capacity_;++i) {
         auto &slot=slots_[i];
+        all_retired=all_retired && slot.retired;
         if(!slot.active && !slot.retired && slot.pins==0) {
             slot.type=type; slot.payload=payload; slot.active=true;
             *out={uid_,i,slot.generation}; return ARS_OK;
         }
     }
-    return ARS_E_OUT_OF_BUDGET;
+    return all_retired?ARS_E_HANDLE_EXHAUSTED:ARS_E_OUT_OF_BUDGET;
 }
 ars_status HandleRegistry::check(ars_handle_id id,ObjectType type) const {
     std::lock_guard lock(mutex_); return check_locked(id,type);
@@ -62,7 +64,7 @@ ars_status HandleRegistry::invalidate(ars_handle_id id,ObjectType type) {
     if(slot.generation==std::numeric_limits<std::uint32_t>::max()) slot.retired=true;
     else ++slot.generation;
     if(slot.pins==0) slot.payload=nullptr;
-    return ARS_OK;
+    return slot.retired?ARS_E_HANDLE_EXHAUSTED:ARS_OK;
 }
 void HandleRegistry::unpin(std::uint32_t index) noexcept {
     std::lock_guard lock(mutex_);

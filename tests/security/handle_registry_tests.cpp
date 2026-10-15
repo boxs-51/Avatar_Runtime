@@ -37,9 +37,14 @@ int main() {
         HandleRegistry exhausted(15,1,2);
         ComponentFixture::initial_generation(exhausted,std::numeric_limits<std::uint32_t>::max());
         test::status(ARS_OK,exhausted.insert(ObjectType::model,&first,&a),"REG-max-generation-issued-once");
-        test::status(ARS_OK,exhausted.invalidate(a,ObjectType::model),"REG-terminal-generation-retirement");
-        test::status(ARS_E_OUT_OF_BUDGET,exhausted.insert(ObjectType::model,&first,&b),"REG-retired-slot-not-recycled");
+        RegistryLease terminal;
+        test::status(ARS_OK,exhausted.pin(a,ObjectType::model,&terminal),"REG-terminal-pin");
+        test::status(ARS_E_HANDLE_EXHAUSTED,exhausted.invalidate(a,ObjectType::model),"REG-terminal-generation-retirement");
+        test::status(ARS_E_STALE_HANDLE,exhausted.check(a,ObjectType::model),"REG-terminal-no-logical-reactivation");
+        test::status(ARS_E_HANDLE_EXHAUSTED,exhausted.insert(ObjectType::model,&first,&b),"REG-retired-slot-not-recycled");
         test::check(b.runtime_uid==0,"REG-exhaustion-zero-output");
+        test::check(terminal.payload()==&first,"REG-terminal-old-pin-keeps-storage");
+        terminal.reset(); test::check(exhausted.outstanding_pins()==0,"REG-terminal-direct-unpin");
     }
     for(unsigned i=0;i<100000;++i) {
         RegistryLease lease;

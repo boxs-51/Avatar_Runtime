@@ -20,6 +20,10 @@ The production registry validates UID, slot, generation and object type before p
 access. Move-only leases release through their retained control reference, rather than
 re-resolving a stale handle. Slots retire at UINT32_MAX; runtime UIDs never wrap or
 reuse. Default bounds are 64 live/reserved runtimes, 1024 slots and 1024 pins per runtime.
+Terminal slot retirement returns HANDLE_EXHAUSTED after logical invalidation,
+as required by R5 section 3; an entirely retired table also returns HANDLE_EXHAUSTED.
+Ordinary occupied capacity returns OUT_OF_BUDGET. Existing terminal leases still
+release directly and preserve storage until their final unpin.
 Trusted component fixtures use isolated routers and lower limits; no public reset,
 generation override, source grant or test export exists.
 
