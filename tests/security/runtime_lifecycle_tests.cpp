@@ -43,6 +43,35 @@ void ARS_CALL release(void *data,void *ptr,uint64_t bytes,uint32_t alignment) {
 ars_runtime_desc custom(Allocation &state) {
     auto desc=descriptor(); desc.alloc=allocate; desc.free_fn=release; desc.allocator_user_data=&state; return desc;
 }
+struct AuthorityAllocation {
+    struct Block { void *raw=nullptr,*returned=nullptr; std::uint64_t bytes=0; std::uint32_t alignment=0; };
+    std::array<Block,4> blocks{};
+    RuntimeRouter *router=nullptr;
+    ars_runtime_h runtime{};
+    unsigned calls=0,frees=0,reentries=0,mode=0;
+};
+void *ARS_CALL allocate_authority(void *data,std::uint64_t bytes,std::uint32_t alignment) {
+    auto &state=*static_cast<AuthorityAllocation *>(data); ++state.calls;
+    (void)state.router->occupied(); ++state.reentries;
+    if(state.calls==2 && state.mode==1) return nullptr;
+    if(state.calls==2 && state.mode==2) throw 17;
+    if(state.calls==2 && state.mode==4 && state.router->begin_close(state.runtime)!=ARS_OK) std::exit(30);
+    for(auto &block:state.blocks) if(!block.raw) {
+        block.raw=::operator new(static_cast<std::size_t>(bytes)+alignment,std::align_val_t{alignment},std::nothrow);
+        if(!block.raw) return nullptr;
+        block.returned=state.calls==2 && state.mode==3?static_cast<unsigned char *>(block.raw)+1:block.raw;
+        block.bytes=bytes; block.alignment=alignment; return block.returned;
+    }
+    return nullptr;
+}
+void ARS_CALL free_authority_allocation(void *data,void *pointer,std::uint64_t bytes,std::uint32_t alignment) {
+    auto &state=*static_cast<AuthorityAllocation *>(data); (void)state.router->occupied(); ++state.reentries;
+    for(auto &block:state.blocks) if(block.returned==pointer) {
+        if(block.bytes!=bytes || block.alignment!=alignment) std::exit(31);
+        ::operator delete(block.raw,std::align_val_t{alignment}); block={}; ++state.frees; return;
+    }
+    std::exit(32);
+}
 }
 
 int main() {
@@ -139,5 +168,46 @@ int main() {
         gate.release(); finalizer.join(); test::check(state.frees==1,"FINAL-exactly-one-free");
     }
     test::check(global_router().occupied()==0,"GLOBAL-component-fixtures-do-not-reset-global-router");
+    {
+        RuntimeRouter limited({1,8,8,1}); ars_runtime_h runtime{}; ars_character_h character{};
+        test::status(ARS_OK,limited.create(desc,&runtime),"B2-BUDGET-bare-runtime-still-small");
+        std::array<ars::security::SemanticChannel,1> catalog{}; std::memcpy(catalog[0].id.data(),"mouth.open",11);
+        test::status(ARS_E_OUT_OF_BUDGET,limited.bind_character(runtime,catalog,&character),"B2-BUDGET-authority-byte-reservation");
+        test::check(!character.id.runtime_uid,"B2-BUDGET-no-partial-character");
+        test::status(ARS_OK,limited.begin_close(runtime),"B2-BUDGET-runtime-remains-closeable");
+        test::status(ARS_OK,limited.finish_close(runtime),"B2-BUDGET-cleanup");
+    }
+    {
+        test::Authority authority; ars_source_admin_h source{}; ars_ingress_cap cap{};
+        test::status(ARS_OK,authority.register_source(&source,&cap),"B2-PIN-register");
+        test::Frame input; test::status(ARS_OK,authority.router.submit_frame(authority.runtime,cap,&input.value),"B2-PIN-admit");
+        FrameLease retained_frame;
+        test::status(ARS_OK,authority.router.dequeue_frame(authority.runtime,source,&retained_frame),"B2-PIN-owned-frame-root-character-source");
+        test::status(ARS_OK,authority.router.destroy_character(authority.runtime,authority.character),"B2-PIN-logical-character-destroy");
+        test::status(ARS_OK,authority.router.release_source(authority.runtime,source),"B2-PIN-admin-release-after-character-destroy");
+        test::status(ARS_OK,authority.router.begin_close(authority.runtime),"B2-PIN-runtime-close");
+        authority.retained.reset();
+        test::status(ARS_E_BUSY,authority.router.finish_close(authority.runtime),"B2-PIN-frame-blocks-reclaim");
+        test::check(retained_frame.frame.channels[0].value[0]==0.5F,"B2-PIN-owned-frame-data-after-logical-invalidation");
+        retained_frame.reset(); ars_close_state close{};
+        test::status(ARS_OK,authority.router.query_close(authority.runtime,&close),"B2-PIN-direct-unpin-after-stale-handle");
+        test::check(close.state==ARS_FENCE_COMPLETE && close.outstanding_pins==1,"B2-PIN-no-hidden-object-root-reference");
+    }
+    for(unsigned mode=0;mode<=4;++mode) {
+        RuntimeRouter host; AuthorityAllocation state; state.router=&host; state.mode=mode;
+        auto host_desc=descriptor(); host_desc.alloc=allocate_authority; host_desc.free_fn=free_authority_allocation; host_desc.allocator_user_data=&state;
+        test::status(ARS_OK,host.create(host_desc,&state.runtime),"B2-ALLOC-root-host-pair");
+        std::array<ars::security::SemanticChannel,1> catalog{}; std::memcpy(catalog[0].id.data(),"mouth.open",11);
+        ars_character_h character{}; const std::array<ars_status,5> expected{ARS_OK,ARS_E_OUT_OF_BUDGET,ARS_E_INTERNAL,ARS_E_INVALID_ARGUMENT,ARS_E_CLOSED};
+        test::status(expected[mode],host.bind_character(state.runtime,catalog,&character),"B2-ALLOC-lazy-context-failure-and-reentry");
+        if(mode!=0) test::check(!character.id.runtime_uid,"B2-ALLOC-no-published-partial-binding");
+        if(mode!=4) {
+            if(mode!=0) test::status(ARS_OK,host.bind_character(state.runtime,catalog,&character),"B2-ALLOC-clean-context-retry");
+            test::status(ARS_OK,host.begin_close(state.runtime),"B2-ALLOC-close");
+        }
+        test::status(ARS_OK,host.finish_close(state.runtime),"B2-ALLOC-finalize-all-ownership");
+        test::check(std::all_of(state.blocks.begin(),state.blocks.end(),[](auto &block){return block.raw==nullptr;}) &&
+                    state.reentries==state.calls+state.frees,"B2-ALLOC-paired-bytes-alignment-and-outside-locks");
+    }
     std::puts("PASS B1 production CPU lifecycle component suite; 87 whole security cases remain HOLD");
 }
