@@ -76,9 +76,13 @@ Local tools: Windows x64, MSVC 19.51.36252.0 (VS2026), Windows SDK 10.0.26100.0,
 CMake 4.4.3. Shared configure/build **PASS**, CTest **8/8 PASS**, including the
 five PREP tests, bounded C test (185 checks, zero failures), C++ test and actual
 DLL export inspection. Static configure/build **PASS**, CTest **7/7 PASS**.
-External shared C11 consumer separately configured, built and passed **1/1**.
-Static external consumer and complete source regression results are recorded
-in final CI/PR evidence; local results never substitute for CI's VS2022 workers.
+External shared and static C11 consumers separately configured, built and each
+passed **1/1**. Complete local source regressions: **90/90** contract tests and
+**9/9** governance tests PASS, along with the original provenance script. An
+additional actual-library negative probe ran the export checker on the legacy
+P0 DLL and correctly rejected its wrong symbol set. Logs are retained in ignored
+`build/integration-evidence/m1-exports-negative.txt` and
+`m1-behavior-green.txt`. Local results never substitute for CI's VS2022 workers.
 
 Reproduction, from the source root (use VS2022 in CI, VS2026 on this workstation):
 
