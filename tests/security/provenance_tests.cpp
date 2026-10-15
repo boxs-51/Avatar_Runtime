@@ -6,7 +6,7 @@ using ars::motion::Op;
 struct Capture {
     test::Authority *owner=nullptr,*other=nullptr;
     ars_source_admin_h source{}; ars_ingress_cap cap{},other_cap{};
-    std::array<ars_status,9> nested{};
+    std::array<ars_status,12> nested{};
     ars_status independent=ARS_E_INTERNAL;
     std::uint64_t now=200;
     bool mutate=false,throw_error=false;
@@ -28,6 +28,11 @@ struct Capture {
             c.nested[6]=a.router.finish_close(a.runtime);
             c.nested[7]=a.register_source(&source,&cap);
             if(c.stage) c.nested[8]=a.router.publish_cpu(c.stage);
+            ars::motion::Program program; ars::core::StageLease nested_stage; ars::core::FrameLease dequeued;
+            c.nested[9]=a.router.prepare_cpu(a.runtime,a.character,{},program,&nested_stage);
+            c.nested[10]=a.router.dequeue_frame(a.runtime,c.source,&dequeued);
+            test::Frame recursive;
+            c.nested[11]=a.router.submit_frame(a.runtime,c.cap,&recursive.value);
             if(c.other) {
                 test::Frame frame; frame.value.timestamp_mode=ARS_TIMESTAMP_ON_ARRIVAL;
                 c.independent=c.other->router.submit_frame(c.other->runtime,c.other_cap,&frame.value);
@@ -95,4 +100,24 @@ void lineage() {
     test::check(snapshot.get()->state.provenance.count==0 && snapshot.get()->state.trigger_count==0 && snapshot.get()->outputs[0].scalar==0,
         "CLOSURE-purges-all-future-effects-no-old-pose-seed");
 }
-int main() { callbacks(); lineage(); std::puts("PASS B3 provenance and both P2 fixes; public APIs remain disabled"); }
+void generations() {
+    test::Authority a; ars_source_admin_h old_source{},source{}; ars_ingress_cap old_cap{},cap{};
+    test::status(ARS_OK,a.register_source(&old_source,&old_cap),"GEN-register-old"); test::submit(a,old_cap,1,1);
+    ars::motion::Program first; first.count=3; first.nodes[0]={Op::input}; first.nodes[1]={Op::store,0,0,0}; first.nodes[2]={Op::output,0,0,0};
+    test::publish(a,std::span(&old_source,1),first); ars::core::SnapshotLease historical;
+    test::status(ARS_OK,a.router.read_cpu(a.runtime,a.character,&historical),"GEN-historical-reader");
+    test::status(ARS_OK,a.router.release_source(a.runtime,old_source),"GEN-logical-admin-release-with-snapshot-pin");
+    test::status(ARS_OK,a.register_source(&source,&cap),"GEN-new-source-cannot-inherit-old-state");
+    test::check(!ars::security::same(source.id,old_source.id),"GEN-full-source-identity-distinct"); test::submit(a,cap,1,2);
+    ars::motion::Program next; next.count=5; next.nodes[0]={Op::retained,0,0,0}; next.nodes[1]={Op::input};
+    next.nodes[2]={Op::add,0,1}; next.nodes[3]={Op::store,2,0,0}; next.nodes[4]={Op::output,2,0,0};
+    test::publish(a,std::span(&source,1),next); ars::core::SnapshotLease current;
+    test::status(ARS_OK,a.router.read_cpu(a.runtime,a.character,&current),"GEN-read-current");
+    test::check(current.get()->outputs[0].scalar==2 && historical.get()->outputs[0].scalar==1 &&
+        current.get()->state.provenance.count==1 && ars::security::same(current.get()->state.provenance.keys[0].source.id,source.id),"GEN-old-snapshot-is-not-new-pose-seed");
+    ars_character_h other{}; std::array<ars::security::SemanticChannel,1> catalog{}; std::memcpy(catalog[0].id.data(),"mouth.open",11);
+    test::status(ARS_OK,a.router.bind_character(a.runtime,catalog,&other),"GEN-second-character"); test::submit(a,cap,2,4);
+    ars::core::StageLease stage;
+    test::status(ARS_E_SCOPE_DENIED,a.router.prepare_cpu(a.runtime,other,std::span(&source,1),first,&stage),"GEN-no-cross-character-input-binding");
+}
+int main() { callbacks(); lineage(); generations(); std::puts("PASS B3 provenance and both P2 fixes; public APIs remain disabled"); }

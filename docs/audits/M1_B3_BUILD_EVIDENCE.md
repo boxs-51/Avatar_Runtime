@@ -70,8 +70,40 @@ Native suites: b3_provenance (closure and P2), b3_snapshots (budgets/lifetime/
 atomic errors), b3_publish_races (controlled epoch/state/trigger/revoke/expiry/
 rotation/close/sample-time/clock/revision/reader/order cuts). Race seed is
 `0x4152534232330001`, 1000 iterations per required grouped family, barriers/CVs
-instead of sleeps. Final exact-source matrix and mutation audit are pending;
-the PR must remain draft until actual results and instrumentation are verified.
+instead of sleeps. Local MSVC shared passed 19/19 groups, static 17/17 and
+ASAN 17/17, with actual ASAN imports inspected on ars_publish_race_tests.
+Initial exact-source CI at aa3b2903bc677027c280c58d1f24a93e61c4a7f9 passed
+21/21 jobs, including all nine B3 native/sanitizer workers and both external
+C consumers per worker. Additional callback-entry, source-generation and host
+allocator fault cases are included in the final source; final exact-source CI
+and review disposition are attested in PR24. A matrix declaration or earlier
+source's success does not certify the final source.
+
+The existing callback-paused B2 A/H trace now requires BUSY for concurrent
+revoke while the callback is active, as mandated by the P2 fix; after callback
+completion revoke succeeds and further ingress is denied without charge.
+All other B2 traces remain. The B3 staged A/H cut separately proves that revoke
+before final pose authorization rejects both the candidate and staged writes.
+Historical B2 custody remains tested at its exact landed snapshot, including
+dynamic ABI mutation targets; old gates and all original inventory records stay
+unchanged.
+
+Five isolated native mutants all exited 1 at the intended oracle: omitting
+final epoch/tombstone binding; omitting staged tombstone reconciliation/purge;
+writing persistent state before authorization; charging quota before append;
+and permitting phase C to reactivate a terminally revoked source. Raw logs and
+results.json: `build/b3-mutants`. The tombstone mutant tests missing semantic
+consumption; x64 tests alone do not prove acquire-vs-relaxed ordering on every
+weak-memory architecture. Production acquire/release ordering is also inspected
+in the source audit, without claiming a physical weak-memory platform run.
+
+Allocator fault coverage includes NULL, exception, misalignment, close reentry,
+recursive context preparation, retry, matching sizes/alignment and all final
+frees outside gates. Snapshot pool/revision/pose overflow rejects preserve the
+old immutable revision. Candidate storage and default memory construction are
+bounded; local builds use two compiler workers after an unrestricted MSBuild
+attempt exhausted this host's compiler memory. This build-host limit was not a
+runtime fault and no test iteration or assertion was reduced to hide it.
 
 Retain historical B1/B2 contracts and snapshot-bound custody negatives, frozen
 ABI20/export oracle, inventory and 9+8 design blobs. All 87 original whole-case
