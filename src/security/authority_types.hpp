@@ -5,9 +5,16 @@
 #include <span>
 #include <atomic>
 #include <cstring>
+#include <mutex>
 
 namespace ars::core { struct ComponentFixture; }
 namespace ars::security {
+struct CallbackState {
+    std::atomic<bool> active{false};
+    std::mutex samples;
+    std::uint64_t highwater=0;
+    bool observed=false;
+};
 inline constexpr std::uint32_t max_sources=16,max_source_records=64,max_characters=16;
 inline constexpr std::uint32_t max_channels=256,queue_capacity=16,max_workspaces=16;
 inline constexpr std::uint32_t max_admissions=8,ledger_capacity=4096,mint_attempts=8;
