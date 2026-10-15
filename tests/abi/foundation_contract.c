@@ -5,6 +5,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+_Static_assert(sizeof(void *) == 8 && sizeof(ars_status) == 4, "x64 fixed-width ABI");
+_Static_assert(sizeof(ars_handle_id) == 16 && sizeof(ars_ingress_cap) == 16, "by-value ABI IDs");
+#define C_LAYOUT(type, size) _Static_assert(sizeof(type) == size, "C11 layout " #type); \
+    _Static_assert(offsetof(type,struct_size) == 0 && offsetof(type,abi_version) == 4, "C11 prefix " #type)
+C_LAYOUT(ars_runtime_desc,56);
+C_LAYOUT(ars_capabilities,32);
+C_LAYOUT(ars_asset_source,32);
+C_LAYOUT(ars_character_desc,16);
+C_LAYOUT(ars_layer_change,40);
+C_LAYOUT(ars_source_desc,64);
+C_LAYOUT(ars_motion_frame,48);
+C_LAYOUT(ars_close_state,36);
+C_LAYOUT(ars_render_target,72);
+
 static unsigned checks, failures, callbacks;
 static ars_runtime_h runtime_id;
 static ars_model_h model_id;
@@ -212,6 +226,19 @@ int main(void) {
     SIZED_OUTPUT(ars_close_state,"close",reserved0,ars_runtime_query_close(runtime_id,out));
     status("BUF-01-null-caps",ARS_E_INVALID_ARGUMENT,ars_runtime_get_capabilities(runtime_id,NULL));
     status("BUF-01-null-close",ARS_E_INVALID_ARGUMENT,ars_runtime_query_close(runtime_id,NULL));
+    {
+        uint32_t *prefix = (uint32_t *)malloc(8);
+        uint32_t before[2] = {8,ARS_ABI_VERSION};
+        if (!prefix) { status("BUF-02-output-allocation",1,0); return EXIT_FAILURE; }
+        memcpy(prefix,before,sizeof(before));
+        status("BUF-02-prefix-only-caps",ARS_E_INVALID_ARGUMENT,
+               ars_runtime_get_capabilities(runtime_id,(ars_capabilities *)(void *)prefix));
+        status("BUF-05-prefix-caps-unchanged",0,(ars_status)memcmp(prefix,before,sizeof(before)));
+        status("BUF-02-prefix-only-close",ARS_E_INVALID_ARGUMENT,
+               ars_runtime_query_close(runtime_id,(ars_close_state *)(void *)prefix));
+        status("BUF-05-prefix-close-unchanged",0,(ars_status)memcmp(prefix,before,sizeof(before)));
+        free(prefix);
+    }
     status("SIDE-02-final-callbacks",0,(ars_status)callbacks);
     printf("FOUNDATION CASES checks=%u failures=%u; NOT runtime/GPU/security certification\n",checks,failures);
     return failures ? EXIT_FAILURE : EXIT_SUCCESS;

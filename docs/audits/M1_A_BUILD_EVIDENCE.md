@@ -63,7 +63,7 @@ already passed at the RED head. Final CI must re-attest everything at one SHA.
 | Cases | Observed behavior under test |
 | --- | --- |
 | ABI-01/02 | Accepted version and all 20 public functions linked/called |
-| ABI-03 | C++20 fixed-width x64 layouts and all 20 calling signatures |
+| ABI-03 | C11/C++20 fixed-width x64 layouts and all 20 C++ calling signatures |
 | BUF-01/02 | Null mandatory arguments and zero/short/readable-prefix-only storage |
 | BUF-03/04/05 | Exact/long layouts, compatible higher minor, suffix canaries, invalid-output no-write |
 | VER-01/03/04 | Wrong major rejected; unknown minor/suffix allowed; every known reserved field rejected |
@@ -74,7 +74,7 @@ already passed at the RED head. Final CI must re-attest everything at one SHA.
 
 Local tools: Windows x64, MSVC 19.51.36252.0 (VS2026), Windows SDK 10.0.26100.0,
 CMake 4.4.3. Shared configure/build **PASS**, CTest **8/8 PASS**, including the
-five PREP tests, bounded C test (185 checks, zero failures), C++ test and actual
+five PREP tests, bounded C test (initially 185 checks, zero failures), C++ test and actual
 DLL export inspection. Static configure/build **PASS**, CTest **7/7 PASS**.
 External shared and static C11 consumers separately configured, built and each
 passed **1/1**. Complete local source regressions: **90/90** contract tests and
@@ -83,6 +83,12 @@ additional actual-library negative probe ran the export checker on the legacy
 P0 DLL and correctly rejected its wrong symbol set. Logs are retained in ignored
 `build/integration-evidence/m1-exports-negative.txt` and
 `m1-behavior-green.txt`. Local results never substitute for CI's VS2022 workers.
+
+Final review added actual eight-byte heap allocations for both sized output
+APIs, checking INVALID_ARGUMENT and zero writes rather than only using a short
+declared capacity inside a full-size object. The final C behavioral suite has
+189 checks and also asserts all nine descriptor/output layouts in C11. Final CI
+must re-attest these new prefix-only cases under ASan/UBSan and both linkages.
 
 Reproduction, from the source root (use VS2022 in CI, VS2026 on this workstation):
 
