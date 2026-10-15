@@ -8,6 +8,7 @@ be re-run and pin file updated after source review.
 from __future__ import annotations
 
 import json
+import ast
 import os
 from pathlib import Path
 import re
@@ -162,6 +163,72 @@ def check_m1_b1(base, candidate):
         require(case["whole_case_verdict"] == "HOLD", "B1 cannot clear whole security cases")
     return True
 
+M1_B2_BRANCH = "m1/b2-source-authority"
+M1_B2_BASE = "535663960c33c0ebe49481a8681b8625c336fafe"
+M1_B2_PATHS = frozenset((
+    "CMakeLists.txt", "src/core/runtime_lifecycle.hpp", "src/core/runtime_lifecycle.cpp",
+    "src/core/runtime_budget.hpp", "src/core/character_authority.hpp", "src/core/character_authority.cpp",
+    "src/security/authority_types.hpp", "src/security/security_clock.hpp", "src/security/security_clock.cpp",
+    "src/security/clock_windows.cpp", "src/security/clock_linux.cpp", "src/security/os_entropy.hpp",
+    "src/security/os_entropy_windows.cpp", "src/security/os_entropy_linux.cpp",
+    "src/security/token_ledger.hpp", "src/security/token_ledger.cpp",
+    "src/security/admission_gate.hpp", "src/security/admission_gate.cpp",
+    "src/security/source_authority.hpp", "src/security/source_authority.cpp",
+    "src/security/ingress_queue.hpp", "src/security/ingress_queue.cpp",
+    "tests/security/security_os_tests.cpp", "tests/security/source_authority_tests.cpp",
+    "tests/security/source_authority_race_tests.cpp", "tests/security/runtime_lifecycle_tests.cpp",
+    "tests/security/runtime_test_support.hpp", "tests/contracts/check_m0_rc1_pins.py",
+    "tests/contracts/test_m1_b_custody.py", "tests/contracts/test_m1_b2_custody.py",
+    ".github/workflows/m1-b-security.yml", "docs/audits/M1_B2_BUILD_EVIDENCE.md",
+    "docs/audits/M1_B_CASE_EXECUTION.json",
+))
+
+def check_m1_b2(base, candidate):
+    """PR22 B2 only; preserve all historical gates and keep public APIs disabled."""
+    require(base == M1_B2_BASE, "B2 main moved: fresh exact-target review required")
+    git("merge-base", "--is-ancestor", M1_B2_BASE, candidate)
+    changed = set(git("diff", "--name-only", M1_B2_BASE, candidate).splitlines())
+    require(changed == M1_B2_PATHS, f"B2 source path drift: {sorted(changed ^ M1_B2_PATHS)}")
+    frozen = json.loads(git("show", M1_B2_BASE + ":docs/M0_CONTRACT_PARENT_PINS.json"))
+    validate_blob_manifest(frozen, candidate)
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp", "src/abi/runtime_api.cpp",
+                 "src/abi/api_validation.hpp", "cmake/ars_verify_exports.cmake"):
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", M1_B2_BASE + ":" + path),
+                f"B2 changed public ABI/activation or export oracle: {path}")
+    old = git("show", M1_B2_BASE + ":tests/contracts/test_m1_b_custody.py")
+    expected = old.replace('BASE = "' + M1_B1_BASE + '"\n',
+                           'BASE = "' + M1_B1_BASE + '"\nSNAPSHOT = "' + M1_B2_BASE + '"\n')
+    expected = expected.replace('"HEAD"', 'SNAPSHOT').replace('"HEAD:include/ars/ars.h"',
+                  'SNAPSHOT + ":include/ars/ars.h"').replace('"HEAD:docs/audits/M1_B_CASE_EXECUTION.json"',
+                  'SNAPSHOT + ":docs/audits/M1_B_CASE_EXECUTION.json"')
+    require(git("show", candidate + ":tests/contracts/test_m1_b_custody.py") == expected,
+            "B2 diluted historical B1 custody instead of exact snapshot transition")
+    old_gate = git("show", M1_B2_BASE + ":tests/contracts/check_m0_rc1_pins.py")
+    new_gate = git("show", candidate + ":tests/contracts/check_m0_rc1_pins.py")
+    def historical_segments(source):
+        nodes = ast.parse(source).body
+        return {node.name: ast.get_source_segment(source, node) for node in nodes
+                if isinstance(node, ast.FunctionDef) and node.name in
+                {"check_m1_a", "check_m1_b1", "check_consolidation", "validate_blob_manifest"}}
+    require(historical_segments(old_gate) == historical_segments(new_gate), "B2 changed frozen historical gates")
+    for path in M1_B2_PATHS:
+        if path.startswith("src/security/") or path.startswith("src/core/character_authority"):
+            source = git("show", candidate + ":" + path)
+            require(not re.search(r"\bARS_API\b|ComponentFixture::|\b(random_device|mt19937|srand)\b", source),
+                    f"B2 public/mock/weak entropy interface: {path}")
+    inventory = json.loads(git("show", M1_B2_BASE + ":docs/G00_SECURITY_87_CASE_INVENTORY.json"))
+    ledger = json.loads(git("show", candidate + ":docs/audits/M1_B_CASE_EXECUTION.json"))
+    require(ledger["scope"] == "M1-B2_CPU_AUTHORITY_COMPONENTS_ONLY", "B2 ledger scope drift")
+    cases = ledger["cases"]
+    originals = {c["id"]: c for c in inventory["cases"]}
+    require(len(cases) == 87 and len({c["id"] for c in cases}) == 87 and
+            {c["id"] for c in cases} == set(originals), "B2 original case inventory drift")
+    require(ledger["whole_case_pass_count"] == 0, "B2 fabricated whole-case totals")
+    for case in cases:
+        require(case["original"] == originals[case["id"]] and case["whole_case_verdict"] == "HOLD",
+                "B2 changed frozen scenario/oracle or fabricated whole-case PASS")
+    return True
+
 def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -199,7 +266,10 @@ def check():
         expected_parent = git("rev-parse", "HEAD^1")
         # Exact authorization is per candidate kind, never a broad audit-branch bypass.
         child = obj.get("audit_child", {})
-        if os.getenv("GITHUB_HEAD_REF") == M1_B1_BRANCH:
+        if os.getenv("GITHUB_HEAD_REF") == M1_B2_BRANCH:
+            expected = M1_B2_BASE
+            check_m1_b2(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M1_B1_BRANCH:
             expected = M1_B1_BASE
             check_m1_b1(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M1_A_BRANCH:

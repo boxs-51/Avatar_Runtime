@@ -1,13 +1,16 @@
 {
-  "scope": "M1-B1_CPU_COMPONENTS_ONLY",
+  "scope": "M1-B2_CPU_AUTHORITY_COMPONENTS_ONLY",
   "inventory_source": "docs/G00_SECURITY_87_CASE_INVENTORY.json",
   "whole_case_pass_count": 0,
-  "evidence_boundary": "Native component results are not whole production scenarios. Model/character/source/adapter/GPU prerequisites remain absent. No G07/G08 clearance.",
+  "evidence_boundary": "Production CPU authority and retained-object component evidence only. Public model/character/source/update/render and B3 pose publication are disabled. Every original whole-case verdict remains HOLD; component suites do not replace missing integration/adapter/mode/GPU prerequisites.",
   "component_suites": {
     "b1_registry_components": "Production HandleRegistry objects: type, UID, generation, retirement, bounded slots/pins, direct lease release and invalidate race.",
     "b1_lifecycle_components": "Production RuntimeRouter objects: work/management pins, CPU close, exclusive finish, allocator callbacks/reentry/failure, bounded reservation, UID exhaustion.",
     "b1_public_c": "Public C ABI CPU lifecycle and validation.",
-    "b1_public_cpp_races": "1000 public runtime close/finalizer races; exactly one finalizer succeeds."
+    "b1_public_cpp_races": "1000 public runtime close/finalizer races; exactly one finalizer succeeds.",
+    "b2_native_security_os": "Real Windows QPC/BCrypt or Linux CLOCK_MONOTONIC/getrandom backends; actual backend-loop failure injection, checked conversion, sticky clock poison and bounded lifetime token ledger.",
+    "b2_source_authority": "Production runtime-owned validated CPU catalogs, immutable grants, owned typed frame admission, scope, sequence, queue/quota rollback, fail-closed rotation/revoke/expiry, bounded source/workspace/ledger policies and callback containment.",
+    "b2_controlled_authority_races": "Seed 0x4152534232330001; 1000 controlled iterations per grouped family: E, G/sequence/OOM, A/H authority, K/L, U, N/Q/S authority, W, M authority and R/T eight-admitted/eight-denied close. Original pose/adapter/GPU portions remain HOLD."
   },
   "cases": [
     {
@@ -28,7 +31,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-002",
@@ -48,7 +51,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-003",
@@ -68,7 +71,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-004",
@@ -88,7 +91,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-005",
@@ -108,7 +111,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-006",
@@ -128,7 +131,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-007",
@@ -148,7 +151,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-008",
@@ -168,7 +171,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-009",
@@ -189,7 +192,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-010",
@@ -209,7 +212,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-011",
@@ -229,7 +232,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-012",
@@ -249,7 +252,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-013",
@@ -269,7 +272,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-014",
@@ -289,7 +292,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-015",
@@ -310,7 +313,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-016",
@@ -330,7 +333,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-017",
@@ -350,7 +353,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-018",
@@ -370,7 +373,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "HDL-019",
@@ -391,7 +394,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-A",
@@ -411,7 +414,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-B",
@@ -431,7 +434,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-C",
@@ -451,7 +454,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-D",
@@ -472,7 +475,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-E",
@@ -492,7 +495,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-F",
@@ -512,7 +515,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-G",
@@ -532,7 +535,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-H",
@@ -552,7 +555,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-I",
@@ -572,7 +575,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-J",
@@ -593,7 +596,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-K",
@@ -613,7 +616,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-L",
@@ -633,7 +636,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-M",
@@ -653,7 +656,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-N",
@@ -673,7 +676,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-O",
@@ -693,7 +696,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-P",
@@ -713,7 +716,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-Q",
@@ -733,7 +736,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-R",
@@ -753,7 +756,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-S",
@@ -773,7 +776,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-T",
@@ -793,7 +796,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-U",
@@ -813,7 +816,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-V",
@@ -833,7 +836,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "RACE-W",
@@ -853,7 +856,7 @@
         "test_mode": "deterministic interleaving + >=1000 randomized iterations"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-001",
@@ -873,7 +876,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-002",
@@ -893,7 +896,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-003",
@@ -913,7 +916,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-004",
@@ -933,7 +936,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-005",
@@ -953,7 +956,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-006",
@@ -973,7 +976,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-007",
@@ -993,7 +996,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-008",
@@ -1013,7 +1016,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-009",
@@ -1033,7 +1036,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-010",
@@ -1053,7 +1056,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-011",
@@ -1073,7 +1076,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-012",
@@ -1093,7 +1096,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-013",
@@ -1113,7 +1116,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-014",
@@ -1133,7 +1136,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-015",
@@ -1153,7 +1156,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-016",
@@ -1173,7 +1176,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-017",
@@ -1193,7 +1196,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-018",
@@ -1213,7 +1216,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-019",
@@ -1233,7 +1236,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-020",
@@ -1253,7 +1256,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-021",
@@ -1273,7 +1276,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-022",
@@ -1293,7 +1296,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-023",
@@ -1313,7 +1316,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-024",
@@ -1333,7 +1336,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-025",
@@ -1353,7 +1356,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-026",
@@ -1373,7 +1376,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-027",
@@ -1393,7 +1396,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-028",
@@ -1413,7 +1416,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-029",
@@ -1433,7 +1436,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-030",
@@ -1453,7 +1456,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-031",
@@ -1473,7 +1476,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-032",
@@ -1493,7 +1496,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-033",
@@ -1513,7 +1516,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-034",
@@ -1533,7 +1536,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-035",
@@ -1553,7 +1556,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-036",
@@ -1573,7 +1576,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-037",
@@ -1593,7 +1596,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-038",
@@ -1613,7 +1616,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-039",
@@ -1633,7 +1636,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-040",
@@ -1653,7 +1656,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-041",
@@ -1673,7 +1676,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-042",
@@ -1693,7 +1696,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-043",
@@ -1713,7 +1716,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-044",
@@ -1733,7 +1736,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     },
     {
       "id": "SRC-045",
@@ -1753,7 +1756,7 @@
         "test_mode": "production negative regression"
       },
       "whole_case_verdict": "HOLD",
-      "remaining_evidence": "Full frozen production scenario and platform evidence required; B1 component suites do not substitute missing prerequisites."
+      "remaining_evidence": "Full frozen production scenario/platform evidence still required. B2 production CPU authority is component evidence; B3 publish, validated public model/character/source integration, host adapter/mode and physical GPU prerequisites are not substituted."
     }
   ]
 }
