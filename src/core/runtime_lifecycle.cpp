@@ -160,5 +160,9 @@ std::uint32_t RuntimeRouter::occupied() const {
     for(const auto &entry:entries_) if(entry.reserved) ++count;
     return count;
 }
+ars_status RuntimeRouter::bind_character(ars_runtime_h,std::span<const security::SemanticChannel>,ars_character_h *out) {
+    if(out) *out={};
+    return ARS_E_UNSUPPORTED;
+}
 RuntimeRouter &global_router() { static RuntimeRouter router; return router; }
 }

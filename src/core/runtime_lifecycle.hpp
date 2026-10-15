@@ -1,5 +1,6 @@
 #pragma once
 #include "handle_registry.hpp"
+#include "../security/authority_types.hpp"
 #include <array>
 #include <cstdint>
 #include <mutex>
@@ -44,6 +45,7 @@ public:
     ars_status begin_close(ars_runtime_h);
     ars_status query_close(ars_runtime_h,ars_close_state *);
     ars_status finish_close(ars_runtime_h);
+    ars_status bind_character(ars_runtime_h,std::span<const security::SemanticChannel>,ars_character_h *);
     std::uint32_t occupied() const;
 };
 RuntimeRouter &global_router();
