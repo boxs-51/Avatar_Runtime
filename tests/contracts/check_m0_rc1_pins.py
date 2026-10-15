@@ -48,6 +48,58 @@ def require(condition, message):
     if not condition:
         raise AssertionError(message)
 
+CONSOLIDATION_BRANCH = "integration/m0-consolidated-20261015"
+CONSOLIDATION_MAIN = "637bdae7373aecbf50b18834f3118421d921fe3a"
+CONSOLIDATION_FROZEN = "fe3e680a44ac4e71ef57dc177e73ae31198fcbd0"
+CONSOLIDATION_PR15 = "7cf306dd783edd7e155ac26517c4b99b8b449552"
+CONSOLIDATION_GOVERNANCE = "19069dc85a0e07fe58b9ce8aad6cbfd5f0b1b55a"
+CONSOLIDATION_MAINTENANCE = "3d72b9c2cfaa77c3c0495143780f9a947b4c39c8"
+CONSOLIDATION_GOVERNANCE_PATHS = frozenset((
+    ".github/workflows/ars-governance-policy.yml",
+    "docs/GOVERNANCE_ARS_SOLO_OWNER_001.md",
+    "docs/governance/ARS_M1_SOLO_OWNER_ACK.md",
+    "docs/governance/ARS_M2_DEVELOPER.md",
+    "docs/governance/ARS_M3_FINAL_AUDIT.md",
+    "docs/governance/ARS_M4_STACKED_PRS.md",
+    "docs/governance/ARS_M5_MERGE_HISTORY.md",
+    "docs/governance/ARS_M6_WAVE_STATE.md",
+    "docs/governance/ARS_POLICY_V0_1_INDEX.md",
+    "tests/governance/test_ars_policy_reference.py",
+))
+CONSOLIDATION_MAINTENANCE_PATHS = frozenset((
+    ".gitignore", "docs/DEVELOPMENT.md", "docs/audits/HANDOFF_20261015.md",
+))
+CONSOLIDATION_DELTA = CONSOLIDATION_GOVERNANCE_PATHS | CONSOLIDATION_MAINTENANCE_PATHS | frozenset((
+    ".github/workflows/m0-freeze-prep.yml",
+    "docs/M0_CONTRACT_PARENT_PINS.json",
+    "tests/contracts/check_m0_rc1_pins.py",
+    "tests/contracts/test_m0_consolidation.py",
+    "docs/M1_A_SCOPE_V0.1.md",
+    "docs/audits/M0_INTEGRATION_20261015.md",
+))
+
+def check_consolidation(base, candidate):
+    """One exact main-target composition; no wildcard branch or runtime edits.
+
+    This source/ancestry check does not authorize a merge or change the owner
+    decision. Existing PR15's two-file allowlist remains unchanged below.
+    """
+    require(base == CONSOLIDATION_MAIN,
+            "Consolidation main moved: fresh exact-target review required")
+    for ancestor in (CONSOLIDATION_FROZEN, CONSOLIDATION_PR15,
+                     CONSOLIDATION_GOVERNANCE, CONSOLIDATION_MAINTENANCE):
+        git("merge-base", "--is-ancestor", ancestor, candidate)
+    changed = set(git("diff", "--name-only", CONSOLIDATION_FROZEN, candidate).splitlines())
+    require(changed == CONSOLIDATION_DELTA,
+            f"Consolidation path drift: {sorted(changed ^ CONSOLIDATION_DELTA)}")
+    for source, paths in ((CONSOLIDATION_GOVERNANCE, CONSOLIDATION_GOVERNANCE_PATHS),
+                          (CONSOLIDATION_MAINTENANCE, CONSOLIDATION_MAINTENANCE_PATHS)):
+        for path in sorted(paths):
+            require(git("rev-parse", candidate + ":" + path) ==
+                    git("rev-parse", source + ":" + path),
+                    f"Consolidation altered preserved source: {path}")
+    return True
+
 def validate_blob_manifest(obj):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -85,7 +137,10 @@ def check():
         expected_parent = git("rev-parse", "HEAD^1")
         # Exact authorization is per candidate kind, never a broad audit-branch bypass.
         child = obj.get("audit_child", {})
-        if os.getenv("GITHUB_HEAD_REF") == child.get("head_branch"):
+        if os.getenv("GITHUB_HEAD_REF") == CONSOLIDATION_BRANCH:
+            expected = CONSOLIDATION_MAIN
+            check_consolidation(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == child.get("head_branch"):
             expected = child["exact_parent_head"]
             require(re.fullmatch(r"[0-9a-f]{40}", expected) is not None,
                     "Malformed audit-child parent pin")
