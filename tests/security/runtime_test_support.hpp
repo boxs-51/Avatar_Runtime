@@ -74,8 +74,9 @@ struct ComponentFixture {
         else if(counter==2) record.ticket=maximum;
         else record.ordinal=maximum;
     }
-    static void supersede_ticket(security::SourceAuthority &authority,ars_source_admin_h id) {
+    static void supersede_ticket(security::SourceAuthority &authority,ars_source_admin_h id,bool active=false) {
         auto &record=source(authority,id); std::lock_guard lock(record.mutex); ++record.ticket;
+        if(active) record.state=security::SourceState::active;
     }
 };
 }

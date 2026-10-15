@@ -68,8 +68,30 @@ not sanitizer or race evidence. Final run links and source are recorded in PR23.
 
 Local Windows MSVC 19.51 shared Debug has passed 16/16 CTest groups, including
 the preserved foundation/PREP/B1 suites, both exact export checks, native OS
-security, source behavior and the controlled race suite. Static/ASan and the
-full exact-source CI matrix must also pass before the PR is marked ready.
+security, source behavior and the controlled race suite. Static Debug passed
+14/14 groups; static RelWithDebInfo ASan passed 14/14 with dumpbin-confirmed
+instrumentation. The external plain-C static consumer links and runs with the
+BCrypt dependency retained in the archive's MSVC linker directive, even when
+the consumer imports the archive directly. Initial CI exposed this integration
+defect after native tests passed; the final source reruns the entire matrix.
+The full exact-source CI matrix must pass before the PR is marked ready.
+
+Isolated native mutation audit compiled actual components with one deliberate
+fault per executable. All four exited 1 at the intended oracle: removing the
+phase-C ticket comparison (RESERVATION-phase-C-exact-ticket-required), charging
+sequence/quota before successful append (QUEUE-failure-no-sequence-or-quota-charge),
+omitting terminal release publication (EXHAUST-release-tombstone-required), and
+removing high-water regression detection (CLOCK-first-regression). Baseline
+native tests pass. Mutated copies, output and results.json are retained under
+`build/b2-mutants`; no mutant enters production or exports a test control.
+B3 staged-state/acquire/publication mutants are deferred with B3.
+
+Additional boundary evidence rejects malformed/duplicate frames, proves held
+terminal administrators consume the 64-record limit without eviction, and
+submits 100 times the admitted rate for each of 16 sources at a frozen security
+time: exactly 16 accepted, 1584 RATE_LIMIT, one queued frame per source. Failed
+phase-C identity checks cannot return OK with an empty capability, including
+a superseded ticket whose state was independently advanced back to ACTIVE.
 
 The race suite records seed `0x4152534232330001` and 1000 iterations per grouped
 family: G/sequence/OOM, E rollover, A/H unlocked copy versus revoke, K/L pending

@@ -203,7 +203,7 @@ ars_status SourceAuthority::register_source(ars_character_h id,const ars_source_
         else if(time.now>=source->expiry) { terminal(*source,SourceState::expired); status=state_error(*source); }
         else if(source->state!=SourceState::rotating || source->epoch!=reserved_epoch || source->control!=reserved_control ||
                 source->ticket!=reserved_ticket || !same(source->id.id,source_id.id) || !same(character->id.id,character_id.id))
-            status=state_error(*source);
+            { status=state_error(*source); if(status==ARS_OK) status=ARS_E_REVOKED; }
         else if(status==ARS_OK && ledger_.activate(reservation)) {
             source->ledger=reservation.index; source->state=SourceState::active;
             *out=source_id; *cap=reservation.token; return ARS_OK;
@@ -252,7 +252,7 @@ ars_status SourceAuthority::rotate(ars_source_admin_h id,ars_ingress_cap *out) {
             (void)observe_source(*source,time.now);
             if(source->state!=SourceState::rotating || source->epoch!=epoch || source->control!=control || source->ticket!=ticket ||
                !same(source->id.id,id.id) || !same(character->id.id,character_id.id) || !same(source->character.id,character_id.id))
-                status=state_error(*source);
+                { status=state_error(*source); if(status==ARS_OK) status=ARS_E_REVOKED; }
             else if(mint==ARS_OK && ledger_.activate(reservation)) {
                 source->ledger=reservation.index; source->state=SourceState::active;
                 source->sequence=0; source->credit=static_cast<std::uint64_t>(source->rate)*credit_unit;

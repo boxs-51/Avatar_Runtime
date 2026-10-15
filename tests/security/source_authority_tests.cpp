@@ -52,6 +52,19 @@ int main() {
         frame.value.sequence=2; frame.channel.semantic_id={"head.yaw_rad",12};
         test::status(ARS_E_SCOPE_DENIED,a.router.submit_frame(a.runtime,cap,&frame.value),"GRANT-channel-not-in-immutable-scope");
         frame.channel.semantic_id={"mouth.open",10};
+        frame.value.channel_count=257;
+        test::status(ARS_E_INVALID_ARGUMENT,a.router.submit_frame(a.runtime,cap,&frame.value),"FRAME-count-overflow-before-read");
+        frame.value.channel_count=1; frame.value.channels=nullptr;
+        test::status(ARS_E_INVALID_ARGUMENT,a.router.submit_frame(a.runtime,cap,&frame.value),"FRAME-null-with-count");
+        frame.value.channels=&frame.channel; frame.value.struct_size=8;
+        test::status(ARS_E_INVALID_ARGUMENT,a.router.submit_frame(a.runtime,cap,&frame.value),"FRAME-short-prefix-before-tail");
+        frame.value.struct_size=sizeof(frame.value); frame.value.reserved_flags=1;
+        test::status(ARS_E_INVALID_ARGUMENT,a.router.submit_frame(a.runtime,cap,&frame.value),"FRAME-reserved-flags");
+        frame.value.reserved_flags=0;
+        const std::array<ars_motion_channel,2> duplicates{frame.channel,frame.channel};
+        frame.value.channels=duplicates.data(); frame.value.channel_count=2;
+        test::status(ARS_E_INVALID_FRAME,a.router.submit_frame(a.runtime,cap,&frame.value),"FRAME-duplicate-ID-before-queue");
+        frame.value.channels=&frame.channel; frame.value.channel_count=1;
         frame.channel.value[0]=std::numeric_limits<float>::quiet_NaN();
         test::status(ARS_E_INVALID_FRAME,a.router.submit_frame(a.runtime,cap,&frame.value),"FRAME-NaN-before-queue");
         frame.channel.value[0]=0.7F; frame.channel.kind=ARS_VALUE_VEC3;
@@ -174,6 +187,7 @@ int main() {
         if(counter==3) test::status(ARS_E_HANDLE_EXHAUSTED,a.router.submit_frame(a.runtime,cap,&frame.value),"EXHAUST-accepted-ordinal");
         else test::status(ARS_E_HANDLE_EXHAUSTED,a.router.rotate_source(a.runtime,source,&next),"EXHAUST-epoch-control-ticket");
         test::status(ARS_E_SCOPE_DENIED,a.router.submit_frame(a.runtime,cap,&frame.value),"EXHAUST-no-stale-authority");
+        test::check(ComponentFixture::source(*a.context,source).tombstone.dirty.load(std::memory_order_acquire),"EXHAUST-release-tombstone-required");
         test::status(ARS_E_HANDLE_EXHAUSTED,a.router.rotate_source(a.runtime,source,&next),"EXHAUST-terminal-no-assert-or-wrap");
     }
     {
@@ -197,11 +211,39 @@ int main() {
         test::status(ARS_OK,a.router.submit_frame(a.runtime,callback.cap,&frame.value),"CALLBACK-context-guard-and-pins-restored");
     }
     {
+        test::Authority a; std::array<ars_source_admin_h,64> retired{}; ars_ingress_cap cap{};
+        for(auto &source:retired) {
+            test::status(ARS_OK,a.register_source(&source,&cap),"RECORD-lifetime-admin-bound");
+            test::status(ARS_OK,a.router.revoke_source(a.runtime,source),"RECORD-terminal-retains-admin");
+        }
+        ars_source_admin_h overflow{};
+        test::status(ARS_E_OUT_OF_BUDGET,a.register_source(&overflow,&cap),"RECORD-no-eviction-of-64-held-admins");
+        test::status(ARS_OK,a.router.release_source(a.runtime,retired[0]),"RECORD-direct-release");
+        test::status(ARS_OK,a.register_source(&overflow,&cap),"RECORD-reuse-only-after-direct-pins-drain");
+        test::check(!ars::security::same(retired[0].id,overflow.id),"RECORD-new-registry-generation");
+    }
+    {
+        test::Authority a; std::array<ars_source_admin_h,16> sources{}; std::array<ars_ingress_cap,16> caps{};
+        unsigned accepted=0,denied=0;
+        for(unsigned i=0;i<16;++i) {
+            test::status(ARS_OK,a.register_source(&sources[i],&caps[i],1),"FLOOD-sixteen-sources-rate-one");
+            for(unsigned attempt=1;attempt<=100;++attempt) {
+                test::Frame frame(attempt); auto result=a.router.submit_frame(a.runtime,caps[i],&frame.value);
+                if(result==ARS_OK) ++accepted;
+                else if(result==ARS_E_RATE_LIMIT) ++denied;
+                else test::status(ARS_E_RATE_LIMIT,result,"FLOOD-unexpected-status");
+            }
+            test::check(ComponentFixture::queue(*a.context,sources[i]).size()==1 &&
+                        ComponentFixture::source(*a.context,sources[i]).sequence==1,"FLOOD-bounded-queue-and-charge");
+        }
+        test::check(accepted==16 && denied==1584,"FLOOD-exact-100x-rate-accounting");
+    }
+    for(bool superseded_active:{false,true}) {
         test::Authority a; ars_source_admin_h source{}; ars_ingress_cap cap{},out{};
         test::status(ARS_OK,a.register_source(&source,&cap),"RESERVATION-register");
         test::Gate minted; a.random.gate=&minted; ars_status result=ARS_OK;
         std::thread worker([&]{result=a.router.rotate_source(a.runtime,source,&out);});
-        minted.wait_entered(); ComponentFixture::supersede_ticket(*a.context,source); minted.release(); worker.join();
+        minted.wait_entered(); ComponentFixture::supersede_ticket(*a.context,source,superseded_active); minted.release(); worker.join();
         test::check(result!=ARS_OK && !ars::security::nonzero(out),"RESERVATION-phase-C-exact-ticket-required");
         test::Frame frame;
         test::status(ARS_E_SCOPE_DENIED,a.router.submit_frame(a.runtime,cap,&frame.value),"RESERVATION-old-token-stays-invalid");

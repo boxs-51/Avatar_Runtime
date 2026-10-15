@@ -3,6 +3,10 @@
 #define NOMINMAX
 #include <windows.h>
 #include <bcrypt.h>
+#ifdef _MSC_VER
+// Preserve the native dependency when a consumer links the static archive directly.
+#pragma comment(lib, "bcrypt.lib")
+#endif
 #include <limits>
 
 namespace ars::security {
