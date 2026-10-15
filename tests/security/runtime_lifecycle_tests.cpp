@@ -209,5 +209,16 @@ int main() {
         test::check(std::all_of(state.blocks.begin(),state.blocks.end(),[](auto &block){return block.raw==nullptr;}) &&
                     state.reentries==state.calls+state.frees,"B2-ALLOC-paired-bytes-alignment-and-outside-locks");
     }
+    {
+        test::Authority authority; ars::core::RuntimeLease snapshot;
+        test::status(ARS_OK,authority.router.acquire(authority.runtime,ars::core::LeaseKind::snapshot,&snapshot),"B3-CPU-snapshot-root-category");
+        authority.retained.reset();
+        test::status(ARS_OK,authority.router.begin_close(authority.runtime),"B3-CPU-close-with-snapshot-root");
+        ars_close_state state{}; test::status(ARS_OK,authority.router.query_close(authority.runtime,&state),"B3-CPU-snapshot-counter-query");
+        test::check(state.outstanding_pins==2 && state.outstanding_render_snapshot_pins==1 && state.outstanding_gpu_retires==0,
+                    "B3-CPU-snapshot-does-not-hide-root-or-invent-GPU-work");
+        test::status(ARS_E_BUSY,authority.router.finish_close(authority.runtime),"B3-CPU-finalizer-keeps-snapshot-storage");
+        snapshot.reset();
+    }
     std::puts("PASS B1 production CPU lifecycle component suite; 87 whole security cases remain HOLD");
 }

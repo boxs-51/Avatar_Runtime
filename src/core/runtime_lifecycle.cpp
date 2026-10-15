@@ -340,7 +340,12 @@ ars_status RuntimeRouter::ensure_publication(RuntimeLease &lease,motion::Publish
     return status!=ARS_OK?status:(*out?ARS_OK:ARS_E_CLOSED);
 }
 ars_status RuntimeRouter::prepare_cpu(ars_runtime_h handle,ars_character_h character,std::span<const ars_source_admin_h> sources,const motion::Program &program,StageLease *out) {
-    (void)handle; (void)character; (void)sources; (void)program; (void)out; return ARS_E_UNSUPPORTED;
+    if(!out) return ARS_E_INVALID_ARGUMENT;
+    out->reset(); auto status=acquire(handle,LeaseKind::work,&out->runtime_); if(status!=ARS_OK) return status;
+    status=ensure_publication(out->runtime_,&out->owner_);
+    if(status==ARS_OK) status=out->owner_->prepare(character,sources,program,&out->stage_);
+    if(status!=ARS_OK) out->reset();
+    return status;
 }
 ars_status RuntimeRouter::publish_cpu(StageLease *lease) {
     if(!lease || lease->runtime_.owner_!=this || !lease->owner_ || !lease->stage_) return ARS_E_INVALID_ARGUMENT;

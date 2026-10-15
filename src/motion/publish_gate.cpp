@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <limits>
 namespace ars::motion {
+PublishGate::PublishGate(security::SourceAuthority &authority):authority_(authority) {}
 Snapshot *PublishGate::reserve() {
     for(std::uint32_t i=0;i<snapshot_limit_;++i) {
         bool free=false;
