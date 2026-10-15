@@ -283,6 +283,7 @@ def check_m1_b3(base, candidate):
                            'BASE = "' + M1_B2_BASE + '"\nSNAPSHOT = "' + M1_B3_BASE + '"\n')
     expected = expected.replace('"HEAD"', 'SNAPSHOT')
     expected = re.sub(r'"HEAD:([^"\n]+)"', r'SNAPSHOT + ":\1"', expected)
+    expected = expected.replace('"HEAD:"', 'SNAPSHOT + ":"')
     require(git("show", candidate + ":tests/contracts/test_m1_b2_custody.py") == expected,
             "B3 diluted historical B2 custody rather than binding the landed snapshot")
     old_gate = ast.parse(git("show", M1_B3_BASE + ":tests/contracts/check_m0_rc1_pins.py"))

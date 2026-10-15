@@ -34,7 +34,7 @@ class M1B2Custody(unittest.TestCase):
         real = pins.git
         for path in ("include/ars/ars.h", "src/abi/unsupported.cpp", "src/abi/runtime_api.cpp"):
             def changed(*args):
-                return "0" * 40 if args == ("rev-parse", "HEAD:" + path) else real(*args)
+                return "0" * 40 if args == ("rev-parse", SNAPSHOT + ":" + path) else real(*args)
             with self.subTest(path=path), patch.object(pins, "git", side_effect=changed):
                 with self.assertRaises(AssertionError): pins.check_m1_b2(BASE, SNAPSHOT)
 

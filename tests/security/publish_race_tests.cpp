@@ -151,7 +151,8 @@ void order_cut() {
     std::puts("PASS B3 ORDER: 1000 multi-source final lock/rotation orders");
 }
 }
-int main() {
+int main(int argc,char **argv) {
+    if(argc>1 && std::strcmp(argv[1],"epoch")==0) { terminal_cut(2); return 0; }
     std::printf("B3 RACE seed=%llx iterations=%u/family; real components, no sleeps\n",static_cast<unsigned long long>(seed),iterations);
     terminal_cut(0); terminal_cut(1); terminal_cut(2); close_cut(); time_cut(); clock_cut(); conflict_cut(); reader_cut(); order_cut();
     std::puts("PASS B3 production CPU publication races; all 87 whole-case verdicts remain HOLD");
