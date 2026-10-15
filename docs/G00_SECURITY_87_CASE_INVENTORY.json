@@ -1,0 +1,1319 @@
+{
+  "id": "ARS-G00-P0-C-87-INVENTORY",
+  "status": "DESIGN_INVENTORY_ONLY_NOT_RUNTIME_TEST_EVIDENCE",
+  "owner_design_stage_decision": "G00 inventory; all production cases remain M1-B G07/G08 HOLD; native GPU M1-D where marked",
+  "source_contract": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+  "count": 87,
+  "cases": [
+    {
+      "id": "HDL-001",
+      "scenario": "use character handle after logical destroy",
+      "oracle": "STALE_HANDLE without payload dereference/UAF",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-002",
+      "scenario": "destroy character A, reuse freed slot for B, call A handle",
+      "oracle": "A stale, B unaffected; generation differs",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-003",
+      "scenario": "pass model handle ID as character handle",
+      "oracle": "STALE_HANDLE or INVALID_ARGUMENT; type checked",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-004",
+      "scenario": "use handle from destroyed runtime against new runtime",
+      "oracle": "stale runtime_uid; no alias even if same slot/gen",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-005",
+      "scenario": "force slot generation to UINT32_MAX then invalidate",
+      "oracle": "permanent slot retirement; no generation wrap",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-006",
+      "scenario": "model release while 3 characters still refer to asset",
+      "oracle": "user handle stale; 3 instances render and exit safely",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-007",
+      "scenario": "8 ingress threads pin char, H destroy while frames are being copied",
+      "oracle": "no UAF; admissions after close denied; queued stale frames never publish",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-008",
+      "scenario": "H attempts destroy at S update structural conflict",
+      "oracle": "BUSY/wrong-thread contract; no racing mutation",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-009",
+      "scenario": "R has pinned snapshot, H destroys character",
+      "oracle": "GPU retire deferred until R releases plus backend-safe completion",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC",
+        "Windows D3D11 GPU/M1-D"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-010",
+      "scenario": "call begin_close twice and finish_close before GPU drain",
+      "oracle": "deterministic CLOSED/BUSY; no double-free",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-011",
+      "scenario": "begin_close races with fresh handle lookup",
+      "oracle": "lookup either pinned before close or rejected after; never raw-pointer race",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-012",
+      "scenario": "user passes all-zeros, malformed runtime_uid, huge slot",
+      "oracle": "INVALID_ARGUMENT/STALE_HANDLE; no out-of-bounds",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-013",
+      "scenario": "host clock callback intentionally reenters API",
+      "oracle": "callback contract violation returns BUSY or controlled failure, never lock deadlock",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-014",
+      "scenario": "randomized create/destroy 100,000 times",
+      "oracle": "no live-slot/reference leaks; bounded tombstones, no ABA",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-015",
+      "scenario": "H stops GPU pump before finish_close",
+      "oracle": "BUSY with outstanding_gpu_retires >0, never cross-thread GPU free",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC",
+        "Windows D3D11 GPU/M1-D"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-016",
+      "scenario": "simulated OOM during registry pin/tombstone creation",
+      "oracle": "typed failure; no corrupted slot/free-list",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-017",
+      "scenario": "query_close pinned while two finish_close calls race",
+      "oracle": "one finalizer claim, BUSY while management pin active, no UAF",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-018",
+      "scenario": "render snapshot released after character handle invalidated",
+      "oracle": "direct pinned control-block unpin succeeds; no stale lookup needed",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "HDL-019",
+      "scenario": "finalize runtime while GPU retire pending or interrupted GPU callback",
+      "oracle": "BUSY; R-thread-only completion, no leaked finalizer claim",
+      "owner_scope": "Runtime handle/registry",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC",
+        "Windows D3D11 GPU/M1-D"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "RACE-A",
+      "scenario": "ingress accepted before revoke but enqueue happens after it",
+      "oracle": "no post-revoke pose_generation depends on old cap",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-B",
+      "scenario": "mixer computed candidate before revoke",
+      "oracle": "zero commits depending on revoked generation after revoke returns",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-C",
+      "scenario": "update commits before revoke",
+      "oracle": "historic P is labeled pre-revoke; no false promise of instant display scrub",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-D",
+      "scenario": "runtime close during submission and GPU snapshot",
+      "oracle": "no UAF, no cross-thread GPU free",
+      "owner_scope": "Concurrency + Graphics lifetime",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC",
+        "Windows D3D11 GPU/M1-D"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-E",
+      "scenario": "rotation at sequence rollover",
+      "oracle": "no ABA of cap, no replay across generations",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-F",
+      "scenario": "retained smoothing / animation lineage after revocation",
+      "oracle": "Q.mouth.open is neutral/authorized, not the revoked smoother residue",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-G",
+      "scenario": "two ingress threads submit identical sequence",
+      "oracle": "one OK, one INVALID_FRAME/sequence rejection, queue count +=1",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-H",
+      "scenario": "ingress admission vs rotate/revoke",
+      "oracle": "no post-revoke fresh pose with retired provenance",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-I",
+      "scenario": "source TTL expires during paused simulation",
+      "oracle": "no new pose_generation with expired provenance",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-J",
+      "scenario": "concurrent close finalizers and late management query",
+      "oracle": "no deadlock, double free, stranded query pin or off-thread GPU destruction",
+      "owner_scope": "Concurrency + Graphics lifetime",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC",
+        "Windows D3D11 GPU/M1-D"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-K",
+      "scenario": "cap rotation failure, admin_release and concurrent revoke",
+      "oracle": "old token denied forever; stale derived caches not committed",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-L",
+      "scenario": "phase B rotate paused then explicit revoke (P0)",
+      "oracle": "source cannot reenter ACTIVE, even if CSPRNG minted token and admin handle is still valid",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-M",
+      "scenario": "begin_close vs already pinned simulation",
+      "oracle": "no new pose_generation after begin_close linearization; no UAF of pre-close operation pin",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-N",
+      "scenario": "monotonic security-time admission",
+      "oracle": "clock must be sampled IN ingress_mutex and checked against last_seen_security_ns",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-O",
+      "scenario": "expiry before final pose authorization",
+      "oracle": "no fresh pose commit with expired source epoch",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-P",
+      "scenario": "post-time-sample preemption demonstrates precise TTL promise",
+      "oracle": "test does NOT claim strict wall-clock erasure; NEXT publish with expired time fails",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-Q",
+      "scenario": "expiry, rollback and no source resurrection",
+      "oracle": "new pose generation never committed; old cap denied; runtime security_clock_fault sticky",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-R",
+      "scenario": "admission vs begin_close linearization",
+      "oracle": "bounded close, no accepted post-close ingress or queue resurrection",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-S",
+      "scenario": "shared runtime authorization clock watermark",
+      "oracle": "sticky clock fault; pose/queue never accepted even when clock subsequently rises to 190",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-T",
+      "scenario": "sustained multi-source ingress pressure vs begin_close",
+      "oracle": "close obtains exclusive gate, shuts admission; later ingress denied; no starvation/double free",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-U",
+      "scenario": "source lease expires during rotate phase B",
+      "oracle": "source enters terminal EXPIRED; no ACTIVE_NEW; minted cap discarded",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-V",
+      "scenario": "expiry tombstone vs multi-source retained pose",
+      "oracle": "staged candidate rejected; no fresh A provenance | fresh pose contains B only, B remains valid, no source->pose lock inversion",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "RACE-W",
+      "scenario": "exhaustion is terminal rather than assert or epoch wrap",
+      "oracle": "no assertion crash/double invalidation, no stale token or ABA",
+      "owner_scope": "Concurrency/source authority/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "deterministic interleaving + >=1000 randomized iterations"
+    },
+    {
+      "id": "SRC-001",
+      "scenario": "submit arbitrary frame with no registered capability",
+      "oracle": "SCOPE_DENIED, pose unchanged",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-002",
+      "scenario": "forge source_id and current-looking source_generation in JSON adapter payload",
+      "oracle": "ignored as authority, still denied",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-003",
+      "scenario": "guess 128-bit cap; flip one bit of valid cap",
+      "oracle": "SCOPE_DENIED; no existence disclosure in remote response",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-004",
+      "scenario": "RNG unavailable at register/rotate",
+      "oracle": "typed failure, no weak fallback, no source activated",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-005",
+      "scenario": "source registered only for mouth.open submits head.yaw_rad",
+      "oracle": "SCOPE_DENIED, other channels unaffected",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-006",
+      "scenario": "registered cap for Character A submitted with payload claiming B",
+      "oracle": "B cannot be changed; character chosen by binding, not payload",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-007",
+      "scenario": "source sends priority=INT_MAX, layer override/mode switch fields",
+      "oracle": "packet fields never grant authority; unrecognized command denied",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-008",
+      "scenario": "duplicate or decreasing sequence per active cap",
+      "oracle": "invalid frame, pose generation does not rewind",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-009",
+      "scenario": "source sequence reaches UINT64_MAX and attempts wrap",
+      "oracle": "reject/requires rotation; old cap stays bounded",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-010",
+      "scenario": "rotating source at unchanged diagnostic label",
+      "oracle": "old cap rejected, new cap accepted; generation strictly advances",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-011",
+      "scenario": "revoke old cap, reconnect, replay old frame at plausible new timestamp",
+      "oracle": "rejected at submission and/or pre-commit gate",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-012",
+      "scenario": "source TTL expires with queue backlog",
+      "oracle": "no post-expiry new pose ownership; fallback on next update",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-013",
+      "scenario": "untrusted frame NaN, INF, invalid quaternion, invalid UTF-8 ID",
+      "oracle": "rejected before queue; source cannot crash",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-014",
+      "scenario": "flood 100x intended rate with 16 sources",
+      "oracle": "bounded queues and per-source quotas; drops visible in counters",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-015",
+      "scenario": "NULL with nonzero count, valid allocated buffer with count overflow, undersized struct, malformed *serialized adapter* lengths",
+      "oracle": "safe rejection before out-of-bounds; arbitrary invalid non-NULL C pointers are outside trusted ABI contract",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-016",
+      "scenario": "same label with different cap ID and different Character generation",
+      "oracle": "no cross-generation authority inheritance",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-017",
+      "scenario": "source descriptor allowed_channel_count=0",
+      "oracle": "default DENY, not wildcard/all channels",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-018",
+      "scenario": "source after 2D -> 3D mode switch",
+      "oracle": "same semantic scope; cannot control unspecified native bone/morph",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-019",
+      "scenario": "source-admin handle passed as ingress cap/type confusion",
+      "oracle": "rejected; no implicit role conversion",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-020",
+      "scenario": "SDK-owned security monotonic clock unavailable/regresses, simulation callback regresses",
+      "oracle": "reject admission/new publish on security failure; reject or hold malformed simulation time without renewing lease",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-021",
+      "scenario": "source registers mixed-case / Unicode alias channel IDs",
+      "oracle": "reject noncanonical semantic IDs; no grant through aliasing",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-022",
+      "scenario": "force cap mint collision with a retired token, then exhaustion of issuance budget",
+      "oracle": "retry fresh token or fail closed; retired token never valid again",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-023",
+      "scenario": "source N contributes to smoothing/retarget/cache then N revoked",
+      "oracle": "fresh pose carries no N-derived values or memory lineage; affected channels rebuilt from neutral or other live sources",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-024",
+      "scenario": "N queues trigger/delayed animation, mode switch, then revoke",
+      "oracle": "all deferred trigger/integrator effects invalidated; no post-revoke fresh pose tainted by N",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-025",
+      "scenario": "pause simulation immediately before publish until source TTL elapses",
+      "oracle": "SDK monotonic security clock read at publish gate rejects candidate; after expiry no new pose from source",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-026",
+      "scenario": "rotate CSPRNG fails before new token minted / ledger allocation fails after old revoked",
+      "oracle": "old token permanently unusable, source REVOKED, out cap zero; no rollback to old active",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-027",
+      "scenario": "same cap concurrent duplicate seq=100 at highwater=99",
+      "oracle": "exactly one successful queue append and highwater advance; other rejected; quota charged once",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-028",
+      "scenario": "queue full/temporary append OOM for seq=102",
+      "oracle": "no highwater or quota consumption; valid seq=102 accepted after capacity restored",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-029",
+      "scenario": "seq=101 wins admission before seq=100 from concurrent thread",
+      "oracle": "seq=100 rejected with deterministic ordering; mixer never reverses accepted order",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-030",
+      "scenario": "admin_release on ACTIVE races with revoke/rotate",
+      "oracle": "one definitive revocation; no orphan active cap; BUSY retains admin right on failure",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-031",
+      "scenario": "identity mismatches across runtime and untrusted serialized packet claims",
+      "oracle": "packet labels confer no authority; bind only registry-owned live char + epoch",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-032",
+      "scenario": "post-revoke old committed frame displayed, then fresh update",
+      "oracle": "historical GPU frame may remain, but new committed pose provenance excludes old source",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-033",
+      "scenario": "rotate phase B paused; explicit revoke then rotate phase C",
+      "oracle": "reservation ticket/epoch mismatch; remain EXPLICIT_REVOKED; zero cap",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-034",
+      "scenario": "admin_release or begin_close while rotation is pending",
+      "oracle": "no new capability activation after management close",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-035",
+      "scenario": "source security clock sampled backwards under ingress mutex",
+      "oracle": "CLOCK_REGRESSION; no quota or sequence advancement",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-036",
+      "scenario": "source TTL expires before final publish sample",
+      "oracle": "old pose candidate denied; new generation not committed",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-037",
+      "scenario": "clock advances after valid authorization sample but before pointer store",
+      "oracle": "permitted under expressly documented sample-time TTL semantics; next sample rejects expired source",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-038",
+      "scenario": "source accepts pose at 150, observes expiry at 200, then clock regresses to 120",
+      "oracle": "source enters terminal EXPIRED and epoch invalidated; sticky CLOCK_FAULT; no new publish on old cap/epoch",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-039",
+      "scenario": "ingress holds shared admission gate while begin_close requests exclusive gate",
+      "oracle": "earlier ingress append can finish BEFORE close linearization; no append/OK after QUIESCING",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-040",
+      "scenario": "ingress samples security clock at 180, publisher next samples 170",
+      "oracle": "global security_highwater detects backwards time and permanently rejects new authorizations",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-041",
+      "scenario": "sustained ingress flood while begin_close sets writer intent",
+      "oracle": "close cannot be starved; all post-close queue admissions denied",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-042",
+      "scenario": "pending phase-B rotation continues after lease expiry",
+      "oracle": "phase C samples clock, marks terminal EXPIRED, denies activation and refuses subsequent rotate",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-043",
+      "scenario": "source A expires on ingress while cached A+B candidate/trigger/mode-switch retarget is staged",
+      "oracle": "publish reads tombstone and rejects A provenance; next S update resets A cache and commits B only, no source->pose lock acquisition",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-044",
+      "scenario": "source/control epoch or rotation ticket at UINT64_MAX on revoke/expire/rotate",
+      "oracle": "terminal EXHAUSTED, prior token denied, no wrap, no assertion crash",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    },
+    {
+      "id": "SRC-045",
+      "scenario": "close requester sets closing-intent under writer-priority gate with eight admitted ingress workers",
+      "oracle": "later ingress attempts denied; existing readers drain and close completes without writer starvation",
+      "owner_scope": "Motion source/authorization/pose",
+      "source": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "required_stage": "M1-B/G07-G08",
+      "required_platforms": [
+        "ubuntu-24.04/GCC",
+        "ubuntu-24.04/Clang",
+        "windows-2022/MSVC"
+      ],
+      "evidence_status": "HOLD_RUNTIME",
+      "test_mode": "production negative regression"
+    }
+  ]
+}

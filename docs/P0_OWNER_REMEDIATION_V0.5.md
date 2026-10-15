@@ -1,0 +1,49 @@
+# P0 Security Owner Remediation R5 — Closing Fairness & Cross-Lock Provenance
+
+**Status:** OWNER DESIGN PROPOSAL, NOT INDEPENDENTLY ACCEPTED.  
+**Input:** ARS-P0-PR2-R4-REAUDIT-2026-10-14-01 at b5f3223bb69549fb30439e62c4dad965a671dbd9.  
+**Precedence:** This document replaces conflicting R4/R3/R2/v0.1 clauses only for close admission liveness, expiry dirty-epoch propagation, and epoch-exhaustion behavior. The rest of the rotation reservation, sample-time TTL, terminal explicit revoke, and ABI/registry requirements remain mandatory. No G00 PASS, no production runtime, no merge.
+
+## 1. Closing admission without reader-preference starvation (P1-R4-01)
+
+Replace an unspecified \`std::shared_mutex\` fairness assumption with a **writer-closing admission barrier** implemented using a short internal mutex + condition variable + bounded admitted-reader counter:
+
+- Gate state \`OPEN | CLOSE_REQUESTED\`, \`active_admissions\` (bounded to the maximum number of simultaneous ingress workers), and one mutex guarding both. \`enter_admission\` checks OPEN and increments active_admissions **atomically under the gate mutex**; otherwise returns CLOSED. Gate mutex is released before source lock. No unbounded wait on read lock.
+- Admission **operation lease** (RAII) decrements active_admissions and signals the CV on every return path, including malformed frames, quota/queue failure and exceptions caught at the C ABI boundary.
+- \`begin_close\` first takes runtime_commit_gate; then \`request_close_and_drain\` sets CLOSE_REQUESTED under admission-gate mutex **before waiting** for \`active_admissions == 0\` via CV wait (which RELEASES gate mutex). New entrants immediately fail instead of delaying the writer. Once count reaches zero, continue under commit gate to set QUIESCING with the router lock, release router lock, then invalidate sources under character pose gate -> source mutex (one character at a time). CLOSE_REQUESTED is sticky, including when cancellation or GPU cleanup later returns BUSY.
+- Linearization for **admission** is queue append/seq/quota under the source mutex while its admission lease is active. Because begin_close cannot change RUNNING->QUIESCING until all earlier admission leases are released, no successful enqueue can linearize after close. The earlier admission may return to caller after close linearizes due to scheduling, but its **successful append** necessarily linearized before close. Do not define response-time as the linearization point.
+- Linearization for **closing intent** is OPEN->CLOSE_REQUESTED under gate mutex. It blocks new admission before the final RUNNING->QUIESCING transition (a deliberate fail-closed early denial); it does not itself invalidate committed poses. Existing operations that have not entered gate are denied even if pinned earlier.
+- Lock order: admission gate mutex is held only while incrementing/decrementing the reader counter or setting CLOSE_REQUESTED, never while acquiring source/clock/pose/router locks; begin_close acquires commit gate -> admission-gate mutex (brief), then CV waits without that mutex -> router lock -> each character pose gate -> source locks. Ingress gate acquisition is never performed while holding source/clock locks; callbacks and frame copying occur **before** admission gate.
+- Bounded liveness: under a finite/max ingress worker count, each admitted critical section has a bounded nonblocking queue append and no external callbacks, so the closer waits only for already-admitted work. A stalled trusted in-process thread or blocked OS scheduler can defeat any unconditional wall-clock bound. Timeout/cancellation may report BUSY, but MUST NOT reopen admission or free pinned objects. All close retries are idempotent and keep CLOSE_REQUESTED.
+- Required deterministic **RACE-T:** N previously admitted ingress workers hold leases, begin_close marks CLOSE_REQUESTED, additional N workers repeatedly attempt admission and are immediately denied, earlier workers release, then close completes. Assert no new admissions after intent, no starvation from repeated attempts, balanced reader pins and no accepted append after QUIESCING. Use CV/latches/atomic notify, not sleeps.
+
+## 2. Source expiry without pose lock inversion (P1-R4-02)
+
+**Prohibited:** acquiring pose_publish_gate while holding source_ingress_mutex or security_clock_gate. The expiry path MUST NOT mutate simulation-owned caches, even if docs say “invalidate transitive provenance.” It publishes an immutable **epoch tombstone**, and the simulation performs the actual cache retirement under its normal pose/owner ordering.
+
+- Per-source authorization metadata owned by source mutex: active source epoch, source/control epochs, token, source state, per-source bounded queue. Additionally expose \`invalidated_through_epoch\` (atomic uint64_t release store, or an equivalent guarded tombstone) and \`dirty_epoch_flag\` (atomic release store). On observed TTL expiry, while holding source mutex and clock gate, update source state to EXPIRED terminal, invalidate token/reservation, safely advance epochs without wrap, discard or epoch-stamp queued entries, and publish tombstone/dirty with **release ordering**. No pose gate acquisition or S-owned cache mutation is permitted here.
+- An in-flight candidate records the **transitive provenance set** of all current and retained frame/smoothing/retarget/morph/trigger/filter dependencies. Every element binds to source ID+character generation+source epoch; a numeric scalar without provenance does not authorize reuse.
+- Simulation S at the next safe update reads the dirty markers with **acquire** ordering; under pose gate and source locks in stable slot order, it determines which provenance entries were invalidated and retires all affected S-owned staged filter/smoothing/trigger/mode-switch cache state. It recomputes from neutral/idle and remaining LIVE authorized sources. A candidate assembled before expiry MUST NOT alter persistent state before final authorization.
+- **Final pose publish** holds commit gate -> character pose gate -> source mutexes (stable source IDs) -> runtime security_clock_gate. It reads authorization status and tombstones and validates **every transitive contributor**, including retained state that may affect future frames. If any epoch is stale, abort the candidate and its staged writes (or recompute from valid baseline); never commit it with a newer pose generation. The release/acquire tombstone protocol is supplementary to mutex visibility and prevents stale cached state from being silently considered clean.
+- Source expiry may be detected at ingress (no pose lock), at final publication (already under pose gate), or during rotate phase C (already under pose gate). Each path publishes the same terminal tombstone and must be idempotent. On epoch overflow, mark EXHAUSTED, invalidate all live authority and never reuse old epoch or issue a new token; the tombstone records the invalidated prior generation. No modulo arithmetic.
+- Pending GPU snapshots committed BEFORE expiry/revoke are historical and may continue to render until a separate present fence; source invalidation does not retroactively scrub pixels.
+
+**Required negative trace:** Source A influences a retained smoother and delayed animation trigger; source B remains independently active. S stages candidate with A+B and pauses. I expires source A under A-source lock + security clock and releases dirty tombstone; S resumes final commit under pose + A/B locks, acquire-observes tombstone, REJECTS stale candidate, recomputes fresh baseline + B (without A-sourced cache/trigger/retarget). Assert no reversed lock acquisitions, no new A-dependent pose_generation, B unchanged, and S-owned cache retired only by S. Repeat with source B also expired and source A revoked.
+
+## 3. Typed generation exhaustion, never assertions (P2-R4-03)
+
+- All \`source_epoch\`, \`control_epoch\`, \`rotation_ticket\`, registry slot generation and runtime UID are checked **before increment**.
+- If the next increment is impossible, mark affected identity \`EXHAUSTED\` (or a more restrictive terminal closed status), clear cap/rotation, queue and grant, publish a terminal dirty tombstone with release semantics and return typed HANDLE_EXHAUSTED / CLOSED. Never assert-crash, wrap to zero, or continue using a handle that could ABA.
+- Expiry/revoke must remain fail-closed even when counters have already reached UINT64_MAX; they may use tombstone recording the last valid epoch and a terminal state, without requiring successful increment. New trusted registration uses a new slot/generation and fresh source capability.
+- Model negative cuts: force near-overflow + revoke, expiry, rotate ticket exhaustion, close; assert no assertion crash, no reactivation, no reuse and no new pose commit.
+
+## 4. Gate, evidence, and governance
+
+- **RACE-T:** bounded writer fairness under ingress flood (deterministic, N>1).
+- **RACE-V:** ingress expiry of A concurrent with S staged A+B cached pose; reject stale commit and reconstruct only B, with acquire/release tombstone and trigger/retarget reset.
+- **RACE-W:** epoch/control/ticket overflow at revoke/expiry/rotation; remain terminal, no ABA or crash.
+- **SRC-043:** source expiry dirty marker publishes and is observed by simulation without lock inversion.
+- **SRC-044:** epoch exhaustion denies new grants and invalidates previous ones.
+- Existing RACE-Q/R/S/U, terminal source EXPIRED, clock poison and rotation reservation remain REQUIRED.
+- Any executable model PASS is ONLY a contract-model PASS; the real multi-source motion mixer, OS CSPRNG/nonreuse ledger, runtime handle registry, process restart, ASan/TSan, GPU device retirement, and ADR-0001 remain **IMPLEMENTATION HOLD**.
+- Obtain new exact HEAD independent architecture/security review. No merge or G00 approval.

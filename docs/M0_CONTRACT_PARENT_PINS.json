@@ -1,0 +1,70 @@
+{
+  "contract_candidate": "M0_RC1",
+  "stack": {
+    "pr1_number": 8,
+    "pr1_head": "2301aa101b46aba545c76047a0e4f7315a1a3222",
+    "pr2_number": 9,
+    "pr2_head": "b80997192d14fbc7c40055300931e33727ac8674",
+    "pr3_number": 10
+  },
+  "source_blobs": {
+    "schemas/character_manifest_v0.1.schema.json": "fbc43c3923c23f1e9b95098cbd3f118dd7e5b854",
+    "schemas/ars2d_rig_v0.1.schema.json": "5ea105e5282ba0c9e137306c83bdb3a67e902607",
+    "examples/character_dual_mode.json": "88bf3c9917d27cf6178111c1a37a6e879715b793",
+    "examples/character2d.ars2d.json": "f8e22a7d225cda731b4bbc23b1cc88e01dc18782",
+    "contracts/ars_p0_contract_draft.h": "6a82f96f95390697d28d0b0acf3470108ee00f22",
+    "docs/P0_OWNER_REMEDIATION_V0.5.md": "37837d4c7ebf5c7f7f5bd9094eea31e4da3b98ca",
+    "docs/ADR_P0_SECURITY_R2.md": "493a9bf100f308c1751a0e62ccfb0fb9a4205244",
+    "docs/ACCEPTANCE_GATES_V0.1.md": "b912d8fc60a1e334a261def623c59d58b0ac7d56",
+    "docs/SPECIFICATION_V0.1.md": "f0559b8c4435ca84fdd722198464e5932767cf5a"
+  },
+  "stage_status": {
+    "G00": "HOLD_DESIGN",
+    "G01": "NOT_IMPLEMENTED",
+    "G02": "NOT_IMPLEMENTED",
+    "G10": "NOT_IMPLEMENTED",
+    "ADR_0001": "OWNER_DESIGN_ACCEPTED_REVIEW_HOLD",
+    "FORMAT_PROFILE": "B_OWNER_ACCEPTED_REVIEW_HOLD",
+    "VRM_1_0": "UNSUPPORTED"
+  },
+  "owner_selection_record": "Sole repository owner explicitly approved Profile B + PR8 adoption, PR5 security G00/G07/G08 stage split, ABI20 and D3D11 HOST_DEVICE QUERY_EVENT in active conversation on 2026-10-14. Not actor-distinct technical approval or merge.",
+  "audit_child": {
+    "head_branch": "audit/m0-g00-solo-redfirst-mask-graph-20261014",
+    "exact_parent_head": "d90393d7ec8556b7c69bf1e1cd468150f8728d93",
+    "pr_number": 12,
+    "scope": "design mask graph and exact predecessor regression; no G00 approval"
+  },
+  "audit_successor": {
+    "head_branch": "audit/g00-final-p1-manifest-oracles-20261014",
+    "exact_parent_head": "6c790b239d2af47f534ab78d4aaa386cc86b63db",
+    "pr_number": 13,
+    "scope": "P1 G00 provenance/source inventory fixed-path immutable negative tests; not merge authority"
+  },
+  "reviewed_g00_blobs": {
+    "include/ars/ars.h": "1c61da4a48c9faf2001fc98ad4c084413781e61c",
+    "docs/ADR_0001_D3D11_G00_DESIGN_RC1.md": "88c93d5c949b0eb2d205162bf5951f09d4ef0ca2",
+    "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md": "5abf89c11f12f5b191534acfa7cb2762408e3bd0",
+    "docs/V0_1_CANONICAL_CONTRACT_RC1.md": "612a0a3a129537a35ed96e5df80cdba7a32293e6",
+    "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md": "2b6730a85158f80b2a4c8ff05a16fcf9ae5e3708",
+    "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md": "d7f93baee7a59e1bf8764452d98c93915769eb9f",
+    "tests/contracts/p0_r5_state_machine_model.cpp": "fb2802db2b1bf8ead6ad23341bf2026ed6fdd4be",
+    "tests/abi/design_smoke.c": "91957916a06274929ae068030f48dd491ae30e49"
+  },
+  "audit_p204": {
+    "head_branch": "audit/g00-p204-canonical-abi20-host-device-20261014",
+    "exact_parent_head": "24c6afad69c4bcb1a86743d91edc4706a1ba5ca1",
+    "scope": "P2-04 exact ABI20 HOST_DEVICE canonical spec review; no G00 owner acceptance",
+    "pr_number": 14
+  },
+  "main_integration": {
+    "head_branch": "integration/g00-design-freeze-main-20261015",
+    "owner_approved_g00_sha": "fe3e680a44ac4e71ef57dc177e73ae31198fcbd0",
+    "main_base_head": "637bdae7373aecbf50b18834f3118421d921fe3a",
+    "pr_number": 15,
+    "delta_allowed": [
+      "docs/M0_CONTRACT_PARENT_PINS.json",
+      "tests/contracts/check_m0_rc1_pins.py"
+    ],
+    "scope": "PREP ONLY synthetic-main-parent custody; frozen G00 source unchanged, no M1, no merge"
+  }
+}

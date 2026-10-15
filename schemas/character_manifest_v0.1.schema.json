@@ -1,0 +1,338 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/boxs-51/Avatar_Runtime/blob/main/schemas/character_manifest_v0.1.schema.json",
+  "title": "ARS Character Manifest 0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "bundle_id",
+    "display_name",
+    "default_mode",
+    "units",
+    "representations",
+    "rig_semantics",
+    "visual_layers"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1.0"
+    },
+    "bundle_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]+$"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "license": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "author": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "default_mode": {
+      "enum": [
+        "2d",
+        "3d"
+      ]
+    },
+    "units": {
+      "const": "meters"
+    },
+    "representations": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "2d": {
+          "$ref": "#/$defs/representation2d"
+        },
+        "3d": {
+          "$ref": "#/$defs/representation3d"
+        }
+      }
+    },
+    "rig_semantics": {
+      "type": "array",
+      "maxItems": 512,
+      "items": {
+        "$ref": "#/$defs/semantic"
+      }
+    },
+    "visual_layers": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {
+        "$ref": "#/$defs/layer"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "default_mode": {
+            "const": "2d"
+          }
+        },
+        "required": [
+          "default_mode"
+        ]
+      },
+      "then": {
+        "properties": {
+          "representations": {
+            "required": [
+              "2d"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "default_mode": {
+            "const": "3d"
+          }
+        },
+        "required": [
+          "default_mode"
+        ]
+      },
+      "then": {
+        "properties": {
+          "representations": {
+            "required": [
+              "3d"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(?:[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+)*/)*[A-Za-z0-9_-]+(?:\\.[A-Za-z0-9_-]+)*$"
+    },
+    "mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "semantic",
+        "target"
+      ],
+      "properties": {
+        "semantic": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "representation2d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "asset",
+        "atlas",
+        "mappings",
+        "layer_bindings"
+      ],
+      "properties": {
+        "format": {
+          "const": "ars2d-rig-v0.1"
+        },
+        "asset": {
+          "$ref": "#/$defs/path"
+        },
+        "atlas": {
+          "$ref": "#/$defs/path"
+        },
+        "mappings": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "$ref": "#/$defs/mapping"
+          }
+        },
+        "layer_bindings": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/$defs/layerBinding"
+          }
+        }
+      }
+    },
+    "representation3d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "asset",
+        "mappings"
+      ],
+      "properties": {
+        "format": {
+          "enum": [
+            "glb-gltf2",
+            "vrm1"
+          ]
+        },
+        "asset": {
+          "$ref": "#/$defs/path"
+        },
+        "mappings": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "$ref": "#/$defs/mapping"
+          }
+        }
+      }
+    },
+    "semantic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "type": {
+          "enum": [
+            "float",
+            "bool",
+            "vec2",
+            "vec3",
+            "quat",
+            "trigger"
+          ]
+        },
+        "units": {
+          "enum": [
+            "normalized",
+            "radians",
+            "meters",
+            "unitless"
+          ]
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "default": {
+          "type": [
+            "number",
+            "boolean",
+            "array"
+          ]
+        }
+      }
+    },
+    "layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "mode_scope",
+        "z_index",
+        "visible",
+        "opacity"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "parent": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "mode_scope": {
+          "enum": [
+            "2d",
+            "3d",
+            "both"
+          ]
+        },
+        "z_index": {
+          "type": "integer",
+          "minimum": -10000,
+          "maximum": 10000
+        },
+        "visible": {
+          "type": "boolean"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "blend_mode": {
+          "enum": [
+            "normal",
+            "add",
+            "multiply"
+          ]
+        },
+        "mask": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    "layerBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "layer_id",
+        "part_ids"
+      ],
+      "properties": {
+        "layer_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9._-]{0,127}$",
+          "maxLength": 128
+        },
+        "part_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9._-]{0,127}$",
+            "maxLength": 128
+          }
+        }
+      }
+    }
+  }
+}
