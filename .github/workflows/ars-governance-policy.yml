@@ -1,0 +1,28 @@
+name: Avatar Governance v0.1 Proposal Contract (NON-AUTHORIZING)
+on:
+  pull_request:
+    paths:
+      - 'docs/GOVERNANCE_ARS_SOLO_OWNER_001.md'
+      - 'docs/governance/**'
+      - 'tests/governance/**'
+      - '.github/workflows/ars-governance-policy.yml'
+  push:
+    branches:
+      - 'governance/ars-policy85-v3-selective-reference-20261015'
+    paths:
+      - 'docs/governance/**'
+      - 'tests/governance/**'
+      - '.github/workflows/ars-governance-policy.yml'
+permissions:
+  contents: read
+jobs:
+  contract-only:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Check proposed governance modules and nonadoption boundary
+        run: python -m unittest discover -s tests/governance -p 'test_ars_policy_reference.py' -v
