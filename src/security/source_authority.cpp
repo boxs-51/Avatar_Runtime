@@ -76,7 +76,7 @@ ars_status SourceAuthority::state_error(const Source &source) const noexcept {
 }
 void SourceAuthority::terminal(Source &source,SourceState state) noexcept {
     const auto old_epoch=source.epoch;
-    ledger_.retire(source.ledger); source.ledger=ledger_capacity;
+    ledger_.retire(source.ledger); source.ledger=ledger_capacity; source.front_ordinal=0;
     if(source.data<max_sources) {
         auto &slot=queues_[source.data]; slot.queue.clear(); source.data=max_sources;
         slot.used.store(false,std::memory_order_release);
@@ -160,7 +160,7 @@ ars_status SourceAuthority::register_source(ars_character_h id,const ars_source_
         queues_[data].queue.clear();
         source->character=id; source->state=SourceState::unused;
         source->epoch=source->control=source->ticket=1;
-        source->sequence=source->ordinal=0; source->ledger=ledger_capacity; source->data=data;
+        source->sequence=source->ordinal=source->front_ordinal=0; source->ledger=ledger_capacity; source->data=data;
         source->channels=desc->max_channels_per_frame; source->rate=desc->max_frames_per_second;
         source->priority=desc->fixed_priority; source->allowed=allowed; source->label=label;
         source->tombstone.invalidated_through.store(0,std::memory_order_relaxed);
@@ -239,7 +239,7 @@ ars_status SourceAuthority::rotate(ars_source_admin_h id,ars_ingress_cap *out) {
         source->tombstone.publish(source->epoch);
         ++source->epoch; ++source->control; ++source->ticket;
         epoch=source->epoch; control=source->control; ticket=source->ticket;
-        source->state=SourceState::rotating; queues_[source->data].queue.clear();
+        source->state=SourceState::rotating; queues_[source->data].queue.clear(); source->front_ordinal=0;
     }
     TokenLedger::Reservation reservation;
     const auto mint=ledger_.reserve(id,&reservation);
@@ -312,9 +312,8 @@ ars_status SourceAuthority::prepare(const ars_motion_frame *input,PreparedFrame 
     }
     if(input->timestamp_mode==ARS_TIMESTAMP_ON_ARRIVAL) {
         if(descriptor_.simulation_now_ns) {
-            bool expected=false;
-            if(!callback_.active.compare_exchange_strong(expected,true,std::memory_order_acq_rel)) return ARS_E_BUSY;
-            WorkspaceRelease callback_release{&callback_.active};
+            CallbackLease callback_release(callback_);
+            if(!callback_release) return ARS_E_BUSY;
             try { frame.timestamp=descriptor_.simulation_now_ns(descriptor_.clock_user_data); }
             catch(...) { return ARS_E_INTERNAL; }
             std::lock_guard samples(callback_.samples);
@@ -325,7 +324,7 @@ ars_status SourceAuthority::prepare(const ars_motion_frame *input,PreparedFrame 
     return ARS_OK;
 }
 ars_status SourceAuthority::submit(ars_ingress_cap cap,const ars_motion_frame *input) {
-    if(callback_.active.load(std::memory_order_acquire)) return ARS_E_BUSY;
+    if(callback_.active()) return ARS_E_BUSY;
     Workspace *workspace=nullptr;
     for(std::uint32_t i=0;i<workspace_limit_;++i) {
         bool free=false;
@@ -334,6 +333,7 @@ ars_status SourceAuthority::submit(ars_ingress_cap cap,const ars_motion_frame *i
     if(!workspace) return ARS_E_BUSY;
     WorkspaceRelease workspace_release{&workspace->used};
     auto status=prepare(input,&workspace->prepared); if(status!=ARS_OK) return status;
+    MutationLease mutation(callback_); if(!mutation) return ARS_E_BUSY;
     ars_source_admin_h source_id{};
     if(!ledger_.lookup(cap,&source_id)) return ARS_E_SCOPE_DENIED;
     core::ObjectLease source_pin,character_pin;
@@ -369,6 +369,7 @@ ars_status SourceAuthority::submit(ars_ingress_cap cap,const ars_motion_frame *i
     if(credit<credit_unit) return ARS_E_RATE_LIMIT;
     frame.source=source->id; frame.character=source->character; frame.epoch=source->epoch; frame.ordinal=source->ordinal+1;
     status=queues_[source->data].queue.append(frame); if(status!=ARS_OK) return status;
+    if(queues_[source->data].queue.size()==1) source->front_ordinal=frame.ordinal;
     source->sequence=frame.sequence; source->ordinal=frame.ordinal;
     source->credit=credit-credit_unit; source->refill=time.now; return ARS_OK;
 }
@@ -380,7 +381,9 @@ ars_status SourceAuthority::dequeue(ars_source_admin_h id,OwnedFrame *out,core::
     std::lock_guard lock(source->mutex);
     auto time=clock_.observe(); if(time.status!=ARS_OK) return time.status;
     status=observe_source(*source,time.now); if(status!=ARS_OK) return status;
-    return queues_[source->data].queue.pop(out)?ARS_OK:ARS_E_BUSY;
+    if(!queues_[source->data].queue.pop(out)) return ARS_E_BUSY;
+    source->front_ordinal=queues_[source->data].queue.size()?out->ordinal+1:0;
+    return ARS_OK;
 }
 void SourceAuthority::request_close() { admission_.request_close(); }
 void SourceAuthority::drain() { admission_.drain(); }

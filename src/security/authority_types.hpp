@@ -10,10 +10,45 @@
 namespace ars::core { struct ComponentFixture; }
 namespace ars::security {
 struct CallbackState {
-    std::atomic<bool> active{false};
+private:
+    static constexpr std::uint32_t callback_bit=1U<<31;
+    std::atomic<std::uint32_t> admission_{0};
+public:
     std::mutex samples;
     std::uint64_t highwater=0;
     bool observed=false;
+    bool active() const noexcept { return (admission_.load(std::memory_order_acquire)&callback_bit)!=0; }
+    bool enter_callback() noexcept {
+        std::uint32_t expected=0;
+        return admission_.compare_exchange_strong(expected,callback_bit,std::memory_order_acq_rel);
+    }
+    void leave_callback() noexcept { admission_.store(0,std::memory_order_release); }
+    bool enter_mutation() noexcept {
+        auto value=admission_.load(std::memory_order_acquire);
+        for(;;) {
+            if((value&callback_bit) || value==callback_bit-1) return false;
+            if(admission_.compare_exchange_weak(value,value+1,std::memory_order_acq_rel)) return true;
+        }
+    }
+    void leave_mutation() noexcept { admission_.fetch_sub(1,std::memory_order_acq_rel); }
+};
+class MutationLease {
+    CallbackState *owner_;
+public:
+    explicit MutationLease(CallbackState &state) noexcept:owner_(state.enter_mutation()?&state:nullptr) {}
+    MutationLease(const MutationLease &)=delete;
+    MutationLease &operator=(const MutationLease &)=delete;
+    ~MutationLease() { if(owner_) owner_->leave_mutation(); }
+    explicit operator bool() const noexcept { return owner_!=nullptr; }
+};
+class CallbackLease {
+    CallbackState *owner_;
+public:
+    explicit CallbackLease(CallbackState &state) noexcept:owner_(state.enter_callback()?&state:nullptr) {}
+    CallbackLease(const CallbackLease &)=delete;
+    CallbackLease &operator=(const CallbackLease &)=delete;
+    ~CallbackLease() { if(owner_) owner_->leave_callback(); }
+    explicit operator bool() const noexcept { return owner_!=nullptr; }
 };
 inline constexpr std::uint32_t max_sources=16,max_source_records=64,max_characters=16;
 inline constexpr std::uint32_t max_channels=256,queue_capacity=16,max_workspaces=16;

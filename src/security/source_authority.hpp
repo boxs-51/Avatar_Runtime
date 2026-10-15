@@ -15,7 +15,7 @@ class SourceAuthority {
         ars_source_admin_h id{};
         ars_character_h character{};
         SourceState state=SourceState::unused;
-        std::uint64_t epoch=1,control=1,ticket=1,expiry=0,sequence=0,ordinal=0,refill=0,credit=0;
+        std::uint64_t epoch=1,control=1,ticket=1,expiry=0,sequence=0,ordinal=0,front_ordinal=0,refill=0,credit=0;
         std::uint32_t ledger=ledger_capacity,data=max_sources,channels=0,rate=0;
         std::int32_t priority=0;
         std::array<bool,max_channels> allowed{};

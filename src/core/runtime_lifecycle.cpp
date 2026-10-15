@@ -137,7 +137,7 @@ ars_status RuntimeRouter::acquire(ars_runtime_h handle,LeaseKind kind,RuntimeLea
     std::lock_guard lock(mutex_); Runtime *runtime=nullptr;
     auto status=resolve_locked(handle,&runtime); if(status!=ARS_OK) return status;
     if(runtime->finalizer) return ARS_E_BUSY;
-    if(kind!=LeaseKind::management && runtime->callback.active.load(std::memory_order_acquire)) return ARS_E_BUSY;
+    if(kind!=LeaseKind::management && runtime->callback.active()) return ARS_E_BUSY;
     if(kind!=LeaseKind::management && runtime->closing) return ARS_E_CLOSED;
     if(runtime->work+runtime->management>=budget_.pins) return ARS_E_BUSY;
     status=runtime->registry.pin(handle.id,ObjectType::runtime,&out->root_);
@@ -157,6 +157,7 @@ ars_status RuntimeRouter::begin_close(ars_runtime_h handle) {
     if(status!=ARS_OK) return status;
     if(lease.runtime_->control!=std::this_thread::get_id()) return ARS_E_WRONG_THREAD;
     auto *runtime=lease.runtime_;
+    security::MutationLease mutation(runtime->callback); if(!mutation) return ARS_E_BUSY;
     auto *authority=authority_for(lease);
     if(!authority) {
         std::lock_guard lock(mutex_); runtime->closing=runtime->quiescing=true; return ARS_OK;
@@ -191,7 +192,7 @@ ars_status RuntimeRouter::finish_close(ars_runtime_h handle) {
     {
         std::lock_guard lock(mutex_);
         auto status=resolve_locked(handle,&runtime); if(status!=ARS_OK) return status;
-        if(runtime->callback.active.load(std::memory_order_acquire)) return ARS_E_BUSY;
+        if(runtime->callback.active()) return ARS_E_BUSY;
         if(runtime->finalizer || !runtime->quiescing) return ARS_E_BUSY;
         runtime->finalizer=true;
         if(runtime->work || runtime->management) { runtime->finalizer=false; return ARS_E_BUSY; }
@@ -255,6 +256,7 @@ ars_status RuntimeRouter::bind_character(ars_runtime_h handle,std::span<const se
     if(!out) return ARS_E_INVALID_ARGUMENT;
     auto status=validate_catalog(catalog); if(status!=ARS_OK) return status;
     RuntimeLease lease; status=acquire(handle,LeaseKind::work,&lease); if(status!=ARS_OK) return status;
+    security::MutationLease mutation(lease.runtime_->callback); if(!mutation) return ARS_E_BUSY;
     if(lease.runtime_->control!=std::this_thread::get_id()) return ARS_E_WRONG_THREAD;
     security::SourceAuthority *authority=nullptr;
     status=ensure_authority(lease,&authority); if(status!=ARS_OK) return status;
@@ -262,6 +264,7 @@ ars_status RuntimeRouter::bind_character(ars_runtime_h handle,std::span<const se
 }
 ars_status RuntimeRouter::destroy_character(ars_runtime_h handle,ars_character_h character) {
     RuntimeLease lease; auto status=acquire(handle,LeaseKind::work,&lease); if(status!=ARS_OK) return status;
+    security::MutationLease mutation(lease.runtime_->callback); if(!mutation) return ARS_E_BUSY;
     if(lease.runtime_->control!=std::this_thread::get_id()) return ARS_E_WRONG_THREAD;
     auto *authority=authority_for(lease); motion::Snapshot *retired=nullptr;
     status=authority?authority->destroy(character,&retired):ARS_E_STALE_HANDLE;
@@ -272,20 +275,24 @@ ars_status RuntimeRouter::register_source(ars_runtime_h handle,ars_character_h c
     if(cap) *cap={};
     if(!out || !cap || !ars::abi::valid(desc)) return ARS_E_INVALID_ARGUMENT;
     RuntimeLease lease; auto status=acquire(handle,LeaseKind::work,&lease); if(status!=ARS_OK) return status;
+    security::MutationLease mutation(lease.runtime_->callback); if(!mutation) return ARS_E_BUSY;
     auto *authority=authority_for(lease); return authority?authority->register_source(character,desc,out,cap):ARS_E_STALE_HANDLE;
 }
 ars_status RuntimeRouter::rotate_source(ars_runtime_h handle,ars_source_admin_h source,ars_ingress_cap *out) {
     if(out) *out={};
     if(!out) return ARS_E_INVALID_ARGUMENT;
     RuntimeLease lease; auto status=acquire(handle,LeaseKind::work,&lease); if(status!=ARS_OK) return status;
+    security::MutationLease mutation(lease.runtime_->callback); if(!mutation) return ARS_E_BUSY;
     auto *authority=authority_for(lease); return authority?authority->rotate(source,out):ARS_E_STALE_HANDLE;
 }
 ars_status RuntimeRouter::revoke_source(ars_runtime_h handle,ars_source_admin_h source) {
     RuntimeLease lease; auto status=acquire(handle,LeaseKind::work,&lease); if(status!=ARS_OK) return status;
+    security::MutationLease mutation(lease.runtime_->callback); if(!mutation) return ARS_E_BUSY;
     auto *authority=authority_for(lease); return authority?authority->revoke(source):ARS_E_STALE_HANDLE;
 }
 ars_status RuntimeRouter::release_source(ars_runtime_h handle,ars_source_admin_h source) {
     RuntimeLease lease; auto status=acquire(handle,LeaseKind::work,&lease); if(status!=ARS_OK) return status;
+    security::MutationLease mutation(lease.runtime_->callback); if(!mutation) return ARS_E_BUSY;
     auto *authority=authority_for(lease); return authority?authority->release(source):ARS_E_STALE_HANDLE;
 }
 ars_status RuntimeRouter::submit_frame(ars_runtime_h handle,ars_ingress_cap cap,const ars_motion_frame *frame) {
@@ -295,10 +302,11 @@ ars_status RuntimeRouter::submit_frame(ars_runtime_h handle,ars_ingress_cap cap,
 }
 ars_status RuntimeRouter::dequeue_frame(ars_runtime_h handle,ars_source_admin_h source,FrameLease *out) {
     if(!out) return ARS_E_INVALID_ARGUMENT;
-    out->reset(); auto status=acquire(handle,LeaseKind::work,&out->runtime_); if(status!=ARS_OK) return status;
-    auto *authority=authority_for(out->runtime_);
+    out->reset(); RuntimeLease runtime; auto status=acquire(handle,LeaseKind::work,&runtime); if(status!=ARS_OK) return status;
+    security::MutationLease mutation(runtime.runtime_->callback); if(!mutation) return ARS_E_BUSY;
+    auto *authority=authority_for(runtime);
     status=authority?authority->dequeue(source,&out->frame,&out->source_,&out->character_):ARS_E_STALE_HANDLE;
-    if(status!=ARS_OK) out->reset();
+    if(status!=ARS_OK) out->reset(); else out->runtime_=std::move(runtime);
     return status;
 }
 ars_status RuntimeRouter::ensure_publication(RuntimeLease &lease,motion::PublishGate **out) {
@@ -341,15 +349,19 @@ ars_status RuntimeRouter::ensure_publication(RuntimeLease &lease,motion::Publish
 }
 ars_status RuntimeRouter::prepare_cpu(ars_runtime_h handle,ars_character_h character,std::span<const ars_source_admin_h> sources,const motion::Program &program,StageLease *out) {
     if(!out) return ARS_E_INVALID_ARGUMENT;
-    out->reset(); auto status=acquire(handle,LeaseKind::work,&out->runtime_); if(status!=ARS_OK) return status;
-    status=ensure_publication(out->runtime_,&out->owner_);
+    out->reset(); RuntimeLease runtime; auto status=acquire(handle,LeaseKind::work,&runtime); if(status!=ARS_OK) return status;
+    security::MutationLease mutation(runtime.runtime_->callback); if(!mutation) return ARS_E_BUSY;
+    status=ensure_publication(runtime,&out->owner_);
     if(status==ARS_OK) status=out->owner_->prepare(character,sources,program,&out->stage_);
-    if(status!=ARS_OK) out->reset();
+    if(status!=ARS_OK) out->reset(); else out->runtime_=std::move(runtime);
     return status;
 }
 ars_status RuntimeRouter::publish_cpu(StageLease *lease) {
     if(!lease || lease->runtime_.owner_!=this || !lease->owner_ || !lease->stage_) return ARS_E_INVALID_ARGUMENT;
-    const auto status=lease->owner_->publish(*lease->stage_); lease->reset(); return status;
+    RuntimeLease runtime=std::move(lease->runtime_);
+    security::MutationLease mutation(runtime.runtime_->callback);
+    const auto status=mutation?lease->owner_->publish(*lease->stage_):ARS_E_BUSY;
+    lease->reset(); return status;
 }
 ars_status RuntimeRouter::read_cpu(ars_runtime_h handle,ars_character_h character,SnapshotLease *out) {
     if(!out) return ARS_E_INVALID_ARGUMENT;

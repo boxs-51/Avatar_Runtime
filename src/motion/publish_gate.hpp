@@ -1,6 +1,7 @@
 #pragma once
 #include "cpu_snapshot.hpp"
 #include "semantic_candidate.hpp"
+#include "../security/ingress_queue.hpp"
 namespace ars::security { class SourceAuthority; }
 namespace ars::motion {
 struct Stage {
@@ -8,7 +9,11 @@ struct Stage {
     Snapshot *reserved=nullptr,*base=nullptr;
     std::uint64_t expected_generation=0;
     SemanticCandidate candidate;
-    std::array<std::uint32_t,max_dependencies> lock_order{};
+    std::array<core::ObjectLease,max_dependencies> inputs;
+    security::IngressQueue queue_view;
+    struct LockTarget { void *source=nullptr; std::uint32_t slot=0; };
+    std::array<LockTarget,max_dependencies*2> lock_order{};
+    std::uint32_t lock_count=0;
 };
 class PublishGate {
     security::SourceAuthority &authority_;

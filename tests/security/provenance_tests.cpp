@@ -72,6 +72,20 @@ void callbacks() {
     test::check(capture.calls==calls,"P2-concurrent-callback-not-invoked");
     ars_close_state state{}; test::status(ARS_OK,a.router.query_close(a.runtime,&state),"P2-management-query-remains-available");
     gate.release(); worker.join(); capture.gate=nullptr; test::status(ARS_OK,first,"P2-paused-callback-completes");
+    for(unsigned i=0;i<1000;++i) {
+        auto expect=[&](ars_status wanted,ars_status got,const char *phase) {
+            if(wanted!=got) { std::printf("FAIL P1 callback-admission iteration=%u seed=4152534232330001 phase=%s expected=%d actual=%d\n",i,phase,wanted,got); std::exit(1); }
+        };
+        test::Gate minted; a.random.gate=&minted; ars_ingress_cap next{}; ars_status rotated=ARS_E_INTERNAL;
+        std::thread rotation([&]{rotated=a.router.rotate_source(a.runtime,capture.source,&next);}); minted.wait_entered();
+        calls=capture.calls.load(); frame.value.sequence=5;
+        expect(ARS_E_BUSY,a.router.submit_frame(a.runtime,capture.cap,&frame.value),"admitted-mutator-excludes-callback");
+        test::check(capture.calls==calls,"P1-no-callback-overlap-with-preexisting-mutator");
+        minted.release(); rotation.join(); expect(ARS_OK,rotated,"old-mutator-finishes"); capture.cap=next; frame.value.sequence=1;
+        expect(ARS_OK,a.router.submit_frame(a.runtime,capture.cap,&frame.value),"callback-admission-restored");
+        ars::core::FrameLease consumed; expect(ARS_OK,a.router.dequeue_frame(a.runtime,capture.source,&consumed),"owned-queue-drain");
+    }
+    std::puts("PASS P1 callback admission: 1000 mutator-before-callback cuts; inverse order covered by B2/P2 callback races");
 }
 void lineage() {
     ars::motion::Provenance provenance;
@@ -120,4 +134,33 @@ void generations() {
     ars::core::StageLease stage;
     test::status(ARS_E_SCOPE_DENIED,a.router.prepare_cpu(a.runtime,other,std::span(&source,1),first,&stage),"GEN-no-cross-character-input-binding");
 }
-int main() { callbacks(); lineage(); generations(); std::puts("PASS B3 provenance and both P2 fixes; public APIs remain disabled"); }
+void input_transactions() {
+    test::Authority a; ars_source_admin_h source{}; ars_ingress_cap cap{};
+    test::status(ARS_OK,a.register_source(&source,&cap),"INPUT-register"); test::submit(a,cap,1,1); test::submit(a,cap,2,2);
+    ars::motion::Program program; program.count=2; program.nodes[0]={Op::input}; program.nodes[1]={Op::store,0,0,256};
+    ars::core::StageLease failed;
+    test::status(ARS_E_OUT_OF_BUDGET,a.router.prepare_cpu(a.runtime,a.character,std::span(&source,1),program,&failed),"INPUT-reject-invalid-staged-write");
+    test::check(ComponentFixture::queue(*a.context,source).size()==2,"INPUT-failed-stage-keeps-frame");
+    program.count=3; program.nodes[1]={Op::store,0,0,0}; program.nodes[2]={Op::output,0,0,0};
+    ars::core::StageLease first,second;
+    test::status(ARS_OK,a.router.prepare_cpu(a.runtime,a.character,std::span(&source,1),program,&first),"INPUT-first-preview");
+    test::status(ARS_OK,a.router.prepare_cpu(a.runtime,a.character,std::span(&source,1),program,&second),"INPUT-second-preview-same-head");
+    test::check(ComponentFixture::queue(*a.context,source).size()==2,"INPUT-prepare-never-consumes-live-queue");
+    test::status(ARS_OK,a.router.publish_cpu(&first),"INPUT-commit-head-once");
+    test::status(ARS_E_BUSY,a.router.publish_cpu(&second),"INPUT-stale-revision-no-second-consume");
+    test::check(ComponentFixture::queue(*a.context,source).size()==1,"INPUT-revision-conflict-retains-tail");
+    test::publish(a,std::span(&source,1),program); ars::core::SnapshotLease current;
+    test::status(ARS_OK,a.router.read_cpu(a.runtime,a.character,&current),"INPUT-retry-publishes-tail");
+    test::check(current.get()->outputs[0].scalar==2 && current.get()->generation==2 && !ComponentFixture::queue(*a.context,source).size(),"INPUT-no-lost-frame-on-retry");
+    current.reset(); test::submit(a,cap,3,3); test::submit(a,cap,4,4);
+    test::status(ARS_OK,a.router.prepare_cpu(a.runtime,a.character,std::span(&source,1),program,&first),"INPUT-preview-before-other-consumer");
+    ars::core::FrameLease popped; test::status(ARS_OK,a.router.dequeue_frame(a.runtime,source,&popped),"INPUT-other-real-consumer");
+    test::status(ARS_E_BUSY,a.router.publish_cpu(&first),"INPUT-head-ordinal-conflict");
+    test::check(ComponentFixture::queue(*a.context,source).size()==1,"INPUT-head-conflict-keeps-other-frame");
+    test::publish(a,std::span(&source,1),program);
+}
+int main(int argc,char **argv) {
+    if(argc>1 && std::strcmp(argv[1],"input")==0) { input_transactions(); return 0; }
+    callbacks(); lineage(); generations(); input_transactions();
+    std::puts("PASS B3 provenance and both P2 fixes; public APIs remain disabled");
+}

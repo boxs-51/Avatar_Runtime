@@ -112,16 +112,20 @@ void clock_cut() {
 }
 void conflict_cut() {
     for(unsigned i=0;i<iterations;++i) {
-        test::Authority a; ars::motion::Program program; StageLease first,second;
-        expect(ARS_OK,a.router.prepare_cpu(a.runtime,a.character,{},program,&first),"ATOMIC-first",i);
-        expect(ARS_OK,a.router.prepare_cpu(a.runtime,a.character,{},program,&second),"ATOMIC-second",i);
+        test::Authority a; ars_source_admin_h source{}; ars_ingress_cap cap{};
+        expect(ARS_OK,a.register_source(&source,&cap),"ATOMIC-input-source",i); submit(a,cap,1,i);
+        ars::motion::Program program; program.count=3; program.nodes[0]={ars::motion::Op::input};
+        program.nodes[1]={ars::motion::Op::store,0}; program.nodes[2]={ars::motion::Op::output,0}; StageLease first,second;
+        expect(ARS_OK,a.router.prepare_cpu(a.runtime,a.character,std::span(&source,1),program,&first),"ATOMIC-first",i);
+        expect(ARS_OK,a.router.prepare_cpu(a.runtime,a.character,std::span(&source,1),program,&second),"ATOMIC-second",i);
         std::barrier start(3); std::array<ars_status,2> results{};
         std::thread one([&]{start.arrive_and_wait(); results[0]=a.router.publish_cpu(&first);});
         std::thread two([&]{start.arrive_and_wait(); results[1]=a.router.publish_cpu(&second);});
         start.arrive_and_wait(); one.join(); two.join();
         require((results[0]==ARS_OK && results[1]==ARS_E_BUSY)||(results[1]==ARS_OK && results[0]==ARS_E_BUSY),"ATOMIC-one-revision-winner",i);
         SnapshotLease snapshot; expect(ARS_OK,a.router.read_cpu(a.runtime,a.character,&snapshot),"ATOMIC-read",i);
-        require(snapshot.get()->generation==1,"ATOMIC-no-lost-state-revision",i);
+        require(snapshot.get()->generation==1 && snapshot.get()->outputs[0].scalar==1 &&
+          snapshot.get()->state.cells[0].scalar==1 && !ComponentFixture::queue(*a.context,source).size(),"ATOMIC-input-pose-state-one-commit",i);
     }
     std::puts("PASS B3 ATOMIC: 1000 concurrent optimistic revision conflicts");
 }

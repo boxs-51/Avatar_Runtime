@@ -38,8 +38,12 @@ not supply optional provenance lists. Zero-weight/cancelled contributions retain
 lineage. Bounds: 16 provenance keys, 512 nodes, 256 cells, 32 deferred triggers;
 capacity/finite/type failures reject instead of truncating effects. This is a
 representative CPU scalar/delay/trigger harness, not a complete motion engine.
-Preparation consumes owned input frames; rejected candidates discard those
-consumed inputs along with staged writes, without rewinding accepted sequences.
+Preparation copies a bounded queue view into tracked candidate scratch and
+previews the head without consuming live input. Final commit revalidates every
+preview's source epoch and accepted head ordinal under the complete stable
+source lock set, then consumes input and swaps pose/state in the same transaction.
+Graph/budget failures, stale revisions and competing consumers preserve input
+for retry. No accepted ingress sequence or quota is rewound or charged again.
 
 Preparation acquires an immutable previous state revision, never its last pose
 as an unchecked seed. Acquire tombstone observation and current source checks
@@ -54,11 +58,15 @@ readers can still inspect their immutable old revision after logical invalidatio
 
 ## Both P2 fixes
 
-Runtime-specific atomic callback intent excludes all new mutating router entries
-and direct CPU commit while its simulation callback runs. Management query stays
+One runtime-specific atomic admission word admits shared mutator leases or one
+exclusive callback, never both. Operation leases cover the actual mutation and
+unlocked issuance phases, rather than checking a boolean only at root lookup.
+Ingress enters mutation admission after callback/copy preparation. Management query stays
 available. A callback on another runtime is independent; simultaneous same-runtime
 callbacks return BUSY without invoking the callback twice. Callbacks run outside
 authority locks. RAII clears intent after success, exception or clock rejection.
+Root leases outlive operation-admission cleanup even on failed staging/commit,
+so finalization cannot reclaim the callback gate during its RAII release.
 Synchronized simulation sample high-water rejects a decrease with CLOCK_REGRESSION;
 equal samples and retry at the same ingress sequence remain valid. Rejection
 does not charge quota or append. Simulation fault does not poison the independent
@@ -88,7 +96,7 @@ Historical B2 custody remains tested at its exact landed snapshot, including
 dynamic ABI mutation targets; old gates and all original inventory records stay
 unchanged.
 
-Five isolated native mutants all exited 1 at the intended oracle: omitting
+Isolated native mutants cover omitting
 final epoch/tombstone binding; omitting staged tombstone reconciliation/purge;
 writing persistent state before authorization; charging quota before append;
 and permitting phase C to reactivate a terminally revoked source. Raw logs and
@@ -96,6 +104,16 @@ results.json: `build/b3-mutants`. The tombstone mutant tests missing semantic
 consumption; x64 tests alone do not prove acquire-vs-relaxed ordering on every
 weak-memory architecture. Production acquire/release ordering is also inspected
 in the source audit, without claiming a physical weak-memory platform run.
+
+Post-ready self-audit found destructive input consumption during preparation;
+the final implementation uses tracked immutable queue views, validates head
+ordinals and consumes inputs only in successful pose/state commit. Native tests
+cover graph failure, competing stage revisions and another real consumer, with
+no lost accepted frame. Automated review additionally identified the check-only
+callback/mutator admission race; the shared/exclusive atomic admission word fixes
+that window, with 1000 controlled mutator-before-callback native iterations and
+the inverse callback-before-mutator trace. Earlier source CI is historical only;
+the repaired final source must pass its own complete matrix.
 
 Allocator fault coverage includes NULL, exception, misalignment, close reentry,
 recursive context preparation, retry, matching sizes/alignment and all final
