@@ -1,0 +1,115 @@
+name: M1-B1 CPU Registry and Lifecycle (NOT source security)
+on:
+  pull_request:
+    paths:
+      - 'CMakeLists.txt'
+      - 'src/**'
+      - 'cmake/**'
+      - 'include/**'
+      - 'tests/**'
+      - 'examples/plain_c/**'
+      - 'docs/audits/M1_B*'
+      - '.github/workflows/m1*.yml'
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-24.04, cc: gcc, cxx: g++, shared: 'ON', sanitizer: 'NONE'}
+          - {os: ubuntu-24.04, cc: gcc, cxx: g++, shared: 'OFF', sanitizer: 'NONE'}
+          - {os: ubuntu-24.04, cc: clang, cxx: clang++, shared: 'ON', sanitizer: 'NONE'}
+          - {os: ubuntu-24.04, cc: clang, cxx: clang++, shared: 'OFF', sanitizer: 'NONE'}
+          - {os: ubuntu-24.04, cc: gcc, cxx: g++, shared: 'ON', sanitizer: 'ADDRESS'}
+          - {os: ubuntu-22.04, cc: gcc, cxx: g++, shared: 'OFF', sanitizer: 'THREAD'}
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {fetch-depth: 0}
+      - name: Exact source and complete design regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "B1_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}"
+          python -m pip install --disable-pip-version-check jsonschema==4.23.0
+          python tests/contracts/check_m0_rc1_pins.py
+          python -m unittest discover -s tests/contracts -p 'test_*.py' -v
+          python -m unittest discover -s tests/governance -p 'test_*.py' -v
+          python tests/contracts/g00_stage_gate_contract.py
+      - name: Core, preserved foundation, deterministic races and consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S . -B build/b1 -DCMAKE_BUILD_TYPE=Debug -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_RUNTIME_SANITIZER=${{ matrix.sanitizer }}
+          cmake --build build/b1 --parallel
+          if [ "${{ matrix.sanitizer }}" != NONE ]; then
+            nm build/b1/bin/ars_runtime_lifecycle_tests | tee build/b1/instrumentation.txt
+            if [ "${{ matrix.sanitizer }}" = THREAD ]; then grep -q '__tsan_' build/b1/instrumentation.txt; else grep -q '__asan_' build/b1/instrumentation.txt; fi
+          fi
+          ctest --test-dir build/b1 --verbose
+          for kind in foundation core; do
+            cmake -S examples/plain_c -B build/consumer-$kind -DARS_FOUNDATION_INFO="$PWD/build/b1/$kind-Debug.cmake"
+            cmake --build build/consumer-$kind --parallel
+            ctest --test-dir build/consumer-$kind --verbose
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: b1-linux-${{ matrix.cc }}-${{ matrix.shared }}-${{ matrix.sanitizer }}
+          path: |
+            build/**/Testing/Temporary/LastTest.log
+            build/b1/instrumentation.txt
+  windows:
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {shared: 'ON', sanitizer: 'NONE', config: Debug}
+          - {shared: 'OFF', sanitizer: 'NONE', config: Debug}
+          - {shared: 'OFF', sanitizer: 'ADDRESS', config: RelWithDebInfo}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {fetch-depth: 0}
+      - name: Exact source and complete design regressions
+        shell: pwsh
+        run: |
+          Write-Output "B1_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}"
+          python -m pip install --disable-pip-version-check jsonschema==4.23.0
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tests/contracts/check_m0_rc1_pins.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s tests/contracts -p 'test_*.py' -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s tests/governance -p 'test_*.py' -v
+          exit $LASTEXITCODE
+      - name: Core, preserved foundation, deterministic races and consumers
+        shell: pwsh
+        run: |
+          cmake -S . -B build/b1 -G "Visual Studio 17 2022" -A x64 -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_RUNTIME_SANITIZER=${{ matrix.sanitizer }}
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build build/b1 --config ${{ matrix.config }} --parallel
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
+          $tool = Get-ChildItem "$vs\VC\Tools\MSVC" -Directory | Sort-Object Name -Descending | Select-Object -First 1
+          $env:PATH = "$($tool.FullName)\bin\Hostx64\x64;$env:PATH"
+          ctest --test-dir build/b1 -C ${{ matrix.config }} --verbose
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          foreach ($kind in @('foundation','core')) {
+            cmake -S examples/plain_c -B "build/consumer-$kind" -G "Visual Studio 17 2022" -A x64 "-DARS_FOUNDATION_INFO=$PWD/build/b1/$kind-${{ matrix.config }}.cmake"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            cmake --build "build/consumer-$kind" --config ${{ matrix.config }} --parallel
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            ctest --test-dir "build/consumer-$kind" -C ${{ matrix.config }} --verbose
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: b1-windows-${{ matrix.shared }}-${{ matrix.sanitizer }}
+          path: build/**/Testing/Temporary/LastTest.log
