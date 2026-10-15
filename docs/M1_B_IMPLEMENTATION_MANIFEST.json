@@ -1,0 +1,91 @@
+{
+  "kind": "proposed-M1-B-phased-scope",
+  "state": "PREPARATION_ONLY_NOT_IMPLEMENTATION_AUTHORIZATION",
+  "baseline_main_sha": "ab21908310d48466b27bb06c92ea1623353c79f5",
+  "baseline_header_blob": "1c61da4a48c9faf2001fc98ad4c084413781e61c",
+  "baseline_security_inventory_blob": "ec026c8ab872c71791df39353a26ba3dc84eed09",
+  "base_refresh_required_at_kickoff": true,
+  "first_kickoff": {
+    "stage": "M1-B1_REGISTRY_CPU_LIFECYCLE",
+    "branch": "m1/b1-runtime-lifecycle",
+    "proposed_path_count": 24,
+    "proposed_paths": [
+      "CMakeLists.txt",
+      "src/abi/unsupported.cpp",
+      "src/abi/runtime_api.cpp",
+      "src/abi/api_validation.hpp",
+      "src/core/handle_registry.hpp",
+      "src/core/handle_registry.cpp",
+      "src/core/runtime_lifecycle.hpp",
+      "src/core/runtime_lifecycle.cpp",
+      "src/core/runtime_budget.hpp",
+      "tests/security/handle_registry_tests.cpp",
+      "tests/security/runtime_lifecycle_tests.cpp",
+      "tests/security/runtime_test_support.hpp",
+      "tests/abi/runtime_core_contract.c",
+      "tests/abi/runtime_core_cpp.cpp",
+      "examples/plain_c/CMakeLists.txt",
+      "examples/plain_c/main.c",
+      "cmake/ars_compiler_options.cmake",
+      ".github/workflows/m1-build.yml",
+      ".github/workflows/m1-b-security.yml",
+      "tests/contracts/check_m0_rc1_pins.py",
+      "tests/contracts/test_m1_a_custody.py",
+      "tests/contracts/test_m1_b_custody.py",
+      "docs/audits/M1_B1_BUILD_EVIDENCE.md",
+      "docs/audits/M1_B_CASE_EXECUTION.json"
+    ],
+    "new_target": "ars_runtime_core",
+    "opt_in": "ARS_BUILD_RUNTIME_CORE=ON",
+    "existing_foundation_behavior_retained": true,
+    "new_public_symbols": [],
+    "public_functions_implemented": [
+      "ars_runtime_create",
+      "ars_runtime_get_capabilities",
+      "ars_runtime_begin_close",
+      "ars_runtime_query_close",
+      "ars_runtime_finish_close"
+    ],
+    "acceptance": "M1_B1_CPU_LIFECYCLE_PASS_ONLY",
+    "decision_table": "docs/M1_B_IMPLEMENTATION_READINESS.md#b1-decisions-proposed-for-owner-acceptance"
+  },
+  "later_stages": [
+    {
+      "stage": "M1-B2_SOURCE_AUTHORITY",
+      "state": "OUTLINE_ONLY_SEPARATE_SCOPE_REQUIRED",
+      "component_topics": [
+        "OS security clock",
+        "OS CSPRNG",
+        "lifetime token ledger",
+        "source registry",
+        "immutable grants",
+        "bounded ingress",
+        "R5 admission barrier",
+        "terminal rotation/revoke/expiry"
+      ]
+    },
+    {
+      "stage": "M1-B3_PROVENANCE_PUBLISH",
+      "state": "OUTLINE_ONLY_SEPARATE_SCOPE_REQUIRED",
+      "component_topics": [
+        "immutable CPU snapshot",
+        "transitive provenance",
+        "staged retained state",
+        "acquire/release tombstones",
+        "final publish fence",
+        "A+B deterministic recomputation"
+      ]
+    }
+  ],
+  "public_character_creation_in_B1": false,
+  "public_source_grants_in_B1": false,
+  "test_fixtures_publicly_exported": false,
+  "gpu_implementation_authorized": false,
+  "asset_parser_authorized": false,
+  "host_network_adapter_authorized": false,
+  "public_header_edit_allowed": false,
+  "frozen_inventory_edit_allowed": false,
+  "preserve_design_blob_pins": true,
+  "implementation_authorized": false,
+  "merge_authorized": false
+}
