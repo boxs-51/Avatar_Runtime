@@ -1,0 +1,713 @@
+[
+  {
+    "id": "positive-2d",
+    "file": "positive-2d.arschar",
+    "sha256": "9dd437d90ca4407e662a36b3a71d4368c73a4c856e8a84a0326dac5383d6bfa3",
+    "bytes": 2043,
+    "expected": "OK",
+    "family": "complete generated 2D",
+    "stage": "C1"
+  },
+  {
+    "id": "path-1",
+    "file": "path-1.arschar",
+    "sha256": "957bee99a5a2aed5946c395454cbaabeb4dea793c4e9f9a31213a14dd51f207b",
+    "bytes": 2138,
+    "expected": "BAD_ASSET",
+    "family": "archive names",
+    "stage": "C1"
+  },
+  {
+    "id": "path-2",
+    "file": "path-2.arschar",
+    "sha256": "80e9c4744f75c7bdb81067bc5668c70dd20eb1919092b39722efe774b490295d",
+    "bytes": 2138,
+    "expected": "BAD_ASSET",
+    "family": "archive names",
+    "stage": "C1"
+  },
+  {
+    "id": "path-3",
+    "file": "path-3.arschar",
+    "sha256": "6102f04b9fdfbfc01cafc29a5e6b57036448932c8c8103452ac65d935a206465",
+    "bytes": 2136,
+    "expected": "BAD_ASSET",
+    "family": "archive names",
+    "stage": "C1"
+  },
+  {
+    "id": "path-4",
+    "file": "path-4.arschar",
+    "sha256": "1a0cbd0daad653ae187ad093b66fd571186437de72bd1d226ec72e7a211d9b08",
+    "bytes": 2144,
+    "expected": "BAD_ASSET",
+    "family": "archive names",
+    "stage": "C1"
+  },
+  {
+    "id": "path-5",
+    "file": "path-5.arschar",
+    "sha256": "9f3ad1d5207dc3613f8ced17afbaa286100678d7655e53ab9eb0cd16dc54efef",
+    "bytes": 2150,
+    "expected": "BAD_ASSET",
+    "family": "archive names",
+    "stage": "C1"
+  },
+  {
+    "id": "path-6",
+    "file": "path-6.arschar",
+    "sha256": "81dbc3135beb6fec3097896f85d5f4bd183ff3b9c9f0cbcd22ee595dbca0bbca",
+    "bytes": 2126,
+    "expected": "BAD_ASSET",
+    "family": "archive names",
+    "stage": "C1"
+  },
+  {
+    "id": "path-7",
+    "file": "path-7.arschar",
+    "sha256": "9584490960231087fda4ba728457b86ccc440f39cd0ff437e231ab3c99512f85",
+    "bytes": 2142,
+    "expected": "BAD_ASSET",
+    "family": "archive names",
+    "stage": "C1"
+  },
+  {
+    "id": "path-8",
+    "file": "path-8.arschar",
+    "sha256": "d45c7ddfe55840f4f4cc689ea0ec8b2690dc31846b7d392f40cff5769c786cdd",
+    "bytes": 2146,
+    "expected": "BAD_ASSET",
+    "family": "archive names",
+    "stage": "C1"
+  },
+  {
+    "id": "alias-9",
+    "file": "alias-9.arschar",
+    "sha256": "37b8ab55b4b5d091d977416995cc48d7e334da4913d7f5a2c28cb8421ca954e7",
+    "bytes": 2217,
+    "expected": "BAD_ASSET",
+    "family": "canonical collision",
+    "stage": "C1"
+  },
+  {
+    "id": "alias-10",
+    "file": "alias-10.arschar",
+    "sha256": "0cc072a5b3e0813f8019038d3a711d9f06d89c1121d5e2030cd3543f80d2dab4",
+    "bytes": 2207,
+    "expected": "BAD_ASSET",
+    "family": "canonical collision",
+    "stage": "C1"
+  },
+  {
+    "id": "alias-11",
+    "file": "alias-11.arschar",
+    "sha256": "057315750abe25908da51e0d3ca2428fda8707fc7bf9fab689deb4f2396fc0c1",
+    "bytes": 2213,
+    "expected": "BAD_ASSET",
+    "family": "canonical collision",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-truncated",
+    "file": "zip-truncated.arschar",
+    "sha256": "c8af08f09e08059e5965f5b46ad3de6d24a2d11c20eddc8c56c9d0211b052921",
+    "bytes": 2035,
+    "expected": "BAD_ASSET",
+    "family": "ZIP envelope",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-tail",
+    "file": "zip-tail.arschar",
+    "sha256": "85812d998122e241b76e02febeeac934f81e2196215961b7bd70b4d66fb67381",
+    "bytes": 2051,
+    "expected": "BAD_ASSET",
+    "family": "ZIP envelope",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-crc-conflict",
+    "file": "zip-crc-conflict.arschar",
+    "sha256": "eff70c332f0462b9c724812b638b4bc4da19c1daa11c16ad41243cff971bb9a6",
+    "bytes": 2043,
+    "expected": "BAD_ASSET",
+    "family": "ZIP local/central conflict",
+    "stage": "C1"
+  },
+  {
+    "id": "duplicate-json",
+    "file": "duplicate-json.arschar",
+    "sha256": "ed96f8fb923b1e9e366faadf529e9f27de53fc97410dcd0661ef0149315f98b8",
+    "bytes": 177,
+    "expected": "BAD_ASSET",
+    "family": "strict JSON",
+    "stage": "C1"
+  },
+  {
+    "id": "json-invalid-utf8",
+    "file": "json-invalid-utf8.arschar",
+    "sha256": "b31e55f1741d1216f69fe525bab6643697dd320b9f8d7462890f84b07004634a",
+    "bytes": 139,
+    "expected": "BAD_ASSET",
+    "family": "strict JSON",
+    "stage": "C1"
+  },
+  {
+    "id": "json-exponent-overflow",
+    "file": "json-exponent-overflow.arschar",
+    "sha256": "24e383c995e887d3fc48e1df00a636028a7525aae6ffd5a8e408b41addda9eda",
+    "bytes": 141,
+    "expected": "BAD_ASSET",
+    "family": "strict JSON",
+    "stage": "C1"
+  },
+  {
+    "id": "json-depth",
+    "file": "json-depth.arschar",
+    "sha256": "91deb190668a70c6ec3332dc8c81bc913debcf8de917e4bc15190079249a7c41",
+    "bytes": 257,
+    "expected": "OUT_OF_BUDGET",
+    "family": "JSON depth",
+    "stage": "C1"
+  },
+  {
+    "id": "duplicate-semantic",
+    "file": "duplicate-semantic.arschar",
+    "sha256": "e66d8e7d1509b2b07ec095ea67a3d5570984bc07c8cff9ba9da377f78bfe5bdc",
+    "bytes": 2131,
+    "expected": "BAD_ASSET",
+    "family": "manifest semantics",
+    "stage": "C1"
+  },
+  {
+    "id": "bool-numeric",
+    "file": "bool-numeric.arschar",
+    "sha256": "4686bfe6367b800aede94a39c5477bdf8b5de4b11e6b440a61d7cc32b3232e31",
+    "bytes": 2046,
+    "expected": "BAD_ASSET",
+    "family": "manifest semantics",
+    "stage": "C1"
+  },
+  {
+    "id": "bad-default",
+    "file": "bad-default.arschar",
+    "sha256": "16ee4f6b5c701a589f605176ac8a6a924726239bfd9648e3340f59acc6512200",
+    "bytes": 2043,
+    "expected": "BAD_ASSET",
+    "family": "manifest semantics",
+    "stage": "C1"
+  },
+  {
+    "id": "missing-layer-binding",
+    "file": "missing-layer-binding.arschar",
+    "sha256": "e9e87941edaf7ca5336d3454cfc2434f7c102c6d7da91856af36171008169a3a",
+    "bytes": 1991,
+    "expected": "BAD_ASSET",
+    "family": "manifest semantics",
+    "stage": "C1"
+  },
+  {
+    "id": "bad-mapping",
+    "file": "bad-mapping.arschar",
+    "sha256": "45301bfe0dd5e9ae8913c60d81a47d0ac338cb16ce29769b152563e97ead776b",
+    "bytes": 2038,
+    "expected": "BAD_ASSET",
+    "family": "manifest semantics",
+    "stage": "C1"
+  },
+  {
+    "id": "dangling-mask",
+    "file": "dangling-mask.arschar",
+    "sha256": "9a6ef2893ea921ef6ec05adf47d191b082a7c9f19403a72bde41078758437871",
+    "bytes": 2060,
+    "expected": "BAD_ASSET",
+    "family": "manifest semantics",
+    "stage": "C1"
+  },
+  {
+    "id": "self-mask",
+    "file": "self-mask.arschar",
+    "sha256": "463a1063e631214171296ee2c7a0144e58829d7717e200971ba631c14abd384a",
+    "bytes": 2062,
+    "expected": "BAD_ASSET",
+    "family": "manifest semantics",
+    "stage": "C1"
+  },
+  {
+    "id": "valid-disabled-mask",
+    "file": "valid-disabled-mask.arschar",
+    "sha256": "815402b2930d23435b20e202d77459ceb2bd60682b2bc507710ad7822b3a1dc5",
+    "bytes": 2063,
+    "expected": "UNSUPPORTED",
+    "family": "manifest semantics",
+    "stage": "C1"
+  },
+  {
+    "id": "triangle-oob",
+    "file": "triangle-oob.arschar",
+    "sha256": "ba1b256c023bf2941c18bdc5c33404d3d1c06d800e1ddbc886d20f2ad8b8239f",
+    "bytes": 2043,
+    "expected": "BAD_ASSET",
+    "family": "2D geometry",
+    "stage": "C1"
+  },
+  {
+    "id": "uv-length",
+    "file": "uv-length.arschar",
+    "sha256": "85b37a4a4ff775b7e6483bafcf6e04a67711a249812b2a5263e88f674a4f3403",
+    "bytes": 2037,
+    "expected": "BAD_ASSET",
+    "family": "2D geometry",
+    "stage": "C1"
+  },
+  {
+    "id": "atlas-oob",
+    "file": "atlas-oob.arschar",
+    "sha256": "fd706b315e4479a3c99aa06d5329572aa4a071e845d30244b98e9a37f6407f3e",
+    "bytes": 2043,
+    "expected": "BAD_ASSET",
+    "family": "2D geometry",
+    "stage": "C1"
+  },
+  {
+    "id": "delta-length",
+    "file": "delta-length.arschar",
+    "sha256": "08174a874c0551a57ee38b9dce1ac7deb19601a1d020fd1a9e246c4b29191db0",
+    "bytes": 2037,
+    "expected": "BAD_ASSET",
+    "family": "2D geometry",
+    "stage": "C1"
+  },
+  {
+    "id": "png-truncated",
+    "file": "png-truncated.arschar",
+    "sha256": "2f5f5f2db0689468f16becc798964a7935ffcf84cc5bc647385845cb37b6ae5d",
+    "bytes": 2038,
+    "expected": "BAD_ASSET",
+    "family": "PNG decode",
+    "stage": "C1"
+  },
+  {
+    "id": "png-crc",
+    "file": "png-crc.arschar",
+    "sha256": "0494737f4c9643aba0acb75052d0b0a08a9979a57dbf9a14ce7a08d7a71188a8",
+    "bytes": 2043,
+    "expected": "BAD_ASSET",
+    "family": "PNG CRC",
+    "stage": "C1"
+  },
+  {
+    "id": "png-dimension",
+    "file": "png-dimension.arschar",
+    "sha256": "ec40dcbceb3fdd81488bdf1527f5bb5f637db3dcd8881563b2b12817c43077bb",
+    "bytes": 2043,
+    "expected": "OUT_OF_BUDGET",
+    "family": "PNG preflight",
+    "stage": "C1"
+  },
+  {
+    "id": "positive-triangle.glb",
+    "file": "positive-triangle.glb",
+    "sha256": "eb103a12695cb9628a6f805ece29d6fefeded82d1a4bd35d1a9edc08c75f1616",
+    "bytes": 528,
+    "expected": "OK",
+    "family": "embedded GLB",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-truncated.glb",
+    "file": "glb-truncated.glb",
+    "sha256": "67656ee6ff308523123592f9d50e84d304b7d7fb9e45937034eae15521eeb26a",
+    "bytes": 527,
+    "expected": "BAD_ASSET",
+    "family": "GLB bounds",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-accessor-overflow.glb",
+    "file": "glb-accessor-overflow.glb",
+    "sha256": "584e5a52bac4a790724ed9dbb338ab391e45e805b6861565a5ea266241752f90",
+    "bytes": 552,
+    "expected": "BAD_ASSET",
+    "family": "GLB bounds/URI/extensions",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-external-uri.glb",
+    "file": "glb-external-uri.glb",
+    "sha256": "c31264b4f14cbe4ef1dcb162332f9a0bb5f45683a3a697d9bd96f3a7bb3dce62",
+    "bytes": 568,
+    "expected": "BAD_ASSET",
+    "family": "GLB bounds/URI/extensions",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-required-extension.glb",
+    "file": "glb-required-extension.glb",
+    "sha256": "93d3c4d555337d3a05f712f6b6c1cb7adc448872beefaae9346ff291618d1699",
+    "bytes": 568,
+    "expected": "UNSUPPORTED",
+    "family": "GLB bounds/URI/extensions",
+    "stage": "C2"
+  },
+  {
+    "id": "positive-dual",
+    "file": "positive-dual.arschar",
+    "sha256": "03879f1b8f3a8b0bce16e7ee5fa39ca5152b609ac53b616c58e5e260dc11af95",
+    "bytes": 2757,
+    "expected": "OK",
+    "family": "complete generated dual CPU bundle",
+    "stage": "C2"
+  },
+  {
+    "id": "positive-deflate",
+    "file": "positive-deflate.arschar",
+    "sha256": "ebc2587d1faf6d8a959b4434f3b2e4abc3fbae13ca711a88621181943cce9eae",
+    "bytes": 2058,
+    "expected": "OK",
+    "family": "real raw DEFLATE",
+    "stage": "C1"
+  },
+  {
+    "id": "positive-descriptor",
+    "file": "positive-descriptor.arschar",
+    "sha256": "897e204ff417f13055494c9f9717a275c5382e45b3da4c88fae249aa7d1896fd",
+    "bytes": 2106,
+    "expected": "OK",
+    "family": "real data descriptor",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-symlink",
+    "file": "zip-symlink.arschar",
+    "sha256": "c293f7bf0481846b2a1df8cf83b9a82a6990130dca89c897ba707fe3d51b0b72",
+    "bytes": 2058,
+    "expected": "BAD_ASSET",
+    "family": "symlink",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-nested",
+    "file": "zip-nested.arschar",
+    "sha256": "e9eb84252a751625d9d96bb6759f4f78b63bb8384331f6e154c38181fd624e3d",
+    "bytes": 2141,
+    "expected": "BAD_ASSET",
+    "family": "nested archive",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-encrypted",
+    "file": "zip-encrypted.arschar",
+    "sha256": "ffbcbeadda974c5542a51f90a502df279ae7881c37eb87856395c8aebd6105d6",
+    "bytes": 2043,
+    "expected": "BAD_ASSET",
+    "family": "ZIP structural/budget",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-offset",
+    "file": "zip-offset.arschar",
+    "sha256": "20f3f130d61426304e02a7608fa31eb6598dcfa2c1b773abb9f843613a42da58",
+    "bytes": 2043,
+    "expected": "BAD_ASSET",
+    "family": "ZIP structural/budget",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-disk",
+    "file": "zip-disk.arschar",
+    "sha256": "42f12e502f80cd919a5450b6a97a665f6e8b8f2255130aefee041a84b51c3834",
+    "bytes": 2043,
+    "expected": "BAD_ASSET",
+    "family": "ZIP structural/budget",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-count-budget",
+    "file": "zip-count-budget.arschar",
+    "sha256": "2a7a6f88acb108c513b6d3ef21ec076fde6f971f92b4386a35db2f5706049c3a",
+    "bytes": 2043,
+    "expected": "OUT_OF_BUDGET",
+    "family": "ZIP structural/budget",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-expanded-budget",
+    "file": "zip-expanded-budget.arschar",
+    "sha256": "ad0a1c30699f220a8d9a6e48c332ccaea0e9762c5a28acf93c566dbaf4101962",
+    "bytes": 2043,
+    "expected": "OUT_OF_BUDGET",
+    "family": "ZIP structural/budget",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-ratio-budget",
+    "file": "zip-ratio-budget.arschar",
+    "sha256": "6e3f2d2bacc320c395ae5bd5bfa5b779719010b43a8b150fc677acf3823c3836",
+    "bytes": 2043,
+    "expected": "OUT_OF_BUDGET",
+    "family": "ZIP structural/budget",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-descriptor-crc",
+    "file": "zip-descriptor-crc.arschar",
+    "sha256": "c8a94940a52e3e038cf86af0c094eeb18761b02fd1be1c1f55e5bb4dacbc877d",
+    "bytes": 2106,
+    "expected": "BAD_ASSET",
+    "family": "data descriptor",
+    "stage": "C1"
+  },
+  {
+    "id": "mixed-mask-triangle",
+    "file": "mixed-mask-triangle.arschar",
+    "sha256": "76e2df9650b38deec72662325c75474bd9bde9e8cad9e0a273c251b45015b904",
+    "bytes": 2063,
+    "expected": "BAD_ASSET",
+    "family": "manifest/geometry precedence",
+    "stage": "C1"
+  },
+  {
+    "id": "parent-mask-cycle",
+    "file": "parent-mask-cycle.arschar",
+    "sha256": "3450ae08f069d55319e8c8b82db8e5a47dcdeb66c4ae896035057e8cdfe711ff",
+    "bytes": 2084,
+    "expected": "BAD_ASSET",
+    "family": "manifest/geometry precedence",
+    "stage": "C1"
+  },
+  {
+    "id": "duplicate-binding",
+    "file": "duplicate-binding.arschar",
+    "sha256": "823f3d04d4fc6b6258880c85a8932fbcb3006f35885daff41966ebd8802be7d6",
+    "bytes": 2093,
+    "expected": "BAD_ASSET",
+    "family": "manifest/geometry precedence",
+    "stage": "C1"
+  },
+  {
+    "id": "uppercase-semantic",
+    "file": "uppercase-semantic.arschar",
+    "sha256": "0eee2c1e079bd3a187012f4280c14f8da028f4cf9f8a7463450ef0c06ff72159",
+    "bytes": 2043,
+    "expected": "BAD_ASSET",
+    "family": "manifest/geometry precedence",
+    "stage": "C1"
+  },
+  {
+    "id": "unicode-semantic",
+    "file": "unicode-semantic.arschar",
+    "sha256": "c3aa48bcd471858dead6d76fd029ee37f2e63a42ac063199f50ba9709fd19249",
+    "bytes": 2035,
+    "expected": "BAD_ASSET",
+    "family": "manifest/geometry precedence",
+    "stage": "C1"
+  },
+  {
+    "id": "duplicate-layer",
+    "file": "duplicate-layer.arschar",
+    "sha256": "71764d41a8a054a7e36b2e92b68a0d6638b7069f36e906098a0c8b9058e7525b",
+    "bytes": 2141,
+    "expected": "BAD_ASSET",
+    "family": "manifest/geometry precedence",
+    "stage": "C1"
+  },
+  {
+    "id": "absent-default-mode",
+    "file": "absent-default-mode.arschar",
+    "sha256": "26f331d67f00d99effdad5523ab3dd41f9ef8917de598fb29f4c4bc777839aa4",
+    "bytes": 2043,
+    "expected": "BAD_ASSET",
+    "family": "manifest/geometry precedence",
+    "stage": "C1"
+  },
+  {
+    "id": "duplicate-part",
+    "file": "duplicate-part.arschar",
+    "sha256": "ac0c687a02c093a048bf8980edb081403f1247ac91ae3ba7cdf3f30d44cb52c6",
+    "bytes": 2210,
+    "expected": "BAD_ASSET",
+    "family": "2D semantic bounds",
+    "stage": "C1"
+  },
+  {
+    "id": "duplicate-parameter",
+    "file": "duplicate-parameter.arschar",
+    "sha256": "a3837d10e7b7e13eccf6d8c0e5527c7e2bccdb64fee40f8b798552948ef9f761",
+    "bytes": 2093,
+    "expected": "BAD_ASSET",
+    "family": "2D semantic bounds",
+    "stage": "C1"
+  },
+  {
+    "id": "bad-pivot",
+    "file": "bad-pivot.arschar",
+    "sha256": "9f5d6ff1fa86a4dd9c77e78af2a3c26a3fff8548222aaa3247a312c7863d07e9",
+    "bytes": 2039,
+    "expected": "BAD_ASSET",
+    "family": "2D semantic bounds",
+    "stage": "C1"
+  },
+  {
+    "id": "bad-parameter-default",
+    "file": "bad-parameter-default.arschar",
+    "sha256": "006298d3b3b7416338717f01a60b1430aa0b5387e25c09900ada03ab77e96bda",
+    "bytes": 2043,
+    "expected": "BAD_ASSET",
+    "family": "2D semantic bounds",
+    "stage": "C1"
+  },
+  {
+    "id": "parameter-float-overflow",
+    "file": "parameter-float-overflow.arschar",
+    "sha256": "f28b1873a542ac9982796801af05b633719261138f8f98b53421161e9fb9640b",
+    "bytes": 2048,
+    "expected": "BAD_ASSET",
+    "family": "2D semantic bounds",
+    "stage": "C1"
+  },
+  {
+    "id": "unknown-deform-parameter",
+    "file": "unknown-deform-parameter.arschar",
+    "sha256": "c9c4ce2feab64b71061bbcf8092b85729c26a8dd541baf131b069fb209eecefa",
+    "bytes": 2041,
+    "expected": "BAD_ASSET",
+    "family": "2D semantic bounds",
+    "stage": "C1"
+  },
+  {
+    "id": "png-chunk-budget",
+    "file": "png-chunk-budget.arschar",
+    "sha256": "557cfd4d693b0cdd2b3252731e3a38a8820db6e79590a88241fcc5c10ceb4722",
+    "bytes": 67592,
+    "expected": "OUT_OF_BUDGET",
+    "family": "PNG chunk allocation cap",
+    "stage": "C1"
+  },
+  {
+    "id": "png-chunk-count",
+    "file": "png-chunk-count.arschar",
+    "sha256": "d0bdd0a14ff09e2037714b4f4620e914ae50b59e25cea45146d922d74f7a614c",
+    "bytes": 51207,
+    "expected": "OUT_OF_BUDGET",
+    "family": "PNG work bound",
+    "stage": "C1"
+  },
+  {
+    "id": "positive-png-16bit",
+    "file": "positive-png-16bit.arschar",
+    "sha256": "956b5e22e2cc5e6bdfcf249f0ecf90fe54830cbfb0a20dc34eaefcc51c4a3b85",
+    "bytes": 2047,
+    "expected": "OK",
+    "family": "PNG actual pixel format decode",
+    "stage": "C1"
+  },
+  {
+    "id": "positive-png-interlaced",
+    "file": "positive-png-interlaced.arschar",
+    "sha256": "abef641f304eb81893524305e2946c3470fb3f8fed5f75988bc6de0157d4360e",
+    "bytes": 2043,
+    "expected": "OK",
+    "family": "PNG actual pixel format decode",
+    "stage": "C1"
+  },
+  {
+    "id": "positive-png-gray",
+    "file": "positive-png-gray.arschar",
+    "sha256": "bde9e1aa0db65d8d1612410ec698691b66f573a6e38bfaa54879cb0d58590728",
+    "bytes": 2040,
+    "expected": "OK",
+    "family": "PNG actual pixel format decode",
+    "stage": "C1"
+  },
+  {
+    "id": "positive-png-rgb",
+    "file": "positive-png-rgb.arschar",
+    "sha256": "dbb49e4f1b838f0265471dbbdf85792602cdbf2dd956d992549ea1f93c6e2b20",
+    "bytes": 2042,
+    "expected": "OK",
+    "family": "PNG actual pixel format decode",
+    "stage": "C1"
+  },
+  {
+    "id": "positive-png-palette",
+    "file": "positive-png-palette.arschar",
+    "sha256": "77624dccb5245a96de33b93040839fa46b7ae30f13e7be4511cd5ab839bcc1fc",
+    "bytes": 2068,
+    "expected": "OK",
+    "family": "PNG actual pixel format decode",
+    "stage": "C1"
+  },
+  {
+    "id": "png-16bit-truncated",
+    "file": "png-16bit-truncated.arschar",
+    "sha256": "9c39c4bbac04665f5c379f86709e24b3118ad3b9700b171701f1bb01c781638b",
+    "bytes": 2040,
+    "expected": "BAD_ASSET",
+    "family": "PNG decoded row length",
+    "stage": "C1"
+  },
+  {
+    "id": "png-bad-bit-depth",
+    "file": "png-bad-bit-depth.arschar",
+    "sha256": "011fa68e543ba15a306da96125b99936c454db3c3056aaef246c5d47777a71f2",
+    "bytes": 2043,
+    "expected": "BAD_ASSET",
+    "family": "PNG IHDR fields",
+    "stage": "C1"
+  },
+  {
+    "id": "atlas-canvas-is-not-image",
+    "file": "atlas-canvas-is-not-image.arschar",
+    "sha256": "09e1a2b1c21339ce9d450db95378fc41a9a0c2f62c39e514051d5509f18bbb16",
+    "bytes": 2049,
+    "expected": "BAD_ASSET",
+    "family": "actual PNG bounds vs canvas",
+    "stage": "C1"
+  },
+  {
+    "id": "positive-canvas-independent",
+    "file": "positive-canvas-independent.arschar",
+    "sha256": "8faecfc6664bff8667306c281bb2a66563cc6dd1b875918f3231b7282de7d2c7",
+    "bytes": 2049,
+    "expected": "OK",
+    "family": "canvas is coordinate space",
+    "stage": "C1"
+  },
+  {
+    "id": "path-superscript",
+    "file": "path-superscript.arschar",
+    "sha256": "38ed99dc7967fe6ff27e9c1524c3af95e255f135cd195bc39f44e3ee87b5b0f8",
+    "bytes": 2138,
+    "expected": "BAD_ASSET",
+    "family": "Windows device/alias policy",
+    "stage": "C1"
+  },
+  {
+    "id": "path-console",
+    "file": "path-console.arschar",
+    "sha256": "1ff40b8d72a716549860600f82122951d686455559d520095e021239b6005ee2",
+    "bytes": 2132,
+    "expected": "BAD_ASSET",
+    "family": "Windows device/alias policy",
+    "stage": "C1"
+  },
+  {
+    "id": "path-trailing-dot",
+    "file": "path-trailing-dot.arschar",
+    "sha256": "1e428273cbe4722319b1ac87a4014c68a665da5fc323da8987475d4cb09e4e54",
+    "bytes": 2130,
+    "expected": "BAD_ASSET",
+    "family": "Windows device/alias policy",
+    "stage": "C1"
+  },
+  {
+    "id": "alias-casefold",
+    "file": "alias-casefold.arschar",
+    "sha256": "67f8d3dc0f60097e49ec897c435675d73bc94a9a5418db9add7f588af569e2c7",
+    "bytes": 2225,
+    "expected": "BAD_ASSET",
+    "family": "Unicode casefold collision",
+    "stage": "C1"
+  }
+]

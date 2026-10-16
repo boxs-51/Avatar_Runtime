@@ -309,6 +309,84 @@ def check_m1_b3(base, candidate):
                 "B3 changed original scenario/oracle or fabricated whole-case PASS")
     return True
 
+M1_C1_BRANCH = "m1/c1-native-assets"
+M1_C1_BASE = "7900f4954f49bd5d0ae3c7db0bc7e3f35095ec79"
+M1_C1_PATHS = frozenset((
+    'CMakeLists.txt',
+    'cmake/ars_asset_dependencies.cmake',
+    'docs/M1_C_DEPENDENCY_LOCK.json',
+    'src/assets/asset_limits.hpp',
+    'src/assets/owned_bundle.hpp',
+    'src/assets/owned_bundle.cpp',
+    'src/assets/zip_reader.hpp',
+    'src/assets/zip_reader.cpp',
+    'src/assets/png_decoder.hpp',
+    'src/assets/png_decoder.cpp',
+    'src/assets/validated_cpu_model.hpp',
+    'src/assets/validated_cpu_model.cpp',
+    'src/validation/strict_json.hpp',
+    'src/validation/strict_json.cpp',
+    'src/validation/manifest_validator.hpp',
+    'src/validation/manifest_validator.cpp',
+    'src/validation/profile_b_validator.hpp',
+    'src/validation/profile_b_validator.cpp',
+    'tests/assets/asset_test_support.hpp',
+    'tests/assets/zip_reader_tests.cpp',
+    'tests/assets/json_schema_tests.cpp',
+    'tests/assets/profile_b_tests.cpp',
+    'tests/assets/png_decoder_tests.cpp',
+    'tests/assets/asset_budget_tests.cpp',
+    'tests/assets/fixtures/generate_fixtures.py',
+    'tests/assets/fixtures/manifest.json',
+    'fuzz/arschar_fuzzer.cpp',
+    'fuzz/CMakeLists.txt',
+    '.github/workflows/m1-c-assets.yml',
+    'tests/contracts/check_m0_rc1_pins.py',
+    'tests/contracts/test_m1_b3_custody.py',
+    'tests/contracts/test_m1_c_custody.py',
+    'docs/audits/M1_C1_BUILD_EVIDENCE.md',
+    'docs/audits/M1_C_CASE_EXECUTION.json',
+    'src/validation/schema_worker_main.cpp',
+    'src/validation/schema_worker_client.hpp',
+    'src/validation/schema_worker_client.cpp',
+    'src/validation/schema_worker_protocol.hpp',
+    'src/validation/schema_worker_windows.cpp',
+    'src/validation/schema_worker_linux.cpp',
+    'tests/assets/schema_worker_tests.cpp',
+))
+
+def check_m1_c1(base, candidate):
+    """Owner-approved C1 plus seven-file bounded schema helper amendment."""
+    require(base == M1_C1_BASE, "C1 main moved: fresh target review required")
+    git("merge-base", "--is-ancestor", base, candidate)
+    changed = set(git("diff", "--name-only", base, candidate).splitlines())
+    require(changed == M1_C1_PATHS, f"C1 path drift: {sorted(changed ^ M1_C1_PATHS)}")
+    frozen = json.loads(git("show", base + ":docs/M0_CONTRACT_PARENT_PINS.json"))
+    validate_blob_manifest(frozen, candidate)
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp", "src/abi/runtime_api.cpp", "cmake/ars_verify_exports.cmake", "docs/G00_SECURITY_87_CASE_INVENTORY.json", "docs/audits/M1_B_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path), "C1 changed frozen public/security boundary: " + path)
+    old = git("show", base + ":tests/contracts/test_m1_b3_custody.py")
+    expected = old.replace('BASE = "' + M1_B3_BASE + '"\n', 'BASE = "' + M1_B3_BASE + '"\nSNAPSHOT = "' + base + '"\n')
+    expected = expected.replace('"HEAD"', "SNAPSHOT")
+    expected = re.sub(r'"HEAD:([^"\n]+)"', r'SNAPSHOT + ":\1"', expected).replace('"HEAD:"', 'SNAPSHOT + ":"')
+    require(git("show", candidate + ":tests/contracts/test_m1_b3_custody.py") == expected, "C1 diluted B3 tests")
+    names = {"check_consolidation", "check_m1_a", "check_m1_b1", "check_m1_b2", "check_m1_b3", "validate_blob_manifest"}
+    def functions(text):
+        return {n.name: ast.dump(n) for n in ast.parse(text).body if isinstance(n, ast.FunctionDef) and n.name in names}
+    require(functions(git("show", base + ":tests/contracts/check_m0_rc1_pins.py")) == functions(git("show", candidate + ":tests/contracts/check_m0_rc1_pins.py")), "C1 diluted historical gates")
+    lock = json.loads(git("show", candidate + ":docs/M1_C_DEPENDENCY_LOCK.json"))
+    require(lock["material_decision_required"]["status"] == "OWNER_APPROVED_YES" and not lock["public_activation"] and not lock["merge_authorized"], "C1 scope/activation flags")
+    for dep in lock["dependencies"]:
+        require(re.fullmatch(r"[0-9a-f]{40}", dep["commit"]) is not None and re.fullmatch(r"[0-9a-f]{64}", dep["archive_sha256"]) is not None, "Unpinned dependency")
+        require(dep["commit"] in git("show", candidate + ":cmake/ars_asset_dependencies.cmake") and dep["archive_sha256"] in git("show", candidate + ":cmake/ars_asset_dependencies.cmake"), "Dependency lock/build mismatch")
+    for path in M1_C1_PATHS:
+        if path.startswith("src/"):
+            require(not re.search(r"\bARS_API\b|\b(system|popen)\s*\(", git("show", candidate + ":" + path)), "C1 public/shell boundary: " + path)
+    ledger = json.loads(git("show", candidate + ":docs/audits/M1_C_CASE_EXECUTION.json"))
+    require(ledger["scope"] == "M1_C1_PRIVATE_CPU_2D_ONLY" and not ledger["public_activation"] and ledger["full_g02_verdict"] == "HOLD", "C1 fabricated public/full G02 result")
+    return True
+
+
 def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -346,7 +424,10 @@ def check():
         expected_parent = git("rev-parse", "HEAD^1")
         # Exact authorization is per candidate kind, never a broad audit-branch bypass.
         child = obj.get("audit_child", {})
-        if os.getenv("GITHUB_HEAD_REF") == M1_B3_BRANCH:
+        if os.getenv("GITHUB_HEAD_REF") == M1_C1_BRANCH:
+            expected = M1_C1_BASE
+            check_m1_c1(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M1_B3_BRANCH:
             expected = M1_B3_BASE
             check_m1_b3(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M1_B2_BRANCH:
