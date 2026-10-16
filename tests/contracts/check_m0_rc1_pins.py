@@ -438,6 +438,7 @@ M1_D_BASE = "f5b198137f6a96a2e33bb8ac206e53c3815bbbbc"
 M1_D_GPU_SOURCE = "f51375ae74e32f2bdabba29aa3549967468e3c24"
 M1_D_PATHS = frozenset((
     ".github/workflows/m1-d-gpu.yml", "CMakeLists.txt",
+    "docs/M1_D_CLOSE_LOSS_NEXT_IMPLEMENTATION.md",
     "docs/M1_D_GPU_CASE_EXECUTION.json", "docs/audits/M1_D_BUILD_EVIDENCE.md",
     "docs/audits/M1_D_BUILD_RAW.txt", "docs/audits/M1_D_CTEST_RAW.txt",
     "docs/audits/M1_D_D1_RAW.txt", "docs/audits/M1_D_D2_RAW.txt",

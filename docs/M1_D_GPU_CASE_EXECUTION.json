@@ -19,7 +19,7 @@
     "D06": "PARTIAL: snapshot/target pins held until exact completion; debug-layer live-object identities 7 before and 7 after 100 cycles, with no growth; post-close teardown count untested",
     "D07": "HOLD: 100 target recreate cycles observed; runtime close/in-flight shutdown untested",
     "D08": "HOLD: no device removal/reset experiment or safe teardown protocol",
-    "D09": "PARTIAL: Windows MSVC shared 31/31 and static 29/29 CTest, Linux compile guard CI on previous head; full C2 asset matrix not rerun",
+    "D09": "PARTIAL: Windows MSVC shared 31/31 and static 29/29 CTest, Python contracts 135/135; exact-head M1-D Windows compile/Linux guard, M0/P0/M1-A/B3 CI pass; C2 still running at 2026-10-16 check",
     "D10": "PARTIAL: named physical runner, exact-source raw logs and hashes retained; D07/D08 and post-close leak evidence missing"
   },
   "verdict": "PRIVATE_SPIKE_PARTIAL; M1-D_ACCEPTANCE_HOLD; PUBLIC_RENDER_DISABLED"
