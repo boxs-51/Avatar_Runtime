@@ -1,6 +1,10 @@
-import sys,copy,hashlib,io,json,pathlib,struct,zipfile,zlib
-from jsonschema import Draft202012Validator
-root=pathlib.Path(sys.argv[1] if len(sys.argv)>1 else 'build/c1-corpus');root.mkdir(parents=True,exist_ok=True)
+import argparse,copy,hashlib,io,json,pathlib,struct,zipfile,zlib
+parser=argparse.ArgumentParser()
+parser.add_argument('output',nargs='?',default='build/c1-corpus')
+parser.add_argument('reference_manifest',nargs='?')
+parser.add_argument('--reference-schema',action='store_true',help='Run separately installed Draft2020-12 reference checks (required in CI)')
+args=parser.parse_args()
+root=pathlib.Path(args.output);root.mkdir(parents=True,exist_ok=True)
 def js(x):return json.dumps(x,ensure_ascii=False,separators=(',',':'),allow_nan=False).encode()
 def chunk(t,data):return struct.pack('>I',len(data))+t+data+struct.pack('>I',zlib.crc32(t+data))
 def png(w=1,h=1):
@@ -142,16 +146,18 @@ for malformed in (False,True):
  data[end:end]=extra
  save('zip-zip64-'+('conflict' if malformed else 'disabled')+'.arschar',bytes(data),'BAD_ASSET' if malformed else 'UNSUPPORTED','ZIP64 bounded envelope precedence')
 (root/'atlas.png').write_bytes(png());(root/'manifest.json').write_bytes((json.dumps(records,indent=2,ensure_ascii=False)+'\n').encode())
-if len(sys.argv)>2:
- reference=json.loads(pathlib.Path(sys.argv[2]).read_text(encoding='utf-8'))
+if args.reference_manifest:
+ reference=json.loads(pathlib.Path(args.reference_manifest).read_text(encoding='utf-8'))
  # Compare the complete ordered oracle, including every binary hash and verdict.
  # Git may check text out as CRLF on Windows; binary fixtures stay byte exact.
  if js(reference)!=js(records):raise SystemExit('fixture manifest differs from committed oracle')
-for schema_path,instance in [('schemas/character_manifest_v0.1.schema.json',m),('schemas/ars2d_rig_v0.1.schema.json',r),('schemas/character_manifest_v0.1.schema.json',dual)]:
- schema=json.loads(pathlib.Path(schema_path).read_text());Draft202012Validator.check_schema(schema);Draft202012Validator(schema).validate(instance)
+if args.reference_schema:
+ from jsonschema import Draft202012Validator
+ for schema_path,instance in [('schemas/character_manifest_v0.1.schema.json',m),('schemas/ars2d_rig_v0.1.schema.json',r),('schemas/character_manifest_v0.1.schema.json',dual)]:
+  schema=json.loads(pathlib.Path(schema_path).read_text(encoding='utf-8'));Draft202012Validator.check_schema(schema);Draft202012Validator(schema).validate(instance)
 parity=[]
 for kind,base,schema_path in [('manifest',m,'schemas/character_manifest_v0.1.schema.json'),('rig',r,'schemas/ars2d_rig_v0.1.schema.json')]:
- validator=Draft202012Validator(json.loads(pathlib.Path(schema_path).read_text(encoding='utf-8')))
+ validator=Draft202012Validator(json.loads(pathlib.Path(schema_path).read_text(encoding='utf-8'))) if args.reference_schema else None
  variants=[('valid',copy.deepcopy(base)),('missing-required',{}),('unknown-property',{**base,'not_in_schema':True})]
  if kind=='manifest':
   for label,change in [('version',lambda a:a.update(schema_version='9.0.0')),('units',lambda a:a.update(units='feet')),('format',lambda a:a['representations']['2d'].update(format='unknown')),('ref-shape',lambda a:a['representations']['2d']['layer_bindings'][0].update(part_ids=[]))]:
@@ -160,7 +166,9 @@ for kind,base,schema_path in [('manifest',m,'schemas/character_manifest_v0.1.sch
   for label,change in [('bool-integer',lambda a:a['canvas'].update(width=True)),('zero-dimension',lambda a:a['canvas'].update(width=0)),('tuple-shape',lambda a:a['parts'][0].update(atlas_rect_px=[0,0,1])),('unknown-weight',lambda a:a['parts'][0].update(weights=[]))]:
    a=copy.deepcopy(base);change(a);variants.append((label,a))
  for label,instance in variants:
-  parity.append({'id':kind+'-'+label,'schema':kind,'input':js(instance).decode('utf-8'),'valid':validator.is_valid(instance)})
+  expected=label=='valid'
+  if validator is not None and validator.is_valid(instance)!=expected:raise SystemExit('reference schema oracle drift: '+kind+'-'+label)
+  parity.append({'id':kind+'-'+label,'schema':kind,'input':js(instance).decode('utf-8'),'valid':expected})
 parity_bytes=js(parity);(root/'schema-parity.json').write_bytes(parity_bytes)
-print(json.dumps({'schema_reference_cases':len(parity),'schema_parity_sha256':hashlib.sha256(parity_bytes).hexdigest(),'reference':'jsonschema Draft202012Validator'}))
-print(json.dumps({'fixtures':len(records),'positive_manifests_schema_validated':3,'seed':'deterministic no RNG','native_parser_execution':False}))
+print(json.dumps({'schema_reference_cases':len(parity),'schema_parity_sha256':hashlib.sha256(parity_bytes).hexdigest(),'reference_checks_executed':args.reference_schema}))
+print(json.dumps({'fixtures':len(records),'positive_manifests_schema_validated':3 if args.reference_schema else 0,'seed':'deterministic no RNG','native_parser_execution':False}))

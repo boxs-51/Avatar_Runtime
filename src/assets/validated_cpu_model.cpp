@@ -26,6 +26,7 @@ class ModelBuilder {
             },
             std::pmr::polymorphic_allocator<std::byte>(&r));
         model->image_ = std::move(image);
+        model->canvas_ = {rig.at("canvas").at("width").u32(), rig.at("canvas").at("height").u32()};
         const auto layers = manifest.at("visual_layers"), parts = rig.at("parts"),
                    params = rig.at("parameters"), sem = manifest.at("rig_semantics");
         for (std::size_t i = 0; i < sem.size(); ++i) {

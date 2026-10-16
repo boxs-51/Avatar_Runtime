@@ -396,5 +396,14 @@
   },
   "owner_helper_amendment_ack": "YES in active chat following PR26 seven-path helper proposal",
   "c0_allocation_gap_remediation": "Approved schema-only process implemented; OS memory/time/protocol/reaping gates now run in native C1 tests. Final platform evidence is attested in implementation PR.",
-  "implementation_scope_paths": 41
+  "implementation_scope_paths": 41,
+  "reference_test_tool": {
+    "package": "jsonschema",
+    "version": "4.26.0",
+    "scope": "REFERENCE_TEST_ONLY_REQUIRED_BY_CI",
+    "required_for_offline_native_build": false,
+    "enable": "-DARS_ASSET_REFERENCE_CHECKS=ON",
+    "native_fixture_generation": "Python standard library only; exact predefined schema oracles remain unchanged and CI cross-checks them with Draft202012Validator.",
+    "shipping_dependency": false
+  }
 }

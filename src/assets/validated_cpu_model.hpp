@@ -48,6 +48,7 @@ class ValidatedCpuModel {
     std::pmr::vector<Layer> layers_;
     std::pmr::vector<Semantic> semantics_;
     Image image_;
+    std::array<std::uint32_t, 2> canvas_{};
     explicit ValidatedCpuModel(Resource &r)
         : parts_(&r), parameters_(&r), layers_(&r), semantics_(&r), image_(&r) {}
 
@@ -57,6 +58,7 @@ class ValidatedCpuModel {
     const auto &layers() const { return layers_; }
     const auto &semantics() const { return semantics_; }
     const Image &image() const { return image_; }
+    const auto &canvas() const { return canvas_; }
 };
 // Private CPU ingestion only. No registry handle, authority grant or GPU effect.
 ars_status validate_bundle(std::span<const std::uint8_t>, validation::SchemaClient &, Resource &,

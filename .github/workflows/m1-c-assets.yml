@@ -5,6 +5,7 @@ on:
       - 'CMakeLists.txt'
       - 'src/assets/**'
       - 'src/validation/**'
+      - 'schemas/**'
       - 'cmake/**'
       - 'tests/**'
       - 'fuzz/**'
@@ -41,6 +42,7 @@ jobs:
           echo "C1_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}"
           git show -s --format='synthetic=%H tree=%T parents=%P'
           python -m pip install --disable-pip-version-check jsonschema==4.26.0
+          python -S tests/assets/fixtures/generate_fixtures.py build/c1-offline-corpus tests/assets/fixtures/manifest.json
           python tests/contracts/check_m0_rc1_pins.py
           python -m unittest discover -s tests/contracts -p 'test_*.py' -v
           python -m unittest discover -s tests/governance -p 'test_*.py' -v
@@ -48,7 +50,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cmake -S . -B build/c1 -DCMAKE_BUILD_TYPE=Debug -DARS_BUILD_ASSET_VALIDATOR=ON -DARS_ASSET_FETCH_DEPS=ON -DARS_ASSET_SANITIZER=${{ matrix.sanitizer }} -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_RUNTIME_SANITIZER=${{ matrix.sanitizer }}
+          cmake -S . -B build/c1 -DCMAKE_BUILD_TYPE=Debug -DARS_BUILD_ASSET_VALIDATOR=ON -DARS_ASSET_FETCH_DEPS=ON -DARS_ASSET_REFERENCE_CHECKS=ON -DARS_ASSET_SANITIZER=${{ matrix.sanitizer }} -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_RUNTIME_SANITIZER=${{ matrix.sanitizer }}
           cmake --build build/c1 --parallel 2
           if [ '${{ matrix.sanitizer }}' != NONE ]; then
             nm build/c1/bin/ars_profile_b_tests > build/c1/instrumentation.txt
@@ -91,6 +93,8 @@ jobs:
           Write-Output 'C1_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}'
           python -m pip install --disable-pip-version-check jsonschema==4.26.0
           if ($LASTEXITCODE -ne 0) { throw 'reference validator setup failed' }
+          python -S tests/assets/fixtures/generate_fixtures.py build/c1-offline-corpus tests/assets/fixtures/manifest.json
+          if ($LASTEXITCODE -ne 0) { throw 'stdlib-only offline fixture generation failed' }
           python tests/contracts/check_m0_rc1_pins.py
           if ($LASTEXITCODE -ne 0) { throw 'custody failed' }
           python -m unittest discover -s tests/contracts -p 'test_*.py' -v
@@ -101,7 +105,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          cmake -S . -B build/c1 -A x64 -DARS_BUILD_ASSET_VALIDATOR=ON -DARS_ASSET_FETCH_DEPS=ON -DARS_ASSET_SANITIZER=${{ matrix.sanitizer }} -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_RUNTIME_SANITIZER=${{ matrix.sanitizer }}
+          cmake -S . -B build/c1 -A x64 -DARS_BUILD_ASSET_VALIDATOR=ON -DARS_ASSET_FETCH_DEPS=ON -DARS_ASSET_REFERENCE_CHECKS=ON -DARS_ASSET_SANITIZER=${{ matrix.sanitizer }} -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_RUNTIME_SANITIZER=${{ matrix.sanitizer }}
           if ($LASTEXITCODE -ne 0) { throw 'configure failed' }
           cmake --build build/c1 --config ${{ matrix.config }} --parallel 2
           if ($LASTEXITCODE -ne 0) { throw 'build failed' }
@@ -147,7 +151,7 @@ jobs:
           set -euo pipefail
           echo "C1_FUZZ_SOURCE=${{ github.event.pull_request.head.sha }}"
           python -m pip install --disable-pip-version-check jsonschema==4.26.0
-          cmake -S . -B build/c1-fuzz -DCMAKE_BUILD_TYPE=RelWithDebInfo -DARS_BUILD_ASSET_VALIDATOR=ON -DARS_ASSET_FETCH_DEPS=ON -DARS_ASSET_SANITIZER=ADDRESS -DARS_ASSET_FUZZ=ON
+          cmake -S . -B build/c1-fuzz -DCMAKE_BUILD_TYPE=RelWithDebInfo -DARS_BUILD_ASSET_VALIDATOR=ON -DARS_ASSET_FETCH_DEPS=ON -DARS_ASSET_REFERENCE_CHECKS=ON -DARS_ASSET_SANITIZER=ADDRESS -DARS_ASSET_FUZZ=ON
           cmake --build build/c1-fuzz --target arschar_fuzzer --parallel 2
           mkdir -p build/c1-fuzz/seeds build/c1-fuzz/crashes
           cp build/c1-fuzz/asset-corpus/*.arschar build/c1-fuzz/seeds/

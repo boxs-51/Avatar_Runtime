@@ -118,6 +118,17 @@ The native schema test also compares both compiled frozen schemas with 14
 generated Python Draft202012Validator reference verdicts, including nested
 references, unknown properties/formats, tuple shape and boolean/integer typing.
 The generator reports the exact reference-corpus SHA256 in each build log.
+Review closeout preserves the rig's logical canvas width/height in the immutable
+model, independently of atlas dimensions and after caller bytes are overwritten.
+Native RED observed a successful model with missing canvas metadata; the owned
+1024x1024 canvas versus actual 1x1 image is now checked explicitly.
+Offline native fixture generation uses only Python's standard library. Optional
+`ARS_ASSET_REFERENCE_CHECKS=ON` requires separately installed `jsonschema==4.26.0`;
+all C1 CI configurations require it and cross-check every predefined schema oracle
+against Draft202012Validator. Default offline builds retain the same exact fixture
+hashes/verdicts and native schema tests without importing a Python package.
+CI additionally generates fixtures with `python -S` and runs for `schemas/**`
+changes, since the worker embeds both frozen schema files.
 MSVC debug iterator proxies allocate inside noexcept constructors, preventing
 typed host-OOM propagation. Only private C++ assets/tests use the same iterator
 ABI in all configs; public ABI and historical targets are unchanged, assertions

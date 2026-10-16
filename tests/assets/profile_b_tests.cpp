@@ -30,6 +30,11 @@ int main(int argc, char **argv) {
                 test::check(model->image().rgba.size() == 4 && model->image().rgba[0] == 255,
                             "real decoded pixels");
                 bytes.assign(bytes.size(), 0);
+                const auto canvas = name == "positive-canvas-independent" ? 1024u : 1u;
+                std::printf("CANVAS %s expected=%u actual=%u,%u\n", name.c_str(), canvas, model->canvas()[0],
+                            model->canvas()[1]);
+                test::check(model->canvas()[0] == canvas && model->canvas()[1] == canvas,
+                            "owned logical canvas survives caller bytes independently of atlas");
                 test::check(model->parts()[0].vertices.size() == 3 && model->image().rgba[0] == 255,
                             "caller bytes lifetime owned");
             }
