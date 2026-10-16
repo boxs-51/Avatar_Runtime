@@ -129,6 +129,11 @@ for label,name in [('superscript','COM\u00b2.txt'),('console','CONIN$'),('traili
  save('path-'+label+'.arschar',bundle(extra=[(name,b'x')]),'BAD_ASSET','Windows device/alias policy')
 save('alias-casefold.arschar',bundle(extra=[('strasse',b'x'),('stra\u00dfe',b'y')]),'BAD_ASSET','Unicode casefold collision')
 (root/'atlas.png').write_bytes(png());(root/'manifest.json').write_bytes((json.dumps(records,indent=2,ensure_ascii=False)+'\n').encode())
+if len(sys.argv)>2:
+ reference=json.loads(pathlib.Path(sys.argv[2]).read_text(encoding='utf-8'))
+ # Compare the complete ordered oracle, including every binary hash and verdict.
+ # Git may check text out as CRLF on Windows; binary fixtures stay byte exact.
+ if js(reference)!=js(records):raise SystemExit('fixture manifest differs from committed oracle')
 for schema_path,instance in [('schemas/character_manifest_v0.1.schema.json',m),('schemas/ars2d_rig_v0.1.schema.json',r),('schemas/character_manifest_v0.1.schema.json',dual)]:
  schema=json.loads(pathlib.Path(schema_path).read_text());Draft202012Validator.check_schema(schema);Draft202012Validator(schema).validate(instance)
 print(json.dumps({'fixtures':len(records),'positive_manifests_schema_validated':3,'seed':'deterministic no RNG','native_parser_execution':False}))

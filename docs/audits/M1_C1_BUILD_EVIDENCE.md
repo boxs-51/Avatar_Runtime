@@ -105,6 +105,10 @@ Any failed/timeout campaign remains failed until fixed and rerun on the new sour
 
 Harness corrections retained honestly: Python ZipInfo normalized a hostile raw
 backslash on Windows; C1 now writes the original filename bytes explicitly.
+The first CI source failed all three Windows fixture targets because Git checks
+text out with CRLF while the generator writes LF. The generator now compares the
+complete ordered JSON oracle, including every binary hash and expected verdict,
+independently of text line endings; it still rejects any oracle content drift.
 MSVC debug iterator proxies allocate inside noexcept constructors, preventing
 typed host-OOM propagation. Only private C++ assets/tests use the same iterator
 ABI in all configs; public ABI and historical targets are unchanged, assertions

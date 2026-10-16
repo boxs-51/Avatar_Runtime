@@ -345,8 +345,7 @@ if(ARS_BUILD_ASSET_VALIDATOR)
     find_package(Python3 COMPONENTS Interpreter REQUIRED)
     set(ARS_ASSET_CORPUS "${CMAKE_BINARY_DIR}/asset-corpus")
     add_custom_target(ars_asset_fixtures
-        COMMAND "${Python3_EXECUTABLE}" tests/assets/fixtures/generate_fixtures.py "${ARS_ASSET_CORPUS}"
-        COMMAND "${CMAKE_COMMAND}" -E compare_files "${CMAKE_CURRENT_SOURCE_DIR}/tests/assets/fixtures/manifest.json" "${ARS_ASSET_CORPUS}/manifest.json"
+        COMMAND "${Python3_EXECUTABLE}" tests/assets/fixtures/generate_fixtures.py "${ARS_ASSET_CORPUS}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/assets/fixtures/manifest.json"
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
     foreach(family IN ITEMS zip_reader json_schema profile_b png_decoder asset_budget)
         add_executable(ars_${family}_tests tests/assets/${family}_tests.cpp)
