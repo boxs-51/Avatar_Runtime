@@ -19,7 +19,7 @@
     "D06": "PARTIAL: snapshot witness and target reference retained until completion; no live-object teardown count",
     "D07": "HOLD: 100 target recreate cycles observed; runtime close/in-flight shutdown untested",
     "D08": "HOLD: no device removal/reset experiment or safe teardown protocol",
-    "D09": "PARTIAL: Windows MSVC shared 29/29 and static 27/27 CTest, frozen ABI custody; Linux CI pending",
+    "D09": "PARTIAL: Windows MSVC shared 29/29 and static 27/27 CTest, Linux compile guard CI pass, Python contracts 132/132; full C2 asset matrix not rerun",
     "D10": "PARTIAL: named physical runner, raw logs and hashes retained; missing D07/D08/leak evidence"
   },
   "verdict": "PRIVATE_SPIKE_PARTIAL; M1-D_ACCEPTANCE_HOLD; PUBLIC_RENDER_DISABLED"
