@@ -1,4 +1,5 @@
 #include "validated_cpu_model.hpp"
+#include "../validation/glb_validator.hpp"
 #include "../validation/profile_b_validator.hpp"
 #include "zip_reader.hpp"
 #include <algorithm>
@@ -15,7 +16,7 @@ Pair pair(Value value) { return {f(value.at(0)), f(value.at(1))}; }
 class ModelBuilder {
   public:
     static std::shared_ptr<const ValidatedCpuModel> build(Value manifest, Value rig, Image image, Resource &r,
-                                                          Work &work) {
+                                                          Work &work, std::shared_ptr<const GlbModel> glb) {
         auto *memory = r.allocate(sizeof(ValidatedCpuModel), alignof(ValidatedCpuModel));
         auto *raw = new (memory) ValidatedCpuModel(r);
         std::shared_ptr<ValidatedCpuModel> model(
@@ -26,9 +27,8 @@ class ModelBuilder {
             },
             std::pmr::polymorphic_allocator<std::byte>(&r));
         model->image_ = std::move(image);
-        model->canvas_ = {rig.at("canvas").at("width").u32(), rig.at("canvas").at("height").u32()};
-        const auto layers = manifest.at("visual_layers"), parts = rig.at("parts"),
-                   params = rig.at("parameters"), sem = manifest.at("rig_semantics");
+        model->glb_ = std::move(glb);
+        const auto layers = manifest.at("visual_layers"), sem = manifest.at("rig_semantics");
         for (std::size_t i = 0; i < sem.size(); ++i) {
             auto source = sem.at(i);
             model->semantics_.emplace_back(&r);
@@ -37,6 +37,27 @@ class ModelBuilder {
             s.type = source.at("type").string();
             if (source.has("units"))
                 s.units = source.at("units").string();
+            s.has_minimum = source.has("min");
+            if (s.has_minimum)
+                s.minimum = source.at("min").number();
+            s.has_maximum = source.has("max");
+            if (s.has_maximum)
+                s.maximum = source.at("max").number();
+            for (auto mode : {"2d", "3d"})
+                if (manifest.at("representations").has(mode)) {
+                    const auto maps = manifest.at("representations").at(mode).at("mappings");
+                    for (std::size_t j = 0; j < maps.size(); ++j) {
+                        work.take();
+                        if (maps.at(j).at("semantic").string() == s.id) {
+                            auto target = maps.at(j).at("target").string();
+                            if (std::string_view(mode) == "2d")
+                                s.target2d = target;
+                            else
+                                s.target3d = target;
+                        }
+                    }
+                }
+            s.has_default = source.has("default");
             if (source.has("default")) {
                 auto def = source.at("default");
                 if (def.kind() == Kind::number)
@@ -48,6 +69,8 @@ class ModelBuilder {
                         s.initial[j] = def.at(j).number();
             }
         }
+        std::sort(model->semantics_.begin(), model->semantics_.end(),
+                  [](const auto &a, const auto &b) { return a.id < b.id; });
         for (std::size_t i = 0; i < layers.size(); ++i) {
             auto source = layers.at(i);
             model->layers_.emplace_back(&r);
@@ -65,51 +88,55 @@ class ModelBuilder {
                 l.opacity *= f(parent.at("opacity"));
             }
         }
-        for (std::size_t i = 0; i < params.size(); ++i) {
-            auto p = params.at(i);
-            model->parameters_.emplace_back(&r);
-            auto &out = model->parameters_.back();
-            out.id = p.at("id").string();
-            out.minimum = f(p.at("min"));
-            out.maximum = f(p.at("max"));
-            out.initial = f(p.at("default"));
-        }
-        const auto bindings = manifest.at("representations").at("2d").at("layer_bindings");
-        for (std::size_t i = 0; i < parts.size(); ++i) {
-            const auto part = parts.at(i);
-            model->parts_.emplace_back(&r);
-            auto &p = model->parts_.back();
-            p.id = part.at("id").string();
-            p.z = static_cast<std::int32_t>(part.at("z_index").number());
-            for (std::size_t k = 0; k < 4; ++k)
-                p.rect[k] = part.at("atlas_rect_px").at(k).u32();
-            if (part.has("pivot_normalized"))
-                p.pivot = pair(part.at("pivot_normalized"));
-            for (std::size_t b = 0; b < bindings.size(); ++b) {
-                auto binding = bindings.at(b), ids = binding.at("part_ids");
-                for (std::size_t k = 0; k < ids.size(); ++k)
-                    if (ids.at(k).string() == p.id)
-                        p.layer = static_cast<std::uint32_t>(
-                            validation::id_index(layers, binding.at("layer_id").string(), work));
+        if (manifest.at("representations").has("2d")) {
+            model->canvas_ = {rig.at("canvas").at("width").u32(), rig.at("canvas").at("height").u32()};
+            const auto parts = rig.at("parts"), params = rig.at("parameters");
+            for (std::size_t i = 0; i < params.size(); ++i) {
+                auto p = params.at(i);
+                model->parameters_.emplace_back(&r);
+                auto &out = model->parameters_.back();
+                out.id = p.at("id").string();
+                out.minimum = f(p.at("min"));
+                out.maximum = f(p.at("max"));
+                out.initial = f(p.at("default"));
             }
-            for (std::size_t j = 0; j < part.at("vertices_px").size(); ++j) {
-                p.vertices.push_back(pair(part.at("vertices_px").at(j)));
-                p.uv.push_back(pair(part.at("uv").at(j)));
-            }
-            for (std::size_t j = 0; j < part.at("triangles").size(); ++j) {
-                auto t = part.at("triangles").at(j);
-                p.triangles.push_back({t.at(0).u32(), t.at(1).u32(), t.at(2).u32()});
-            }
-            if (part.has("deform_targets"))
-                for (std::size_t j = 0; j < part.at("deform_targets").size(); ++j) {
-                    auto d = part.at("deform_targets").at(j);
-                    p.deforms.emplace_back(&r);
-                    auto &target = p.deforms.back();
-                    target.parameter = static_cast<std::uint32_t>(
-                        validation::id_index(params, d.at("parameter").string(), work));
-                    for (std::size_t k = 0; k < d.at("vertex_deltas_px").size(); ++k)
-                        target.deltas.push_back(pair(d.at("vertex_deltas_px").at(k)));
+            const auto bindings = manifest.at("representations").at("2d").at("layer_bindings");
+            for (std::size_t i = 0; i < parts.size(); ++i) {
+                const auto part = parts.at(i);
+                model->parts_.emplace_back(&r);
+                auto &p = model->parts_.back();
+                p.id = part.at("id").string();
+                p.z = static_cast<std::int32_t>(part.at("z_index").number());
+                for (std::size_t k = 0; k < 4; ++k)
+                    p.rect[k] = part.at("atlas_rect_px").at(k).u32();
+                if (part.has("pivot_normalized"))
+                    p.pivot = pair(part.at("pivot_normalized"));
+                for (std::size_t b = 0; b < bindings.size(); ++b) {
+                    auto binding = bindings.at(b), ids = binding.at("part_ids");
+                    for (std::size_t k = 0; k < ids.size(); ++k)
+                        if (ids.at(k).string() == p.id)
+                            p.layer = static_cast<std::uint32_t>(
+                                validation::id_index(layers, binding.at("layer_id").string(), work));
                 }
+                for (std::size_t j = 0; j < part.at("vertices_px").size(); ++j) {
+                    p.vertices.push_back(pair(part.at("vertices_px").at(j)));
+                    p.uv.push_back(pair(part.at("uv").at(j)));
+                }
+                for (std::size_t j = 0; j < part.at("triangles").size(); ++j) {
+                    auto t = part.at("triangles").at(j);
+                    p.triangles.push_back({t.at(0).u32(), t.at(1).u32(), t.at(2).u32()});
+                }
+                if (part.has("deform_targets"))
+                    for (std::size_t j = 0; j < part.at("deform_targets").size(); ++j) {
+                        auto d = part.at("deform_targets").at(j);
+                        p.deforms.emplace_back(&r);
+                        auto &target = p.deforms.back();
+                        target.parameter = static_cast<std::uint32_t>(
+                            validation::id_index(params, d.at("parameter").string(), work));
+                        for (std::size_t k = 0; k < d.at("vertex_deltas_px").size(); ++k)
+                            target.deltas.push_back(pair(d.at("vertex_deltas_px").at(k)));
+                    }
+            }
         }
         return model;
     }
@@ -129,11 +156,8 @@ ars_status validate_bundle(std::span<const std::uint8_t> input, validation::Sche
         Work work{limits.work};
         OwnedBundle bundle(resource);
         read_zip(input, bundle, resource, limits, work);
-        BoundedMemory json_memory(&resource, 64 * MiB);
-        // JSON nodes/keys share bounded blocks; faults occur at block boundaries
-        // rather than thousands of host calls for tiny transient allocations.
-        std::pmr::monotonic_buffer_resource json_arena(4096, &json_memory);
-        validation::Document manifest(&json_arena), rig(&json_arena);
+        auto json_arena = make_glb_arena(resource);
+        validation::Document manifest(json_arena->memory()), rig(json_arena->memory());
         const auto &source = bundle.find("character.json");
         validation::parse_json(text(source), manifest, limits, work);
         auto status = schema.validate(validation::Schema::manifest, text(source), resource);
@@ -150,24 +174,28 @@ ars_status validate_bundle(std::span<const std::uint8_t> input, validation::Sche
                     (void)bundle.find(reps.at(mode).at("atlas").string());
             }
         }
-        if (!reps.has("2d"))
-            fail(ARS_E_UNSUPPORTED);
-        const auto rep = reps.at("2d");
-        const auto &rig_source = bundle.find(rep.at("asset").string());
-        validation::parse_json(text(rig_source), rig, limits, work);
-        status = schema.validate(validation::Schema::rig, text(rig_source), resource);
-        require(status == ARS_OK, status);
         Image image(&resource);
-        decode_png(bundle.find(rep.at("atlas").string()).bytes, image, resource, limits, work);
-        validation::validate_profile_b(m, rig.root(), image.width, image.height, limits, work);
-        // C1 supplies no GLB decoder. Any required 3D representation keeps this
-        // component UNSUPPORTED; C2 owns actual GLB corruption/semantic oracles.
+        if (reps.has("2d")) {
+            const auto rep = reps.at("2d");
+            const auto &rig_source = bundle.find(rep.at("asset").string());
+            validation::parse_json(text(rig_source), rig, limits, work);
+            status = schema.validate(validation::Schema::rig, text(rig_source), resource);
+            require(status == ARS_OK, status);
+            decode_png(bundle.find(rep.at("atlas").string()).bytes, image, resource, limits, work);
+            validation::validate_profile_b(m, rig.root(), image.width, image.height, limits, work);
+        }
+        std::shared_ptr<const GlbModel> glb;
         if (reps.has("3d")) {
-            (void)bundle.find(reps.at("3d").at("asset").string());
-            disabled = true;
+            auto remaining = limits;
+            remaining.pixels -= image.rgba.size();
+            glb = prepare_glb(bundle.find(reps.at("3d").at("asset").string()).bytes, resource, remaining,
+                              work, json_arena);
+            validation::validate_glb_mappings(m, *glb, work);
+            disabled |= glb->requires_disabled();
         }
         require(!disabled, ARS_E_UNSUPPORTED);
-        out = ModelBuilder::build(m, rig.root(), std::move(image), resource, work);
+        out = ModelBuilder::build(m, reps.has("2d") ? rig.root() : m, std::move(image), resource, work,
+                                  std::move(glb));
         return ARS_OK;
     } catch (const Failure &error) {
         return error.status;

@@ -1,5 +1,6 @@
 #pragma once
 #include "../validation/schema_worker_client.hpp"
+#include "glb_reader.hpp"
 #include "png_decoder.hpp"
 #include <array>
 #include <memory>
@@ -36,9 +37,11 @@ struct Layer {
     explicit Layer(std::pmr::memory_resource *r) : id(r) {}
 };
 struct Semantic {
-    std::pmr::string id, type, units;
+    std::pmr::string id, type, units, target2d, target3d;
     std::array<double, 4> initial{};
-    explicit Semantic(std::pmr::memory_resource *r) : id(r), type(r), units(r) {}
+    double minimum = 0, maximum = 0;
+    bool has_minimum = false, has_maximum = false, has_default = false;
+    explicit Semantic(std::pmr::memory_resource *r) : id(r), type(r), units(r), target2d(r), target3d(r) {}
 };
 class ModelBuilder;
 class ValidatedCpuModel {
@@ -49,6 +52,7 @@ class ValidatedCpuModel {
     std::pmr::vector<Semantic> semantics_;
     Image image_;
     std::array<std::uint32_t, 2> canvas_{};
+    std::shared_ptr<const GlbModel> glb_;
     explicit ValidatedCpuModel(Resource &r)
         : parts_(&r), parameters_(&r), layers_(&r), semantics_(&r), image_(&r) {}
 
@@ -59,6 +63,7 @@ class ValidatedCpuModel {
     const auto &semantics() const { return semantics_; }
     const Image &image() const { return image_; }
     const auto &canvas() const { return canvas_; }
+    const auto &glb() const { return glb_; }
 };
 // Private CPU ingestion only. No registry handle, authority grant or GPU effect.
 ars_status validate_bundle(std::span<const std::uint8_t>, validation::SchemaClient &, Resource &,

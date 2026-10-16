@@ -10,7 +10,7 @@
   ],
   "merge_authorized": false,
   "public_activation": false,
-  "verdict": "SCHEMA_HELPER_IMPLEMENTED_PENDING_EXACT_SOURCE_MATRIX",
+  "verdict": "C2_IMPLEMENTED_PENDING_EXACT_SOURCE_MATRIX",
   "c1_ready": false,
   "c2_ready": false,
   "dependencies": [
@@ -405,5 +405,24 @@
     "enable": "-DARS_ASSET_REFERENCE_CHECKS=ON",
     "native_fixture_generation": "Python standard library only; exact predefined schema oracles remain unchanged and CI cross-checks them with Draft202012Validator.",
     "shipping_dependency": false
+  },
+  "c2_stack": {
+    "parent_sha": "9f5d6b8a634138e8dedae8385dcb783cd385b6c8",
+    "parent_branch": "m1/c1-native-assets",
+    "parent_pr": 27,
+    "owner_unmerged_stack_approved": true,
+    "owner_instruction": "hien tai chua can thuc hien merge ban hay tai stack tu pr27 sau do trien khai c2 luon",
+    "merge_authorized": false
+  },
+  "c2_cpu_policy": {
+    "spec": "glTF 2.0.1",
+    "spec_commit": "8e798b02d254cea97659a333cfcb20875b62bdd4",
+    "spec_url": "https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html",
+    "implementation": "Built-in bounded GLB CPU validator with owned values, no new dependency",
+    "shared_json_arena_MiB": 64,
+    "aggregate_pixels": "One decoded RGBA budget shared by 2D atlas and all embedded 3D PNG images",
+    "jpeg": "Bounded marker/frame/scan envelope only, recognized disabled; no entropy decoder",
+    "required_extensions": "Core structure, references and mappings validated before UNSUPPORTED",
+    "scope_paths": 24
   }
 }

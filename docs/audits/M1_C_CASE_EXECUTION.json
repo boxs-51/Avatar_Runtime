@@ -1,9 +1,9 @@
 {
-  "scope": "M1_C1_PRIVATE_CPU_2D_ONLY",
-  "base": "7900f4954f49bd5d0ae3c7db0bc7e3f35095ec79",
+  "scope": "M1_C2_PRIVATE_CPU_GLB_DUAL",
+  "base": "9f5d6b8a634138e8dedae8385dcb783cd385b6c8",
   "owner_plan_ack": "toi phe duyet ke hoach C0,1,2",
   "helper_amendment_ack": "YES after concrete seven-file PR26 proposal",
-  "path_count": 41,
+  "path_count": 24,
   "public_activation": false,
   "full_g02_verdict": "HOLD",
   "B_whole_case_HOLD": 87,
@@ -18,7 +18,7 @@
       "expected": "OK",
       "family": "complete generated 2D",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -29,7 +29,7 @@
       "expected": "BAD_ASSET",
       "family": "archive names",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -40,7 +40,7 @@
       "expected": "BAD_ASSET",
       "family": "archive names",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -51,7 +51,7 @@
       "expected": "BAD_ASSET",
       "family": "archive names",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -62,7 +62,7 @@
       "expected": "BAD_ASSET",
       "family": "archive names",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -73,7 +73,7 @@
       "expected": "BAD_ASSET",
       "family": "archive names",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -84,7 +84,7 @@
       "expected": "BAD_ASSET",
       "family": "archive names",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -95,7 +95,7 @@
       "expected": "BAD_ASSET",
       "family": "archive names",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -106,7 +106,7 @@
       "expected": "BAD_ASSET",
       "family": "archive names",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -117,7 +117,7 @@
       "expected": "BAD_ASSET",
       "family": "canonical collision",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -128,7 +128,7 @@
       "expected": "BAD_ASSET",
       "family": "canonical collision",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -139,7 +139,7 @@
       "expected": "BAD_ASSET",
       "family": "canonical collision",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -150,7 +150,7 @@
       "expected": "BAD_ASSET",
       "family": "ZIP envelope",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -161,7 +161,7 @@
       "expected": "BAD_ASSET",
       "family": "ZIP envelope",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -172,7 +172,7 @@
       "expected": "BAD_ASSET",
       "family": "ZIP local/central conflict",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -183,7 +183,7 @@
       "expected": "BAD_ASSET",
       "family": "strict JSON",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -194,7 +194,7 @@
       "expected": "BAD_ASSET",
       "family": "strict JSON",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -205,7 +205,7 @@
       "expected": "BAD_ASSET",
       "family": "strict JSON",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -216,7 +216,7 @@
       "expected": "OUT_OF_BUDGET",
       "family": "JSON depth",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -227,7 +227,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest semantics",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -238,7 +238,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest semantics",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -249,7 +249,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest semantics",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -260,7 +260,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest semantics",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -271,7 +271,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest semantics",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -282,7 +282,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest semantics",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -293,7 +293,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest semantics",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -304,7 +304,7 @@
       "expected": "UNSUPPORTED",
       "family": "manifest semantics",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -315,7 +315,7 @@
       "expected": "BAD_ASSET",
       "family": "2D geometry",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -326,7 +326,7 @@
       "expected": "BAD_ASSET",
       "family": "2D geometry",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -337,7 +337,7 @@
       "expected": "BAD_ASSET",
       "family": "2D geometry",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -348,7 +348,7 @@
       "expected": "BAD_ASSET",
       "family": "2D geometry",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -359,7 +359,7 @@
       "expected": "BAD_ASSET",
       "family": "PNG decode",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -370,7 +370,7 @@
       "expected": "BAD_ASSET",
       "family": "PNG CRC",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -381,7 +381,7 @@
       "expected": "OUT_OF_BUDGET",
       "family": "PNG preflight",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -392,8 +392,8 @@
       "expected": "OK",
       "family": "embedded GLB",
       "stage": "C2",
-      "native_requirement": "HOLD until actual C2 GLB implementation; C1 rejects the dual-mode boundary",
-      "final_exact_source_execution": "NOT_EXECUTED_C2"
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
       "id": "glb-truncated.glb",
@@ -403,8 +403,8 @@
       "expected": "BAD_ASSET",
       "family": "GLB bounds",
       "stage": "C2",
-      "native_requirement": "HOLD until actual C2 GLB implementation; C1 rejects the dual-mode boundary",
-      "final_exact_source_execution": "NOT_EXECUTED_C2"
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
       "id": "glb-accessor-overflow.glb",
@@ -414,8 +414,8 @@
       "expected": "BAD_ASSET",
       "family": "GLB bounds/URI/extensions",
       "stage": "C2",
-      "native_requirement": "HOLD until actual C2 GLB implementation; C1 rejects the dual-mode boundary",
-      "final_exact_source_execution": "NOT_EXECUTED_C2"
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
       "id": "glb-external-uri.glb",
@@ -425,19 +425,19 @@
       "expected": "BAD_ASSET",
       "family": "GLB bounds/URI/extensions",
       "stage": "C2",
-      "native_requirement": "HOLD until actual C2 GLB implementation; C1 rejects the dual-mode boundary",
-      "final_exact_source_execution": "NOT_EXECUTED_C2"
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
       "id": "glb-required-extension.glb",
       "file": "glb-required-extension.glb",
       "sha256": "93d3c4d555337d3a05f712f6b6c1cb7adc448872beefaae9346ff291618d1699",
       "bytes": 568,
-      "expected": "UNSUPPORTED",
+      "expected": "BAD_ASSET",
       "family": "GLB bounds/URI/extensions",
       "stage": "C2",
-      "native_requirement": "HOLD until actual C2 GLB implementation; C1 rejects the dual-mode boundary",
-      "final_exact_source_execution": "NOT_EXECUTED_C2"
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
       "id": "positive-dual",
@@ -447,8 +447,8 @@
       "expected": "OK",
       "family": "complete generated dual CPU bundle",
       "stage": "C2",
-      "native_requirement": "HOLD until actual C2 GLB implementation; C1 rejects the dual-mode boundary",
-      "final_exact_source_execution": "NOT_EXECUTED_C2"
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
       "id": "positive-deflate",
@@ -458,7 +458,7 @@
       "expected": "OK",
       "family": "real raw DEFLATE",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -469,7 +469,7 @@
       "expected": "OK",
       "family": "real data descriptor",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -480,7 +480,7 @@
       "expected": "BAD_ASSET",
       "family": "symlink",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -491,7 +491,7 @@
       "expected": "BAD_ASSET",
       "family": "nested archive",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -502,7 +502,7 @@
       "expected": "BAD_ASSET",
       "family": "ZIP structural/budget",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -513,7 +513,7 @@
       "expected": "BAD_ASSET",
       "family": "ZIP structural/budget",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -524,7 +524,7 @@
       "expected": "BAD_ASSET",
       "family": "ZIP structural/budget",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -535,7 +535,7 @@
       "expected": "OUT_OF_BUDGET",
       "family": "ZIP structural/budget",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -546,7 +546,7 @@
       "expected": "OUT_OF_BUDGET",
       "family": "ZIP structural/budget",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -557,7 +557,7 @@
       "expected": "OUT_OF_BUDGET",
       "family": "ZIP structural/budget",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -568,7 +568,7 @@
       "expected": "BAD_ASSET",
       "family": "data descriptor",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -579,7 +579,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest/geometry precedence",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -590,7 +590,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest/geometry precedence",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -601,7 +601,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest/geometry precedence",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -612,7 +612,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest/geometry precedence",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -623,7 +623,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest/geometry precedence",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -634,7 +634,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest/geometry precedence",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -645,7 +645,7 @@
       "expected": "BAD_ASSET",
       "family": "manifest/geometry precedence",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -656,7 +656,7 @@
       "expected": "BAD_ASSET",
       "family": "2D semantic bounds",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -667,7 +667,7 @@
       "expected": "BAD_ASSET",
       "family": "2D semantic bounds",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -678,7 +678,7 @@
       "expected": "BAD_ASSET",
       "family": "2D semantic bounds",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -689,7 +689,7 @@
       "expected": "BAD_ASSET",
       "family": "2D semantic bounds",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -700,7 +700,7 @@
       "expected": "BAD_ASSET",
       "family": "2D semantic bounds",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -711,7 +711,7 @@
       "expected": "BAD_ASSET",
       "family": "2D semantic bounds",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -722,7 +722,7 @@
       "expected": "OUT_OF_BUDGET",
       "family": "PNG chunk allocation cap",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -733,7 +733,7 @@
       "expected": "OUT_OF_BUDGET",
       "family": "PNG work bound",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -744,7 +744,7 @@
       "expected": "OK",
       "family": "PNG actual pixel format decode",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -755,7 +755,7 @@
       "expected": "OK",
       "family": "PNG actual pixel format decode",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -766,7 +766,7 @@
       "expected": "OK",
       "family": "PNG actual pixel format decode",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -777,7 +777,7 @@
       "expected": "OK",
       "family": "PNG actual pixel format decode",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -788,7 +788,7 @@
       "expected": "OK",
       "family": "PNG actual pixel format decode",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -799,7 +799,7 @@
       "expected": "BAD_ASSET",
       "family": "PNG decoded row length",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -810,7 +810,7 @@
       "expected": "BAD_ASSET",
       "family": "PNG IHDR fields",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -821,7 +821,7 @@
       "expected": "BAD_ASSET",
       "family": "actual PNG bounds vs canvas",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -832,7 +832,7 @@
       "expected": "OK",
       "family": "canvas is coordinate space",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -843,7 +843,7 @@
       "expected": "BAD_ASSET",
       "family": "Windows device/alias policy",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -854,7 +854,7 @@
       "expected": "BAD_ASSET",
       "family": "Windows device/alias policy",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -865,7 +865,7 @@
       "expected": "BAD_ASSET",
       "family": "Windows device/alias policy",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -876,7 +876,7 @@
       "expected": "BAD_ASSET",
       "family": "Unicode casefold collision",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -887,7 +887,7 @@
       "expected": "BAD_ASSET",
       "family": "unknown compression is malformed",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -898,7 +898,7 @@
       "expected": "BAD_ASSET",
       "family": "unknown compression is malformed",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -909,7 +909,7 @@
       "expected": "UNSUPPORTED",
       "family": "ZIP64 bounded envelope precedence",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     },
     {
@@ -920,7 +920,1030 @@
       "expected": "BAD_ASSET",
       "family": "ZIP64 bounded envelope precedence",
       "stage": "C1",
-      "native_requirement": "Complete C1 expected/actual fixture trace on every required worker",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-view-overflow.glb",
+      "file": "glb-view-overflow.glb",
+      "sha256": "6759e5b535a2c18a6c04c51fe4b2bae16904975234b523ba669fe63cb298a67e",
+      "bytes": 536,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-view-stride-small.glb",
+      "file": "glb-view-stride-small.glb",
+      "sha256": "7cf43562126bf255b2d7e4d61c20494eca8e97693daa7d3f15b3f9495ca2c14d",
+      "bytes": 544,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-view-stride-alignment.glb",
+      "file": "glb-view-stride-alignment.glb",
+      "sha256": "ca5b111e170f3ff520b8cb7cde2fe5c00d363acf2d879402082e455da2883ddf",
+      "bytes": 544,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-view-target-zero.glb",
+      "file": "glb-view-target-zero.glb",
+      "sha256": "fdf68632ad3e96d03f235f05462dddbf55c1dc6fe1809680334b5c1549e12c2a",
+      "bytes": 540,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-accessor-alignment.glb",
+      "file": "glb-accessor-alignment.glb",
+      "sha256": "b5b795628bbefaaf885400c864ce3d1211f6d8ad9d9c15a90f71962dbf5f7360",
+      "bytes": 544,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-accessor-component.glb",
+      "file": "glb-accessor-component.glb",
+      "sha256": "e699cbc0c0e6a3406672b9771fdfcdb6163bdb9f497b42918e1a8673046d07ae",
+      "bytes": 528,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-accessor-float-normalized.glb",
+      "file": "glb-accessor-float-normalized.glb",
+      "sha256": "30c1ed3af4e4004843c528f29580147c6e381c65faf46079d8bf2800bd42f992",
+      "bytes": 548,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-position-min-conflict.glb",
+      "file": "glb-position-min-conflict.glb",
+      "sha256": "a47bccca3644b8f1617a1ba792d52538b48dbf8c29f1d60e34eb7cfc6152ad65",
+      "bytes": 528,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-index-oob.glb",
+      "file": "glb-index-oob.glb",
+      "sha256": "d4d12258504fc257a2dbbaa1a2d17492e59d514878d5741b2722cfebe75b01c1",
+      "bytes": 528,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-index-restart.glb",
+      "file": "glb-index-restart.glb",
+      "sha256": "ba80e14d6d4007b23af94a83d979eff1c357ff86464a2bdae12697e383184852",
+      "bytes": 528,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-binary-nan.glb",
+      "file": "glb-binary-nan.glb",
+      "sha256": "1a6c61ef85c0ed6f19ef3af3a22506a4e37d52f2cfc88409060a33fe3b7682a4",
+      "bytes": 528,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-node-cycle.glb",
+      "file": "glb-node-cycle.glb",
+      "sha256": "770d7953c181d93b4ba548cb4bc756b311deb611a364c6b614df546c6c1f28cd",
+      "bytes": 544,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-node-dangling.glb",
+      "file": "glb-node-dangling.glb",
+      "sha256": "09d9003218a086db092760410e756807e0ea71d0b7029013f8a48f4486433542",
+      "bytes": 544,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-node-mesh-sentinel.glb",
+      "file": "glb-node-mesh-sentinel.glb",
+      "sha256": "c9132b5ca6a68986b33e37aa742932706e82704cc182376038211b01f0c40947",
+      "bytes": 536,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-node-skin-sentinel.glb",
+      "file": "glb-node-skin-sentinel.glb",
+      "sha256": "d89418346321c97a87a3f92c02895553c9566cb102ff57c2bcf0667647afb990",
+      "bytes": 548,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-scene-sentinel.glb",
+      "file": "glb-scene-sentinel.glb",
+      "sha256": "c0836f9591f7b604b6f1961dd38e96049c6aaf1edda058411d6ebbf44db0ad41",
+      "bytes": 536,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-material-sentinel.glb",
+      "file": "glb-material-sentinel.glb",
+      "sha256": "f4820593837a029243e32f50fde55efcf23a06748b1e23f9724e2095fab3e0f6",
+      "bytes": 552,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-quaternion-zero.glb",
+      "file": "glb-quaternion-zero.glb",
+      "sha256": "7b2062f74173379da38f616ddbd7a7be02146f3af999ac287508ab31c782e6a1",
+      "bytes": 548,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-matrix-trs.glb",
+      "file": "glb-matrix-trs.glb",
+      "sha256": "865157f207770660ae6dedcf1da442e9603aac9d0de876c0ab18a114b5a4ebd0",
+      "bytes": 592,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-triangle-count.glb",
+      "file": "glb-triangle-count.glb",
+      "sha256": "82e33c123c2dd154c267cc4c856fd5f33b3bceb5ed0f730900b3407e8df4f1e3",
+      "bytes": 528,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-extension-not-used.glb",
+      "file": "glb-extension-not-used.glb",
+      "sha256": "ceb209844286181ae0c9f6470fe436dca7d9c7f7e6cf9d5a2b83423d7338e014",
+      "bytes": 592,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-valid-required-extension.glb",
+      "file": "glb-valid-required-extension.glb",
+      "sha256": "9d696907aa71d27e49cc2407fe26ac2cebbd03044e206353b779d61aac92e3ad",
+      "bytes": 600,
+      "expected": "UNSUPPORTED",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-extras.glb",
+      "file": "positive-glb-extras.glb",
+      "sha256": "3de88a84db4b3822bc71693990b7e42e9a69b0176a79fc2aebbdbf7737a28d4a",
+      "bytes": 588,
+      "expected": "OK",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-count-budget.glb",
+      "file": "glb-count-budget.glb",
+      "sha256": "b90e3d1ddc7e61507db4665c004ae9c481ca3c490f886062520dfa343332e8e4",
+      "bytes": 536,
+      "expected": "OUT_OF_BUDGET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-bad-magic.glb",
+      "file": "glb-bad-magic.glb",
+      "sha256": "568cd6c4478657b97bba5c6564d143816a2a514cdaf3cb60fcc3c4523031fcbd",
+      "bytes": 528,
+      "expected": "BAD_ASSET",
+      "family": "GLB framing",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-bad-version.glb",
+      "file": "glb-bad-version.glb",
+      "sha256": "6153e68b9f625c26ff086d2b2c74ffb821e6318c4fbbc2c3b85cf9ac7f2f9d95",
+      "bytes": 528,
+      "expected": "BAD_ASSET",
+      "family": "GLB framing",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-length-conflict.glb",
+      "file": "glb-length-conflict.glb",
+      "sha256": "fcb866f6ff24bcb33827b530e52b0c3de4f7f6d00de9c496539566e213c464de",
+      "bytes": 528,
+      "expected": "BAD_ASSET",
+      "family": "GLB framing",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-json-alignment.glb",
+      "file": "glb-json-alignment.glb",
+      "sha256": "a5e1bcbc6fdb68218d3afaceae3fae80e729a4c9627a998ad3f60b04660da4a1",
+      "bytes": 528,
+      "expected": "BAD_ASSET",
+      "family": "GLB framing",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-unknown-chunk.glb",
+      "file": "positive-glb-unknown-chunk.glb",
+      "sha256": "ed27a523e1982bc0d8158515e7ad5f063a2eb54893d40339ba7a2e07705ae341",
+      "bytes": 540,
+      "expected": "OK",
+      "family": "GLB unknown chunk skip",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-interleaved.glb",
+      "file": "positive-glb-interleaved.glb",
+      "sha256": "ed765a63e8fd415d09bfa21c775e39bc4ad8b28dbd54e034cfd9074ef43b0fc5",
+      "bytes": 540,
+      "expected": "OK",
+      "family": "GLB actual stride",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-sparse.glb",
+      "file": "positive-glb-sparse.glb",
+      "sha256": "08549b3c5f9ab2dae340504d76034a46c78bb6ec84bfaf28f76cbf8fa75b433c",
+      "bytes": 724,
+      "expected": "OK",
+      "family": "GLB actual sparse overlay",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-sparse-duplicate.glb",
+      "file": "glb-sparse-duplicate.glb",
+      "sha256": "38fd43030ed4d05e2d192de06ead331f244eba78246fc2fe9731be42faaaf06c",
+      "bytes": 724,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-sparse-descending.glb",
+      "file": "glb-sparse-descending.glb",
+      "sha256": "e062fd91f69c7218947385fec896440d3239b4368d6f096c7fe30f2d82dea708",
+      "bytes": 724,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-sparse-oob.glb",
+      "file": "glb-sparse-oob.glb",
+      "sha256": "ee9932abb4976f2c9228c574b30c193fc201f870011952f3d5f7a0a97e000799",
+      "bytes": 724,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-sparse-count.glb",
+      "file": "glb-sparse-count.glb",
+      "sha256": "08594bc4ce1fbbe1db494831f3cc450119d91e6ea7c6110445fbc7fd52ea4de6",
+      "bytes": 724,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-matrix-padding.glb",
+      "file": "positive-glb-matrix-padding.glb",
+      "sha256": "20a7fa5d5dd92667a8c02344534286b4cf114c71f237de2b933a63d680fd17bf",
+      "bytes": 660,
+      "expected": "OK",
+      "family": "GLB matrix column padding",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-full.glb",
+      "file": "positive-glb-full.glb",
+      "sha256": "9bb303005ed254943dd4c2e4cac3886988dd4e1008262988592fa67223b34f6a",
+      "bytes": 2628,
+      "expected": "OK",
+      "family": "skin morph animation embedded PNG",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-joint-index.glb",
+      "file": "glb-joint-index.glb",
+      "sha256": "74e5fc9ec4a4fb84b699bb252ceeca5ea7a3a4323bd11978cc5f44cb7ea18a74",
+      "bytes": 2628,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-weight-zero.glb",
+      "file": "glb-weight-zero.glb",
+      "sha256": "b3c5eed5f57d3f926d84add9a44e0ae78bfd4de273fa48d7c488fe03db84a0dd",
+      "bytes": 2628,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-skin-duplicate-joint.glb",
+      "file": "glb-skin-duplicate-joint.glb",
+      "sha256": "891cfc9db2009c7987f9aca035dee146111294e3ed140d280d123b35edef4a6c",
+      "bytes": 2628,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-skin-inverse-sentinel.glb",
+      "file": "glb-skin-inverse-sentinel.glb",
+      "sha256": "0c306005ad0d44e02d2c14567ea46c99f2f685597622fed55e19e1e597f5ad8c",
+      "bytes": 2636,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-skin-skeleton-sentinel.glb",
+      "file": "glb-skin-skeleton-sentinel.glb",
+      "sha256": "7aa1443ce9f346fff9acee612cc04e51b3f01edf3bca5db82e18ee434c4b59fb",
+      "bytes": 2636,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-skin-missing-weights.glb",
+      "file": "glb-skin-missing-weights.glb",
+      "sha256": "0eaddf8a557165f5f247a8d9d38714b24d4d692a57b089bf7f401d270f40176b",
+      "bytes": 2612,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-morph-count.glb",
+      "file": "glb-morph-count.glb",
+      "sha256": "b2da0705f04c4de14f03b704565537672ae32f25a975b43793181a563184ac06",
+      "bytes": 2628,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-morph-name-count.glb",
+      "file": "glb-morph-name-count.glb",
+      "sha256": "f75453ce0656e79d1359ac604f2022ddc3ed6b7cde40b6a570bd004bff8fad41",
+      "bytes": 2628,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-animation-output-count.glb",
+      "file": "glb-animation-output-count.glb",
+      "sha256": "6935f8bc7e8793d4b3d9d5527af846914520a3f7fe952799f908c96ab3b21ac9",
+      "bytes": 2628,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-animation-node-sentinel.glb",
+      "file": "glb-animation-node-sentinel.glb",
+      "sha256": "e7e9500741ecde735b550c75e2d692e5c419560836a272594112a114b899f06d",
+      "bytes": 2636,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-animation-duplicate-target.glb",
+      "file": "glb-animation-duplicate-target.glb",
+      "sha256": "258ccbb11b8ff567ffe89205df420c13b8a77fb00a687c7d0cbd960c45e07bf9",
+      "bytes": 2684,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-animation-zero-quaternion.glb",
+      "file": "glb-animation-zero-quaternion.glb",
+      "sha256": "4ebf057731f4fd3a1d9fbdb949268afc8ecc8ef6978c80ffc2c28eae5c12852c",
+      "bytes": 2628,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-image-uri.glb",
+      "file": "glb-image-uri.glb",
+      "sha256": "456e205d084d439ec252394ab31cf1f3c1e41bd3b9b85185a64bbbd158e88400",
+      "bytes": 2664,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-image-truncated.glb",
+      "file": "glb-image-truncated.glb",
+      "sha256": "449ed3489107564ff35ef4270bae6e9a038df7d8104e0a99d89b907d8e56eb5f",
+      "bytes": 2628,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-texture-index.glb",
+      "file": "glb-texture-index.glb",
+      "sha256": "a7c6c34dfb2c9d7ec1889716eb9b276a72804e307df04f3bdd79e4b4e88c4a97",
+      "bytes": 2628,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-texture-uv.glb",
+      "file": "glb-texture-uv.glb",
+      "sha256": "8a85a8039d38e2c49a3bb80d4c31fc7d1c95016f24c7fb38091e2e5e10ae4bc9",
+      "bytes": 2640,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-animation-time-order.glb",
+      "file": "glb-animation-time-order.glb",
+      "sha256": "f7facef7b2782fbc75af36cd57220ff811871bac1d10f4a0aaa68308bda57d2b",
+      "bytes": 2628,
+      "expected": "BAD_ASSET",
+      "family": "actual time ordering",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-cubic.glb",
+      "file": "positive-glb-cubic.glb",
+      "sha256": "ceff74619ef2a0598e4fa64d2e47f0846161ead19f4983c69812fcda239c088f",
+      "bytes": 2840,
+      "expected": "OK",
+      "family": "real cubic tangent/value cardinality",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-cubic-count.glb",
+      "file": "glb-cubic-count.glb",
+      "sha256": "4b45722f9d3ad4d47344377469fbe00f402a900d371baa160ab5ed7ce8dfc787",
+      "bytes": 2656,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-disabled-bad-index.glb",
+      "file": "glb-disabled-bad-index.glb",
+      "sha256": "3df28b477fa3242a01bc8a213751a3d87934bdd5de24cf3b4a2fbf6f1edabf4e",
+      "bytes": 2700,
+      "expected": "BAD_ASSET",
+      "family": "malformed before disabled dispatch",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-3d",
+      "file": "positive-3d.arschar",
+      "sha256": "36a5de69b4cf18479da43c49e352a96d7216a301aeaac98422f173cf2c5104c9",
+      "bytes": 4515,
+      "expected": "OK",
+      "family": "complete owned 3D/dual CPU model",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-dual-full",
+      "file": "positive-dual-full.arschar",
+      "sha256": "6d140aa68b3480e9f1eff80400d926d2e5f6989441118cfad059a432cdfcc727",
+      "bytes": 5046,
+      "expected": "OK",
+      "family": "complete owned 3D/dual CPU model",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "valid-disabled-vrm",
+      "file": "valid-disabled-vrm.arschar",
+      "sha256": "b798dd9853b4e2dbc42c91bb976ab39df726319a54dd4e0ef21f2a9ece8ca4b7",
+      "bytes": 5041,
+      "expected": "UNSUPPORTED",
+      "family": "3D bindings and capability precedence",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "bad-bone-reference",
+      "file": "bad-bone-reference.arschar",
+      "sha256": "f052c77a617f324a1397adf9f1466a640f997e815a508147e494400618e4b24d",
+      "bytes": 5049,
+      "expected": "BAD_ASSET",
+      "family": "3D bindings and capability precedence",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "bad-morph-reference",
+      "file": "bad-morph-reference.arschar",
+      "sha256": "a5375315a3e1be879fe732e0b59d5a7081e43a91f66c13b2688ed4635813db9d",
+      "bytes": 5044,
+      "expected": "BAD_ASSET",
+      "family": "3D bindings and capability precedence",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "bad-bone-unit",
+      "file": "bad-bone-unit.arschar",
+      "sha256": "db9e69cd497eae6f5890565113fb386534de19199a283d09b99c4209b020db5c",
+      "bytes": 5045,
+      "expected": "BAD_ASSET",
+      "family": "3D bindings and capability precedence",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "semantic-range-overflow",
+      "file": "semantic-range-overflow.arschar",
+      "sha256": "ad086ef76c89189e0e573de9d9c6331d28b284522b3feab089803d9475620645",
+      "bytes": 5051,
+      "expected": "BAD_ASSET",
+      "family": "3D bindings and capability precedence",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "mixed-vrm-bad-glb",
+      "file": "mixed-vrm-bad-glb.arschar",
+      "sha256": "e3f076b37889bb8334516561a4c34b1b69646e4035239da0d201d10f5d84e03a",
+      "bytes": 5041,
+      "expected": "BAD_ASSET",
+      "family": "complete validation before disabled",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "mixed-mask-bad-glb",
+      "file": "mixed-mask-bad-glb.arschar",
+      "sha256": "94b873ebd6f01ffd9110f34211d44e5581d010cd5797f8176ef5c384f9f4dd44",
+      "bytes": 5066,
+      "expected": "BAD_ASSET",
+      "family": "complete validation before disabled",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-morph-missing-bounds.glb",
+      "file": "glb-morph-missing-bounds.glb",
+      "sha256": "7b9383c8be9b1a2778244f3958b41bba3a5eeacad418bd9a86e798d35195d99e",
+      "bytes": 2612,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-attribute-set-gap.glb",
+      "file": "glb-attribute-set-gap.glb",
+      "sha256": "ee7d9f632bd9b6bb9467620e0fe6ed84a4df871b26006214231ebaace2ac7d39",
+      "bytes": 2644,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-view-short-actual-data.glb",
+      "file": "glb-view-short-actual-data.glb",
+      "sha256": "07774dd9ae2584fa05745c1f9c88f9577a3a0d158bb6af182c98e45ace07dd7c",
+      "bytes": 528,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-two-node-cycle.glb",
+      "file": "glb-two-node-cycle.glb",
+      "sha256": "6b95c0f6a2a83aeb518ee622bcd87f7701038c6a92a400a0d796d85eb47afdee",
+      "bytes": 524,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-uri-file.glb",
+      "file": "glb-uri-file.glb",
+      "sha256": "4a22fb7e071e4b8726b00ef68b66727811881689daf29d6d4f52a13b7b4a12ac",
+      "bytes": 560,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-uri-data.glb",
+      "file": "glb-uri-data.glb",
+      "sha256": "0ca66f73918d4e4479b7e5f60748e64b88c0dac887a8a572215bc15cefc04833",
+      "bytes": 580,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-image-second.glb",
+      "file": "glb-image-second.glb",
+      "sha256": "3eb822811f0509a4fc8985167aeb2da60c3af3fcc87895bf32f126749afd2986",
+      "bytes": 2668,
+      "expected": "OK",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-jpeg-disabled.glb",
+      "file": "glb-jpeg-disabled.glb",
+      "sha256": "8344e818a3c64711c59d20fd99ec907ad120146b5fdfec266c71121e9a42bf2a",
+      "bytes": 2704,
+      "expected": "UNSUPPORTED",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-jpeg-truncated.glb",
+      "file": "glb-jpeg-truncated.glb",
+      "sha256": "6145bb1525c4acdb540312ae48ac851e5dfcd0fcff7cd5b833c103ab4f7e9643",
+      "bytes": 2704,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-jpeg-marker-overflow.glb",
+      "file": "glb-jpeg-marker-overflow.glb",
+      "sha256": "3d4fda9a393b087f5d367042aa7ba882e69561a8981e675670a8a81fa52563d0",
+      "bytes": 2680,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-integer-weights.glb",
+      "file": "positive-glb-integer-weights.glb",
+      "sha256": "8778940fbdfe8255b145dda862160e86f8a86abb8fa62638eee70c56a7c0ae8e",
+      "bytes": 2768,
+      "expected": "OK",
+      "family": "actual normalized skin weights",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "dual-mask-disabled",
+      "file": "dual-mask-disabled.arschar",
+      "sha256": "46309bf66db3eef1e019e78547599a8432dcd7d4d621f84a1f95d74cb9d040b0",
+      "bytes": 5066,
+      "expected": "UNSUPPORTED",
+      "family": "valid disabled dual masking",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "dual-mapping-type-conflict",
+      "file": "dual-mapping-type-conflict.arschar",
+      "sha256": "050b65cbd89112c4d6b99b819e2c2f10bb27a7b2637ba2df69b6ade1291dde4e",
+      "bytes": 5050,
+      "expected": "BAD_ASSET",
+      "family": "binding type and units",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "vrm-bad-binding",
+      "file": "vrm-bad-binding.arschar",
+      "sha256": "b8e572929c80e948fdbe6e51772023dc04be5012f63282707dacf2f75466fafc",
+      "bytes": 5044,
+      "expected": "BAD_ASSET",
+      "family": "cross-file validation before disabled",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-skin-joints-256.glb",
+      "file": "glb-skin-joints-256.glb",
+      "sha256": "5073befd463f92c85cf61ebde18552aee5c640906f987429f43bf02dbf5f4131",
+      "bytes": 8400,
+      "expected": "OK",
+      "family": "cumulative skin joint boundary",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-skin-joints-257.glb",
+      "file": "glb-skin-joints-257.glb",
+      "sha256": "4faae6a65181403c519c83b24c3a7ad94b41b8e889a0aaf07b61bde6732b52f2",
+      "bytes": 8424,
+      "expected": "OUT_OF_BUDGET",
+      "family": "cumulative skin joint boundary",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-skin-cumulative-limit.glb",
+      "file": "glb-skin-cumulative-limit.glb",
+      "sha256": "4d605d3cc8c8ffc207358ab4382c25f7e0d3931a20a498ad312cbf6204f3f5d0",
+      "bytes": 6432,
+      "expected": "OUT_OF_BUDGET",
+      "family": "cumulative skin joint count across skins",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-normal-tangent-morph.glb",
+      "file": "positive-glb-normal-tangent-morph.glb",
+      "sha256": "9a363276447d7cd6735ccd23981dc7781def60958af6442b2a7223a279f878b7",
+      "bytes": 3124,
+      "expected": "OK",
+      "family": "actual normal and tangent morph deltas",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-morph-nan.glb",
+      "file": "glb-morph-nan.glb",
+      "sha256": "ecf6e0c425ce1a563e980acb10aa387616843c4f6d07cf56aa2380f91e5fc259",
+      "bytes": 3124,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-cubic-quaternion.glb",
+      "file": "positive-glb-cubic-quaternion.glb",
+      "sha256": "e5767ab6db000f19d4c436fca97f31d756ff7fc4b21b1014fb8e2f2d2e59714b",
+      "bytes": 2840,
+      "expected": "OK",
+      "family": "cubic quaternion values unit and tangents unrestricted",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-cubic-zero-quaternion.glb",
+      "file": "glb-cubic-zero-quaternion.glb",
+      "sha256": "2df9c12397f1a1ef017fbe463b50b8f26241eb80bd8dda9a5017d066657f2b18",
+      "bytes": 2840,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-shared-view-no-stride.glb",
+      "file": "glb-shared-view-no-stride.glb",
+      "sha256": "ba22c426c73d74d30da462d87a0f9a38be7df2841ed7f1f62cd6f5fb3cae0d18",
+      "bytes": 640,
+      "expected": "BAD_ASSET",
+      "family": "multiple vertex accessors require explicit stride even for sequential ranges",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-shared-view-stride.glb",
+      "file": "positive-glb-shared-view-stride.glb",
+      "sha256": "2149598bcee891f160fbcac065f2861e78ca28485e474fb90c0b9d547a44964f",
+      "bytes": 656,
+      "expected": "OK",
+      "family": "sequential attribute ranges with explicit stride",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-custom-uint-attribute.glb",
+      "file": "glb-custom-uint-attribute.glb",
+      "sha256": "cb9d2e9360a45b46aac75d0b3b9c2600404b98783676de3306492c9992bab0fd",
+      "bytes": 660,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-custom-float.glb",
+      "file": "positive-glb-custom-float.glb",
+      "sha256": "d4290b3cdc19c85a84ee5d599a007b4cd13bfec506162099a4fec93cb397bc6c",
+      "bytes": 660,
+      "expected": "OK",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-ignored-channel.glb",
+      "file": "positive-glb-ignored-channel.glb",
+      "sha256": "706d26c8bbf72dcfe11a9dc87c759dc29dffb12092b96df4b1e99aef1de8b350",
+      "bytes": 2620,
+      "expected": "OK",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-tangent-without-normal.glb",
+      "file": "positive-glb-tangent-without-normal.glb",
+      "sha256": "5c53be0c4b30c0539becd02ef800297ed72460c8c576d5202bda88f1311295d2",
+      "bytes": 3100,
+      "expected": "OK",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     }
   ],
@@ -942,5 +1965,19 @@
     "RSS_MiB": 1024,
     "execution": "REQUIRES_FINAL_SOURCE_JOB_RESULT"
   },
-  "reviewer_class": "SELF_AUDIT / INDEPENDENCE_NOT_AVAILABLE"
+  "reviewer_class": "SELF_AUDIT / INDEPENDENCE_NOT_AVAILABLE",
+  "owner_stack_ack": "Explicitly approved unmerged PR27 stack; no merge",
+  "historical_c1_execution": {
+    "source": "9f5d6b8a634138e8dedae8385dcb783cd385b6c8",
+    "workflow_run": 38863910925,
+    "checks_passed": 31,
+    "preservation": "Original six native groups build from exact frozen source; C2 current pipeline separately replays all C1 bundle oracles"
+  },
+  "oracle_correction": {
+    "id": "glb-required-extension",
+    "binary_unchanged": true,
+    "before": "UNSUPPORTED",
+    "after": "BAD_ASSET",
+    "reason": "extensionsRequired absent from extensionsUsed is malformed core; valid required extension control added separately"
+  }
 }

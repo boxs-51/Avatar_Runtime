@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <string_view>
 #include <vector>
 #ifdef _WIN32
 #include <malloc.h>
@@ -15,6 +16,18 @@ inline void check(bool ok, const char *message) {
         std::fprintf(stderr, "FAIL %s\n", message);
         std::exit(1);
     }
+}
+inline ars_status expected_status(std::string_view value) {
+    if (value == "OK")
+        return ARS_OK;
+    if (value == "BAD_ASSET")
+        return ARS_E_BAD_ASSET;
+    if (value == "OUT_OF_BUDGET")
+        return ARS_E_OUT_OF_BUDGET;
+    if (value == "UNSUPPORTED")
+        return ARS_E_UNSUPPORTED;
+    check(false, "unknown fixture verdict");
+    return ARS_E_INTERNAL;
 }
 struct Host {
     std::atomic<std::size_t> live{0}, calls{0}, fail_at{0};
