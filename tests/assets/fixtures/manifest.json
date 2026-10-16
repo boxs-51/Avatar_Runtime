@@ -346,7 +346,7 @@
     "file": "glb-required-extension.glb",
     "sha256": "93d3c4d555337d3a05f712f6b6c1cb7adc448872beefaae9346ff291618d1699",
     "bytes": 568,
-    "expected": "UNSUPPORTED",
+    "expected": "BAD_ASSET",
     "family": "GLB bounds/URI/extensions",
     "stage": "C2"
   },
@@ -745,5 +745,707 @@
     "expected": "BAD_ASSET",
     "family": "ZIP64 bounded envelope precedence",
     "stage": "C1"
+  },
+  {
+    "id": "glb-view-overflow.glb",
+    "file": "glb-view-overflow.glb",
+    "sha256": "6759e5b535a2c18a6c04c51fe4b2bae16904975234b523ba669fe63cb298a67e",
+    "bytes": 536,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-view-stride-small.glb",
+    "file": "glb-view-stride-small.glb",
+    "sha256": "7cf43562126bf255b2d7e4d61c20494eca8e97693daa7d3f15b3f9495ca2c14d",
+    "bytes": 544,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-view-stride-alignment.glb",
+    "file": "glb-view-stride-alignment.glb",
+    "sha256": "ca5b111e170f3ff520b8cb7cde2fe5c00d363acf2d879402082e455da2883ddf",
+    "bytes": 544,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-view-target-zero.glb",
+    "file": "glb-view-target-zero.glb",
+    "sha256": "fdf68632ad3e96d03f235f05462dddbf55c1dc6fe1809680334b5c1549e12c2a",
+    "bytes": 540,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-accessor-alignment.glb",
+    "file": "glb-accessor-alignment.glb",
+    "sha256": "b5b795628bbefaaf885400c864ce3d1211f6d8ad9d9c15a90f71962dbf5f7360",
+    "bytes": 544,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-accessor-component.glb",
+    "file": "glb-accessor-component.glb",
+    "sha256": "e699cbc0c0e6a3406672b9771fdfcdb6163bdb9f497b42918e1a8673046d07ae",
+    "bytes": 528,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-accessor-float-normalized.glb",
+    "file": "glb-accessor-float-normalized.glb",
+    "sha256": "30c1ed3af4e4004843c528f29580147c6e381c65faf46079d8bf2800bd42f992",
+    "bytes": 548,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-position-min-conflict.glb",
+    "file": "glb-position-min-conflict.glb",
+    "sha256": "a47bccca3644b8f1617a1ba792d52538b48dbf8c29f1d60e34eb7cfc6152ad65",
+    "bytes": 528,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-index-oob.glb",
+    "file": "glb-index-oob.glb",
+    "sha256": "d4d12258504fc257a2dbbaa1a2d17492e59d514878d5741b2722cfebe75b01c1",
+    "bytes": 528,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-index-restart.glb",
+    "file": "glb-index-restart.glb",
+    "sha256": "ba80e14d6d4007b23af94a83d979eff1c357ff86464a2bdae12697e383184852",
+    "bytes": 528,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-binary-nan.glb",
+    "file": "glb-binary-nan.glb",
+    "sha256": "1a6c61ef85c0ed6f19ef3af3a22506a4e37d52f2cfc88409060a33fe3b7682a4",
+    "bytes": 528,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-node-cycle.glb",
+    "file": "glb-node-cycle.glb",
+    "sha256": "770d7953c181d93b4ba548cb4bc756b311deb611a364c6b614df546c6c1f28cd",
+    "bytes": 544,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-node-dangling.glb",
+    "file": "glb-node-dangling.glb",
+    "sha256": "09d9003218a086db092760410e756807e0ea71d0b7029013f8a48f4486433542",
+    "bytes": 544,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-node-mesh-sentinel.glb",
+    "file": "glb-node-mesh-sentinel.glb",
+    "sha256": "c9132b5ca6a68986b33e37aa742932706e82704cc182376038211b01f0c40947",
+    "bytes": 536,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-node-skin-sentinel.glb",
+    "file": "glb-node-skin-sentinel.glb",
+    "sha256": "d89418346321c97a87a3f92c02895553c9566cb102ff57c2bcf0667647afb990",
+    "bytes": 548,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-scene-sentinel.glb",
+    "file": "glb-scene-sentinel.glb",
+    "sha256": "c0836f9591f7b604b6f1961dd38e96049c6aaf1edda058411d6ebbf44db0ad41",
+    "bytes": 536,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-material-sentinel.glb",
+    "file": "glb-material-sentinel.glb",
+    "sha256": "f4820593837a029243e32f50fde55efcf23a06748b1e23f9724e2095fab3e0f6",
+    "bytes": 552,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-quaternion-zero.glb",
+    "file": "glb-quaternion-zero.glb",
+    "sha256": "7b2062f74173379da38f616ddbd7a7be02146f3af999ac287508ab31c782e6a1",
+    "bytes": 548,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-matrix-trs.glb",
+    "file": "glb-matrix-trs.glb",
+    "sha256": "865157f207770660ae6dedcf1da442e9603aac9d0de876c0ab18a114b5a4ebd0",
+    "bytes": 592,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-triangle-count.glb",
+    "file": "glb-triangle-count.glb",
+    "sha256": "82e33c123c2dd154c267cc4c856fd5f33b3bceb5ed0f730900b3407e8df4f1e3",
+    "bytes": 528,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-extension-not-used.glb",
+    "file": "glb-extension-not-used.glb",
+    "sha256": "ceb209844286181ae0c9f6470fe436dca7d9c7f7e6cf9d5a2b83423d7338e014",
+    "bytes": 592,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-valid-required-extension.glb",
+    "file": "glb-valid-required-extension.glb",
+    "sha256": "9d696907aa71d27e49cc2407fe26ac2cebbd03044e206353b779d61aac92e3ad",
+    "bytes": 600,
+    "expected": "UNSUPPORTED",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "positive-glb-extras.glb",
+    "file": "positive-glb-extras.glb",
+    "sha256": "3de88a84db4b3822bc71693990b7e42e9a69b0176a79fc2aebbdbf7737a28d4a",
+    "bytes": 588,
+    "expected": "OK",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-count-budget.glb",
+    "file": "glb-count-budget.glb",
+    "sha256": "b90e3d1ddc7e61507db4665c004ae9c481ca3c490f886062520dfa343332e8e4",
+    "bytes": 536,
+    "expected": "OUT_OF_BUDGET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-bad-magic.glb",
+    "file": "glb-bad-magic.glb",
+    "sha256": "568cd6c4478657b97bba5c6564d143816a2a514cdaf3cb60fcc3c4523031fcbd",
+    "bytes": 528,
+    "expected": "BAD_ASSET",
+    "family": "GLB framing",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-bad-version.glb",
+    "file": "glb-bad-version.glb",
+    "sha256": "6153e68b9f625c26ff086d2b2c74ffb821e6318c4fbbc2c3b85cf9ac7f2f9d95",
+    "bytes": 528,
+    "expected": "BAD_ASSET",
+    "family": "GLB framing",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-length-conflict.glb",
+    "file": "glb-length-conflict.glb",
+    "sha256": "fcb866f6ff24bcb33827b530e52b0c3de4f7f6d00de9c496539566e213c464de",
+    "bytes": 528,
+    "expected": "BAD_ASSET",
+    "family": "GLB framing",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-json-alignment.glb",
+    "file": "glb-json-alignment.glb",
+    "sha256": "a5e1bcbc6fdb68218d3afaceae3fae80e729a4c9627a998ad3f60b04660da4a1",
+    "bytes": 528,
+    "expected": "BAD_ASSET",
+    "family": "GLB framing",
+    "stage": "C2"
+  },
+  {
+    "id": "positive-glb-unknown-chunk.glb",
+    "file": "positive-glb-unknown-chunk.glb",
+    "sha256": "ed27a523e1982bc0d8158515e7ad5f063a2eb54893d40339ba7a2e07705ae341",
+    "bytes": 540,
+    "expected": "OK",
+    "family": "GLB unknown chunk skip",
+    "stage": "C2"
+  },
+  {
+    "id": "positive-glb-interleaved.glb",
+    "file": "positive-glb-interleaved.glb",
+    "sha256": "ed765a63e8fd415d09bfa21c775e39bc4ad8b28dbd54e034cfd9074ef43b0fc5",
+    "bytes": 540,
+    "expected": "OK",
+    "family": "GLB actual stride",
+    "stage": "C2"
+  },
+  {
+    "id": "positive-glb-sparse.glb",
+    "file": "positive-glb-sparse.glb",
+    "sha256": "08549b3c5f9ab2dae340504d76034a46c78bb6ec84bfaf28f76cbf8fa75b433c",
+    "bytes": 724,
+    "expected": "OK",
+    "family": "GLB actual sparse overlay",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-sparse-duplicate.glb",
+    "file": "glb-sparse-duplicate.glb",
+    "sha256": "38fd43030ed4d05e2d192de06ead331f244eba78246fc2fe9731be42faaaf06c",
+    "bytes": 724,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-sparse-descending.glb",
+    "file": "glb-sparse-descending.glb",
+    "sha256": "e062fd91f69c7218947385fec896440d3239b4368d6f096c7fe30f2d82dea708",
+    "bytes": 724,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-sparse-oob.glb",
+    "file": "glb-sparse-oob.glb",
+    "sha256": "ee9932abb4976f2c9228c574b30c193fc201f870011952f3d5f7a0a97e000799",
+    "bytes": 724,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-sparse-count.glb",
+    "file": "glb-sparse-count.glb",
+    "sha256": "08594bc4ce1fbbe1db494831f3cc450119d91e6ea7c6110445fbc7fd52ea4de6",
+    "bytes": 724,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "positive-glb-matrix-padding.glb",
+    "file": "positive-glb-matrix-padding.glb",
+    "sha256": "20a7fa5d5dd92667a8c02344534286b4cf114c71f237de2b933a63d680fd17bf",
+    "bytes": 660,
+    "expected": "OK",
+    "family": "GLB matrix column padding",
+    "stage": "C2"
+  },
+  {
+    "id": "positive-glb-full.glb",
+    "file": "positive-glb-full.glb",
+    "sha256": "50eafbed42ea207239561cc3d9d90d96a22f97346e87146d745569aa71271987",
+    "bytes": 2596,
+    "expected": "OK",
+    "family": "skin morph animation embedded PNG",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-joint-index.glb",
+    "file": "glb-joint-index.glb",
+    "sha256": "ae639274d34097e0e880f1fb732a2e67d9271b913dca1cf1b3e46e605e6a2302",
+    "bytes": 2596,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-weight-zero.glb",
+    "file": "glb-weight-zero.glb",
+    "sha256": "38ab4efd682d6f729bce8936c2dd06c59689cb41fbdcfbb13662879a1f5c9436",
+    "bytes": 2596,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-skin-duplicate-joint.glb",
+    "file": "glb-skin-duplicate-joint.glb",
+    "sha256": "2b62fc902c7fbde5bb17b0f699012a43962be2f144500e4e34138b525ffb82f5",
+    "bytes": 2596,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-skin-inverse-sentinel.glb",
+    "file": "glb-skin-inverse-sentinel.glb",
+    "sha256": "9da7bff23eaf07c33bd5bf4dd217c358850fa3569e9627747e6757b21d2507c1",
+    "bytes": 2604,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-skin-skeleton-sentinel.glb",
+    "file": "glb-skin-skeleton-sentinel.glb",
+    "sha256": "3191372a0087cccbf24867d92ff4c2b41b626794022eb45ceb0695666156dc70",
+    "bytes": 2604,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-skin-missing-weights.glb",
+    "file": "glb-skin-missing-weights.glb",
+    "sha256": "f038e1666422a80ea5d9a20ad7b1e8a033c2c26fa4855fa95b825f48e059c42c",
+    "bytes": 2580,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-morph-count.glb",
+    "file": "glb-morph-count.glb",
+    "sha256": "a9247afd24c90c59ccb058d92e228d463d6bacb8d7dac77401d557daad926024",
+    "bytes": 2596,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-morph-name-count.glb",
+    "file": "glb-morph-name-count.glb",
+    "sha256": "0b3bd0be935b0faa59e507c6a3b5b9e1c6f42d0c10121912f3c005cea51b6009",
+    "bytes": 2596,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-animation-output-count.glb",
+    "file": "glb-animation-output-count.glb",
+    "sha256": "7707f0cbe9f390bb3dfdc66cd90020d422e00fcc68da51e77ea410a79bf119b2",
+    "bytes": 2596,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-animation-node-sentinel.glb",
+    "file": "glb-animation-node-sentinel.glb",
+    "sha256": "182b13034733de2cfd1bcac9a43050d196190f37439c84b656e376ef88b6ca28",
+    "bytes": 2604,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-animation-duplicate-target.glb",
+    "file": "glb-animation-duplicate-target.glb",
+    "sha256": "5b2b11ef5a16a0fa9267f93e80a22de414e162367dd857503f35e9bde9daf350",
+    "bytes": 2652,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-animation-zero-quaternion.glb",
+    "file": "glb-animation-zero-quaternion.glb",
+    "sha256": "a33dcece51a97f6962ae49c350eb241933915c574624ee731d99ac03e6f7f417",
+    "bytes": 2596,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-image-uri.glb",
+    "file": "glb-image-uri.glb",
+    "sha256": "486016ab474a4707739d785d9ab4695aa9c5b73ce1a77915642ef80b8b2d6f71",
+    "bytes": 2632,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-image-truncated.glb",
+    "file": "glb-image-truncated.glb",
+    "sha256": "ee83395faebb6cbde916add6b2130c448fcb9f1405159dac049eaf14a978cd65",
+    "bytes": 2596,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-texture-index.glb",
+    "file": "glb-texture-index.glb",
+    "sha256": "553bc033e24bec293ef16ee7a42a131de9667b08047d02a814f11c9efb12c9d7",
+    "bytes": 2596,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-texture-uv.glb",
+    "file": "glb-texture-uv.glb",
+    "sha256": "05670517622a30882ac1eb476f01e4d956030fdd1c007d294ed2f3454ad7a490",
+    "bytes": 2608,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-animation-time-order.glb",
+    "file": "glb-animation-time-order.glb",
+    "sha256": "28f1d2d485617179d52b2a7f461fc0d59425ab42f57263d74630dd220bb7da48",
+    "bytes": 2596,
+    "expected": "BAD_ASSET",
+    "family": "actual time ordering",
+    "stage": "C2"
+  },
+  {
+    "id": "positive-glb-cubic.glb",
+    "file": "positive-glb-cubic.glb",
+    "sha256": "488f3b41d074593b821eda2f16833d537bec4dcf05fd8cdd48b54289b9dcc620",
+    "bytes": 2808,
+    "expected": "OK",
+    "family": "real cubic tangent/value cardinality",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-cubic-count.glb",
+    "file": "glb-cubic-count.glb",
+    "sha256": "dba12a64d63c687f742d53272213ce6a0f277e7b3618500e41d4e43cd719cd9c",
+    "bytes": 2624,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-disabled-bad-index.glb",
+    "file": "glb-disabled-bad-index.glb",
+    "sha256": "fbc95dc442b15fb7d39a1e6ade8a8359b1747fa08f8a7e9e53be0c79accf7f2b",
+    "bytes": 2668,
+    "expected": "BAD_ASSET",
+    "family": "malformed before disabled dispatch",
+    "stage": "C2"
+  },
+  {
+    "id": "positive-3d",
+    "file": "positive-3d.arschar",
+    "sha256": "32c6704a50c81d5fa8395a47af43658e547de991518ba054916b83b65ad91ed3",
+    "bytes": 4483,
+    "expected": "OK",
+    "family": "complete owned 3D/dual CPU model",
+    "stage": "C2"
+  },
+  {
+    "id": "positive-dual-full",
+    "file": "positive-dual-full.arschar",
+    "sha256": "fdd5f3559454d20703aac7a802ea9bb6c9f8403813a9291159ab3333bc046371",
+    "bytes": 5014,
+    "expected": "OK",
+    "family": "complete owned 3D/dual CPU model",
+    "stage": "C2"
+  },
+  {
+    "id": "valid-disabled-vrm",
+    "file": "valid-disabled-vrm.arschar",
+    "sha256": "7d3162cb05f5998b20b93da3414efdac217fb9bb2e76fc589d82abf575fb29fc",
+    "bytes": 5009,
+    "expected": "UNSUPPORTED",
+    "family": "3D bindings and capability precedence",
+    "stage": "C2"
+  },
+  {
+    "id": "bad-bone-reference",
+    "file": "bad-bone-reference.arschar",
+    "sha256": "0f6e46cf04be8fc31c4a239663fc5d8a91806c04b90bb7925016e20b2cf23358",
+    "bytes": 5017,
+    "expected": "BAD_ASSET",
+    "family": "3D bindings and capability precedence",
+    "stage": "C2"
+  },
+  {
+    "id": "bad-morph-reference",
+    "file": "bad-morph-reference.arschar",
+    "sha256": "e687bd8cad4680c3106fa2067f1802f7745bf2db549042a6ad6e9bd1d4d4cd08",
+    "bytes": 5012,
+    "expected": "BAD_ASSET",
+    "family": "3D bindings and capability precedence",
+    "stage": "C2"
+  },
+  {
+    "id": "bad-bone-unit",
+    "file": "bad-bone-unit.arschar",
+    "sha256": "36e8306ac2e62e4a5a155239dcb878beeb86ee37df1573b4b5f6afc9cae0b3ff",
+    "bytes": 5013,
+    "expected": "BAD_ASSET",
+    "family": "3D bindings and capability precedence",
+    "stage": "C2"
+  },
+  {
+    "id": "semantic-range-overflow",
+    "file": "semantic-range-overflow.arschar",
+    "sha256": "0927803fc396138726f6988f5ccdf97be4f4d99448d144704567f38227f404de",
+    "bytes": 5019,
+    "expected": "BAD_ASSET",
+    "family": "3D bindings and capability precedence",
+    "stage": "C2"
+  },
+  {
+    "id": "mixed-vrm-bad-glb",
+    "file": "mixed-vrm-bad-glb.arschar",
+    "sha256": "a3226279cc0162fbfdffc7402de33edd80ee0c303873ae3cb66dbcf05b1cf74a",
+    "bytes": 5009,
+    "expected": "BAD_ASSET",
+    "family": "complete validation before disabled",
+    "stage": "C2"
+  },
+  {
+    "id": "mixed-mask-bad-glb",
+    "file": "mixed-mask-bad-glb.arschar",
+    "sha256": "498807599e473867dfca6ccd2a9e1b4fdc31450ad22ab332e26e383f1210b97e",
+    "bytes": 5034,
+    "expected": "BAD_ASSET",
+    "family": "complete validation before disabled",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-view-short-actual-data.glb",
+    "file": "glb-view-short-actual-data.glb",
+    "sha256": "07774dd9ae2584fa05745c1f9c88f9577a3a0d158bb6af182c98e45ace07dd7c",
+    "bytes": 528,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-two-node-cycle.glb",
+    "file": "glb-two-node-cycle.glb",
+    "sha256": "6b95c0f6a2a83aeb518ee622bcd87f7701038c6a92a400a0d796d85eb47afdee",
+    "bytes": 524,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-uri-file.glb",
+    "file": "glb-uri-file.glb",
+    "sha256": "4a22fb7e071e4b8726b00ef68b66727811881689daf29d6d4f52a13b7b4a12ac",
+    "bytes": 560,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-uri-data.glb",
+    "file": "glb-uri-data.glb",
+    "sha256": "0ca66f73918d4e4479b7e5f60748e64b88c0dac887a8a572215bc15cefc04833",
+    "bytes": 580,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-image-second.glb",
+    "file": "glb-image-second.glb",
+    "sha256": "8e42b62bc1f1b288f2c142c8c606b00c23a391e048f93a07b4a05b2a19bfddff",
+    "bytes": 2636,
+    "expected": "OK",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-jpeg-disabled.glb",
+    "file": "glb-jpeg-disabled.glb",
+    "sha256": "9412054140b2eb215b451750a836ab1aab3d62bd06b4e1d13a050389a9031f8f",
+    "bytes": 2672,
+    "expected": "UNSUPPORTED",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-jpeg-truncated.glb",
+    "file": "glb-jpeg-truncated.glb",
+    "sha256": "3dfa0aabfd122f76337545797b78ced6e32e67fb9fc5689d88321752b4b8ac82",
+    "bytes": 2672,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "glb-jpeg-marker-overflow.glb",
+    "file": "glb-jpeg-marker-overflow.glb",
+    "sha256": "b07a0fea93c59a25ee3182ad34ef225778a034c0f48e57b75357e8033956dcd6",
+    "bytes": 2648,
+    "expected": "BAD_ASSET",
+    "family": "GLB checked CPU subset",
+    "stage": "C2"
+  },
+  {
+    "id": "positive-glb-integer-weights.glb",
+    "file": "positive-glb-integer-weights.glb",
+    "sha256": "cb557e3d4520ba04e128cca8bf225104f437ea029cc3d117bad6a77fe0ad2806",
+    "bytes": 2736,
+    "expected": "OK",
+    "family": "actual normalized skin weights",
+    "stage": "C2"
+  },
+  {
+    "id": "dual-mask-disabled",
+    "file": "dual-mask-disabled.arschar",
+    "sha256": "c00ad2c96e7ef8d644ec3a4a114c0ab810aeeed66b4e69a324bebbd1d422dee2",
+    "bytes": 5034,
+    "expected": "UNSUPPORTED",
+    "family": "valid disabled dual masking",
+    "stage": "C2"
+  },
+  {
+    "id": "dual-mapping-type-conflict",
+    "file": "dual-mapping-type-conflict.arschar",
+    "sha256": "ee06b4e7b9af7662d06163c53ccdcc7c1c952bed528732541375d83bd0a18009",
+    "bytes": 5018,
+    "expected": "BAD_ASSET",
+    "family": "binding type and units",
+    "stage": "C2"
+  },
+  {
+    "id": "vrm-bad-binding",
+    "file": "vrm-bad-binding.arschar",
+    "sha256": "08b289b0ffd396728d448341613e1dd0a0afd8fceef7c10f213f228795f03ed5",
+    "bytes": 5012,
+    "expected": "BAD_ASSET",
+    "family": "cross-file validation before disabled",
+    "stage": "C2"
   }
 ]

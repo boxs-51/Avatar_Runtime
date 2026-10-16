@@ -387,6 +387,52 @@ def check_m1_c1(base, candidate):
     return True
 
 
+M1_C2_BRANCH = "m1/c2-glb-cpu"
+M1_C2_BASE = "9f5d6b8a634138e8dedae8385dcb783cd385b6c8"
+M1_C2_PATHS = frozenset((
+    "CMakeLists.txt", "cmake/ars_asset_dependencies.cmake", "docs/M1_C_DEPENDENCY_LOCK.json",
+    "src/assets/glb_reader.hpp", "src/assets/glb_reader.cpp",
+    "src/assets/validated_cpu_model.hpp", "src/assets/validated_cpu_model.cpp",
+    "src/validation/glb_validator.hpp", "src/validation/glb_validator.cpp", "src/validation/manifest_validator.cpp",
+    "tests/assets/glb_reader_tests.cpp", "tests/assets/glb_validation_tests.cpp", "tests/assets/dual_mode_tests.cpp",
+    "tests/assets/asset_test_support.hpp", "tests/assets/fixtures/generate_fixtures.py", "tests/assets/fixtures/manifest.json",
+    "fuzz/glb_fuzzer.cpp", "fuzz/CMakeLists.txt", ".github/workflows/m1-c-assets.yml",
+    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m1_c_custody.py", "tests/contracts/test_m1_c2_custody.py",
+    "docs/audits/M1_C2_BUILD_EVIDENCE.md", "docs/audits/M1_C_CASE_EXECUTION.json",
+))
+
+def check_m1_c2(base, candidate):
+    """C2 child of the exact unmerged PR27 source, explicitly authorized by owner."""
+    require(base == M1_C2_BASE, "C2 parent moved: restack requires source review")
+    git("merge-base", "--is-ancestor", base, candidate)
+    changed = set(git("diff", "--name-only", base, candidate).splitlines())
+    require(changed == M1_C2_PATHS, f"C2 path drift: {sorted(changed ^ M1_C2_PATHS)}")
+    frozen = json.loads(git("show", base + ":docs/M0_CONTRACT_PARENT_PINS.json"))
+    validate_blob_manifest(frozen, candidate)
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp", "src/abi/runtime_api.cpp", "cmake/ars_verify_exports.cmake", "docs/G00_SECURITY_87_CASE_INVENTORY.json", "docs/audits/M1_B_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path), "C2 changed frozen boundary: " + path)
+    names = {"check_consolidation", "check_m1_a", "check_m1_b1", "check_m1_b2", "check_m1_b3", "check_m1_c1", "validate_blob_manifest"}
+    def functions(text):
+        return {n.name: ast.dump(n) for n in ast.parse(text).body if isinstance(n, ast.FunctionDef) and n.name in names}
+    require(functions(git("show", base + ":tests/contracts/check_m0_rc1_pins.py")) == functions(git("show", candidate + ":tests/contracts/check_m0_rc1_pins.py")), "C2 diluted historical gates")
+    old = git("show", base + ":tests/contracts/test_m1_c_custody.py")
+    expected = old.replace('BASE = "' + M1_C1_BASE + '"\n', 'BASE = "' + M1_C1_BASE + '"\nSNAPSHOT = "' + base + '"\n')
+    expected = expected.replace('"HEAD"', "SNAPSHOT")
+    expected = re.sub(r'"HEAD:([^"\n]+)"', r'SNAPSHOT + ":\1"', expected).replace('"HEAD:"', 'SNAPSHOT + ":"')
+    require(git("show", candidate + ":tests/contracts/test_m1_c_custody.py") == expected, "C2 diluted C1 tests")
+    lock = json.loads(git("show", candidate + ":docs/M1_C_DEPENDENCY_LOCK.json"))
+    require(lock["dependencies"] == json.loads(git("show", base + ":docs/M1_C_DEPENDENCY_LOCK.json"))["dependencies"], "C2 dependency drift")
+    stack = lock["c2_stack"]
+    require(stack["parent_sha"] == base and stack["parent_branch"] == M1_C1_BRANCH and stack["owner_unmerged_stack_approved"] is True and not lock["public_activation"] and not lock["merge_authorized"], "C2 unauthorized stack/activation")
+    build = git("show", candidate + ":CMakeLists.txt")
+    require(base in build and 'add_library(ars_c1_asset_components' in build and 'c1-frozen-corpus' in build, "C2 omitted frozen C1 native replay")
+    for path in M1_C2_PATHS:
+        if path.startswith("src/"):
+            require(not re.search(r"\bARS_API\b|\b(system|popen)\s*\(", git("show", candidate + ":" + path)), "C2 public/shell boundary: " + path)
+    ledger = json.loads(git("show", candidate + ":docs/audits/M1_C_CASE_EXECUTION.json"))
+    require(ledger["scope"] == "M1_C2_PRIVATE_CPU_GLB_DUAL" and ledger["base"] == base and not ledger["public_activation"] and ledger["full_g02_verdict"] == "HOLD" and ledger["B_whole_case_HOLD"] == 87 and ledger["B_whole_case_PASS"] == 0, "C2 fabricated activation/full G02 result")
+    return True
+
 def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -424,7 +470,10 @@ def check():
         expected_parent = git("rev-parse", "HEAD^1")
         # Exact authorization is per candidate kind, never a broad audit-branch bypass.
         child = obj.get("audit_child", {})
-        if os.getenv("GITHUB_HEAD_REF") == M1_C1_BRANCH:
+        if os.getenv("GITHUB_HEAD_REF") == M1_C2_BRANCH:
+            expected = M1_C2_BASE
+            check_m1_c2(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M1_C1_BRANCH:
             expected = M1_C1_BASE
             check_m1_c1(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M1_B3_BRANCH:

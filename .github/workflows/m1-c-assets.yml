@@ -1,4 +1,4 @@
-name: M1-C1 Private CPU Asset Validation (NO public activation)
+name: M1-C2 Stacked Private CPU Asset Validation (NO public activation)
 on:
   pull_request:
     paths:
@@ -39,7 +39,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "C1_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}"
+          echo "C2_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}"
           git show -s --format='synthetic=%H tree=%T parents=%P'
           python -m pip install --disable-pip-version-check jsonschema==4.26.0
           python -S tests/assets/fixtures/generate_fixtures.py build/c1-offline-corpus tests/assets/fixtures/manifest.json
@@ -56,6 +56,10 @@ jobs:
             nm build/c1/bin/ars_profile_b_tests > build/c1/instrumentation.txt
             if [ '${{ matrix.sanitizer }}' = THREAD ]; then grep -q '__tsan_' build/c1/instrumentation.txt; else grep -q '__asan_' build/c1/instrumentation.txt; grep -q '__ubsan_' build/c1/instrumentation.txt; fi
           fi
+          nm build/c1/bin/ars_dual_mode_tests > build/c1/instrumentation-c2.txt
+          if [ '${{ matrix.sanitizer }}' != NONE ]; then
+            if [ '${{ matrix.sanitizer }}' = THREAD ]; then grep -q '__tsan_' build/c1/instrumentation-c2.txt; else grep -q '__asan_' build/c1/instrumentation-c2.txt; grep -q '__ubsan_' build/c1/instrumentation-c2.txt; fi
+          fi
           ctest --test-dir build/c1 --verbose
           for kind in foundation core; do
             cmake -S examples/plain_c -B build/c1-consumer-$kind -DARS_FOUNDATION_INFO="$PWD/build/c1/$kind-Debug.cmake"
@@ -65,10 +69,13 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: c1-linux-${{ matrix.cc }}-${{ matrix.shared }}-${{ matrix.sanitizer }}
+          name: c2-linux-${{ matrix.cc }}-${{ matrix.shared }}-${{ matrix.sanitizer }}
           path: |
             build/**/Testing/Temporary/LastTest.log
             build/c1/instrumentation.txt
+            build/c1/instrumentation-c2.txt
+            build/c1/c1-frozen-corpus/manifest.json
+            build/c1/c1-frozen-corpus/schema-parity.json
             build/c1/asset-corpus/manifest.json
             build/c1/asset-corpus/schema-parity.json
             docs/M1_C_DEPENDENCY_LOCK.json
@@ -90,7 +97,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          Write-Output 'C1_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}'
+          Write-Output 'C2_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}'
           python -m pip install --disable-pip-version-check jsonschema==4.26.0
           if ($LASTEXITCODE -ne 0) { throw 'reference validator setup failed' }
           python -S tests/assets/fixtures/generate_fixtures.py build/c1-offline-corpus tests/assets/fixtures/manifest.json
@@ -116,6 +123,8 @@ jobs:
             & $compiler.FullName /imports build/c1/bin/${{ matrix.config }}/ars_profile_b_tests.exe | Out-File build/c1/instrumentation.txt
             if (!(Select-String -Path build/c1/instrumentation.txt -Pattern 'asan' -Quiet)) { throw 'missing actual ASAN imports' }
           }
+          & $compiler.FullName /imports build/c1/bin/${{ matrix.config }}/ars_dual_mode_tests.exe | Out-File build/c1/instrumentation-c2.txt
+          if ('${{ matrix.sanitizer }}' -eq 'ADDRESS' -and !(Select-String -Path build/c1/instrumentation-c2.txt -Pattern 'asan' -Quiet)) { throw 'missing C2 ASAN imports' }
           ctest --test-dir build/c1 -C ${{ matrix.config }} --verbose
           if ($LASTEXITCODE -ne 0) { throw 'native gate failed' }
           foreach ($kind in @('foundation','core')) {
@@ -130,16 +139,25 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: c1-windows-${{ matrix.shared }}-${{ matrix.sanitizer }}
+          name: c2-windows-${{ matrix.shared }}-${{ matrix.sanitizer }}
           path: |
             build/**/Testing/Temporary/LastTest.log
             build/c1/instrumentation.txt
+            build/c1/instrumentation-c2.txt
+            build/c1/c1-frozen-corpus/manifest.json
+            build/c1/c1-frozen-corpus/schema-parity.json
             build/c1/asset-corpus/manifest.json
             build/c1/asset-corpus/schema-parity.json
             docs/M1_C_DEPENDENCY_LOCK.json
   fuzz:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {entry: arschar_fuzzer, suffix: arschar}
+          - {entry: glb_fuzzer, suffix: glb}
     env: {CC: clang, CXX: clang++}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -149,26 +167,26 @@ jobs:
       - name: Build actual instrumented production parser and native seed corpus
         run: |
           set -euo pipefail
-          echo "C1_FUZZ_SOURCE=${{ github.event.pull_request.head.sha }}"
+          echo "C2_FUZZ_SOURCE=${{ github.event.pull_request.head.sha }}"
           python -m pip install --disable-pip-version-check jsonschema==4.26.0
           cmake -S . -B build/c1-fuzz -DCMAKE_BUILD_TYPE=RelWithDebInfo -DARS_BUILD_ASSET_VALIDATOR=ON -DARS_ASSET_FETCH_DEPS=ON -DARS_ASSET_REFERENCE_CHECKS=ON -DARS_ASSET_SANITIZER=ADDRESS -DARS_ASSET_FUZZ=ON
-          cmake --build build/c1-fuzz --target arschar_fuzzer --parallel 2
+          cmake --build build/c1-fuzz --target ${{ matrix.entry }} --parallel 2
           mkdir -p build/c1-fuzz/seeds build/c1-fuzz/crashes
-          cp build/c1-fuzz/asset-corpus/*.arschar build/c1-fuzz/seeds/
-          nm build/c1-fuzz/bin/arschar_fuzzer > build/c1-fuzz/instrumentation.txt
+          cp build/c1-fuzz/asset-corpus/*.${{ matrix.suffix }} build/c1-fuzz/seeds/
+          nm build/c1-fuzz/bin/${{ matrix.entry }} > build/c1-fuzz/instrumentation.txt
           grep -q '__asan_' build/c1-fuzz/instrumentation.txt
           grep -q '__ubsan_' build/c1-fuzz/instrumentation.txt
           grep -q 'LLVMFuzzerTestOneInput' build/c1-fuzz/instrumentation.txt
       - name: Seeded 60-second smoke then 3600-second acceptance campaign
         run: |
           set -euo pipefail
-          build/c1-fuzz/bin/arschar_fuzzer -seed=415253 -max_total_time=60 -timeout=2 -rss_limit_mb=1024 -max_len=1048576 -artifact_prefix=build/c1-fuzz/crashes/ build/c1-fuzz/seeds 2>&1 | tee build/c1-fuzz/smoke.log
-          build/c1-fuzz/bin/arschar_fuzzer -seed=415253 -max_total_time=3600 -timeout=2 -rss_limit_mb=1024 -max_len=1048576 -artifact_prefix=build/c1-fuzz/crashes/ build/c1-fuzz/seeds 2>&1 | tee build/c1-fuzz/campaign.log
+          build/c1-fuzz/bin/${{ matrix.entry }} -seed=415253 -max_total_time=60 -timeout=2 -rss_limit_mb=1024 -max_len=1048576 -artifact_prefix=build/c1-fuzz/crashes/ build/c1-fuzz/seeds 2>&1 | tee build/c1-fuzz/smoke.log
+          build/c1-fuzz/bin/${{ matrix.entry }} -seed=415253 -max_total_time=3600 -timeout=2 -rss_limit_mb=1024 -max_len=1048576 -artifact_prefix=build/c1-fuzz/crashes/ build/c1-fuzz/seeds 2>&1 | tee build/c1-fuzz/campaign.log
           find build/c1-fuzz/seeds -type f -exec sha256sum {} + | sort > build/c1-fuzz/corpus-sha256.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: c1-clang-fuzz-actual-parser
+          name: c2-clang-fuzz-${{ matrix.entry }}
           path: |
             build/c1-fuzz/*.log
             build/c1-fuzz/instrumentation.txt

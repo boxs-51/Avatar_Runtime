@@ -60,13 +60,13 @@ save('png-truncated.arschar',bundle(image=png()[:-5]),'BAD_ASSET','PNG decode')
 bad=bytearray(png());bad[-1]^=1;save('png-crc.arschar',bundle(image=bytes(bad)),'BAD_ASSET','PNG CRC')
 save('png-dimension.arschar',bundle(image=png(8193,1)),'OUT_OF_BUDGET','PNG preflight')
 g={'asset':{'version':'2.0'},'buffers':[{'byteLength':44}],'bufferViews':[{'buffer':0,'byteOffset':0,'byteLength':36},{'buffer':0,'byteOffset':36,'byteLength':6}],'accessors':[{'bufferView':0,'componentType':5126,'count':3,'type':'VEC3','min':[0,0,0],'max':[1,1,0]},{'bufferView':1,'componentType':5123,'count':3,'type':'SCALAR'}],'meshes':[{'primitives':[{'attributes':{'POSITION':0},'indices':1}]}],'nodes':[{'mesh':0}],'scenes':[{'nodes':[0]}],'scene':0}
-def glb(desc=g):
- j=js(desc);j+=b' '*((-len(j))%4);b=struct.pack('<9f3H',0,0,0,1,0,0,0,1,0,0,1,2)+b'\0\0'
+def glb(desc=g,binary=None):
+ j=js(desc);j+=b' '*((-len(j))%4);b=(struct.pack('<9f3H',0,0,0,1,0,0,0,1,0,0,1,2)+b'\0\0') if binary is None else binary+b'\0'*((-len(binary))%4)
  return struct.pack('<III',0x46546c67,2,12+8+len(j)+8+len(b))+struct.pack('<II',len(j),0x4e4f534a)+j+struct.pack('<II',len(b),0x004e4942)+b
 save('positive-triangle.glb',glb(),'OK','embedded GLB','C2')
 save('glb-truncated.glb',glb()[:-1],'BAD_ASSET','GLB bounds','C2')
 for label,change in [('glb-accessor-overflow',lambda a:a['accessors'][0].update(byteOffset=4294967295)),('glb-external-uri',lambda a:a['buffers'][0].update(uri='https://example.invalid/blocked')),('glb-required-extension',lambda a:a.update(extensionsRequired=['ARS_disabled']))]:
- a=copy.deepcopy(g);change(a);save(label+'.glb',glb(a),'UNSUPPORTED' if label=='glb-required-extension' else 'BAD_ASSET','GLB bounds/URI/extensions','C2')
+ a=copy.deepcopy(g);change(a);save(label+'.glb',glb(a),'BAD_ASSET','GLB bounds/URI/extensions','C2')
 dual=copy.deepcopy(m);dual['representations']['3d']={'format':'glb-gltf2','asset':'assets/triangle.glb','mappings':[]}
 save('positive-dual.arschar',bundle(manifest=dual,extra=[('assets/triangle.glb',glb())]),'OK','complete generated dual CPU bundle','C2')
 # Native C1 extensions: exercise actual compressed/described envelopes without
@@ -145,6 +145,117 @@ for malformed in (False,True):
  struct.pack_into('<H',data,central+30,len(extra));struct.pack_into('<I',data,end+12,end-central+len(extra))
  data[end:end]=extra
  save('zip-zip64-'+('conflict' if malformed else 'disabled')+'.arschar',bytes(data),'BAD_ASSET' if malformed else 'UNSUPPORTED','ZIP64 bounded envelope precedence')
+# C2: retain the original C1 byte oracles and extend real embedded GLB coverage.
+class GlbFixture:
+ def __init__(self):self.doc=copy.deepcopy(g);self.binary=bytearray(struct.pack('<9f3H',0,0,0,1,0,0,0,1,0,0,1,2)+b'\0\0')
+ def view(self,payload,**fields):
+  self.binary.extend(b'\0'*((-len(self.binary))%4));offset=len(self.binary);self.binary.extend(payload)
+  self.doc['bufferViews'].append({'buffer':0,'byteOffset':offset,'byteLength':len(payload),**fields});return len(self.doc['bufferViews'])-1
+ def accessor(self,values,kind=5126,shape='VEC3',**fields):
+  components={'SCALAR':1,'VEC2':2,'VEC3':3,'VEC4':4,'MAT4':16}[shape];flat=[v for row in values for v in row] if values and isinstance(values[0],(list,tuple)) else values
+  payload=struct.pack('<'+{5121:'B',5123:'H',5125:'I',5126:'f'}[kind]*len(flat),*flat)
+  view=self.view(payload);index=len(self.doc['accessors']);self.doc['accessors'].append({'bufferView':view,'componentType':kind,'count':len(flat)//components,'type':shape,**fields});return index
+ def bytes(self):self.doc['buffers'][0]['byteLength']=len(self.binary);return glb(self.doc,bytes(self.binary))
+def glb_case(label,change,status='BAD_ASSET',base=None):
+ fixture=copy.deepcopy(base) if base is not None else GlbFixture();change(fixture);save(label+'.glb',fixture.bytes(),status,'GLB checked CPU subset','C2')
+for label,change in [
+ ('glb-view-overflow',lambda x:x.doc['bufferViews'][0].update(byteLength=4294967295)),
+ ('glb-view-stride-small',lambda x:x.doc['bufferViews'][0].update(byteStride=4)),
+ ('glb-view-stride-alignment',lambda x:x.doc['bufferViews'][0].update(byteStride=14)),
+ ('glb-view-target-zero',lambda x:x.doc['bufferViews'][0].update(target=0)),
+ ('glb-accessor-alignment',lambda x:x.doc['accessors'][0].update(byteOffset=2)),
+ ('glb-accessor-component',lambda x:x.doc['accessors'][0].update(componentType=5130)),
+ ('glb-accessor-float-normalized',lambda x:x.doc['accessors'][0].update(normalized=True)),
+ ('glb-position-min-conflict',lambda x:x.doc['accessors'][0].update(min=[-1,0,0])),
+ ('glb-index-oob',lambda x:struct.pack_into('<H',x.binary,40,3)),
+ ('glb-index-restart',lambda x:struct.pack_into('<H',x.binary,40,65535)),
+ ('glb-binary-nan',lambda x:struct.pack_into('<I',x.binary,0,0x7fc00000)),
+ ('glb-node-cycle',lambda x:x.doc['nodes'][0].update(children=[0])),
+ ('glb-node-dangling',lambda x:x.doc['nodes'][0].update(children=[3])),
+ ('glb-node-mesh-sentinel',lambda x:x.doc['nodes'][0].update(mesh=4294967295)),
+ ('glb-node-skin-sentinel',lambda x:x.doc['nodes'][0].update(skin=4294967295)),
+ ('glb-scene-sentinel',lambda x:x.doc.update(scene=4294967295)),
+ ('glb-material-sentinel',lambda x:x.doc['meshes'][0]['primitives'][0].update(material=4294967295)),
+ ('glb-quaternion-zero',lambda x:x.doc['nodes'][0].update(rotation=[0,0,0,0])),
+ ('glb-matrix-trs',lambda x:x.doc['nodes'][0].update(matrix=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],translation=[0,0,0])),
+ ('glb-triangle-count',lambda x:x.doc['accessors'][1].update(count=2)),
+ ('glb-extension-not-used',lambda x:x.doc.update(extensionsUsed=['OTHER'],extensionsRequired=['ARS_disabled']))]:glb_case(label,change)
+glb_case('glb-valid-required-extension',lambda x:x.doc.update(extensionsUsed=['ARS_disabled'],extensionsRequired=['ARS_disabled']),'UNSUPPORTED')
+glb_case('positive-glb-extras',lambda x:x.doc.update(extras={'extensions':'opaque metadata','number':1e200}),'OK')
+glb_case('glb-count-budget',lambda x:x.doc['accessors'][0].update(count=4294967295),'OUT_OF_BUDGET')
+for label,offset,value in [('glb-bad-magic',0,0),('glb-bad-version',4,1),('glb-length-conflict',8,20),('glb-json-alignment',12,3)]:
+ payload=bytearray(glb());struct.pack_into('<I',payload,offset,value);save(label+'.glb',bytes(payload),'BAD_ASSET','GLB framing','C2')
+payload=bytearray(glb());payload.extend(struct.pack('<II4s',4,0x12345678,b'test'));struct.pack_into('<I',payload,8,len(payload));save('positive-glb-unknown-chunk.glb',bytes(payload),'OK','GLB unknown chunk skip','C2')
+interleaved=GlbFixture();interleaved.binary=bytearray(struct.pack('<12f3H',0,0,0,123,1,0,0,123,0,1,0,123,0,1,2));interleaved.doc['bufferViews']=[{'buffer':0,'byteLength':48,'byteStride':16},{'buffer':0,'byteOffset':48,'byteLength':6}];save('positive-glb-interleaved.glb',interleaved.bytes(),'OK','GLB actual stride','C2')
+sparse=GlbFixture();indices=sparse.view(bytes([1,2]));values=sparse.view(struct.pack('<6f',1,0,0,0,1,0));sparse.doc['accessors'][0].pop('bufferView');sparse.doc['accessors'][0]['sparse']={'count':2,'indices':{'bufferView':indices,'componentType':5121},'values':{'bufferView':values}};save('positive-glb-sparse.glb',sparse.bytes(),'OK','GLB actual sparse overlay','C2')
+for label,payload in [('duplicate',bytes([1,1])),('descending',bytes([2,1])),('oob',bytes([1,3]))]:
+ def change(x,payload=payload):
+  offset=x.doc['bufferViews'][indices]['byteOffset'];x.binary[offset:offset+2]=payload
+ glb_case('glb-sparse-'+label,change,base=sparse)
+glb_case('glb-sparse-count',lambda x:x.doc['accessors'][0]['sparse'].update(count=4),base=sparse)
+matrix=GlbFixture();matrix_view=matrix.view(struct.pack('<3Hxx3Hxx3H',1,2,3,4,5,6,7,8,9));matrix.doc['accessors'].append({'bufferView':matrix_view,'componentType':5123,'count':1,'type':'MAT3'});save('positive-glb-matrix-padding.glb',matrix.bytes(),'OK','GLB matrix column padding','C2')
+full=GlbFixture();primitive=full.doc['meshes'][0]['primitives'][0]
+primitive['attributes']['JOINTS_0']=full.accessor([[0,0,0,0]]*3,5121,'VEC4')
+primitive['attributes']['WEIGHTS_0']=full.accessor([[1,0,0,0]]*3,shape='VEC4')
+primitive['attributes']['TEXCOORD_0']=full.accessor([[0,0],[1,0],[0,1]],shape='VEC2')
+bind=full.accessor([[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]],shape='MAT4')
+morph=full.accessor([[0.1,0,0]]*3);primitive['targets']=[{'POSITION':morph}];full.doc['meshes'][0].update(weights=[0],extras={'targetNames':['MouthOpen']})
+full.doc['nodes']=[{'name':'Body','mesh':0,'skin':0,'children':[1]},{'name':'Head'}];full.doc['skins']=[{'joints':[1],'skeleton':0,'inverseBindMatrices':bind}]
+times=full.accessor([0,1],shape='SCALAR',min=[0],max=[1]);translations=full.accessor([[0,0,0],[0,1,0]]);rotations=full.accessor([[0,0,0,1]]*2,shape='VEC4');weights=full.accessor([0,1],shape='SCALAR')
+full.doc['animations']=[{'samplers':[{'input':times,'output':translations},{'input':times,'output':rotations,'interpolation':'STEP'},{'input':times,'output':weights}],'channels':[{'sampler':0,'target':{'node':1,'path':'translation'}},{'sampler':1,'target':{'node':1,'path':'rotation'}},{'sampler':2,'target':{'node':0,'path':'weights'}}]}]
+pngview=full.view(png());full.doc.update(images=[{'bufferView':pngview,'mimeType':'image/png'}],textures=[{'source':0}],materials=[{'pbrMetallicRoughness':{'baseColorTexture':{'index':0}}}]);primitive['material']=0
+save('positive-glb-full.glb',full.bytes(),'OK','skin morph animation embedded PNG','C2')
+for label,change in [
+ ('glb-joint-index',lambda x: x.binary.__setitem__(x.doc['bufferViews'][x.doc['accessors'][2]['bufferView']]['byteOffset'],1)),
+ ('glb-weight-zero',lambda x:struct.pack_into('<f',x.binary,x.doc['bufferViews'][x.doc['accessors'][3]['bufferView']]['byteOffset'],0)),
+ ('glb-skin-duplicate-joint',lambda x:x.doc['skins'][0].update(joints=[1,1])),
+ ('glb-skin-inverse-sentinel',lambda x:x.doc['skins'][0].update(inverseBindMatrices=4294967295)),
+ ('glb-skin-skeleton-sentinel',lambda x:x.doc['skins'][0].update(skeleton=4294967295)),
+ ('glb-skin-missing-weights',lambda x:x.doc['meshes'][0]['primitives'][0]['attributes'].pop('WEIGHTS_0')),
+ ('glb-morph-count',lambda x:x.doc['accessors'][morph].update(count=2)),
+ ('glb-morph-name-count',lambda x:x.doc['meshes'][0]['extras'].update(targetNames=['One','Two'])),
+ ('glb-animation-output-count',lambda x:x.doc['accessors'][translations].update(count=1)),
+ ('glb-animation-node-sentinel',lambda x:x.doc['animations'][0]['channels'][0]['target'].update(node=4294967295)),
+ ('glb-animation-duplicate-target',lambda x:x.doc['animations'][0]['channels'].append(copy.deepcopy(x.doc['animations'][0]['channels'][0]))),
+ ('glb-animation-zero-quaternion',lambda x:struct.pack_into('<f',x.binary,x.doc['bufferViews'][x.doc['accessors'][rotations]['bufferView']]['byteOffset']+12,0)),
+ ('glb-image-uri',lambda x:x.doc['images'][0].update(uri='data:image/png;base64,AA==')),
+ ('glb-image-truncated',lambda x:x.doc['bufferViews'][pngview].update(byteLength=20)),
+ ('glb-texture-index',lambda x:x.doc['materials'][0]['pbrMetallicRoughness']['baseColorTexture'].update(index=7)),
+ ('glb-texture-uv',lambda x:x.doc['materials'][0]['pbrMetallicRoughness']['baseColorTexture'].update(texCoord=1))]:glb_case(label,change,base=full)
+duplicate=copy.deepcopy(full);offset=duplicate.doc['bufferViews'][duplicate.doc['accessors'][times]['bufferView']]['byteOffset'];struct.pack_into('<f',duplicate.binary,offset+4,0);duplicate.doc['accessors'][times]['max']=[0];save('glb-animation-time-order.glb',duplicate.bytes(),'BAD_ASSET','actual time ordering','C2')
+cubic=copy.deepcopy(full);cubic_output=cubic.accessor([[0,0,0],[0,0,0],[0,1,0],[0,1,0],[0,1,0],[0,0,0]]);cubic.doc['animations'][0]['samplers'][0].update(output=cubic_output,interpolation='CUBICSPLINE');save('positive-glb-cubic.glb',cubic.bytes(),'OK','real cubic tangent/value cardinality','C2')
+glb_case('glb-cubic-count',lambda x:x.doc['animations'][0]['samplers'][0].update(output=translations,interpolation='CUBICSPLINE'),base=full)
+disabled=copy.deepcopy(full);disabled.doc.update(extensionsUsed=['ARS_disabled'],extensionsRequired=['ARS_disabled']);save('glb-disabled-bad-index.glb',glb(disabled.doc,bytes(disabled.binary[:40]+struct.pack('<H',3)+disabled.binary[42:])),'BAD_ASSET','malformed before disabled dispatch','C2')
+head={'id':'head.yaw_rad','type':'float','units':'radians','min':-1,'max':1,'default':0}
+full_dual=copy.deepcopy(dual);full_dual['rig_semantics'].insert(0,head);full_dual['representations']['3d']['mappings']=[{'semantic':'head.yaw_rad','target':'bone:Head.yaw'},{'semantic':'mouth.open','target':'morph:MouthOpen'}]
+three=copy.deepcopy(full_dual);three['representations'].pop('2d');three['default_mode']='3d';three['visual_layers']=[]
+extra_manifests=[three,full_dual]
+for label,manifest in [('positive-3d',three),('positive-dual-full',full_dual)]:save(label+'.arschar',bundle(manifest=manifest,extra=[('assets/triangle.glb',full.bytes())]),'OK','complete owned 3D/dual CPU model','C2')
+for label,change,status in [('valid-disabled-vrm',lambda a:a['representations']['3d'].update(format='vrm1'),'UNSUPPORTED'),('bad-bone-reference',lambda a:a['representations']['3d']['mappings'][0].update(target='bone:Missing.yaw'),'BAD_ASSET'),('bad-morph-reference',lambda a:a['representations']['3d']['mappings'][1].update(target='morph:Missing'),'BAD_ASSET'),('bad-bone-unit',lambda a:a['rig_semantics'][0].update(units='meters'),'BAD_ASSET'),('semantic-range-overflow',lambda a:a['rig_semantics'][0].update(max=1e300),'BAD_ASSET')]:
+ a=copy.deepcopy(full_dual);change(a);save(label+'.arschar',bundle(manifest=a,extra=[('assets/triangle.glb',full.bytes())]),status,'3D bindings and capability precedence','C2')
+bad=bytearray(full.bytes());bad[0]=0
+for label,manifest in [('vrm',copy.deepcopy(full_dual)),('mask',copy.deepcopy(full_dual))]:
+ if label=='vrm':manifest['representations']['3d']['format']='vrm1'
+ else:manifest['visual_layers'][0]['mask']=manifest['visual_layers'][1]['id']
+ save('mixed-'+label+'-bad-glb.arschar',bundle(manifest=manifest,extra=[('assets/triangle.glb',bytes(bad))]),'BAD_ASSET','complete validation before disabled','C2')
+glb_case('glb-view-short-actual-data',lambda x:x.doc['bufferViews'][0].update(byteLength=32))
+glb_case('glb-two-node-cycle',lambda x:(x.doc.update(nodes=[{'mesh':0,'children':[1]},{'children':[0]}]),x.doc.pop('scenes'),x.doc.pop('scene')))
+for uri in ['file:///C:/blocked.bin','data:application/octet-stream;base64,AA==']:
+ glb_case('glb-uri-'+('file' if uri.startswith('file') else 'data'),lambda x,uri=uri:x.doc['buffers'][0].update(uri=uri))
+glb_case('glb-image-second',lambda x:x.doc['images'].append(copy.deepcopy(x.doc['images'][0])),'OK',full)
+jpeg=b'\xff\xd8\xff\xc0'+struct.pack('>H',11)+bytes([8,0,1,0,1,1,1,0x11,0])+b'\xff\xda'+struct.pack('>H',8)+bytes([1,1,0,0,63,0])+b'\x01\xff\xd9'
+def jpeg_image(x,payload):
+ x.doc['images']=[{'bufferView':x.view(payload),'mimeType':'image/jpeg'}]
+glb_case('glb-jpeg-disabled',lambda x:jpeg_image(x,jpeg),'UNSUPPORTED',full)
+glb_case('glb-jpeg-truncated',lambda x:jpeg_image(x,jpeg[:-2]),base=full)
+glb_case('glb-jpeg-marker-overflow',lambda x:jpeg_image(x,b'\xff\xd8\xff\xc0\xff\xff'),'BAD_ASSET',full)
+integer_weights=copy.deepcopy(full);old=integer_weights.doc['meshes'][0]['primitives'][0]['attributes']['WEIGHTS_0'];integer_weights.doc['meshes'][0]['primitives'][0]['attributes']['WEIGHTS_0']=integer_weights.accessor([[255,0,0,0]]*3,5121,'VEC4',normalized=True)
+save('positive-glb-integer-weights.glb',integer_weights.bytes(),'OK','actual normalized skin weights','C2')
+mask=copy.deepcopy(full_dual);mask['visual_layers'][0]['mask']=mask['visual_layers'][1]['id'];save('dual-mask-disabled.arschar',bundle(manifest=mask,extra=[('assets/triangle.glb',full.bytes())]),'UNSUPPORTED','valid disabled dual masking','C2')
+conflict=copy.deepcopy(full_dual);conflict['rig_semantics'][0]['default']=0.5;conflict['representations']['3d']['mappings'][0]['target']='morph:MouthOpen'
+save('dual-mapping-type-conflict.arschar',bundle(manifest=conflict,extra=[('assets/triangle.glb',full.bytes())]),'BAD_ASSET','binding type and units','C2')
+vrm=copy.deepcopy(full_dual);vrm['representations']['3d']['format']='vrm1';vrm['representations']['3d']['mappings'][0]['target']='bone:Missing.yaw'
+save('vrm-bad-binding.arschar',bundle(manifest=vrm,extra=[('assets/triangle.glb',full.bytes())]),'BAD_ASSET','cross-file validation before disabled','C2')
 (root/'atlas.png').write_bytes(png());(root/'manifest.json').write_bytes((json.dumps(records,indent=2,ensure_ascii=False)+'\n').encode())
 if args.reference_manifest:
  reference=json.loads(pathlib.Path(args.reference_manifest).read_text(encoding='utf-8'))
@@ -153,7 +264,7 @@ if args.reference_manifest:
  if js(reference)!=js(records):raise SystemExit('fixture manifest differs from committed oracle')
 if args.reference_schema:
  from jsonschema import Draft202012Validator
- for schema_path,instance in [('schemas/character_manifest_v0.1.schema.json',m),('schemas/ars2d_rig_v0.1.schema.json',r),('schemas/character_manifest_v0.1.schema.json',dual)]:
+ for schema_path,instance in [('schemas/character_manifest_v0.1.schema.json',m),('schemas/ars2d_rig_v0.1.schema.json',r),('schemas/character_manifest_v0.1.schema.json',dual),*[('schemas/character_manifest_v0.1.schema.json',a) for a in extra_manifests]]:
   schema=json.loads(pathlib.Path(schema_path).read_text(encoding='utf-8'));Draft202012Validator.check_schema(schema);Draft202012Validator(schema).validate(instance)
 parity=[]
 for kind,base,schema_path in [('manifest',m,'schemas/character_manifest_v0.1.schema.json'),('rig',r,'schemas/ars2d_rig_v0.1.schema.json')]:
@@ -171,4 +282,4 @@ for kind,base,schema_path in [('manifest',m,'schemas/character_manifest_v0.1.sch
   parity.append({'id':kind+'-'+label,'schema':kind,'input':js(instance).decode('utf-8'),'valid':expected})
 parity_bytes=js(parity);(root/'schema-parity.json').write_bytes(parity_bytes)
 print(json.dumps({'schema_reference_cases':len(parity),'schema_parity_sha256':hashlib.sha256(parity_bytes).hexdigest(),'reference_checks_executed':args.reference_schema}))
-print(json.dumps({'fixtures':len(records),'positive_manifests_schema_validated':3 if args.reference_schema else 0,'seed':'deterministic no RNG','native_parser_execution':False}))
+print(json.dumps({'fixtures':len(records),'positive_manifests_schema_validated':3+len(extra_manifests) if args.reference_schema else 0,'seed':'deterministic no RNG','native_parser_execution':False}))

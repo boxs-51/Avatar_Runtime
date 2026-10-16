@@ -55,6 +55,9 @@ bool validate_manifest(Value m, assets::Work &work) {
         auto value = semantics.at(i);
         canonical(value.at("id").string());
         const auto type = value.at("type").string();
+        for (auto key : {"min", "max"})
+            if (value.has(key))
+                require(std::abs(value.at(key).number()) <= 3.402823466e38);
         if (value.has("min") && value.has("max"))
             require(value.at("min").number() <= value.at("max").number());
         if (type == "trigger") {

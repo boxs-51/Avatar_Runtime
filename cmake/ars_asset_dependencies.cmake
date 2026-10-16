@@ -1,3 +1,6 @@
+# Built-in GLB CPU validator follows glTF 2.0.1 at this immutable spec revision.
+# It reuses the locked PNG/JSON primitives below; no additional decoder dependency.
+set(ARS_GLB_SPEC_COMMIT 8e798b02d254cea97659a333cfcb20875b62bdd4)
 # Immutable, private dependencies. Cache contents are verified before extraction;
 # missing cache is a hard failure unless explicit configure-time fetching is on.
 set(ARS_ASSET_DEP_CACHE "${CMAKE_BINARY_DIR}/dependency-cache" CACHE PATH "Verified source archive cache")
