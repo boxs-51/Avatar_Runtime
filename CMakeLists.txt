@@ -9,6 +9,36 @@ if(NOT ARS_PREP_ONLY)
     message(FATAL_ERROR "No production SDK is implemented. Do not disable ARS_PREP_ONLY.")
 endif()
 
+# Isolated M1-D private Windows interop experiment. No public ABI linkage or
+# capability advertisement; hardware execution has a separate evidence gate.
+option(ARS_BUILD_D3D11_SPIKE "Build private Windows D3D11 host interop spike" OFF)
+if(ARS_BUILD_D3D11_SPIKE)
+    if(NOT WIN32 OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+        message(FATAL_ERROR "M1-D spike requires Windows x64")
+    endif()
+    add_library(ars_d3d11_spike STATIC
+        src/graphics/d3d11/host_device.cpp
+        src/graphics/d3d11/state_scope.cpp
+        src/graphics/d3d11/query_retirement.cpp)
+    target_compile_features(ars_d3d11_spike PUBLIC cxx_std_20)
+    target_include_directories(ars_d3d11_spike PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    target_link_libraries(ars_d3d11_spike PUBLIC d3d11 dxgi d3dcompiler)
+    if(MSVC)
+        target_compile_options(ars_d3d11_spike PRIVATE /W4 /WX)
+    else()
+        target_compile_options(ars_d3d11_spike PRIVATE -Wall -Wextra -Werror)
+    endif()
+    enable_testing()
+    add_executable(ars_d3d11_host_smoke tests/gpu/d3d11_host_smoke.cpp)
+    target_link_libraries(ars_d3d11_host_smoke PRIVATE ars_d3d11_spike)
+    add_test(NAME d1_physical_host_smoke COMMAND ars_d3d11_host_smoke)
+    set_tests_properties(d1_physical_host_smoke PROPERTIES LABELS "M1-D;PHYSICAL_GPU_REQUIRED")
+    add_executable(ars_d3d11_query_retirement tests/gpu/d3d11_query_retirement.cpp)
+    target_link_libraries(ars_d3d11_query_retirement PRIVATE ars_d3d11_spike)
+    add_test(NAME d2_physical_query_retirement COMMAND ars_d3d11_query_retirement)
+    set_tests_properties(d2_physical_query_retirement PROPERTIES LABELS "M1-D;PHYSICAL_GPU_REQUIRED")
+endif()
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
