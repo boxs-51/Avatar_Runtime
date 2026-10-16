@@ -435,19 +435,22 @@ def check_m1_c2(base, candidate):
 
 M1_D_BRANCH = "m1/d-d3d11-interop-spike"
 M1_D_BASE = "f5b198137f6a96a2e33bb8ac206e53c3815bbbbc"
-M1_D_GPU_SOURCE = "e1511c33726f1f247e5825753e77e0f27948b5e7"
+M1_D_GPU_SOURCE = "f51375ae74e32f2bdabba29aa3549967468e3c24"
 M1_D_PATHS = frozenset((
     ".github/workflows/m1-d-gpu.yml", "CMakeLists.txt",
     "docs/M1_D_GPU_CASE_EXECUTION.json", "docs/audits/M1_D_BUILD_EVIDENCE.md",
     "docs/audits/M1_D_BUILD_RAW.txt", "docs/audits/M1_D_CTEST_RAW.txt",
     "docs/audits/M1_D_D1_RAW.txt", "docs/audits/M1_D_D2_RAW.txt",
-    "docs/audits/M1_D_STATIC_CTEST_RAW.txt", "src/graphics/backend.hpp",
+    "docs/audits/M1_D_D4_RAW.txt", "docs/audits/M1_D_D6_RAW.txt",
+    "docs/audits/M1_D_STATIC_BUILD_RAW.txt", "docs/audits/M1_D_STATIC_CTEST_RAW.txt",
+    "src/graphics/backend.hpp",
     "src/graphics/d3d11/host_device.cpp", "src/graphics/d3d11/host_device.hpp",
     "src/graphics/d3d11/query_retirement.cpp", "src/graphics/d3d11/query_retirement.hpp",
     "src/graphics/d3d11/state_scope.cpp", "src/graphics/d3d11/state_scope.hpp",
     "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m1_c2_custody.py",
     "tests/contracts/test_m1_d_custody.py", "tests/gpu/d3d11_host_smoke.cpp",
-    "tests/gpu/d3d11_query_retirement.cpp",
+    "tests/gpu/d3d11_query_retirement.cpp", "tests/gpu/d3d11_live_capture.cpp",
+    "tests/gpu/d3d11_state_restore.cpp",
 ))
 
 

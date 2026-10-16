@@ -1,0 +1,1 @@
+PASS D04 full touched-state identity/value comparison; success, validation failure, scoped recoverable failure
