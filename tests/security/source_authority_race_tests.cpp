@@ -74,11 +74,15 @@ void revoke_during_copy() {
         ars_source_admin_h source{}; ars_ingress_cap cap{}; registered(a,source,cap,i);
         test::Gate copy; capture.gate=&copy; test::Frame frame; frame.value.timestamp_mode=ARS_TIMESTAMP_ON_ARRIVAL; ars_status result=ARS_OK;
         std::thread ingress([&]{result=a.router.submit_frame(a.runtime,cap,&frame.value);}); copy.wait_entered();
-        expect(ARS_OK,a.router.revoke_source(a.runtime,source),"RACE-A/H-revoke-during-unlocked-copy",i);
-        copy.release(); ingress.join(); expect(ARS_E_SCOPE_DENIED,result,"RACE-A/H-no-append-after-revoke",i);
-        require(ComponentFixture::source(*a.context,source).sequence==0,"RACE-A/H-no-charge",i); release(a,source,i);
+        // P2 now excludes every mutating entry during a runtime callback.
+        expect(ARS_E_BUSY,a.router.revoke_source(a.runtime,source),"RACE-A/H-P2-callback-mutation-guard",i);
+        copy.release(); ingress.join(); expect(ARS_OK,result,"RACE-A/H-callback-completes-before-revoke",i);
+        expect(ARS_OK,a.router.revoke_source(a.runtime,source),"RACE-A/H-revoke-after-callback",i);
+        test::Frame later(2);
+        expect(ARS_E_SCOPE_DENIED,a.router.submit_frame(a.runtime,cap,&later.value),"RACE-A/H-no-append-after-revoke",i);
+        require(ComponentFixture::source(*a.context,source).sequence==1,"RACE-A/H-denied-retry-no-charge",i); release(a,source,i);
     }
-    std::puts("PASS RACE-A/H authority cut: 1000 copy-vs-revoke iterations; pose oracle remains HOLD");
+    std::puts("PASS RACE-A/H/P2: 1000 guarded callback/revoke iterations; B3 separately tests the staged pose cut");
 }
 void rotation_terminal() {
     test::Authority a;
@@ -156,7 +160,7 @@ void closing_flood() {
                 for(unsigned n=0;n<8;++n) expect(ARS_E_CLOSED,a.router.submit_frame(a.runtime,caps[j],&later.value),"RACE-T-denied-flood",i);});
             for(auto &thread:denied) thread.join();
             ars_close_state state{}; expect(ARS_OK,a.router.query_close(a.runtime,&state),"RACE-T-management-during-drain",i);
-            require(state.outstanding_ingress_pins==8 && state.outstanding_close_management_pins==1 && state.state==ARS_FENCE_PENDING,"RACE-T-counters",i);
+            require(state.outstanding_ingress_pins==8 && state.outstanding_close_management_pins==1 && state.outstanding_render_snapshot_pins==0 && state.state==ARS_FENCE_PENDING,"RACE-T-counters",i);
             expect(ARS_E_BUSY,a.router.finish_close(a.runtime),"RACE-T-no-early-finalization",i); sample.release();
         });
         expect(ARS_OK,a.router.begin_close(a.runtime),"RACE-R/T-sticky-intent-drains",i);

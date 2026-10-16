@@ -6,14 +6,13 @@
 
 namespace ars::security {
 namespace {
-thread_local bool capture_callback=false;
 struct WorkspaceRelease {
     std::atomic<bool> *flag;
     ~WorkspaceRelease() { flag->store(false,std::memory_order_release); }
 };
 }
-SourceAuthority::SourceAuthority(core::HandleRegistry &registry,const ars_runtime_desc &descriptor,std::uint64_t uid)
-    :registry_(registry),descriptor_(descriptor),uid_(uid) { capture_init_=native_clock_init(&capture_clock_); }
+SourceAuthority::SourceAuthority(core::HandleRegistry &registry,const ars_runtime_desc &descriptor,std::uint64_t uid,CallbackState &callback)
+    :registry_(registry),descriptor_(descriptor),uid_(uid),callback_(callback) { capture_init_=native_clock_init(&capture_clock_); }
 ars_status SourceAuthority::pin_character(ars_character_h id,core::ObjectLease *out) {
     out->reset();
     if(id.id.runtime_uid && id.id.runtime_uid!=uid_) return ARS_E_STALE_HANDLE;
@@ -49,6 +48,7 @@ ars_status SourceAuthority::bind(std::span<const SemanticChannel> catalog,ars_ch
         character->count=static_cast<std::uint32_t>(catalog.size());
         std::copy(catalog.begin(),catalog.end(),character->catalog.begin());
         character->alive=false;
+        character->pose_generation=0; character->pose_exhausted=false;
         status=registry_.insert(core::ObjectType::character,character,&character->id.id);
         if(status!=ARS_OK) return status;
         character->allocated=true;
@@ -76,7 +76,7 @@ ars_status SourceAuthority::state_error(const Source &source) const noexcept {
 }
 void SourceAuthority::terminal(Source &source,SourceState state) noexcept {
     const auto old_epoch=source.epoch;
-    ledger_.retire(source.ledger); source.ledger=ledger_capacity;
+    ledger_.retire(source.ledger); source.ledger=ledger_capacity; source.front_ordinal=0;
     if(source.data<max_sources) {
         auto &slot=queues_[source.data]; slot.queue.clear(); source.data=max_sources;
         slot.used.store(false,std::memory_order_release);
@@ -92,7 +92,7 @@ ars_status SourceAuthority::observe_source(Source &source,std::uint64_t now) {
         terminal(source,SourceState::expired);
     return state_error(source);
 }
-ars_status SourceAuthority::destroy(ars_character_h id) {
+ars_status SourceAuthority::destroy(ars_character_h id,motion::Snapshot **retired) {
     core::ObjectLease character_pin; auto status=pin_character(id,&character_pin);
     if(status!=ARS_OK) return status;
     auto *character=static_cast<core::CharacterAuthority *>(character_pin.payload());
@@ -100,6 +100,7 @@ ars_status SourceAuthority::destroy(ars_character_h id) {
         std::lock_guard commit_lock(commit); std::lock_guard pose(character->pose);
         if(!character->alive) return ARS_E_STALE_HANDLE;
         character->alive=false;
+        *retired=character->snapshot; character->snapshot=nullptr;
         for(auto &source:sources_) {
             core::ObjectLease retained;
             {
@@ -159,7 +160,7 @@ ars_status SourceAuthority::register_source(ars_character_h id,const ars_source_
         queues_[data].queue.clear();
         source->character=id; source->state=SourceState::unused;
         source->epoch=source->control=source->ticket=1;
-        source->sequence=source->ordinal=0; source->ledger=ledger_capacity; source->data=data;
+        source->sequence=source->ordinal=source->front_ordinal=0; source->ledger=ledger_capacity; source->data=data;
         source->channels=desc->max_channels_per_frame; source->rate=desc->max_frames_per_second;
         source->priority=desc->fixed_priority; source->allowed=allowed; source->label=label;
         source->tombstone.invalidated_through.store(0,std::memory_order_relaxed);
@@ -238,7 +239,7 @@ ars_status SourceAuthority::rotate(ars_source_admin_h id,ars_ingress_cap *out) {
         source->tombstone.publish(source->epoch);
         ++source->epoch; ++source->control; ++source->ticket;
         epoch=source->epoch; control=source->control; ticket=source->ticket;
-        source->state=SourceState::rotating; queues_[source->data].queue.clear();
+        source->state=SourceState::rotating; queues_[source->data].queue.clear(); source->front_ordinal=0;
     }
     TokenLedger::Reservation reservation;
     const auto mint=ledger_.reserve(id,&reservation);
@@ -311,17 +312,19 @@ ars_status SourceAuthority::prepare(const ars_motion_frame *input,PreparedFrame 
     }
     if(input->timestamp_mode==ARS_TIMESTAMP_ON_ARRIVAL) {
         if(descriptor_.simulation_now_ns) {
-            if(capture_callback) return ARS_E_BUSY;
-            capture_callback=true;
+            CallbackLease callback_release(callback_);
+            if(!callback_release) return ARS_E_BUSY;
             try { frame.timestamp=descriptor_.simulation_now_ns(descriptor_.clock_user_data); }
-            catch(...) { capture_callback=false; return ARS_E_INTERNAL; }
-            capture_callback=false;
+            catch(...) { return ARS_E_INTERNAL; }
+            std::lock_guard samples(callback_.samples);
+            if(callback_.observed && frame.timestamp<callback_.highwater) return ARS_E_CLOCK_REGRESSION;
+            callback_.observed=true; callback_.highwater=frame.timestamp;
         } else if(capture_init_!=ARS_OK || native_clock_now(&capture_clock_,&frame.timestamp)!=ARS_OK) return ARS_E_CLOCK_FAILURE;
     }
     return ARS_OK;
 }
 ars_status SourceAuthority::submit(ars_ingress_cap cap,const ars_motion_frame *input) {
-    if(capture_callback) return ARS_E_BUSY;
+    if(callback_.active()) return ARS_E_BUSY;
     Workspace *workspace=nullptr;
     for(std::uint32_t i=0;i<workspace_limit_;++i) {
         bool free=false;
@@ -330,6 +333,7 @@ ars_status SourceAuthority::submit(ars_ingress_cap cap,const ars_motion_frame *i
     if(!workspace) return ARS_E_BUSY;
     WorkspaceRelease workspace_release{&workspace->used};
     auto status=prepare(input,&workspace->prepared); if(status!=ARS_OK) return status;
+    MutationLease mutation(callback_); if(!mutation) return ARS_E_BUSY;
     ars_source_admin_h source_id{};
     if(!ledger_.lookup(cap,&source_id)) return ARS_E_SCOPE_DENIED;
     core::ObjectLease source_pin,character_pin;
@@ -365,6 +369,7 @@ ars_status SourceAuthority::submit(ars_ingress_cap cap,const ars_motion_frame *i
     if(credit<credit_unit) return ARS_E_RATE_LIMIT;
     frame.source=source->id; frame.character=source->character; frame.epoch=source->epoch; frame.ordinal=source->ordinal+1;
     status=queues_[source->data].queue.append(frame); if(status!=ARS_OK) return status;
+    if(queues_[source->data].queue.size()==1) source->front_ordinal=frame.ordinal;
     source->sequence=frame.sequence; source->ordinal=frame.ordinal;
     source->credit=credit-credit_unit; source->refill=time.now; return ARS_OK;
 }
@@ -376,13 +381,16 @@ ars_status SourceAuthority::dequeue(ars_source_admin_h id,OwnedFrame *out,core::
     std::lock_guard lock(source->mutex);
     auto time=clock_.observe(); if(time.status!=ARS_OK) return time.status;
     status=observe_source(*source,time.now); if(status!=ARS_OK) return status;
-    return queues_[source->data].queue.pop(out)?ARS_OK:ARS_E_BUSY;
+    if(!queues_[source->data].queue.pop(out)) return ARS_E_BUSY;
+    source->front_ordinal=queues_[source->data].queue.size()?out->ordinal+1:0;
+    return ARS_OK;
 }
 void SourceAuthority::request_close() { admission_.request_close(); }
 void SourceAuthority::drain() { admission_.drain(); }
-void SourceAuthority::close_all() {
+void SourceAuthority::close_all(std::array<motion::Snapshot *,max_characters> *retired) {
     // Caller holds commit and has drained admissions. Internal references use
     // fixed context storage plus the caller's runtime lease, never raw handles.
+    std::uint32_t retired_count=0;
     for(auto &character:characters_) {
         core::ObjectLease character_ref;
         {
@@ -391,6 +399,7 @@ void SourceAuthority::close_all() {
             character.users.fetch_add(1,std::memory_order_acq_rel); character_ref.users_=&character.users;
         }
         std::lock_guard pose(character.pose); character.alive=false;
+        if(character.snapshot) { (*retired)[retired_count++]=character.snapshot; character.snapshot=nullptr; }
         for(auto &source:sources_) {
             core::ObjectLease source_ref;
             {

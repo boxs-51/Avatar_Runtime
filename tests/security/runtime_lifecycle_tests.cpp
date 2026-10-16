@@ -1,4 +1,5 @@
 #include "runtime_test_support.hpp"
+#include "../../src/motion/semantic_candidate.hpp"
 #include "runtime_lifecycle.hpp"
 #include <array>
 #include <atomic>
@@ -48,18 +49,22 @@ struct AuthorityAllocation {
     std::array<Block,4> blocks{};
     RuntimeRouter *router=nullptr;
     ars_runtime_h runtime{};
-    unsigned calls=0,frees=0,reentries=0,mode=0;
+    unsigned calls=0,frees=0,reentries=0,mode=0,target=2;
 };
 void *ARS_CALL allocate_authority(void *data,std::uint64_t bytes,std::uint32_t alignment) {
     auto &state=*static_cast<AuthorityAllocation *>(data); ++state.calls;
     (void)state.router->occupied(); ++state.reentries;
-    if(state.calls==2 && state.mode==1) return nullptr;
-    if(state.calls==2 && state.mode==2) throw 17;
-    if(state.calls==2 && state.mode==4 && state.router->begin_close(state.runtime)!=ARS_OK) std::exit(30);
+    if(state.calls==state.target && state.mode==1) return nullptr;
+    if(state.calls==state.target && state.mode==2) throw 17;
+    if(state.calls==state.target && state.mode==4 && state.router->begin_close(state.runtime)!=ARS_OK) std::exit(30);
+    if(state.calls==state.target && state.mode==5) {
+        ars::motion::Program program; ars::core::StageLease stage;
+        if(state.router->prepare_cpu(state.runtime,{}, {},program,&stage)!=ARS_E_BUSY) std::exit(33);
+    }
     for(auto &block:state.blocks) if(!block.raw) {
         block.raw=::operator new(static_cast<std::size_t>(bytes)+alignment,std::align_val_t{alignment},std::nothrow);
         if(!block.raw) return nullptr;
-        block.returned=state.calls==2 && state.mode==3?static_cast<unsigned char *>(block.raw)+1:block.raw;
+        block.returned=state.calls==state.target && state.mode==3?static_cast<unsigned char *>(block.raw)+1:block.raw;
         block.bytes=bytes; block.alignment=alignment; return block.returned;
     }
     return nullptr;
@@ -208,6 +213,35 @@ int main() {
         test::status(ARS_OK,host.finish_close(state.runtime),"B2-ALLOC-finalize-all-ownership");
         test::check(std::all_of(state.blocks.begin(),state.blocks.end(),[](auto &block){return block.raw==nullptr;}) &&
                     state.reentries==state.calls+state.frees,"B2-ALLOC-paired-bytes-alignment-and-outside-locks");
+    }
+    {
+        test::Authority authority; ars::core::RuntimeLease snapshot;
+        test::status(ARS_OK,authority.router.acquire(authority.runtime,ars::core::LeaseKind::snapshot,&snapshot),"B3-CPU-snapshot-root-category");
+        authority.retained.reset();
+        test::status(ARS_OK,authority.router.begin_close(authority.runtime),"B3-CPU-close-with-snapshot-root");
+        ars_close_state state{}; test::status(ARS_OK,authority.router.query_close(authority.runtime,&state),"B3-CPU-snapshot-counter-query");
+        test::check(state.outstanding_pins==2 && state.outstanding_render_snapshot_pins==1 && state.outstanding_gpu_retires==0,
+                    "B3-CPU-snapshot-does-not-hide-root-or-invent-GPU-work");
+        test::status(ARS_E_BUSY,authority.router.finish_close(authority.runtime),"B3-CPU-finalizer-keeps-snapshot-storage");
+        snapshot.reset();
+    }
+    for(unsigned mode=0;mode<6;++mode) {
+        RuntimeRouter host; AuthorityAllocation state; state.router=&host; state.target=3;
+        auto owned=desc; owned.alloc=allocate_authority; owned.free_fn=free_authority_allocation; owned.allocator_user_data=&state;
+        test::status(ARS_OK,host.create(owned,&state.runtime),"B3-ALLOC-runtime");
+        std::array<ars::security::SemanticChannel,1> catalog{}; std::memcpy(catalog[0].id.data(),"mouth.open",11); ars_character_h character{};
+        test::status(ARS_OK,host.bind_character(state.runtime,catalog,&character),"B3-ALLOC-binding"); state.mode=mode;
+        ars::motion::Program program; ars::core::StageLease stage;
+        constexpr std::array<ars_status,6> expected{ARS_OK,ARS_E_OUT_OF_BUDGET,ARS_E_INTERNAL,ARS_E_INVALID_ARGUMENT,ARS_E_CLOSED,ARS_OK};
+        test::status(expected[mode],host.prepare_cpu(state.runtime,character,{},program,&stage),"B3-ALLOC-bounded-failure-and-callback-reservation"); stage.reset();
+        if(mode!=4) {
+            state.mode=0;
+            test::status(ARS_OK,host.prepare_cpu(state.runtime,character,{},program,&stage),"B3-ALLOC-context-retry-no-orphan"); stage.reset();
+            test::status(ARS_OK,host.begin_close(state.runtime),"B3-ALLOC-close");
+        }
+        test::status(ARS_OK,host.finish_close(state.runtime),"B3-ALLOC-finalize");
+        test::check(std::all_of(state.blocks.begin(),state.blocks.end(),[](auto &block){return block.raw==nullptr;}) && state.reentries==state.calls+state.frees,
+                    "B3-ALLOC-exact-size-alignment-all-frees-outside-gates");
     }
     std::puts("PASS B1 production CPU lifecycle component suite; 87 whole security cases remain HOLD");
 }

@@ -7,10 +7,11 @@
 #include <mutex>
 
 namespace ars::security { class SourceAuthority; }
+namespace ars::motion { class PublishGate; struct Stage; struct Snapshot; struct Program; }
 namespace ars::core {
 struct Runtime;
 class RuntimeRouter;
-enum class LeaseKind { work, management, ingress };
+enum class LeaseKind { work, management, ingress, snapshot };
 class RuntimeLease {
     RuntimeRouter *owner_=nullptr;
     Runtime *runtime_=nullptr;
@@ -39,6 +40,31 @@ public:
     ~FrameLease() { reset(); }
     void reset() noexcept { source_.reset(); character_.reset(); runtime_.reset(); frame={}; }
 };
+class StageLease {
+    RuntimeLease runtime_;
+    motion::PublishGate *owner_=nullptr;
+    motion::Stage *stage_=nullptr;
+    friend class RuntimeRouter;
+    friend struct ComponentFixture;
+public:
+    StageLease()=default;
+    StageLease(const StageLease &)=delete;
+    StageLease &operator=(const StageLease &)=delete;
+    ~StageLease();
+    void reset() noexcept;
+};
+class SnapshotLease {
+    RuntimeLease runtime_;
+    motion::Snapshot *snapshot_=nullptr;
+    friend class RuntimeRouter;
+public:
+    SnapshotLease()=default;
+    SnapshotLease(const SnapshotLease &)=delete;
+    SnapshotLease &operator=(const SnapshotLease &)=delete;
+    ~SnapshotLease();
+    void reset() noexcept;
+    const motion::Snapshot *get() const noexcept { return snapshot_; }
+};
 // Internal trusted component API. No fixture/reset/counter API is exported.
 class RuntimeRouter {
     struct Entry { std::uint64_t uid=0; Runtime *runtime=nullptr; bool reserved=false; };
@@ -52,6 +78,7 @@ class RuntimeRouter {
     void cancel_reservation(std::uint32_t) noexcept;
     ars_status ensure_authority(RuntimeLease &,security::SourceAuthority **);
     security::SourceAuthority *authority_for(const RuntimeLease &) const;
+    ars_status ensure_publication(RuntimeLease &,motion::PublishGate **);
     friend class RuntimeLease;
     friend struct ComponentFixture;
 public:
@@ -69,6 +96,9 @@ public:
     ars_status release_source(ars_runtime_h,ars_source_admin_h);
     ars_status submit_frame(ars_runtime_h,ars_ingress_cap,const ars_motion_frame *);
     ars_status dequeue_frame(ars_runtime_h,ars_source_admin_h,FrameLease *);
+    ars_status prepare_cpu(ars_runtime_h,ars_character_h,std::span<const ars_source_admin_h>,const motion::Program &,StageLease *);
+    ars_status publish_cpu(StageLease *);
+    ars_status read_cpu(ars_runtime_h,ars_character_h,SnapshotLease *);
     std::uint32_t occupied() const;
 };
 RuntimeRouter &global_router();

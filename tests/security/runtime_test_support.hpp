@@ -2,6 +2,9 @@
 #include "ars/ars.h"
 #include "runtime_lifecycle.hpp"
 #include "../../src/security/source_authority.hpp"
+#ifdef ARS_B3_NATIVE_TEST
+#include "../../src/motion/publish_gate.hpp"
+#endif
 #include <condition_variable>
 #include <cstdio>
 #include <cstdlib>
@@ -14,6 +17,18 @@ namespace ars::core {
 // Defined only in test translation units, before any fixture handle/lease exists.
 // There is no production counter override, reset entry point or test export.
 struct ComponentFixture {
+    static auto &stage(StageLease &lease) { return *lease.stage_; }
+    static auto &publication(StageLease &lease) { return *lease.owner_; }
+#ifdef ARS_B3_NATIVE_TEST
+    static void snapshot_limit(motion::PublishGate &gate,std::uint32_t limit) { gate.snapshot_limit_=limit; }
+    static void stage_limit(motion::PublishGate &gate,std::uint32_t limit) { gate.stage_limit_=limit; }
+#endif
+    static void pose_generation(security::SourceAuthority &authority,ars_character_h id,std::uint64_t generation) {
+        for(auto &character:authority.characters_) if(security::same(character.id.id,id.id)) {
+            std::lock_guard pose(character.pose); character.pose_generation=generation; return;
+        }
+        std::exit(26);
+    }
     static void initial_uid(RuntimeRouter &router,std::uint64_t uid) {
         router.next_uid_=uid; router.uid_exhausted_=uid==0;
     }
@@ -143,7 +158,7 @@ struct Authority {
     ars::core::RuntimeLease retained;
     ars::security::SourceAuthority *context=nullptr;
     Clock time; Entropy random;
-    explicit Authority(ars_simulation_now_fn callback=nullptr,void *user=nullptr) {
+    explicit Authority(ars_simulation_now_fn callback=nullptr,void *user=nullptr,ars::core::RuntimeBudget budget={}):router(budget) {
         ars_runtime_desc desc{}; desc.struct_size=sizeof(desc); desc.abi_version=ARS_ABI_VERSION;
         desc.simulation_now_ns=callback; desc.clock_user_data=user;
         if(router.create(desc,&runtime)!=ARS_OK) std::exit(22);
@@ -169,4 +184,29 @@ struct Authority {
         return router.register_source(runtime,character,&desc,admin,cap);
     }
 };
+#ifdef ARS_B3_NATIVE_TEST
+inline void submit(Authority &a,ars_ingress_cap cap,std::uint64_t sequence,float value) {
+    Frame frame(sequence); frame.channel.value[0]=value;
+    status(ARS_OK,a.router.submit_frame(a.runtime,cap,&frame.value),"B3-owned-input");
+}
+inline ars::motion::Program blend_program() {
+    using ars::motion::Op; ars::motion::Program program; program.count=8;
+    program.nodes[0]={Op::input,0,0,0,0}; program.nodes[1]={Op::input,0,0,0,1};
+    program.nodes[2]={Op::store,0,0,0}; program.nodes[3]={Op::store,1,0,1};
+    program.nodes[4]={Op::add,0,1}; program.nodes[5]={Op::store,4,0,2};
+    program.nodes[6]={Op::trigger,4,0,0,0,1,100}; program.nodes[7]={Op::output,4,0,0};
+    return program;
+}
+inline ars::motion::Program retained_program() {
+    using ars::motion::Op; ars::motion::Program program; program.count=5;
+    program.nodes[0]={Op::retained,0,0,0}; program.nodes[1]={Op::retained,0,0,1};
+    program.nodes[2]={Op::add,0,1}; program.nodes[3]={Op::output,2,0,0}; program.nodes[4]={Op::store,2,0,2};
+    return program;
+}
+inline void publish(Authority &a,std::span<const ars_source_admin_h> sources,const ars::motion::Program &program) {
+    ars::core::StageLease stage;
+    status(ARS_OK,a.router.prepare_cpu(a.runtime,a.character,sources,program,&stage),"B3-stage");
+    status(ARS_OK,a.router.publish_cpu(&stage),"B3-publish");
+}
+#endif
 }

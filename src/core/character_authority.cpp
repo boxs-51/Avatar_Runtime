@@ -45,6 +45,7 @@ bool valid_value(std::uint32_t kind,std::span<const float,4> value) noexcept {
 }
 }
 namespace ars::core {
+static_assert(security::max_channels==256,"B3 bounded semantic state matches the validated catalog");
 ObjectLease::ObjectLease(ObjectLease &&other) noexcept { *this=std::move(other); }
 ObjectLease &ObjectLease::operator=(ObjectLease &&other) noexcept {
     if(this!=&other) { reset(); registry_=std::move(other.registry_); users_=std::exchange(other.users_,nullptr); }

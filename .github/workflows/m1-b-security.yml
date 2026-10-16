@@ -1,4 +1,4 @@
-name: M1-B2 CPU Source Authority (NOT public source activation)
+name: M1-B3 CPU Provenance and P2 Fixes (NOT public source activation)
 on:
   pull_request:
     paths:
@@ -35,7 +35,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "B2_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}"
+          echo "B3_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}"
           python -m pip install --disable-pip-version-check jsonschema==4.23.0
           python tests/contracts/check_m0_rc1_pins.py
           python -m unittest discover -s tests/contracts -p 'test_*.py' -v
@@ -45,25 +45,25 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cmake -S . -B build/b2 -DCMAKE_BUILD_TYPE=Debug -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_RUNTIME_SANITIZER=${{ matrix.sanitizer }}
-          cmake --build build/b2 --parallel
+          cmake -S . -B build/b3 -DCMAKE_BUILD_TYPE=Debug -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_RUNTIME_SANITIZER=${{ matrix.sanitizer }}
+          cmake --build build/b3 --parallel
           if [ "${{ matrix.sanitizer }}" != NONE ]; then
-            nm build/b2/bin/ars_runtime_lifecycle_tests | tee build/b2/instrumentation.txt
-            if [ "${{ matrix.sanitizer }}" = THREAD ]; then grep -q '__tsan_' build/b2/instrumentation.txt; else grep -q '__asan_' build/b2/instrumentation.txt; grep -q '__ubsan_' build/b2/instrumentation.txt; fi
+            nm build/b3/bin/ars_runtime_lifecycle_tests | tee build/b3/instrumentation.txt
+            if [ "${{ matrix.sanitizer }}" = THREAD ]; then grep -q '__tsan_' build/b3/instrumentation.txt; else grep -q '__asan_' build/b3/instrumentation.txt; grep -q '__ubsan_' build/b3/instrumentation.txt; fi
           fi
-          ctest --test-dir build/b2 --verbose
+          ctest --test-dir build/b3 --verbose
           for kind in foundation core; do
-            cmake -S examples/plain_c -B build/consumer-$kind -DARS_FOUNDATION_INFO="$PWD/build/b2/$kind-Debug.cmake"
+            cmake -S examples/plain_c -B build/consumer-$kind -DARS_FOUNDATION_INFO="$PWD/build/b3/$kind-Debug.cmake"
             cmake --build build/consumer-$kind --parallel
             ctest --test-dir build/consumer-$kind --verbose
           done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: b2-linux-${{ matrix.cc }}-${{ matrix.shared }}-${{ matrix.sanitizer }}
+          name: b3-linux-${{ matrix.cc }}-${{ matrix.shared }}-${{ matrix.sanitizer }}
           path: |
             build/**/Testing/Temporary/LastTest.log
-            build/b2/instrumentation.txt
+            build/b3/instrumentation.txt
   windows:
     runs-on: windows-2022
     strategy:
@@ -79,7 +79,7 @@ jobs:
       - name: Exact source and complete design regressions
         shell: pwsh
         run: |
-          Write-Output "B2_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}"
+          Write-Output "B3_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}"
           python -m pip install --disable-pip-version-check jsonschema==4.23.0
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python tests/contracts/check_m0_rc1_pins.py
@@ -91,22 +91,22 @@ jobs:
       - name: Core, preserved foundation, deterministic races and consumers
         shell: pwsh
         run: |
-          cmake -S . -B build/b2 -G "Visual Studio 17 2022" -A x64 -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_RUNTIME_SANITIZER=${{ matrix.sanitizer }}
+          cmake -S . -B build/b3 -G "Visual Studio 17 2022" -A x64 -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_RUNTIME_SANITIZER=${{ matrix.sanitizer }}
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cmake --build build/b2 --config ${{ matrix.config }} --parallel
+          cmake --build build/b3 --config ${{ matrix.config }} --parallel
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
           $tool = Get-ChildItem "$vs\VC\Tools\MSVC" -Directory | Sort-Object Name -Descending | Select-Object -First 1
           $env:PATH = "$($tool.FullName)\bin\Hostx64\x64;$env:PATH"
           if ('${{ matrix.sanitizer }}' -eq 'ADDRESS') {
-            dumpbin /imports "build/b2/bin/${{ matrix.config }}/ars_runtime_lifecycle_tests.exe" | Tee-Object build/b2/instrumentation.txt
+            dumpbin /imports "build/b3/bin/${{ matrix.config }}/ars_runtime_lifecycle_tests.exe" | Tee-Object build/b3/instrumentation.txt
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            if (-not (Select-String -Path build/b2/instrumentation.txt -Pattern '__asan_|clang_rt.asan')) { throw 'ASan instrumentation missing' }
+            if (-not (Select-String -Path build/b3/instrumentation.txt -Pattern '__asan_|clang_rt.asan')) { throw 'ASan instrumentation missing' }
           }
-          ctest --test-dir build/b2 -C ${{ matrix.config }} --verbose
+          ctest --test-dir build/b3 -C ${{ matrix.config }} --verbose
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           foreach ($kind in @('foundation','core')) {
-            cmake -S examples/plain_c -B "build/consumer-$kind" -G "Visual Studio 17 2022" -A x64 "-DARS_FOUNDATION_INFO=$PWD/build/b2/$kind-${{ matrix.config }}.cmake"
+            cmake -S examples/plain_c -B "build/consumer-$kind" -G "Visual Studio 17 2022" -A x64 "-DARS_FOUNDATION_INFO=$PWD/build/b3/$kind-${{ matrix.config }}.cmake"
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             cmake --build "build/consumer-$kind" --config ${{ matrix.config }} --parallel
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -116,7 +116,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: b2-windows-${{ matrix.shared }}-${{ matrix.sanitizer }}
+          name: b3-windows-${{ matrix.shared }}-${{ matrix.sanitizer }}
           path: |
             build/**/Testing/Temporary/LastTest.log
-            build/b2/instrumentation.txt
+            build/b3/instrumentation.txt

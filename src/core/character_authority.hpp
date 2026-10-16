@@ -5,6 +5,7 @@
 #include <mutex>
 
 namespace ars::security { class SourceAuthority; }
+namespace ars::motion { struct Snapshot; }
 namespace ars::core {
 // Context storage is fixed; a direct registry pin and runtime lease protect it.
 class ObjectLease {
@@ -27,6 +28,9 @@ struct CharacterAuthority {
     bool allocated=false,alive=false;
     ars_character_h id{};
     std::uint32_t count=0;
+    motion::Snapshot *snapshot=nullptr;
+    std::uint64_t pose_generation=0;
+    bool pose_exhausted=false;
     std::array<security::SemanticChannel,security::max_channels> catalog{};
 };
 ars_status validate_catalog(std::span<const security::SemanticChannel>) noexcept;
