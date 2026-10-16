@@ -1,0 +1,100 @@
+{
+  "kind": "proposed-M1-D-private-GPU-scope",
+  "state": "PREPARATION_ONLY",
+  "baseline_main_sha": "f5b198137f6a96a2e33bb8ac206e53c3815bbbbc",
+  "baseline_tree": "d9cef07642959cce3788daa18bd96505c32d4055",
+  "baseline_header_blob": "1c61da4a48c9faf2001fc98ad4c084413781e61c",
+  "baseline_adr0001_blob": "88c93d5c949b0eb2d205162bf5951f09d4ef0ca2",
+  "baseline_security_inventory_blob": "ec026c8ab872c71791df39353a26ba3dc84eed09",
+  "owner_design": "HOST_DEVICE_ONLY_D3D11_QUERY_EVENT",
+  "g00_technical_method": "HOLD",
+  "physical_gpu": "HOLD",
+  "full_g02": "HOLD",
+  "b_whole_case": {
+    "hold": 87,
+    "pass": 0
+  },
+  "implementation_authorized": false,
+  "merge_authorized": false,
+  "public_activation_authorized": false,
+  "prep_paths": [
+    "docs/M1_D_IMPLEMENTATION_READINESS.md",
+    "docs/M1_D_IMPLEMENTATION_MANIFEST.json",
+    "docs/M1_D_ACCEPTANCE_MATRIX.md"
+  ],
+  "stages": [
+    {
+      "stage": "D0_CONTRACT_RUNNER_READINESS",
+      "implementation": false,
+      "exit": "Exact ADR/path/hardware/negative-case proposal ready for owner kickoff; no GPU PASS"
+    },
+    {
+      "stage": "D1_PRIVATE_HOST_PASS",
+      "state": "PROPOSED_REQUIRES_SEPARATE_OWNER_ACK",
+      "paths": [
+        "CMakeLists.txt",
+        ".github/workflows/m1-d-gpu.yml",
+        "src/graphics/backend.hpp",
+        "src/graphics/backend.cpp",
+        "src/graphics/d3d11/host_device.hpp",
+        "src/graphics/d3d11/host_device.cpp",
+        "src/graphics/d3d11/state_scope.hpp",
+        "src/graphics/d3d11/state_scope.cpp",
+        "tests/gpu/d3d11_test_support.hpp",
+        "tests/gpu/d3d11_host_smoke.cpp",
+        "tests/gpu/d3d11_state_restore.cpp",
+        "tests/contracts/test_m1_d_custody.py",
+        "docs/audits/M1_D_BUILD_EVIDENCE.md",
+        "docs/M1_D_GPU_CASE_EXECUTION.json"
+      ],
+      "path_count": 14,
+      "exit": "Private physical host pass/readback/state isolation only"
+    },
+    {
+      "stage": "D2_QUERY_RETIREMENT",
+      "state": "PROPOSED_REQUIRES_D1_EVIDENCE_AND_SEPARATE_OWNER_ACK",
+      "paths": [
+        "CMakeLists.txt",
+        ".github/workflows/m1-d-gpu.yml",
+        "src/graphics/backend.hpp",
+        "src/graphics/backend.cpp",
+        "src/graphics/d3d11/host_device.hpp",
+        "src/graphics/d3d11/host_device.cpp",
+        "src/graphics/d3d11/query_retirement.hpp",
+        "src/graphics/d3d11/query_retirement.cpp",
+        "tests/gpu/d3d11_test_support.hpp",
+        "tests/gpu/d3d11_query_retirement.cpp",
+        "tests/gpu/d3d11_resize_close.cpp",
+        "tests/gpu/d3d11_device_loss.cpp",
+        "tests/contracts/test_m1_d_custody.py",
+        "docs/audits/M1_D_BUILD_EVIDENCE.md",
+        "docs/M1_D_GPU_CASE_EXECUTION.json"
+      ],
+      "path_count": 15,
+      "exit": "Bounded event-query, COM lifetime, 100x resize/close and device-loss evidence only"
+    },
+    {
+      "stage": "D3_EVIDENCE_REVIEW",
+      "state": "PROPOSED_REQUIRES_EXACT_SOURCE_AND_PHYSICAL_RUNNER",
+      "paths": [
+        "docs/audits/M1_D_BUILD_EVIDENCE.md",
+        "docs/M1_D_GPU_CASE_EXECUTION.json"
+      ],
+      "path_count": 2,
+      "exit": "Physical GPU proof reviewed separately; no public render or release activation"
+    }
+  ],
+  "frozen_paths_must_not_change": [
+    "include/ars/ars.h",
+    "src/abi/unsupported.cpp",
+    "docs/ADR_0001_D3D11_G00_DESIGN_RC1.md",
+    "docs/G00_SECURITY_87_CASE_INVENTORY.json",
+    "docs/M0_CONTRACT_PARENT_PINS.json"
+  ],
+  "hardware_candidate": {
+    "name": "NVIDIA GeForce GTX 1060 3GB",
+    "driver": "32.0.15.8157",
+    "evidence": "WMI inventory only; D3D11 capability and physical test HOLD"
+  },
+  "source_custody": "Every implementation PR refreshes main/base/head and pathset; existing M0/M1-A/B/C custody oracles remain intact"
+}
