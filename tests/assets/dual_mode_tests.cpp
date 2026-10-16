@@ -8,10 +8,10 @@ int main(int argc, char **argv) {
     ars::assets::Resource oracle_resource(test::Host::allocate, test::Host::release, &oracle_host);
     ars::validation::Document document(&oracle_resource);
     auto oracle = test::file(root / "manifest.json");
-    ars::assets::Limits limits;
-    ars::assets::Work work{limits.work};
+    ars::assets::Limits oracle_limits;
+    ars::assets::Work work{oracle_limits.work};
     ars::validation::parse_json({reinterpret_cast<const char *>(oracle.data()), oracle.size()}, document,
-                                limits, work);
+                                oracle_limits, work);
     unsigned cases = 0;
     for (std::size_t i = 0; i < document.root().size(); ++i) {
         auto row = document.root().at(i);

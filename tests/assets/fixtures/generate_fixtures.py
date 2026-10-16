@@ -199,7 +199,7 @@ primitive['attributes']['JOINTS_0']=full.accessor([[0,0,0,0]]*3,5121,'VEC4')
 primitive['attributes']['WEIGHTS_0']=full.accessor([[1,0,0,0]]*3,shape='VEC4')
 primitive['attributes']['TEXCOORD_0']=full.accessor([[0,0],[1,0],[0,1]],shape='VEC2')
 bind=full.accessor([[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]],shape='MAT4')
-morph=full.accessor([[0.1,0,0]]*3);primitive['targets']=[{'POSITION':morph}];full.doc['meshes'][0].update(weights=[0],extras={'targetNames':['MouthOpen']})
+morph=full.accessor([[0.1,0,0]]*3,min=[0.1,0,0],max=[0.1,0,0]);primitive['targets']=[{'POSITION':morph}];full.doc['meshes'][0].update(weights=[0],extras={'targetNames':['MouthOpen']})
 full.doc['nodes']=[{'name':'Body','mesh':0,'skin':0,'children':[1]},{'name':'Head'}];full.doc['skins']=[{'joints':[1],'skeleton':0,'inverseBindMatrices':bind}]
 times=full.accessor([0,1],shape='SCALAR',min=[0],max=[1]);translations=full.accessor([[0,0,0],[0,1,0]]);rotations=full.accessor([[0,0,0,1]]*2,shape='VEC4');weights=full.accessor([0,1],shape='SCALAR')
 full.doc['animations']=[{'samplers':[{'input':times,'output':translations},{'input':times,'output':rotations,'interpolation':'STEP'},{'input':times,'output':weights}],'channels':[{'sampler':0,'target':{'node':1,'path':'translation'}},{'sampler':1,'target':{'node':1,'path':'rotation'}},{'sampler':2,'target':{'node':0,'path':'weights'}}]}]
@@ -238,6 +238,8 @@ for label,manifest in [('vrm',copy.deepcopy(full_dual)),('mask',copy.deepcopy(fu
  if label=='vrm':manifest['representations']['3d']['format']='vrm1'
  else:manifest['visual_layers'][0]['mask']=manifest['visual_layers'][1]['id']
  save('mixed-'+label+'-bad-glb.arschar',bundle(manifest=manifest,extra=[('assets/triangle.glb',bytes(bad))]),'BAD_ASSET','complete validation before disabled','C2')
+glb_case('glb-morph-missing-bounds',lambda x:x.doc['accessors'][morph].pop('min'),base=full)
+glb_case('glb-attribute-set-gap',lambda x:x.doc['meshes'][0]['primitives'][0]['attributes'].update(TEXCOORD_2=x.doc['meshes'][0]['primitives'][0]['attributes']['TEXCOORD_0']),base=full)
 glb_case('glb-view-short-actual-data',lambda x:x.doc['bufferViews'][0].update(byteLength=32))
 glb_case('glb-two-node-cycle',lambda x:(x.doc.update(nodes=[{'mesh':0,'children':[1]},{'children':[0]}]),x.doc.pop('scenes'),x.doc.pop('scene')))
 for uri in ['file:///C:/blocked.bin','data:application/octet-stream;base64,AA==']:
@@ -256,6 +258,14 @@ conflict=copy.deepcopy(full_dual);conflict['rig_semantics'][0]['default']=0.5;co
 save('dual-mapping-type-conflict.arschar',bundle(manifest=conflict,extra=[('assets/triangle.glb',full.bytes())]),'BAD_ASSET','binding type and units','C2')
 vrm=copy.deepcopy(full_dual);vrm['representations']['3d']['format']='vrm1';vrm['representations']['3d']['mappings'][0]['target']='bone:Missing.yaw'
 save('vrm-bad-binding.arschar',bundle(manifest=vrm,extra=[('assets/triangle.glb',full.bytes())]),'BAD_ASSET','cross-file validation before disabled','C2')
+for count in [256,257]:
+ skin=copy.deepcopy(full);skin.doc['nodes']=[{'name':'Body','mesh':0,'skin':0,'children':list(range(1,count+1))},*[{'name':'J'+str(i)} for i in range(count)]];skin.doc['skins']=[{'joints':list(range(1,count+1)),'skeleton':0}]
+ save('glb-skin-joints-'+str(count)+'.glb',skin.bytes(),'OK' if count==256 else 'OUT_OF_BUDGET','cumulative skin joint boundary','C2')
+skin=copy.deepcopy(full);skin.doc['skins']=[{'joints':[1]} for _ in range(257)];save('glb-skin-cumulative-limit.glb',skin.bytes(),'OUT_OF_BUDGET','cumulative skin joint count across skins','C2')
+normal=copy.deepcopy(full);attrs=normal.doc['meshes'][0]['primitives'][0]['attributes'];attrs['NORMAL']=normal.accessor([[0,0,1]]*3);attrs['TANGENT']=normal.accessor([[1,0,0,1]]*3,shape='VEC4');delta=normal.accessor([[0,0,0.1]]*3);normal.doc['meshes'][0]['primitives'][0]['targets'][0].update(NORMAL=delta,TANGENT=delta);save('positive-glb-normal-tangent-morph.glb',normal.bytes(),'OK','actual normal and tangent morph deltas','C2')
+glb_case('glb-morph-nan',lambda x:struct.pack_into('<I',x.binary,x.doc['bufferViews'][x.doc['accessors'][delta]['bufferView']]['byteOffset'],0x7fc00000),base=normal)
+quaternion_cubic=copy.deepcopy(full);output=quaternion_cubic.accessor([[0,0,0,0],[0,0,0,1],[0,0,0,0]]*2,shape='VEC4');quaternion_cubic.doc['animations'][0]['samplers'][1].update(output=output,interpolation='CUBICSPLINE');save('positive-glb-cubic-quaternion.glb',quaternion_cubic.bytes(),'OK','cubic quaternion values unit and tangents unrestricted','C2')
+glb_case('glb-cubic-zero-quaternion',lambda x:struct.pack_into('<f',x.binary,x.doc['bufferViews'][x.doc['accessors'][output]['bufferView']]['byteOffset']+28,0),base=quaternion_cubic)
 (root/'atlas.png').write_bytes(png());(root/'manifest.json').write_bytes((json.dumps(records,indent=2,ensure_ascii=False)+'\n').encode())
 if args.reference_manifest:
  reference=json.loads(pathlib.Path(args.reference_manifest).read_text(encoding='utf-8'))

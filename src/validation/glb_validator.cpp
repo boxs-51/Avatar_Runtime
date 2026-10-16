@@ -410,6 +410,18 @@ void Context::meshes() {
                         require(!suffix.empty() && (suffix.size() == 1 || suffix.front() != '0'));
                         for (char c : suffix)
                             require(c >= '0' && c <= '9');
+                        std::uint32_t set = 0;
+                        const auto parsed =
+                            std::from_chars(suffix.data(), suffix.data() + suffix.size(), set);
+                        require(parsed.ec == std::errc{} && set < attrs.size());
+                        if (set > 0) {
+                            char previous[11]{};
+                            const auto end = std::to_chars(previous, previous + sizeof(previous), set - 1);
+                            require(end.ec == std::errc{});
+                            std::pmr::string prior(prefix, &resource);
+                            prior.append(previous, end.ptr);
+                            require(attrs.has(prior));
+                        }
                     }
                 const bool floating = a.component == 5126 && !a.normalized;
                 const bool packed = (a.component == 5121 || a.component == 5123) && a.normalized;
@@ -540,9 +552,11 @@ void Context::meshes() {
                     require(a.component == 5126 && !a.normalized && a.components == 3 &&
                             a.count == position.count);
                     use(index, 1);
-                    if (key == "POSITION")
+                    if (key == "POSITION") {
+                        const auto morph_bounds = root.at("accessors").at(index);
+                        require(morph_bounds.has("min") && morph_bounds.has("max"));
                         target.position = index;
-                    else if (key == "NORMAL") {
+                    } else if (key == "NORMAL") {
                         require(out.normal != glb_none);
                         target.normal = index;
                     } else if (key == "TANGENT") {

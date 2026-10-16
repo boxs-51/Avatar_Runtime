@@ -14,6 +14,9 @@ on:
       - '.github/workflows/m1-c-assets.yml'
 permissions:
   contents: read
+concurrency:
+  group: m1-c-assets-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 jobs:
   linux:
     runs-on: ${{ matrix.os }}
