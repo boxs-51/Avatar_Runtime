@@ -27,6 +27,8 @@ int main() {
     desc.Format=DXGI_FORMAT_R8G8B8A8_UNORM; desc.SampleDesc.Count=1;
     desc.Usage=D3D11_USAGE_DEFAULT; desc.BindFlags=D3D11_BIND_RENDER_TARGET;
     HostDevice backend(device.Get(),context.Get(),42);
+    ComPtr<ID3D11Debug> debug;
+    if (debug_layer && FAILED(device.As(&debug))) return 10;
     unsigned busy_count=0;
     for (unsigned cycle=0; cycle<100; ++cycle) {
         ComPtr<ID3D11Texture2D> texture;
@@ -56,7 +58,19 @@ int main() {
             }
         }
         if (result!=Result::ok || !retirement.complete() || retirement.holds_target() || !witness.expired()) return 9;
+        if (cycle==0 && debug) {
+            context->ClearState(); context->Flush();
+            OutputDebugStringA("ARS_LIVE_BASELINE\n");
+            if (FAILED(debug->ReportLiveDeviceObjects(static_cast<D3D11_RLDO_FLAGS>(
+                D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL)))) return 10;
+        }
         desc.Width=(desc.Width==16 ? 17 : 16); // 100 target resize/recreate cycles
+    }
+    if (debug) {
+        context->ClearState(); context->Flush();
+        OutputDebugStringA("ARS_LIVE_FINAL\n");
+        if (FAILED(debug->ReportLiveDeviceObjects(static_cast<D3D11_RLDO_FLAGS>(
+            D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL)))) return 10;
     }
     if (debug_layer) {
         ComPtr<ID3D11InfoQueue> messages;
