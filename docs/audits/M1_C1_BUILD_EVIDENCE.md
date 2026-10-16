@@ -109,6 +109,15 @@ The first CI source failed all three Windows fixture targets because Git checks
 text out with CRLF while the generator writes LF. The generator now compares the
 complete ordered JSON oracle, including every binary hash and expected verdict,
 independently of text line endings; it still rejects any oracle content drift.
+Native review also found unknown compression returning UNSUPPORTED too early.
+Only STORE/DEFLATE are accepted; unknown methods are BAD_ASSET. Recognized ZIP64
+extras now wait until all bounded local/central/name/range checks finish before
+UNSUPPORTED, without decoding or narrowing 64-bit sizes. Conflicting metadata
+still returns BAD_ASSET. Extra-field scanning consumes the shared work budget.
+The native schema test also compares both compiled frozen schemas with 14
+generated Python Draft202012Validator reference verdicts, including nested
+references, unknown properties/formats, tuple shape and boolean/integer typing.
+The generator reports the exact reference-corpus SHA256 in each build log.
 MSVC debug iterator proxies allocate inside noexcept constructors, preventing
 typed host-OOM propagation. Only private C++ assets/tests use the same iterator
 ABI in all configs; public ABI and historical targets are unchanged, assertions

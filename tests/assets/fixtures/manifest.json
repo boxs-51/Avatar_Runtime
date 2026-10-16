@@ -709,5 +709,41 @@
     "expected": "BAD_ASSET",
     "family": "Unicode casefold collision",
     "stage": "C1"
+  },
+  {
+    "id": "zip-unknown-method",
+    "file": "zip-unknown-method.arschar",
+    "sha256": "70b28a7aa779e0f3b8a89db6a01670e757011234604e922ae425c3f1153b728d",
+    "bytes": 107,
+    "expected": "BAD_ASSET",
+    "family": "unknown compression is malformed",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-unknown-method-traversal",
+    "file": "zip-unknown-method-traversal.arschar",
+    "sha256": "7888d615e0ce556890f2db9acf0597f7af1c9693c629503716998410655ee6d6",
+    "bytes": 117,
+    "expected": "BAD_ASSET",
+    "family": "unknown compression is malformed",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-zip64-disabled",
+    "file": "zip-zip64-disabled.arschar",
+    "sha256": "a700237e6080bf3bbb9dcfa419ece1742566d6f17c10b1394c81d4dec15b9ed6",
+    "bytes": 119,
+    "expected": "UNSUPPORTED",
+    "family": "ZIP64 bounded envelope precedence",
+    "stage": "C1"
+  },
+  {
+    "id": "zip-zip64-conflict",
+    "file": "zip-zip64-conflict.arschar",
+    "sha256": "d940c2c30f7c896ef520817871f95969e514c24cd5de7eea8e8949478aa933e4",
+    "bytes": 119,
+    "expected": "BAD_ASSET",
+    "family": "ZIP64 bounded envelope precedence",
+    "stage": "C1"
   }
 ]

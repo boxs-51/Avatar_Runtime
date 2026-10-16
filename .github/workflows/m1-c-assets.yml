@@ -68,6 +68,7 @@ jobs:
             build/**/Testing/Temporary/LastTest.log
             build/c1/instrumentation.txt
             build/c1/asset-corpus/manifest.json
+            build/c1/asset-corpus/schema-parity.json
             docs/M1_C_DEPENDENCY_LOCK.json
   windows:
     runs-on: windows-2022
@@ -130,6 +131,7 @@ jobs:
             build/**/Testing/Temporary/LastTest.log
             build/c1/instrumentation.txt
             build/c1/asset-corpus/manifest.json
+            build/c1/asset-corpus/schema-parity.json
             docs/M1_C_DEPENDENCY_LOCK.json
   fuzz:
     runs-on: ubuntu-24.04
@@ -169,3 +171,4 @@ jobs:
             build/c1-fuzz/corpus-sha256.txt
             build/c1-fuzz/crashes
             build/c1-fuzz/asset-corpus/manifest.json
+            build/c1-fuzz/asset-corpus/schema-parity.json

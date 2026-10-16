@@ -47,14 +47,18 @@ void release(voidpf context, voidpf pointer) noexcept {
         static_cast<InflateMemory *>(context)->r->deallocate(p, p->size, 16);
     }
 }
-void extra(const Bytes &b, std::size_t p, std::size_t size) {
+void extra(const Bytes &b, std::size_t p, std::size_t size, Work &work, bool &disabled) {
+    work.take(size);
     const auto end = p + size;
     while (p < end) {
         require(end - p >= 4);
         const auto id = b.u16(p), n = b.u16(p + 2);
         p += 4;
         require(n <= end - p);
-        require(id != 0x0001, ARS_E_UNSUPPORTED);
+        if (id == 0x0001) {
+            require(n == 8 || n == 16 || n == 24 || n == 28);
+            disabled = true;
+        }
         require(id != 0x7075);
         p += n;
     }
@@ -90,6 +94,7 @@ void read_zip(std::span<const std::uint8_t> input, OwnedBundle &out, Resource &r
     require(std::size_t(central) + central_size == end);
     out.members.reserve(count);
     std::size_t at = central, expanded = 0;
+    bool disabled = false;
     for (std::uint32_t i = 0; i < count; ++i) {
         work.take();
         b.bounds(at, 46);
@@ -106,7 +111,8 @@ void read_zip(std::span<const std::uint8_t> input, OwnedBundle &out, Resource &r
         m.size = b.u32(at + 24);
         m.offset = b.u32(at + 42);
         require((m.flags & ~std::uint16_t(0x080e)) == 0);
-        require(m.method == 0 || m.method == 8, ARS_E_UNSUPPORTED);
+        require(m.method == 0 || m.method == 8);
+        require(m.method == 8 || (m.flags & 6) == 0);
         const auto external = b.u32(at + 38);
         require(((external >> 16) & 0170000) != 0120000);
         require((external & 0x400) == 0);
@@ -126,7 +132,7 @@ void read_zip(std::span<const std::uint8_t> input, OwnedBundle &out, Resource &r
                 ARS_E_OUT_OF_BUDGET);
         if (m.directory)
             require(m.size == 0 && m.packed == 0);
-        extra(b, at + 46 + name_size, extra_size);
+        extra(b, at + 46 + name_size, extra_size, work, disabled);
         at += 46 + name_size + extra_size + comment_size;
     }
     require(at == end);
@@ -145,7 +151,7 @@ void read_zip(std::span<const std::uint8_t> input, OwnedBundle &out, Resource &r
         const auto names = b.u16(p + 26), extras = b.u16(p + 28);
         b.bounds(p + 30, std::size_t(names) + extras);
         require(names == m.name.size() && std::memcmp(b.data.data() + p + 30, m.name.data(), names) == 0);
-        extra(b, p + 30 + names, extras);
+        extra(b, p + 30 + names, extras, work, disabled);
         if (m.flags & 8) {
             require((b.u32(p + 14) == 0 || b.u32(p + 14) == m.crc) &&
                     (b.u32(p + 18) == 0 || b.u32(p + 18) == m.packed) &&
@@ -164,6 +170,14 @@ void read_zip(std::span<const std::uint8_t> input, OwnedBundle &out, Resource &r
             next += 12;
             require(next <= central);
         }
+    }
+    require(next == central);
+    // Finish every bounded envelope/name/metadata check before dispatching a
+    // recognized disabled ZIP64 extension. No 64-bit value is narrowed/decoded.
+    require(!disabled, ARS_E_UNSUPPORTED);
+    for (auto &m : out.members) {
+        const auto p = std::size_t(m.offset);
+        const auto data = p + 30 + b.u16(p + 26) + b.u16(p + 28);
         m.bytes.resize(m.size);
         work.take(m.packed);
         if (m.method == 0) {
@@ -195,6 +209,5 @@ void read_zip(std::span<const std::uint8_t> input, OwnedBundle &out, Resource &r
         }
         require(crc32(0, m.bytes.data(), static_cast<uInt>(m.bytes.size())) == m.crc);
     }
-    require(next == central);
 }
 } // namespace ars::assets

@@ -128,6 +128,19 @@ a=copy.deepcopy(r);a['canvas']={'width':1024,'height':1024};save('positive-canva
 for label,name in [('superscript','COM\u00b2.txt'),('console','CONIN$'),('trailing-dot','safe.')]:
  save('path-'+label+'.arschar',bundle(extra=[(name,b'x')]),'BAD_ASSET','Windows device/alias policy')
 save('alias-casefold.arschar',bundle(extra=[('strasse',b'x'),('stra\u00dfe',b'y')]),'BAD_ASSET','Unicode casefold collision')
+for label,filename in [('unknown-method','safe'),('unknown-method-traversal','../escape')]:
+ data=bytearray(archive([(filename,b'x')]));central=data.index(b'PK\x01\x02')
+ struct.pack_into('<H',data,8,99);struct.pack_into('<H',data,central+10,99)
+ save('zip-'+label+'.arschar',bytes(data),'BAD_ASSET','unknown compression is malformed')
+# A redundant ZIP64 size field with ordinary bounded sizes is recognized but
+# disabled; conflicting local metadata must still win as malformed envelope.
+for malformed in (False,True):
+ data=bytearray(archive([('safe',b'x')]));central=data.index(b'PK\x01\x02');end=len(data)-22
+ extra=struct.pack('<HHQ',1,8,1)
+ if malformed:data[14]^=1
+ struct.pack_into('<H',data,central+30,len(extra));struct.pack_into('<I',data,end+12,end-central+len(extra))
+ data[end:end]=extra
+ save('zip-zip64-'+('conflict' if malformed else 'disabled')+'.arschar',bytes(data),'BAD_ASSET' if malformed else 'UNSUPPORTED','ZIP64 bounded envelope precedence')
 (root/'atlas.png').write_bytes(png());(root/'manifest.json').write_bytes((json.dumps(records,indent=2,ensure_ascii=False)+'\n').encode())
 if len(sys.argv)>2:
  reference=json.loads(pathlib.Path(sys.argv[2]).read_text(encoding='utf-8'))
@@ -136,4 +149,18 @@ if len(sys.argv)>2:
  if js(reference)!=js(records):raise SystemExit('fixture manifest differs from committed oracle')
 for schema_path,instance in [('schemas/character_manifest_v0.1.schema.json',m),('schemas/ars2d_rig_v0.1.schema.json',r),('schemas/character_manifest_v0.1.schema.json',dual)]:
  schema=json.loads(pathlib.Path(schema_path).read_text());Draft202012Validator.check_schema(schema);Draft202012Validator(schema).validate(instance)
+parity=[]
+for kind,base,schema_path in [('manifest',m,'schemas/character_manifest_v0.1.schema.json'),('rig',r,'schemas/ars2d_rig_v0.1.schema.json')]:
+ validator=Draft202012Validator(json.loads(pathlib.Path(schema_path).read_text(encoding='utf-8')))
+ variants=[('valid',copy.deepcopy(base)),('missing-required',{}),('unknown-property',{**base,'not_in_schema':True})]
+ if kind=='manifest':
+  for label,change in [('version',lambda a:a.update(schema_version='9.0.0')),('units',lambda a:a.update(units='feet')),('format',lambda a:a['representations']['2d'].update(format='unknown')),('ref-shape',lambda a:a['representations']['2d']['layer_bindings'][0].update(part_ids=[]))]:
+   a=copy.deepcopy(base);change(a);variants.append((label,a))
+ else:
+  for label,change in [('bool-integer',lambda a:a['canvas'].update(width=True)),('zero-dimension',lambda a:a['canvas'].update(width=0)),('tuple-shape',lambda a:a['parts'][0].update(atlas_rect_px=[0,0,1])),('unknown-weight',lambda a:a['parts'][0].update(weights=[]))]:
+   a=copy.deepcopy(base);change(a);variants.append((label,a))
+ for label,instance in variants:
+  parity.append({'id':kind+'-'+label,'schema':kind,'input':js(instance).decode('utf-8'),'valid':validator.is_valid(instance)})
+parity_bytes=js(parity);(root/'schema-parity.json').write_bytes(parity_bytes)
+print(json.dumps({'schema_reference_cases':len(parity),'schema_parity_sha256':hashlib.sha256(parity_bytes).hexdigest(),'reference':'jsonschema Draft202012Validator'}))
 print(json.dumps({'fixtures':len(records),'positive_manifests_schema_validated':3,'seed':'deterministic no RNG','native_parser_execution':False}))

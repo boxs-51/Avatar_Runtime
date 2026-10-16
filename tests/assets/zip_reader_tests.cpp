@@ -21,7 +21,8 @@ int main(int argc, char **argv) {
             } catch (const ars::assets::Failure &e) {
                 actual = e.status;
             }
-            const auto expected = name.starts_with("positive-")              ? ARS_OK
+            const auto expected = name == "zip-zip64-disabled.arschar"       ? ARS_E_UNSUPPORTED
+                                  : name.starts_with("positive-")            ? ARS_OK
                                   : name.find("budget") != std::string::npos ? ARS_E_OUT_OF_BUDGET
                                                                              : ARS_E_BAD_ASSET;
             std::printf("ZIP %s expected=%u actual=%u\n", name.c_str(), unsigned(expected), unsigned(actual));
