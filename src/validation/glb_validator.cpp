@@ -488,9 +488,8 @@ void Context::meshes() {
                     else
                         disabled = true;
                 } else
-                    require(key.starts_with("_"));
+                    require(key.starts_with("_") && a.component != 5125);
             }
-            require(out.tangent == glb_none || out.normal != glb_none);
             require((out.joints == glb_none) == (out.weights == glb_none));
             for (auto sum : weights_sum) {
                 work.take();
@@ -806,8 +805,7 @@ void Context::animation() {
             object(target);
             assets::GlbAnimationChannel channel;
             channel.sampler = v.at("sampler").u32();
-            channel.node = target.at("node").u32();
-            require(channel.sampler < animation.samplers.size() && channel.node < data.nodes.size());
+            require(channel.sampler < animation.samplers.size());
             const auto path = target.at("path").string();
             channel.path = path == "translation" ? 0
                            : path == "rotation"  ? 1
@@ -815,6 +813,12 @@ void Context::animation() {
                            : path == "weights"   ? 3
                                                  : 4;
             require(channel.path < 4);
+            // Core glTF explicitly ignores channels without a target node.
+            // The owned JSON retains their metadata; no active channel is fabricated.
+            if (!target.has("node"))
+                continue;
+            channel.node = target.at("node").u32();
+            require(channel.node < data.nodes.size());
             for (const auto &old : animation.channels) {
                 work.take();
                 require(old.node != channel.node || old.path != channel.path);

@@ -266,6 +266,13 @@ normal=copy.deepcopy(full);attrs=normal.doc['meshes'][0]['primitives'][0]['attri
 glb_case('glb-morph-nan',lambda x:struct.pack_into('<I',x.binary,x.doc['bufferViews'][x.doc['accessors'][delta]['bufferView']]['byteOffset'],0x7fc00000),base=normal)
 quaternion_cubic=copy.deepcopy(full);output=quaternion_cubic.accessor([[0,0,0,0],[0,0,0,1],[0,0,0,0]]*2,shape='VEC4');quaternion_cubic.doc['animations'][0]['samplers'][1].update(output=output,interpolation='CUBICSPLINE');save('positive-glb-cubic-quaternion.glb',quaternion_cubic.bytes(),'OK','cubic quaternion values unit and tangents unrestricted','C2')
 glb_case('glb-cubic-zero-quaternion',lambda x:struct.pack_into('<f',x.binary,x.doc['bufferViews'][x.doc['accessors'][output]['bufferView']]['byteOffset']+28,0),base=quaternion_cubic)
+sequential=GlbFixture();sequential.binary=bytearray(struct.pack('<18f3H',0,0,0,1,0,0,0,1,0,*([0,0,1]*3),0,1,2)+b'\0\0');sequential.doc['bufferViews']=[{'buffer':0,'byteLength':72},{'buffer':0,'byteOffset':72,'byteLength':6}];sequential.doc['accessors'].append({'bufferView':0,'byteOffset':36,'componentType':5126,'count':3,'type':'VEC3'});sequential.doc['meshes'][0]['primitives'][0]['attributes']['NORMAL']=2
+save('glb-shared-view-no-stride.glb',sequential.bytes(),'BAD_ASSET','multiple vertex accessors require explicit stride even for sequential ranges','C2')
+sequential.doc['bufferViews'][0]['byteStride']=12;save('positive-glb-shared-view-stride.glb',sequential.bytes(),'OK','sequential attribute ranges with explicit stride','C2')
+glb_case('glb-custom-uint-attribute',lambda x:x.doc['meshes'][0]['primitives'][0]['attributes'].update(_CUSTOM=x.accessor([0,1,2],5125,'SCALAR')))
+glb_case('positive-glb-custom-float',lambda x:x.doc['meshes'][0]['primitives'][0]['attributes'].update(_CUSTOM=x.accessor([0,1,2],shape='SCALAR')),'OK')
+glb_case('positive-glb-ignored-channel',lambda x:x.doc['animations'][0]['channels'][0]['target'].pop('node'),'OK',full)
+glb_case('positive-glb-tangent-without-normal',lambda x:(x.doc['meshes'][0]['primitives'][0]['attributes'].pop('NORMAL'),x.doc['meshes'][0]['primitives'][0]['targets'][0].pop('NORMAL')),'OK',normal)
 (root/'atlas.png').write_bytes(png());(root/'manifest.json').write_bytes((json.dumps(records,indent=2,ensure_ascii=False)+'\n').encode())
 if args.reference_manifest:
  reference=json.loads(pathlib.Path(args.reference_manifest).read_text(encoding='utf-8'))

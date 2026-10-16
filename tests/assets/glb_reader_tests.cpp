@@ -47,6 +47,9 @@ int main(int argc, char **argv) {
                 test::check(model->data().accessors[0].values[3] == 1 &&
                                 model->metadata().at("asset").at("version").string() == "2.0",
                             "owned binary values and JSON lifetime");
+                if (filename == "positive-glb-ignored-channel.glb")
+                    test::check(model->data().animations[0].channels.size() == 2,
+                                "node-less channel ignored without fabricated active target");
                 if (filename == "positive-glb-full.glb" || filename == "positive-glb-cubic.glb") {
                     const auto &data = model->data();
                     test::check(data.skins.size() == 1 && data.animations.size() == 1 &&

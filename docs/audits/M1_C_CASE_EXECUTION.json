@@ -1879,6 +1879,72 @@
       "stage": "C2",
       "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
       "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-shared-view-no-stride.glb",
+      "file": "glb-shared-view-no-stride.glb",
+      "sha256": "ba22c426c73d74d30da462d87a0f9a38be7df2841ed7f1f62cd6f5fb3cae0d18",
+      "bytes": 640,
+      "expected": "BAD_ASSET",
+      "family": "multiple vertex accessors require explicit stride even for sequential ranges",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-shared-view-stride.glb",
+      "file": "positive-glb-shared-view-stride.glb",
+      "sha256": "2149598bcee891f160fbcac065f2861e78ca28485e474fb90c0b9d547a44964f",
+      "bytes": 656,
+      "expected": "OK",
+      "family": "sequential attribute ranges with explicit stride",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "glb-custom-uint-attribute.glb",
+      "file": "glb-custom-uint-attribute.glb",
+      "sha256": "cb9d2e9360a45b46aac75d0b3b9c2600404b98783676de3306492c9992bab0fd",
+      "bytes": 660,
+      "expected": "BAD_ASSET",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-custom-float.glb",
+      "file": "positive-glb-custom-float.glb",
+      "sha256": "d4290b3cdc19c85a84ee5d599a007b4cd13bfec506162099a4fec93cb397bc6c",
+      "bytes": 660,
+      "expected": "OK",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-ignored-channel.glb",
+      "file": "positive-glb-ignored-channel.glb",
+      "sha256": "706d26c8bbf72dcfe11a9dc87c759dc29dffb12092b96df4b1e99aef1de8b350",
+      "bytes": 2620,
+      "expected": "OK",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
+    },
+    {
+      "id": "positive-glb-tangent-without-normal.glb",
+      "file": "positive-glb-tangent-without-normal.glb",
+      "sha256": "5c53be0c4b30c0539becd02ef800297ed72460c8c576d5202bda88f1311295d2",
+      "bytes": 3100,
+      "expected": "OK",
+      "family": "GLB checked CPU subset",
+      "stage": "C2",
+      "native_requirement": "Complete expected/actual native fixture trace on every required C2 worker",
+      "final_exact_source_execution": "ATTEST_IN_IMPLEMENTATION_PR"
     }
   ],
   "native_suites": [
