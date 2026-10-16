@@ -1,0 +1,26 @@
+{
+  "kind": "M1-D-private-physical-partial-evidence",
+  "tested_source_sha": "e1511c33726f1f247e5825753e77e0f27948b5e7",
+  "tested_tree": "d1841fe3266f82927d59b58f70e03e7838defa62",
+  "runner": {
+    "os": "Windows 10 Pro 10.0.19045",
+    "gpu": "NVIDIA GeForce GTX 1060 3GB",
+    "driver": "32.0.15.8157",
+    "feature_level": "0xb000",
+    "d3d_debug_layer": "available, InfoQueue 0 messages"
+  },
+  "cases": {
+    "D00": "HOLD: G00 technical-method review unresolved",
+    "D01": "PASS: physical host device draw and RGBA readback 64,127,191,255",
+    "D02": "PARTIAL: null, stale generation, wrong dimensions/device, overlapping SRV; no stale host RTV lifetime injection",
+    "D03": "PARTIAL: wrong-thread entry/poll rejected; no concurrent host stress",
+    "D04": "PARTIAL: touched state sample restored; full before/after inventory not captured",
+    "D05": "PARTIAL: 100 exact event queries, BUSY then completion; no failed-query injection",
+    "D06": "PARTIAL: snapshot witness and target reference retained until completion; no live-object teardown count",
+    "D07": "HOLD: 100 target recreate cycles observed; runtime close/in-flight shutdown untested",
+    "D08": "HOLD: no device removal/reset experiment or safe teardown protocol",
+    "D09": "PARTIAL: Windows MSVC shared 29/29 and static 27/27 CTest, frozen ABI custody; Linux CI pending",
+    "D10": "PARTIAL: named physical runner, raw logs and hashes retained; missing D07/D08/leak evidence"
+  },
+  "verdict": "PRIVATE_SPIKE_PARTIAL; M1-D_ACCEPTANCE_HOLD; PUBLIC_RENDER_DISABLED"
+}
