@@ -1,0 +1,455 @@
+{
+  "kind": "M1-C0_FIXTURE_PLAN",
+  "baseline_main": "7900f4954f49bd5d0ae3c7db0bc7e3f35095ec79",
+  "license": "CC0-1.0 for newly generated binary content; manifest/rig templates derived from repository examples, retain repository license notices",
+  "seed": "Deterministic; no RNG, fixed ZIP timestamp and stored entries, explicit stored-DEFLATE PNG stream",
+  "generator_command": "python build/integration-evidence/c0-generate-fixtures.py",
+  "generator_source": "import copy,hashlib,io,json,pathlib,struct,zipfile,zlib\nfrom jsonschema import Draft202012Validator\nroot=pathlib.Path('build/c0-corpus');root.mkdir(parents=True,exist_ok=True)\ndef js(x):return json.dumps(x,ensure_ascii=False,separators=(',',':'),allow_nan=False).encode()\ndef chunk(t,data):return struct.pack('>I',len(data))+t+data+struct.pack('>I',zlib.crc32(t+data))\ndef png(w=1,h=1):\n raw=b'\\0\\xff\\0\\0\\xff'\n stream=b'\\x78\\x01\\x01'+struct.pack('<HH',len(raw),65535-len(raw))+raw+struct.pack('>I',zlib.adler32(raw))\n return b'\\x89PNG\\r\\n\\x1a\\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',w,h,8,6,0,0,0))+chunk(b'IDAT',stream)+chunk(b'IEND',b'')\ndef archive(items):\n data=io.BytesIO()\n with zipfile.ZipFile(data,'w') as z:\n  for name,payload in items:\n   info=zipfile.ZipInfo(name,(1980,1,1,0,0,0));info.create_system=3;info.external_attr=0o100644<<16;info.compress_type=zipfile.ZIP_STORED\n   z.writestr(info,payload)\n return data.getvalue()\nm=json.loads(pathlib.Path('examples/character_dual_mode.json').read_text());m['representations'].pop('3d');m['license']='CC0-1.0 generated test content';m['rig_semantics']=m['rig_semantics'][1:]\nr=json.loads(pathlib.Path('examples/character2d.ars2d.json').read_text());r['canvas']={'width':1,'height':1}\nfor part in r['parts']:\n part['atlas_rect_px']=[0,0,1,1];part['vertices_px']=[[0,0],[1,0],[0,1]];part['uv']=[[0,0],[1,0],[0,1]];part['triangles']=[[0,1,2]]\n for target in part.get('deform_targets',[]):target['vertex_deltas_px']=[[0,0],[0,0],[0,0]]\ndef bundle(manifest=m,rig=r,image=None,extra=()):\n return archive([('character.json',js(manifest)),('assets/character2d.ars2d.json',js(rig)),('assets/atlas.png',png() if image is None else image),*extra])\nrecords=[]\ndef save(name,data,status,group,stage='C1'):\n (root/name).write_bytes(data);records.append({'id':name.removesuffix('.arschar'),'file':name,'sha256':hashlib.sha256(data).hexdigest(),'bytes':len(data),'expected':status,'family':group,'stage':stage,'execution':'NOT_EXECUTED_NATIVE'})\nsave('positive-2d.arschar',bundle(),'OK','complete generated 2D')\nfor name in ['../escape','/absolute','C:/drive','//host/share','folder/../alias','CON','file:stream','folder\\\\escape']:\n save('path-'+str(len(records))+'.arschar',bundle(extra=[(name,b'x')]),'BAD_ASSET','archive names')\nfor names in [('alias','ALIAS'),('\\u00e9','e\\u0301'),('same','same')]:\n save('alias-'+str(len(records))+'.arschar',bundle(extra=[(n,b'x') for n in names]),'BAD_ASSET','canonical collision')\nsave('zip-truncated.arschar',bundle()[:-8],'BAD_ASSET','ZIP envelope')\nsave('zip-tail.arschar',bundle()+b'trailing','BAD_ASSET','ZIP envelope')\nbad=bytearray(bundle());bad[14]^=1;save('zip-crc-conflict.arschar',bytes(bad),'BAD_ASSET','ZIP local/central conflict')\nsave('duplicate-json.arschar',archive([('character.json',b'{\"schema_version\":\"0.1.0\",\"schema_version\":\"0.1.0\"}')]),'BAD_ASSET','strict JSON')\nsave('json-invalid-utf8.arschar',archive([('character.json',b'{\"name\":\"\\xc0\\xaf\"}')]),'BAD_ASSET','strict JSON')\nsave('json-exponent-overflow.arschar',archive([('character.json',b'{\"value\":1e400}')]),'BAD_ASSET','strict JSON')\nsave('json-depth.arschar',archive([('character.json',b'['*65+b'0'+b']'*65)]),'OUT_OF_BUDGET','JSON depth')\nfor label,change in [\n ('duplicate-semantic',lambda a:a['rig_semantics'].append(copy.deepcopy(a['rig_semantics'][0]))),\n ('bool-numeric',lambda a:a['rig_semantics'][0].update(default=True)),\n ('bad-default',lambda a:a['rig_semantics'][0].update(default=2)),\n ('missing-layer-binding',lambda a:a['representations']['2d']['layer_bindings'].pop()),\n ('bad-mapping',lambda a:a['representations']['2d']['mappings'][0].update(target='missing')),\n ('dangling-mask',lambda a:a['visual_layers'][0].update(mask='missing')),\n ('self-mask',lambda a:a['visual_layers'][0].update(mask=a['visual_layers'][0]['id'])),\n ('valid-disabled-mask',lambda a:a['visual_layers'][0].update(mask=a['visual_layers'][1]['id']))]:\n a=copy.deepcopy(m);change(a);save(label+'.arschar',bundle(manifest=a),'UNSUPPORTED' if label=='valid-disabled-mask' else 'BAD_ASSET','manifest semantics')\nfor label,change in [\n ('triangle-oob',lambda a:a['parts'][0].update(triangles=[[0,1,3]])),\n ('uv-length',lambda a:a['parts'][0]['uv'].pop()),\n ('atlas-oob',lambda a:a['parts'][0].update(atlas_rect_px=[0,0,2,1])),\n ('delta-length',lambda a:a['parts'][1]['deform_targets'][0]['vertex_deltas_px'].pop())]:\n a=copy.deepcopy(r);change(a);save(label+'.arschar',bundle(rig=a),'BAD_ASSET','2D geometry')\nsave('png-truncated.arschar',bundle(image=png()[:-5]),'BAD_ASSET','PNG decode')\nbad=bytearray(png());bad[-1]^=1;save('png-crc.arschar',bundle(image=bytes(bad)),'BAD_ASSET','PNG CRC')\nsave('png-dimension.arschar',bundle(image=png(8193,1)),'OUT_OF_BUDGET','PNG preflight')\ng={'asset':{'version':'2.0'},'buffers':[{'byteLength':44}],'bufferViews':[{'buffer':0,'byteOffset':0,'byteLength':36},{'buffer':0,'byteOffset':36,'byteLength':6}],'accessors':[{'bufferView':0,'componentType':5126,'count':3,'type':'VEC3','min':[0,0,0],'max':[1,1,0]},{'bufferView':1,'componentType':5123,'count':3,'type':'SCALAR'}],'meshes':[{'primitives':[{'attributes':{'POSITION':0},'indices':1}]}],'nodes':[{'mesh':0}],'scenes':[{'nodes':[0]}],'scene':0}\ndef glb(desc=g):\n j=js(desc);j+=b' '*((-len(j))%4);b=struct.pack('<9f3H',0,0,0,1,0,0,0,1,0,0,1,2)+b'\\0\\0'\n return struct.pack('<III',0x46546c67,2,12+8+len(j)+8+len(b))+struct.pack('<II',len(j),0x4e4f534a)+j+struct.pack('<II',len(b),0x004e4942)+b\nsave('positive-triangle.glb',glb(),'OK','embedded GLB','C2')\nsave('glb-truncated.glb',glb()[:-1],'BAD_ASSET','GLB bounds','C2')\nfor label,change in [('glb-accessor-overflow',lambda a:a['accessors'][0].update(byteOffset=4294967295)),('glb-external-uri',lambda a:a['buffers'][0].update(uri='https://example.invalid/blocked')),('glb-required-extension',lambda a:a.update(extensionsRequired=['ARS_disabled']))]:\n a=copy.deepcopy(g);change(a);save(label+'.glb',glb(a),'UNSUPPORTED' if label=='glb-required-extension' else 'BAD_ASSET','GLB bounds/URI/extensions','C2')\ndual=copy.deepcopy(m);dual['representations']['3d']={'format':'glb-gltf2','asset':'assets/triangle.glb','mappings':[]}\nsave('positive-dual.arschar',bundle(manifest=dual,extra=[('assets/triangle.glb',glb())]),'OK','complete generated dual CPU bundle','C2')\n(root/'atlas.png').write_bytes(png());(root/'manifest.json').write_bytes(js(records)+b'\\n')\nfor schema_path,instance in [('schemas/character_manifest_v0.1.schema.json',m),('schemas/ars2d_rig_v0.1.schema.json',r),('schemas/character_manifest_v0.1.schema.json',dual)]:\n schema=json.loads(pathlib.Path(schema_path).read_text());Draft202012Validator.check_schema(schema);Draft202012Validator(schema).validate(instance)\nprint(json.dumps({'fixtures':len(records),'positive_manifests_schema_validated':3,'seed':'deterministic no RNG','native_parser_execution':False}))\n",
+  "generator_sha256": "b8f544802a00402fea122a9d918530dc766cd2adef9687f93ba229fd5a343c90",
+  "fixture_count": 40,
+  "fixtures": [
+    {
+      "id": "positive-2d",
+      "file": "positive-2d.arschar",
+      "sha256": "9dd437d90ca4407e662a36b3a71d4368c73a4c856e8a84a0326dac5383d6bfa3",
+      "bytes": 2043,
+      "expected": "OK",
+      "family": "complete generated 2D",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "path-1",
+      "file": "path-1.arschar",
+      "sha256": "957bee99a5a2aed5946c395454cbaabeb4dea793c4e9f9a31213a14dd51f207b",
+      "bytes": 2138,
+      "expected": "BAD_ASSET",
+      "family": "archive names",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "path-2",
+      "file": "path-2.arschar",
+      "sha256": "80e9c4744f75c7bdb81067bc5668c70dd20eb1919092b39722efe774b490295d",
+      "bytes": 2138,
+      "expected": "BAD_ASSET",
+      "family": "archive names",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "path-3",
+      "file": "path-3.arschar",
+      "sha256": "6102f04b9fdfbfc01cafc29a5e6b57036448932c8c8103452ac65d935a206465",
+      "bytes": 2136,
+      "expected": "BAD_ASSET",
+      "family": "archive names",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "path-4",
+      "file": "path-4.arschar",
+      "sha256": "1a0cbd0daad653ae187ad093b66fd571186437de72bd1d226ec72e7a211d9b08",
+      "bytes": 2144,
+      "expected": "BAD_ASSET",
+      "family": "archive names",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "path-5",
+      "file": "path-5.arschar",
+      "sha256": "9f3ad1d5207dc3613f8ced17afbaa286100678d7655e53ab9eb0cd16dc54efef",
+      "bytes": 2150,
+      "expected": "BAD_ASSET",
+      "family": "archive names",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "path-6",
+      "file": "path-6.arschar",
+      "sha256": "81dbc3135beb6fec3097896f85d5f4bd183ff3b9c9f0cbcd22ee595dbca0bbca",
+      "bytes": 2126,
+      "expected": "BAD_ASSET",
+      "family": "archive names",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "path-7",
+      "file": "path-7.arschar",
+      "sha256": "9584490960231087fda4ba728457b86ccc440f39cd0ff437e231ab3c99512f85",
+      "bytes": 2142,
+      "expected": "BAD_ASSET",
+      "family": "archive names",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "path-8",
+      "file": "path-8.arschar",
+      "sha256": "0a81e3a302f01cffb04dd33e87a17401596f5b9a621c26da4ed2bbcb836adabf",
+      "bytes": 2146,
+      "expected": "BAD_ASSET",
+      "family": "archive names",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "alias-9",
+      "file": "alias-9.arschar",
+      "sha256": "37b8ab55b4b5d091d977416995cc48d7e334da4913d7f5a2c28cb8421ca954e7",
+      "bytes": 2217,
+      "expected": "BAD_ASSET",
+      "family": "canonical collision",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "alias-10",
+      "file": "alias-10.arschar",
+      "sha256": "0cc072a5b3e0813f8019038d3a711d9f06d89c1121d5e2030cd3543f80d2dab4",
+      "bytes": 2207,
+      "expected": "BAD_ASSET",
+      "family": "canonical collision",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "alias-11",
+      "file": "alias-11.arschar",
+      "sha256": "057315750abe25908da51e0d3ca2428fda8707fc7bf9fab689deb4f2396fc0c1",
+      "bytes": 2213,
+      "expected": "BAD_ASSET",
+      "family": "canonical collision",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "zip-truncated",
+      "file": "zip-truncated.arschar",
+      "sha256": "c8af08f09e08059e5965f5b46ad3de6d24a2d11c20eddc8c56c9d0211b052921",
+      "bytes": 2035,
+      "expected": "BAD_ASSET",
+      "family": "ZIP envelope",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "zip-tail",
+      "file": "zip-tail.arschar",
+      "sha256": "85812d998122e241b76e02febeeac934f81e2196215961b7bd70b4d66fb67381",
+      "bytes": 2051,
+      "expected": "BAD_ASSET",
+      "family": "ZIP envelope",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "zip-crc-conflict",
+      "file": "zip-crc-conflict.arschar",
+      "sha256": "eff70c332f0462b9c724812b638b4bc4da19c1daa11c16ad41243cff971bb9a6",
+      "bytes": 2043,
+      "expected": "BAD_ASSET",
+      "family": "ZIP local/central conflict",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "duplicate-json",
+      "file": "duplicate-json.arschar",
+      "sha256": "ed96f8fb923b1e9e366faadf529e9f27de53fc97410dcd0661ef0149315f98b8",
+      "bytes": 177,
+      "expected": "BAD_ASSET",
+      "family": "strict JSON",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "json-invalid-utf8",
+      "file": "json-invalid-utf8.arschar",
+      "sha256": "b31e55f1741d1216f69fe525bab6643697dd320b9f8d7462890f84b07004634a",
+      "bytes": 139,
+      "expected": "BAD_ASSET",
+      "family": "strict JSON",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "json-exponent-overflow",
+      "file": "json-exponent-overflow.arschar",
+      "sha256": "24e383c995e887d3fc48e1df00a636028a7525aae6ffd5a8e408b41addda9eda",
+      "bytes": 141,
+      "expected": "BAD_ASSET",
+      "family": "strict JSON",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "json-depth",
+      "file": "json-depth.arschar",
+      "sha256": "91deb190668a70c6ec3332dc8c81bc913debcf8de917e4bc15190079249a7c41",
+      "bytes": 257,
+      "expected": "OUT_OF_BUDGET",
+      "family": "JSON depth",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "duplicate-semantic",
+      "file": "duplicate-semantic.arschar",
+      "sha256": "e66d8e7d1509b2b07ec095ea67a3d5570984bc07c8cff9ba9da377f78bfe5bdc",
+      "bytes": 2131,
+      "expected": "BAD_ASSET",
+      "family": "manifest semantics",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "bool-numeric",
+      "file": "bool-numeric.arschar",
+      "sha256": "4686bfe6367b800aede94a39c5477bdf8b5de4b11e6b440a61d7cc32b3232e31",
+      "bytes": 2046,
+      "expected": "BAD_ASSET",
+      "family": "manifest semantics",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "bad-default",
+      "file": "bad-default.arschar",
+      "sha256": "16ee4f6b5c701a589f605176ac8a6a924726239bfd9648e3340f59acc6512200",
+      "bytes": 2043,
+      "expected": "BAD_ASSET",
+      "family": "manifest semantics",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "missing-layer-binding",
+      "file": "missing-layer-binding.arschar",
+      "sha256": "e9e87941edaf7ca5336d3454cfc2434f7c102c6d7da91856af36171008169a3a",
+      "bytes": 1991,
+      "expected": "BAD_ASSET",
+      "family": "manifest semantics",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "bad-mapping",
+      "file": "bad-mapping.arschar",
+      "sha256": "45301bfe0dd5e9ae8913c60d81a47d0ac338cb16ce29769b152563e97ead776b",
+      "bytes": 2038,
+      "expected": "BAD_ASSET",
+      "family": "manifest semantics",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "dangling-mask",
+      "file": "dangling-mask.arschar",
+      "sha256": "9a6ef2893ea921ef6ec05adf47d191b082a7c9f19403a72bde41078758437871",
+      "bytes": 2060,
+      "expected": "BAD_ASSET",
+      "family": "manifest semantics",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "self-mask",
+      "file": "self-mask.arschar",
+      "sha256": "463a1063e631214171296ee2c7a0144e58829d7717e200971ba631c14abd384a",
+      "bytes": 2062,
+      "expected": "BAD_ASSET",
+      "family": "manifest semantics",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "valid-disabled-mask",
+      "file": "valid-disabled-mask.arschar",
+      "sha256": "815402b2930d23435b20e202d77459ceb2bd60682b2bc507710ad7822b3a1dc5",
+      "bytes": 2063,
+      "expected": "UNSUPPORTED",
+      "family": "manifest semantics",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "triangle-oob",
+      "file": "triangle-oob.arschar",
+      "sha256": "ba1b256c023bf2941c18bdc5c33404d3d1c06d800e1ddbc886d20f2ad8b8239f",
+      "bytes": 2043,
+      "expected": "BAD_ASSET",
+      "family": "2D geometry",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "uv-length",
+      "file": "uv-length.arschar",
+      "sha256": "85b37a4a4ff775b7e6483bafcf6e04a67711a249812b2a5263e88f674a4f3403",
+      "bytes": 2037,
+      "expected": "BAD_ASSET",
+      "family": "2D geometry",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "atlas-oob",
+      "file": "atlas-oob.arschar",
+      "sha256": "fd706b315e4479a3c99aa06d5329572aa4a071e845d30244b98e9a37f6407f3e",
+      "bytes": 2043,
+      "expected": "BAD_ASSET",
+      "family": "2D geometry",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "delta-length",
+      "file": "delta-length.arschar",
+      "sha256": "08174a874c0551a57ee38b9dce1ac7deb19601a1d020fd1a9e246c4b29191db0",
+      "bytes": 2037,
+      "expected": "BAD_ASSET",
+      "family": "2D geometry",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "png-truncated",
+      "file": "png-truncated.arschar",
+      "sha256": "2f5f5f2db0689468f16becc798964a7935ffcf84cc5bc647385845cb37b6ae5d",
+      "bytes": 2038,
+      "expected": "BAD_ASSET",
+      "family": "PNG decode",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "png-crc",
+      "file": "png-crc.arschar",
+      "sha256": "0494737f4c9643aba0acb75052d0b0a08a9979a57dbf9a14ce7a08d7a71188a8",
+      "bytes": 2043,
+      "expected": "BAD_ASSET",
+      "family": "PNG CRC",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "png-dimension",
+      "file": "png-dimension.arschar",
+      "sha256": "ec40dcbceb3fdd81488bdf1527f5bb5f637db3dcd8881563b2b12817c43077bb",
+      "bytes": 2043,
+      "expected": "OUT_OF_BUDGET",
+      "family": "PNG preflight",
+      "stage": "C1",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "positive-triangle.glb",
+      "file": "positive-triangle.glb",
+      "sha256": "eb103a12695cb9628a6f805ece29d6fefeded82d1a4bd35d1a9edc08c75f1616",
+      "bytes": 528,
+      "expected": "OK",
+      "family": "embedded GLB",
+      "stage": "C2",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "glb-truncated.glb",
+      "file": "glb-truncated.glb",
+      "sha256": "67656ee6ff308523123592f9d50e84d304b7d7fb9e45937034eae15521eeb26a",
+      "bytes": 527,
+      "expected": "BAD_ASSET",
+      "family": "GLB bounds",
+      "stage": "C2",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "glb-accessor-overflow.glb",
+      "file": "glb-accessor-overflow.glb",
+      "sha256": "584e5a52bac4a790724ed9dbb338ab391e45e805b6861565a5ea266241752f90",
+      "bytes": 552,
+      "expected": "BAD_ASSET",
+      "family": "GLB bounds/URI/extensions",
+      "stage": "C2",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "glb-external-uri.glb",
+      "file": "glb-external-uri.glb",
+      "sha256": "c31264b4f14cbe4ef1dcb162332f9a0bb5f45683a3a697d9bd96f3a7bb3dce62",
+      "bytes": 568,
+      "expected": "BAD_ASSET",
+      "family": "GLB bounds/URI/extensions",
+      "stage": "C2",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "glb-required-extension.glb",
+      "file": "glb-required-extension.glb",
+      "sha256": "93d3c4d555337d3a05f712f6b6c1cb7adc448872beefaae9346ff291618d1699",
+      "bytes": 568,
+      "expected": "UNSUPPORTED",
+      "family": "GLB bounds/URI/extensions",
+      "stage": "C2",
+      "execution": "NOT_EXECUTED_NATIVE"
+    },
+    {
+      "id": "positive-dual",
+      "file": "positive-dual.arschar",
+      "sha256": "03879f1b8f3a8b0bce16e7ee5fa39ca5152b609ac53b616c58e5e260dc11af95",
+      "bytes": 2757,
+      "expected": "OK",
+      "family": "complete generated dual CPU bundle",
+      "stage": "C2",
+      "execution": "NOT_EXECUTED_NATIVE"
+    }
+  ],
+  "c0_executed": "Generation, hashes and Draft202012Validator checks of three positive manifest/rig combinations only; dependency probes separately. No native ARSCHAR/GLB validation has run.",
+  "reference_validator": "Python jsonschema 4.26.0, Draft202012Validator; not shipping code",
+  "required_before_c1_acceptance": [
+    "More ZIP cases: data descriptor, overlap, local/central mismatch, encrypted/method/ZIP64, symlink and bomb/cumulative count/expanded/ratio limits.",
+    "Exact-at-limit and one-over cumulative memory/node/work cases, cancellation and every host allocator failure.",
+    "All FMT-001..018 applicable oracles plus unknown mode/default/unit and mixed valid-disabled+malformed cases.",
+    "Real PNG filter/interlace/palette/16-bit/truncation/CRC/chunk/decode failure corpus and deterministic fuzz mutations.",
+    "C2 skin/morph/animation fixtures covering exact GLB subset below, not just the initial triangle."
+  ],
+  "c2_subset": {
+    "base": "GLB 2.0 embedded BIN, triangles, fixed local references; no external/file/data URI",
+    "accessors": "Checked component/type/stride/alignment/count/offset/index and sparse-index ordering/uniqueness/ranges; unsupported encodings rejected explicitly",
+    "nodes": "Finite TRS or matrix (not both), unit quaternions, acyclic hierarchy, bounded references",
+    "skins": "<=256 joints, valid inverse binds and joints/weights; actual joint indices and finite normalized weights",
+    "morphs": "Finite position/normal/tangent deltas with matching vertex counts and bounded names/weights",
+    "animation": "Embedded validated time/value accessors; monotonic times, interpolation LINEAR/STEP/CUBICSPLINE with correct counts; no motion playback claim",
+    "images": "Only embedded PNG through bounded decoder; unsupported valid image codecs return UNSUPPORTED after safe structural checks",
+    "extensions": "No required extension capability advertised initially; known disabled/unknown required extensions are rejected explicitly; malformed structures remain BAD_ASSET"
+  },
+  "fuzz_proposal": {
+    "per_pr_seconds_per_entry": 60,
+    "acceptance_campaign_seconds_per_entry": 3600,
+    "entries": [
+      "ARSCHAR",
+      "GLB"
+    ],
+    "seed": 415253,
+    "per_input_seconds": 2,
+    "max_input_bytes": 1048576,
+    "RSS_MiB": 1024,
+    "record": [
+      "source SHA",
+      "corpus SHA256",
+      "compiler/sanitizer",
+      "exact command",
+      "duration",
+      "execution count",
+      "peak RSS",
+      "timeout/crash artifact hashes"
+    ],
+    "meaning": "A completed budget is evidence of that run only; timeout/crash is a failed gate, not proof of safety."
+  },
+  "regenerated_manifest_sha256": "7840730dcc28fc070bc8e0fb2df5b69fe90db29d9e9ae56b34e6c0e4ec46472a"
+}
