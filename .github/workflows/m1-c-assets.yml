@@ -1,0 +1,178 @@
+name: M1-C1 Private CPU Asset Validation (NO public activation)
+on:
+  pull_request:
+    paths:
+      - 'CMakeLists.txt'
+      - 'src/assets/**'
+      - 'src/validation/**'
+      - 'schemas/**'
+      - 'cmake/**'
+      - 'tests/**'
+      - 'fuzz/**'
+      - 'docs/audits/M1_C*'
+      - 'docs/M1_C_DEPENDENCY_LOCK.json'
+      - '.github/workflows/m1-c-assets.yml'
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-24.04, cc: gcc, cxx: g++, shared: 'ON', sanitizer: 'NONE'}
+          - {os: ubuntu-24.04, cc: gcc, cxx: g++, shared: 'OFF', sanitizer: 'NONE'}
+          - {os: ubuntu-24.04, cc: clang, cxx: clang++, shared: 'ON', sanitizer: 'NONE'}
+          - {os: ubuntu-24.04, cc: clang, cxx: clang++, shared: 'OFF', sanitizer: 'NONE'}
+          - {os: ubuntu-24.04, cc: gcc, cxx: g++, shared: 'ON', sanitizer: 'ADDRESS'}
+          - {os: ubuntu-22.04, cc: gcc, cxx: g++, shared: 'OFF', sanitizer: 'THREAD'}
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {fetch-depth: 0}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with: {python-version: '3.12'}
+      - name: Exact source and immutable history
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "C1_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}"
+          git show -s --format='synthetic=%H tree=%T parents=%P'
+          python -m pip install --disable-pip-version-check jsonschema==4.26.0
+          python -S tests/assets/fixtures/generate_fixtures.py build/c1-offline-corpus tests/assets/fixtures/manifest.json
+          python tests/contracts/check_m0_rc1_pins.py
+          python -m unittest discover -s tests/contracts -p 'test_*.py' -v
+          python -m unittest discover -s tests/governance -p 'test_*.py' -v
+      - name: Native CPU assets, OS worker bounds, historical core and consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S . -B build/c1 -DCMAKE_BUILD_TYPE=Debug -DARS_BUILD_ASSET_VALIDATOR=ON -DARS_ASSET_FETCH_DEPS=ON -DARS_ASSET_REFERENCE_CHECKS=ON -DARS_ASSET_SANITIZER=${{ matrix.sanitizer }} -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_RUNTIME_SANITIZER=${{ matrix.sanitizer }}
+          cmake --build build/c1 --parallel 2
+          if [ '${{ matrix.sanitizer }}' != NONE ]; then
+            nm build/c1/bin/ars_profile_b_tests > build/c1/instrumentation.txt
+            if [ '${{ matrix.sanitizer }}' = THREAD ]; then grep -q '__tsan_' build/c1/instrumentation.txt; else grep -q '__asan_' build/c1/instrumentation.txt; grep -q '__ubsan_' build/c1/instrumentation.txt; fi
+          fi
+          ctest --test-dir build/c1 --verbose
+          for kind in foundation core; do
+            cmake -S examples/plain_c -B build/c1-consumer-$kind -DARS_FOUNDATION_INFO="$PWD/build/c1/$kind-Debug.cmake"
+            cmake --build build/c1-consumer-$kind --parallel 2
+            ctest --test-dir build/c1-consumer-$kind --verbose
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: c1-linux-${{ matrix.cc }}-${{ matrix.shared }}-${{ matrix.sanitizer }}
+          path: |
+            build/**/Testing/Temporary/LastTest.log
+            build/c1/instrumentation.txt
+            build/c1/asset-corpus/manifest.json
+            build/c1/asset-corpus/schema-parity.json
+            docs/M1_C_DEPENDENCY_LOCK.json
+  windows:
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {shared: 'ON', sanitizer: 'NONE', config: Debug}
+          - {shared: 'OFF', sanitizer: 'NONE', config: Debug}
+          - {shared: 'OFF', sanitizer: ADDRESS, config: RelWithDebInfo}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {fetch-depth: 0}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with: {python-version: '3.12'}
+      - name: Exact source and immutable history
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Write-Output 'C1_SOURCE_HEAD=${{ github.event.pull_request.head.sha }}'
+          python -m pip install --disable-pip-version-check jsonschema==4.26.0
+          if ($LASTEXITCODE -ne 0) { throw 'reference validator setup failed' }
+          python -S tests/assets/fixtures/generate_fixtures.py build/c1-offline-corpus tests/assets/fixtures/manifest.json
+          if ($LASTEXITCODE -ne 0) { throw 'stdlib-only offline fixture generation failed' }
+          python tests/contracts/check_m0_rc1_pins.py
+          if ($LASTEXITCODE -ne 0) { throw 'custody failed' }
+          python -m unittest discover -s tests/contracts -p 'test_*.py' -v
+          if ($LASTEXITCODE -ne 0) { throw 'contracts failed' }
+          python -m unittest discover -s tests/governance -p 'test_*.py' -v
+          if ($LASTEXITCODE -ne 0) { throw 'governance failed' }
+      - name: Native assets and actual worker resource limits
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          cmake -S . -B build/c1 -A x64 -DARS_BUILD_ASSET_VALIDATOR=ON -DARS_ASSET_FETCH_DEPS=ON -DARS_ASSET_REFERENCE_CHECKS=ON -DARS_ASSET_SANITIZER=${{ matrix.sanitizer }} -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=${{ matrix.shared }} -DARS_RUNTIME_SANITIZER=${{ matrix.sanitizer }}
+          if ($LASTEXITCODE -ne 0) { throw 'configure failed' }
+          cmake --build build/c1 --config ${{ matrix.config }} --parallel 2
+          if ($LASTEXITCODE -ne 0) { throw 'build failed' }
+          $vs = & "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe" -latest -products '*' -property installationPath
+          $compiler = Get-ChildItem "$vs/VC/Tools/MSVC/*/bin/Hostx64/x64/dumpbin.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+          $env:PATH = $compiler.DirectoryName + ';' + $env:PATH
+          if ('${{ matrix.sanitizer }}' -eq 'ADDRESS') {
+            & $compiler.FullName /imports build/c1/bin/${{ matrix.config }}/ars_profile_b_tests.exe | Out-File build/c1/instrumentation.txt
+            if (!(Select-String -Path build/c1/instrumentation.txt -Pattern 'asan' -Quiet)) { throw 'missing actual ASAN imports' }
+          }
+          ctest --test-dir build/c1 -C ${{ matrix.config }} --verbose
+          if ($LASTEXITCODE -ne 0) { throw 'native gate failed' }
+          foreach ($kind in @('foundation','core')) {
+            $info = (Resolve-Path "build/c1/$kind-${{ matrix.config }}.cmake").Path
+            cmake -S examples/plain_c -B "build/c1-consumer-$kind" -A x64 "-DARS_FOUNDATION_INFO=$info"
+            if ($LASTEXITCODE -ne 0) { throw 'consumer configure failed' }
+            cmake --build "build/c1-consumer-$kind" --config ${{ matrix.config }} --parallel 2
+            if ($LASTEXITCODE -ne 0) { throw 'consumer build failed' }
+            ctest --test-dir "build/c1-consumer-$kind" -C ${{ matrix.config }} --verbose
+            if ($LASTEXITCODE -ne 0) { throw 'consumer execution failed' }
+          }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: c1-windows-${{ matrix.shared }}-${{ matrix.sanitizer }}
+          path: |
+            build/**/Testing/Temporary/LastTest.log
+            build/c1/instrumentation.txt
+            build/c1/asset-corpus/manifest.json
+            build/c1/asset-corpus/schema-parity.json
+            docs/M1_C_DEPENDENCY_LOCK.json
+  fuzz:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env: {CC: clang, CXX: clang++}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {fetch-depth: 0}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with: {python-version: '3.12'}
+      - name: Build actual instrumented production parser and native seed corpus
+        run: |
+          set -euo pipefail
+          echo "C1_FUZZ_SOURCE=${{ github.event.pull_request.head.sha }}"
+          python -m pip install --disable-pip-version-check jsonschema==4.26.0
+          cmake -S . -B build/c1-fuzz -DCMAKE_BUILD_TYPE=RelWithDebInfo -DARS_BUILD_ASSET_VALIDATOR=ON -DARS_ASSET_FETCH_DEPS=ON -DARS_ASSET_REFERENCE_CHECKS=ON -DARS_ASSET_SANITIZER=ADDRESS -DARS_ASSET_FUZZ=ON
+          cmake --build build/c1-fuzz --target arschar_fuzzer --parallel 2
+          mkdir -p build/c1-fuzz/seeds build/c1-fuzz/crashes
+          cp build/c1-fuzz/asset-corpus/*.arschar build/c1-fuzz/seeds/
+          nm build/c1-fuzz/bin/arschar_fuzzer > build/c1-fuzz/instrumentation.txt
+          grep -q '__asan_' build/c1-fuzz/instrumentation.txt
+          grep -q '__ubsan_' build/c1-fuzz/instrumentation.txt
+          grep -q 'LLVMFuzzerTestOneInput' build/c1-fuzz/instrumentation.txt
+      - name: Seeded 60-second smoke then 3600-second acceptance campaign
+        run: |
+          set -euo pipefail
+          build/c1-fuzz/bin/arschar_fuzzer -seed=415253 -max_total_time=60 -timeout=2 -rss_limit_mb=1024 -max_len=1048576 -artifact_prefix=build/c1-fuzz/crashes/ build/c1-fuzz/seeds 2>&1 | tee build/c1-fuzz/smoke.log
+          build/c1-fuzz/bin/arschar_fuzzer -seed=415253 -max_total_time=3600 -timeout=2 -rss_limit_mb=1024 -max_len=1048576 -artifact_prefix=build/c1-fuzz/crashes/ build/c1-fuzz/seeds 2>&1 | tee build/c1-fuzz/campaign.log
+          find build/c1-fuzz/seeds -type f -exec sha256sum {} + | sort > build/c1-fuzz/corpus-sha256.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: c1-clang-fuzz-actual-parser
+          path: |
+            build/c1-fuzz/*.log
+            build/c1-fuzz/instrumentation.txt
+            build/c1-fuzz/corpus-sha256.txt
+            build/c1-fuzz/crashes
+            build/c1-fuzz/asset-corpus/manifest.json
+            build/c1-fuzz/asset-corpus/schema-parity.json

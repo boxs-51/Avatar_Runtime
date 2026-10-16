@@ -1,0 +1,409 @@
+{
+  "kind": "M1-C0_DEPENDENCY_AND_RESOURCE_DECISION_PACKET",
+  "review_date": "2026-10-16",
+  "baseline_main": "7900f4954f49bd5d0ae3c7db0bc7e3f35095ec79",
+  "owner_instruction": "toi phe duyet ke hoach C0,1,2",
+  "owner_plan_approval": [
+    "C0",
+    "C1",
+    "C2"
+  ],
+  "merge_authorized": false,
+  "public_activation": false,
+  "verdict": "SCHEMA_HELPER_IMPLEMENTED_PENDING_EXACT_SOURCE_MATRIX",
+  "c1_ready": false,
+  "c2_ready": false,
+  "dependencies": [
+    {
+      "name": "zlib",
+      "repository": "madler/zlib",
+      "commit": "da607da739fa6047df13e66a2af6b8bec7c2a498",
+      "url": "https://codeload.github.com/madler/zlib/zip/da607da739fa6047df13e66a2af6b8bec7c2a498",
+      "archive_sha256": "21de001766abb1f5bfdfb3c23aa42d30a6bbd7eddd37131d5e7fe89c5ec068f8",
+      "bytes": 1692031,
+      "files": 299,
+      "version": "1.3.2",
+      "license_expression": "Zlib",
+      "license_path": "LICENSE",
+      "license_sha256": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
+      "source_review_files": [
+        {
+          "path": "adler32.c",
+          "sha256": "9cd1443a24ff2a3053961695bd432035c58347386a420d3388232376ebabe211"
+        },
+        {
+          "path": "crc32.c",
+          "sha256": "da37f3483e77c20f64c28cf55d62d7bed9d62af33eb401be906835d84539b9c9"
+        },
+        {
+          "path": "deflate.c",
+          "sha256": "ea9ca4eb51b1a71aaf214b99f4a9fab177253d6268cae8e4c26d44d1812e52c2"
+        },
+        {
+          "path": "infback.c",
+          "sha256": "bf9788af31e08a4242fc9d36bc0ce1a7a667bbfd9edc51ff26146195ee2e528a"
+        },
+        {
+          "path": "inffast.c",
+          "sha256": "f96787a11bb7131ffd2221fb40db27f6a5a1dfb12f59c0bc388807010749c34a"
+        },
+        {
+          "path": "inflate.c",
+          "sha256": "90221ea7d762e7044057f6ad5013e969086c6ba3d3051716b7aa786d7a6362ec"
+        },
+        {
+          "path": "inftrees.c",
+          "sha256": "f7ee9ce5925fc9d1579c76e574feed85f5ca4ccddc446a7795578854bbc65743"
+        },
+        {
+          "path": "trees.c",
+          "sha256": "a16217d5ea6d8342ff08afe5207b1dab620f05610e121dda55b4f9aae9de4f68"
+        },
+        {
+          "path": "zutil.c",
+          "sha256": "1279908a15580224a2c1f377555ffdd150327fed71801aa77fc35978dcb741c8"
+        },
+        {
+          "path": "compress.c",
+          "sha256": "41f1c7ad886012571cd481a2b1b6a83812e5125e90d995e298fde34d6c015614"
+        },
+        {
+          "path": "uncompr.c",
+          "sha256": "953f5381650838d507b01499790bd64524433ea6ea29ea9325bf542af10cfe7d"
+        },
+        {
+          "path": "zlib.h",
+          "sha256": "818667d6ab6a37fe7469cb06a7f0cb2c2cb2f2c948a03e5accf1a4a74bf3020a"
+        },
+        {
+          "path": "zconf.h",
+          "sha256": "cb7c2c84211473b4699223edd363d3207b43b9578e739b5bf638f42204ea6e0f"
+        }
+      ],
+      "selected_for_inprocess_shipping": true,
+      "acceptance": "LOCAL_NATIVE_ALLOCATOR_PROBE_PASS_NOT_C1_PASS",
+      "upstream_release": "https://github.com/madler/zlib/releases/tag/v1.3.2",
+      "transitive_runtime_dependencies": []
+    },
+    {
+      "name": "libpng",
+      "repository": "pnggroup/libpng",
+      "commit": "cd952f49f95bb27154ae77dbb103032d95f6e580",
+      "url": "https://codeload.github.com/pnggroup/libpng/zip/cd952f49f95bb27154ae77dbb103032d95f6e580",
+      "archive_sha256": "90e9326b7c9e53758f5a4f244d36283cfe11449ef0870911797614d92bbb1c78",
+      "bytes": 1938909,
+      "files": 674,
+      "version": "1.6.59",
+      "license_expression": "Libpng-2.0",
+      "license_path": "LICENSE",
+      "license_sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526",
+      "source_review_files": [
+        {
+          "path": "png.c",
+          "sha256": "741727b68e19a187bea802c64aea509fa64c78b09fecf4f19822a6a31c324159"
+        },
+        {
+          "path": "pngerror.c",
+          "sha256": "6e8f475172d8c1e34982f4fa4130042110d5591dccdf95723345c2a7e5c7f761"
+        },
+        {
+          "path": "pngget.c",
+          "sha256": "3098a692f096c58b9c0f039fbfd38c29b0a86c464a498a9c775c22698a2bec95"
+        },
+        {
+          "path": "pngmem.c",
+          "sha256": "2dcf91e5f7d4aaa11c53cdac246223f405e5cc3e1c7ccccb7a40650c41465b56"
+        },
+        {
+          "path": "pngpread.c",
+          "sha256": "230e4e01a9748922a33a936d1c4a2f599d61fc6425b49270197949fd3f38443e"
+        },
+        {
+          "path": "pngread.c",
+          "sha256": "8ff4bfc0218fb9f712ab5940baeb546b3bbf64abce4038572944716d5520fec8"
+        },
+        {
+          "path": "pngrio.c",
+          "sha256": "3c710643f274fd2b4aa2bc154c9dc53a512edae773dda1434f205fb005f2e93e"
+        },
+        {
+          "path": "pngrtran.c",
+          "sha256": "0e3737046eb1523480e74ac1235ac8f2df541ca9e7f43c92431b1f0c8c8379d9"
+        },
+        {
+          "path": "pngrutil.c",
+          "sha256": "a1d62bc61c118b225c60549ea8de3065ae84642af56dd3776bf4692fb0f6aa5e"
+        },
+        {
+          "path": "pngset.c",
+          "sha256": "36153f08f34be63ca572d51dda7e0dcc534d4eca264f45041ceae6e83138fc9b"
+        },
+        {
+          "path": "pngtrans.c",
+          "sha256": "38aa34b51567a06428b15be16c5819e6f2ae0d3bfce4e1f777ae6242f74eb6d4"
+        },
+        {
+          "path": "pngwio.c",
+          "sha256": "a25def3351807ed3f2e12a02a7801d4208f0033516185f4ad524d804d2f00ce3"
+        },
+        {
+          "path": "pngwrite.c",
+          "sha256": "85533196464e11d7ee4602fc19c887bd3923636cff7c44c8c0dab97624a17797"
+        },
+        {
+          "path": "pngwtran.c",
+          "sha256": "6355098f20b9058ab607cebd01f3130c61ac858dceb339c3a7d83407c1067b94"
+        },
+        {
+          "path": "pngwutil.c",
+          "sha256": "a6e725ce8439edadea1e1f5092c4bcbf101d0a63cff0906271af6aceef89dfd3"
+        },
+        {
+          "path": "png.h",
+          "sha256": "5758258cb691e429bafbf16057210e2d9bfa2c33b6c4636a6db562480f39b273"
+        },
+        {
+          "path": "pngconf.h",
+          "sha256": "3f1d9e8b05ec5165b65744f99af0ef3d0d10d77d6866551715b80ac884a0bf47"
+        },
+        {
+          "path": "scripts/pnglibconf.h.prebuilt",
+          "sha256": "4172045bef3f4032089a697f18758e24e02a3873851108409f00dadf6deb2530"
+        }
+      ],
+      "selected_for_inprocess_shipping": true,
+      "acceptance": "LOCAL_NATIVE_ALLOCATOR_PROBE_PASS_NOT_C1_PASS",
+      "upstream_release": "https://github.com/pnggroup/libpng/releases/tag/v1.6.59",
+      "transitive_runtime_dependencies": [
+        "zlib"
+      ]
+    },
+    {
+      "name": "jsoncons",
+      "repository": "danielaparker/jsoncons",
+      "commit": "9e57e421285422d7aeeb5aa7dc839f6a19121ee6",
+      "url": "https://codeload.github.com/danielaparker/jsoncons/zip/9e57e421285422d7aeeb5aa7dc839f6a19121ee6",
+      "archive_sha256": "832710c9114ef64e31c5b4a74cf02f7c3dd839b8aa25e6f01aa3e6548a5f39c0",
+      "bytes": 2573760,
+      "files": 2033,
+      "version": "1.10.0",
+      "license_expression": "BSL-1.0",
+      "license_path": "LICENSE",
+      "license_sha256": "97550c71a0bdfc20bf85c6c5167d7b7785f9bd3448baee048fbedf742ed52270",
+      "source_review_files": [
+        {
+          "path": "include/jsoncons_ext/jsonschema/json_schema.hpp",
+          "sha256": "fe58bb1cd73bc2d2a373cb160b2b7018ea85aff5f2d585be738834abf7b24669"
+        },
+        {
+          "path": "include/jsoncons_ext/jsonschema/json_schema_factory.hpp",
+          "sha256": "38fdc3213f0cbdbe34cc31bfb216a9d8e78b31acd14c355b53f5705117ea31de"
+        },
+        {
+          "path": "include/jsoncons_ext/jsonschema/common/keyword_validator.hpp",
+          "sha256": "bcaae280d2537edb582732ce1512f0019bbbf95c5e165e152d7797d6feb432dc"
+        },
+        {
+          "path": "include/jsoncons/json_decoder.hpp",
+          "sha256": "9459d85d57d05d9e444cdb68f97e6dd071bae557131f60ec624c503c48b80e56"
+        }
+      ],
+      "selected_for_inprocess_shipping": false,
+      "acceptance": "REJECTED_FOR_INPROCESS_SCHEMA_VALIDATION",
+      "upstream_release": "https://github.com/danielaparker/jsoncons/releases/tag/v1.10.0",
+      "transitive_runtime_dependencies": [
+        "C++ standard library including regex/containers"
+      ],
+      "selected_for_schema_worker": true
+    },
+    {
+      "name": "utf8proc",
+      "repository": "JuliaStrings/utf8proc",
+      "commit": "79cdd5ab40c79afa559f689ffc13b76812dee1ac",
+      "url": "https://codeload.github.com/JuliaStrings/utf8proc/zip/79cdd5ab40c79afa559f689ffc13b76812dee1ac",
+      "archive_sha256": "f8308f253b16af64778a79c3ca7a2cdba356ee12a1e0c7ba154f75689445b80a",
+      "bytes": 224399,
+      "files": 61,
+      "version": "2.12.0",
+      "license_expression": "MIT AND LicenseRef-utf8proc-Unicode-Data",
+      "license_path": "LICENSE.md",
+      "license_sha256": "3b510150d34f248a221bb88e1d811238d6c6c18b51231822c42974c39bb07256",
+      "source_review_files": [
+        {
+          "path": "utf8proc.c",
+          "sha256": "f38438eb986ba7eedad0f2e820a70fae1aaf05197364ba0381a5e84775099ef8"
+        },
+        {
+          "path": "utf8proc.h",
+          "sha256": "08da85e820efaa3613500946c26b2dc427a07f76001ed7c16bc90f298b814c35"
+        },
+        {
+          "path": "utf8proc_data.c",
+          "sha256": "b4911d4162d216afa612317a9b981851e15d672f4d93b25f3a1eb986f8c0aedb"
+        }
+      ],
+      "selected_for_inprocess_shipping": true,
+      "acceptance": "LOCAL_NATIVE_ALLOCATOR_PROBE_PASS_NOT_C1_PASS",
+      "upstream_release": "https://github.com/JuliaStrings/utf8proc/releases/tag/v2.12.0",
+      "transitive_runtime_dependencies": [
+        "embedded Unicode data"
+      ]
+    }
+  ],
+  "source_inventory": {
+    "local_file": "build/integration-evidence/c0-source-inventory.json",
+    "sha256": "2d7d37a0d96e11015b6136cc1a9146219fa1af3e21430982b35d0e79730f0a67",
+    "archive_hashes_above_are_reproducible_inventory_custody": true
+  },
+  "security_review": {
+    "coverage": "Upstream release/security pages and pinned implementation inspection; not a comprehensive vulnerability attestation",
+    "sources": [
+      "https://www.zlib.net/",
+      "https://libpng.org/pub/png/libpng.html",
+      "https://github.com/danielaparker/jsoncons/releases/tag/v1.10.0",
+      "https://github.com/JuliaStrings/utf8proc/releases/tag/v2.12.0",
+      "https://github.com/danielaparker/jsoncons/blob/9e57e421285422d7aeeb5aa7dc839f6a19121ee6/CHANGELOG.md"
+    ],
+    "libpng": "Pinned 1.6.59 includes the upstream fix for CVE-2026-46675; older candidate versions were not selected.",
+    "zlib": "Pinned 1.3.2 release incorporates upstream audit remediation.",
+    "remaining": "No claim that release selection or local probes establish absence of vulnerabilities. Linux/native full C1 matrix and fuzz are still required."
+  },
+  "build_contract": {
+    "mechanism": "Immutable codeload archive URL and SHA256 for each dependency; verify full cached archive before extraction/build. No mutable tag fallback, system-library fallback, runtime download or installer.",
+    "offline": "Once cache is populated, configure/build must work with network disabled; missing cache or wrong digest is a hard configure failure.",
+    "shipping": "Static private dependencies, PIC where required, hidden symbols; preserve SDK ABI20 export oracle. Propagate sanitizer flags to actual decoder objects.",
+    "vendor_paths_authorized": [],
+    "planned_build_path": "cmake/ars_asset_dependencies.cmake",
+    "probe_build": "Standalone local audit, not linked into ars_runtime_core and not a shipping target."
+  },
+  "limits": {
+    "compressed_bytes": 268435456,
+    "expanded_bytes": 402653184,
+    "entries": 4096,
+    "json_document_bytes": 1048576,
+    "json_depth": 64,
+    "json_nodes_per_document": 65536,
+    "json_key_bytes": 1024,
+    "path_utf8_bytes": 512,
+    "normalized_path_codepoints": 8192,
+    "image_edge": 8192,
+    "decoded_rgba_bytes_total": 134217728,
+    "png_chunk_count": 4096,
+    "png_ancillary_chunk_bytes": 65536,
+    "vertices_total": 2000000,
+    "joints_total": 256,
+    "layers": 128,
+    "glb_objects_per_kind": 65536,
+    "work_steps": 8000000,
+    "resident_bytes_including_proposed_worker": 1073741824,
+    "max_jobs_per_context": 1,
+    "archive_inflation_ratio": 1000
+  },
+  "proposed_resident_budget_MiB": {
+    "owned_input": 256,
+    "expanded_members": 384,
+    "parent_json_and_cpu_metadata": 64,
+    "decoded_pixels": 128,
+    "scratch_including_deflate_and_unicode": 64,
+    "schema_worker_system_heap_and_stacks": 128,
+    "total": 1024,
+    "accounting": "Check cumulative live reservations before allocation; member/pixel ownership moves into immutable result without duplicate publication copy. A worker reservation is charged in the parent before launch. This is a proposal, not implemented accounting."
+  },
+  "zip_policy": {
+    "methods": [
+      0,
+      8
+    ],
+    "zip64": "Recognized disabled; reject before decoding after bounded envelope checks, never narrow 64-bit sizes.",
+    "encryption": "Denied; no password support.",
+    "data_descriptors": "Support bit 3 only with exact central/local/descriptor agreement and nonoverlapping ranges.",
+    "crc": "Check actual decoded bytes; declared sizes alone never authorize allocation.",
+    "paths": "Validate strict UTF-8, NFC plus Unicode casefold aliases with bounded utf8proc_decompose/reencode; reject absolute/UNC/device/drive/ADS/backslash/traversal/symlink/duplicate/conflicting names. No extraction.",
+    "nested_archives": "Deny recursive archive ingestion.",
+    "unknown_payloads": "Only referenced, supported data is decoded; extension/code payloads never loaded as native modules."
+  },
+  "json_policy": {
+    "schema": "Actual Draft 2020-12 engine against the two immutable local schemas; no partial hand-written replacement.",
+    "untrusted_schemas": false,
+    "remote_resolver": false,
+    "strict": "Reject duplicate keys, invalid UTF-8, trailing tokens, nonfinite/exponent overflow. Count depth/nodes/bytes before materialization.",
+    "precedence": "Budget preflight, structural/schema and complete semantic validity, then recognized disabled capabilities. BAD_ASSET outranks UNSUPPORTED for malformed combinations.",
+    "issue": "PMR DOM does not cover all schema-validation allocations. Pinned jsoncons standalone probe with a fixed 1 MiB PMR arena validates successfully but performs 36 global new calls requesting 1664 bytes outside PMR. Size-limited input is not the promised host allocation cap.",
+    "upstream_allocator_note": "Upstream changelog explicitly notes schema temporary allocations still use std::allocator; the local probe verifies the resulting mismatch with our required host cap, not an upstream contract violation."
+  },
+  "native_probes": {
+    "platform": "Windows x64 / MSVC 19.51.36252.0, VS18 2026; not Linux conformance",
+    "schema_gate": {
+      "expected": "valid instance and zero allocations outside bounded PMR",
+      "actual": "valid=1 outside_pmr_allocations=36 outside_pmr_requested_bytes=1664",
+      "exit": 1,
+      "result": "DEPENDENCY_GATE_RED",
+      "log": "build/integration-evidence/c0-schema-allocation-red.log",
+      "log_sha256": "eef78cc190ae9ad5872e52174fd4c4786b1506d06058aa35f5698915a7e7cc46"
+    },
+    "decoder_gate": {
+      "result": "LOCAL_WINDOWS_ASAN_PASS",
+      "exit": 0,
+      "png": "Actual 1x1 RGBA decode, six allocation sites, peak requested live bytes 8954; each allocation-failure cut and one-byte cap clean.",
+      "zlib": "Actual inflate, peak requested live bytes 7152, allocation-cap denial clean.",
+      "utf8proc": "Caller-buffer decompose/reencode: casefold Strasse alias, invalid UTF-8 rejection and required-capacity reporting.",
+      "log": "build/integration-evidence/c0-decoder-asan.log",
+      "log_sha256": "aadd4ab8f41832d8ade0716f50174fbcbeaab0d526d16998543f035fdeefaeb2",
+      "instrumentation_log": "build/integration-evidence/c0-asan-instrumentation.txt",
+      "instrumentation_sha256": "4df32b3cc68c9cea7ff72db6a9ecbe4f55cb0f60edaaef43a9e9bc5db9004ad9"
+    },
+    "audit_harness_corrections": [
+      "Initial schema probe exhausted Windows default stack because its 1 MiB arena was on stack; moved to static storage before collecting the dependency RED.",
+      "Initial decoder probe header shifted malloc alignment by eight bytes on MSVC and crashed at setjmp. ASAN located the harness error; a two-word header preserves 16-byte alignment. Corrected allocator passes all fault cuts.",
+      "First ASAN launch lacked the installed runtime DLL in PATH; rerun with the matching compiler bin directory. No failed attempt is counted as PASS."
+    ],
+    "reproduce": "Extract probe_sources into build/c0-probe; populate build/c-deps from verified archives; cmake -S build/c0-probe -B build/c0-probe-out -A x64; cmake --build build/c0-probe-out --config Release --parallel 2; execute c0_schema_alloc (expected exit 1). Decoder ASAN uses -DC0_ASAN=ON in a separate build and matching MSVC ASAN runtime PATH.",
+    "probe_sources": {
+      "CMakeLists.txt": "cmake_minimum_required(VERSION 3.22)\nproject(C0AllocationProbe LANGUAGES C CXX)\nadd_executable(c0_schema_alloc allocation_probe.cpp)\ntarget_compile_features(c0_schema_alloc PRIVATE cxx_std_20)\ntarget_include_directories(c0_schema_alloc SYSTEM PRIVATE ../c-deps/jsoncons/include)\nset(zdir ${CMAKE_CURRENT_SOURCE_DIR}/../c-deps/zlib)\nset(pdir ${CMAKE_CURRENT_SOURCE_DIR}/../c-deps/libpng)\nset(udir ${CMAKE_CURRENT_SOURCE_DIR}/../c-deps/utf8proc)\nset(zfiles adler32.c crc32.c deflate.c infback.c inffast.c inflate.c inftrees.c trees.c zutil.c compress.c uncompr.c)\nlist(TRANSFORM zfiles PREPEND ${zdir}/)\nadd_library(c0z STATIC ${zfiles})\ntarget_include_directories(c0z PUBLIC ${zdir})\nconfigure_file(${pdir}/scripts/pnglibconf.h.prebuilt ${CMAKE_CURRENT_BINARY_DIR}/pnglibconf.h COPYONLY)\nset(pfiles png.c pngerror.c pngget.c pngmem.c pngpread.c pngread.c pngrio.c pngrtran.c pngrutil.c pngset.c pngtrans.c pngwio.c pngwrite.c pngwtran.c pngwutil.c)\nlist(TRANSFORM pfiles PREPEND ${pdir}/)\nadd_library(c0png STATIC ${pfiles})\ntarget_include_directories(c0png PUBLIC ${pdir} ${CMAKE_CURRENT_BINARY_DIR})\ntarget_link_libraries(c0png PUBLIC c0z)\nadd_library(c0utf STATIC ${udir}/utf8proc.c)\ntarget_compile_definitions(c0utf PUBLIC UTF8PROC_STATIC)\ntarget_include_directories(c0utf PUBLIC ${udir})\nadd_executable(c0_decoders decoder_probe.cpp)\ntarget_compile_features(c0_decoders PRIVATE cxx_std_20)\ntarget_link_libraries(c0_decoders PRIVATE c0png c0utf)\noption(C0_ASAN \"ASAN for native dependency audit\" OFF)\nif(C0_ASAN AND MSVC)\n    foreach(t c0z c0png c0utf c0_decoders)\n        target_compile_options(${t} PRIVATE /fsanitize=address /Zi)\n        target_link_options(${t} PRIVATE /INCREMENTAL:NO)\n    endforeach()\nendif()\n",
+      "allocation_probe.cpp": "#include <atomic>\n#include <cstdlib>\n#include <cstdio>\n#include <new>\n#include <memory_resource>\n#include <jsoncons/json.hpp>\n#include <jsoncons_ext/jsonschema/jsonschema.hpp>\nstatic std::atomic<bool> measure{false};\nstatic std::atomic<std::size_t> calls{0},bytes{0};\nvoid* operator new(std::size_t n) {\n    if(measure.load()){++calls;bytes+=n;}\n    if(void* p=std::malloc(n?n:1)) return p;\n    throw std::bad_alloc();\n}\nvoid* operator new[](std::size_t n){return ::operator new(n);}\nvoid operator delete(void* p) noexcept {std::free(p);}\nvoid operator delete[](void* p) noexcept {std::free(p);}\nvoid operator delete(void* p,std::size_t) noexcept {std::free(p);}\nvoid operator delete[](void* p,std::size_t) noexcept {std::free(p);}\nint main(){\n    alignas(std::max_align_t) static char arena[1024*1024];\n    std::pmr::monotonic_buffer_resource pool(arena,sizeof(arena),std::pmr::null_memory_resource());\n    auto* old=std::pmr::set_default_resource(&pool);\n    using Json=jsoncons::pmr::json;\n    int result=0;\n    {\n        auto sch=Json::parse(R\"({\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"pattern\":\"^[a-z]+$\"}},\"required\":[\"name\"],\"additionalProperties\":false})\");\n        auto instance=Json::parse(R\"({\"name\":\"abcdefghijklmnopqrstuvwxyz\"})\");\n        auto compiled=jsoncons::jsonschema::make_json_schema(std::move(sch));\n        calls=0;bytes=0;measure=true;\n        const bool valid=compiled.is_valid(instance);\n        measure=false;\n        std::printf(\"valid=%d outside_pmr_allocations=%zu outside_pmr_requested_bytes=%zu\\n\",valid?1:0,calls.load(),bytes.load());\n        // Dependency gate: every hostile-input validation allocation must be bounded.\n        result=valid&&calls.load()==0?0:1;\n    }\n    std::pmr::set_default_resource(old);\n    return result;\n}\n",
+      "decoder_probe.cpp": "#include <zlib.h>\n#include <png.h>\n#include <utf8proc.h>\n#include <cstdio>\n#include <cstdlib>\n#include <cstring>\n#include <cstdint>\n#include <cstddef>\nstruct Budget {std::size_t live=0,peak=0,cap=1024*1024,calls=0,fail=0;};\n// MSVC max_align_t is 8 but its jmp_buf needs malloc's 16-byte alignment.\n// A two-word header preserves the underlying malloc alignment on x64.\nstruct alignas(std::max_align_t) Header {std::size_t size;std::size_t reserved=0;};\nstatic void* alloc(Budget* b,std::size_t n){\n    if(++b->calls==b->fail||n>b->cap-b->live||n>SIZE_MAX-sizeof(Header))return nullptr;\n    auto* h=static_cast<Header*>(std::malloc(sizeof(Header)+n));if(!h)return nullptr;\n    h->size=n;b->live+=n;if(b->live>b->peak)b->peak=b->live;return h+1;\n}\nstatic void release(Budget* b,void* p){if(p){auto* h=static_cast<Header*>(p)-1;b->live-=h->size;std::free(h);}}\nstatic voidpf za(voidpf ctx,uInt count,uInt size){if(size&&count>SIZE_MAX/size)return nullptr;return alloc(static_cast<Budget*>(ctx),std::size_t(count)*size);}\nstatic void zf(voidpf ctx,voidpf p){release(static_cast<Budget*>(ctx),p);}\nstatic png_voidp pa(png_structp p,png_alloc_size_t n){return alloc(static_cast<Budget*>(png_get_mem_ptr(p)),n);}\nstatic void pf(png_structp p,png_voidp ptr){release(static_cast<Budget*>(png_get_mem_ptr(p)),ptr);}\nstruct Input {unsigned char* p;std::size_t n,pos;};\nstatic void readpng(png_structp p,png_bytep out,png_size_t n){auto* in=static_cast<Input*>(png_get_io_ptr(p));if(n>in->n-in->pos)png_error(p,\"truncated\");std::memcpy(out,in->p+in->pos,n);in->pos+=n;}\nstatic void quiet(png_structp,const char*){}\nstatic int pngcase(Budget* budget,unsigned char* data,std::size_t size){\n    png_structp p=png_create_read_struct_2(PNG_LIBPNG_VER_STRING,nullptr,nullptr,quiet,budget,pa,pf);\n    if(!p)return 0;\n    png_infop info=png_create_info_struct(p);if(!info){png_destroy_read_struct(&p,nullptr,nullptr);return 0;}\n    if(setjmp(png_jmpbuf(p))){png_destroy_read_struct(&p,&info,nullptr);return 0;}\n    Input input{data,size,0};png_set_read_fn(p,&input,readpng);png_set_user_limits(p,8192,8192);png_set_chunk_malloc_max(p,65536);png_set_chunk_cache_max(p,128);\n    png_read_info(p,info);if(png_get_image_width(p,info)!=1||png_get_image_height(p,info)!=1)png_error(p,\"dimensions\");\n    unsigned char row[16]{};if(png_get_rowbytes(p,info)>sizeof(row))png_error(p,\"row cap\");\n    png_read_row(p,row,nullptr);png_read_end(p,info);png_destroy_read_struct(&p,&info,nullptr);return 1;\n}\nint main(int argc,char** argv){\n    std::setvbuf(stdout,nullptr,_IONBF,0);\n    if(argc!=2)return 2;\n    unsigned char file[1024]{};FILE* f=nullptr;\n    if(fopen_s(&f,argv[1],\"rb\")||!f)return 2;\n    const auto n=std::fread(file,1,sizeof(file),f);std::fclose(f);\n    std::printf(\"PNG probe start bytes=%zu\\n\",n);\n    Budget b;int good=pngcase(&b,file,n);if(!good||b.live)return 3;\n    const auto count=b.calls;std::printf(\"PNG real decode PASS calls=%zu peak=%zu\\n\",count,b.peak);\n    for(std::size_t i=1;i<=count;++i){Budget failure;failure.fail=i;(void)pngcase(&failure,file,n);if(failure.live)return 4;}\n    Budget limited;limited.cap=1;if(pngcase(&limited,file,n)||limited.live)return 5;\n    std::printf(\"PNG each allocation-failure cut and one-byte cap PASS\\n\");\n    const unsigned char text[]=\"bounded deflate payload\";unsigned char packed[128]{},out[128]{};uLongf length=sizeof(packed);\n    if(compress(packed,&length,text,sizeof(text))!=Z_OK)return 6;\n    Budget zb;z_stream s{};s.zalloc=za;s.zfree=zf;s.opaque=&zb;\n    if(inflateInit(&s)!=Z_OK)return 7;s.next_in=packed;s.avail_in=static_cast<uInt>(length);s.next_out=out;s.avail_out=sizeof(out);\n    auto code=inflate(&s,Z_FINISH);inflateEnd(&s);if(code!=Z_STREAM_END||zb.live||std::memcmp(text,out,sizeof(text)))return 8;\n    Budget denied;denied.cap=1;z_stream z{};z.zalloc=za;z.zfree=zf;z.opaque=&denied;\n    if(inflateInit(&z)!=Z_MEM_ERROR||denied.live)return 9;\n    std::printf(\"zlib real inflate PASS peak=%zu; allocation cap PASS\\n\",zb.peak);\n    utf8proc_int32_t work[8192]{};const unsigned char input[]={0x53,0x74,0x72,0x61,0xc3,0x9f,0x65};\n    auto options=UTF8PROC_STABLE|UTF8PROC_COMPOSE|UTF8PROC_CASEFOLD;\n    auto length32=utf8proc_decompose(input,sizeof(input),work,8192,options);if(length32<0||length32>8192)return 10;\n    auto bytes=utf8proc_reencode(work,length32,options);if(bytes!=7||std::memcmp(work,\"strasse\",7))return 11;\n    const unsigned char invalid[]={0xc0,0xaf};if(utf8proc_decompose(invalid,2,work,8192,options)>=0)return 12;\n    if(utf8proc_decompose(input,sizeof(input),work,1,options)<=1)return 13;\n    std::printf(\"utf8proc bounded caller-buffer normalization/casefold/invalid-UTF8/required-size PASS\\n\");\n    return 0;\n}\n"
+    }
+  },
+  "material_decision_required": {
+    "status": "OWNER_APPROVED_YES",
+    "recommended": "Resource-bounded schema helper process, preserving the real Draft 2020-12 library and existing SDK ABI; do not weaken the memory limit or substitute a partial schema checker.",
+    "alternative": "Keep schema in-process only after a separately reviewed dependency replacement or allocator/regex-workspace remediation demonstrates complete bounded allocation coverage.",
+    "worker_proposal": {
+      "boundary": "Only schema validation of the same owned immutable JSON bytes; fixed trusted schemas; bounded verdict response. Parent still performs strict parse and all bounded semantic/geometry validation.",
+      "memory_limit_MiB": 128,
+      "deadline_ms": 5000,
+      "request_max_bytes": 1048576,
+      "reply_max_bytes": 128,
+      "workers_per_context": 1,
+      "windows": "Owned process handle and Job Object memory/active-process/deadline cleanup; no arbitrary PATH binary lookup.",
+      "linux": "Owned child plus address-space/CPU limits, bounded pipes, timeout/kill/wait cleanup; no accidental inherited descriptors.",
+      "failure": "Crash, timeout, truncated reply or version/hash mismatch produces typed failure and zero published model; no unbounded respawn/retry.",
+      "network": "Resolvers only serve fixed compiled/local schema documents; no URI fetching. Resource isolation is not claimed to be a full hostile-code sandbox.",
+      "trust": "Trusted helper executable supplied by the build; do not execute asset-provided paths or commands.",
+      "impact": "Adds a helper artifact/process lifetime/IPC to the previously proposed native in-process design; packaging and deployment implications need owner scope acceptance.",
+      "additional_exact_paths": [
+        "src/validation/schema_worker_main.cpp",
+        "src/validation/schema_worker_client.hpp",
+        "src/validation/schema_worker_client.cpp",
+        "src/validation/schema_worker_protocol.hpp",
+        "src/validation/schema_worker_windows.cpp",
+        "src/validation/schema_worker_linux.cpp",
+        "tests/assets/schema_worker_tests.cpp"
+      ],
+      "proposed_c1_path_count": 41
+    },
+    "gate_to_continue": "Owner accepts the exact helper-process scope, or an in-process replacement passes a new allocation gate. Existing C0/C1/C2 plan approval remains recorded; merge approval is separate."
+  },
+  "owner_helper_amendment_ack": "YES in active chat following PR26 seven-path helper proposal",
+  "c0_allocation_gap_remediation": "Approved schema-only process implemented; OS memory/time/protocol/reaping gates now run in native C1 tests. Final platform evidence is attested in implementation PR.",
+  "implementation_scope_paths": 41,
+  "reference_test_tool": {
+    "package": "jsonschema",
+    "version": "4.26.0",
+    "scope": "REFERENCE_TEST_ONLY_REQUIRED_BY_CI",
+    "required_for_offline_native_build": false,
+    "enable": "-DARS_ASSET_REFERENCE_CHECKS=ON",
+    "native_fixture_generation": "Python standard library only; exact predefined schema oracles remain unchanged and CI cross-checks them with Draft202012Validator.",
+    "shipping_dependency": false
+  }
+}
