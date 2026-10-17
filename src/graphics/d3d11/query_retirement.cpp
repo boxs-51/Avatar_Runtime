@@ -2,18 +2,34 @@
 #ifdef _WIN32
 #include <exception>
 namespace ars::graphics::d3d11 {
+namespace {
+class NativeQueryOps final : public QueryOps {
+public:
+    HRESULT removed_reason(ID3D11Device *device) override { return device->GetDeviceRemovedReason(); }
+    HRESULT get_data(ID3D11DeviceContext *context, ID3D11Query *query, BOOL *done) override {
+        return context->GetData(query,done,sizeof(*done),D3D11_ASYNC_GETDATA_DONOTFLUSH);
+    }
+    void flush(ID3D11DeviceContext *context) override { context->Flush(); }
+};
+NativeQueryOps native_ops;
+}
+QueryRetirement::QueryRetirement(QueryOps *ops) : ops_(ops ? ops : &native_ops) {}
 QueryRetirement::~QueryRetirement() {
-    // This private spike has no host device-teardown protocol yet. Fail closed
-    // instead of silently releasing a pending/quarantined GPU resource.
-    if (std::this_thread::get_id()!=owner_ || (started_ && !complete_)) std::terminate();
+    if (std::this_thread::get_id()!=owner_ || (started_ && !complete_ && !detached_lost_)) std::terminate();
 }
 Result QueryRetirement::begin(ID3D11Device *device, ID3D11DeviceContext *context,
                               ID3D11RenderTargetView *target, std::uint64_t generation,
                               std::shared_ptr<const void> snapshot_pin) {
+    const auto ready=prepare(device,context,target,generation,std::move(snapshot_pin));
+    return ready==Result::ok ? end() : ready;
+}
+Result QueryRetirement::prepare(ID3D11Device *device, ID3D11DeviceContext *context,
+                                ID3D11RenderTargetView *target, std::uint64_t generation,
+                                std::shared_ptr<const void> snapshot_pin) {
     if (std::this_thread::get_id()!=owner_) return Result::wrong_thread;
     if (started_) return Result::busy;
     if (!device || !context || !target || !generation) return Result::invalid_argument;
-    if (FAILED(device->GetDeviceRemovedReason())) return Result::device_lost;
+    if (FAILED(ops_->removed_reason(device))) return Result::device_lost;
     Microsoft::WRL::ComPtr<ID3D11Device> context_device, target_device;
     context->GetDevice(&context_device);
     target->GetDevice(&target_device);
@@ -27,19 +43,39 @@ Result QueryRetirement::begin(ID3D11Device *device, ID3D11DeviceContext *context
     if (FAILED(device->CreateQuery(&desc, &query))) return Result::failed;
     device_=device; context_=context; target_=target; query_=std::move(query);
     snapshot_pin_=std::move(snapshot_pin); generation_=generation; started_=true;
-    context_->End(query_.Get());
     return Result::ok;
+}
+Result QueryRetirement::end() {
+    if (std::this_thread::get_id()!=owner_) return Result::wrong_thread;
+    if (!started_ || ended_ || quarantined_) return Result::invalid_argument;
+    context_->End(query_.Get());
+    ended_=true;
+    return Result::ok;
+}
+Result QueryRetirement::cancel_unsubmitted() {
+    if (std::this_thread::get_id()!=owner_) return Result::wrong_thread;
+    if (!started_ || ended_ || quarantined_) return Result::invalid_argument;
+    query_.Reset(); target_.Reset(); context_.Reset(); device_.Reset(); snapshot_pin_.reset();
+    started_=false;
+    return Result::ok;
+}
+Result QueryRetirement::mark_lost() {
+    if (std::this_thread::get_id()!=owner_) return Result::wrong_thread;
+    if (!started_ || complete_) return Result::invalid_argument;
+    quarantined_=true;
+    return Result::device_lost;
 }
 Result QueryRetirement::poll(std::uint64_t generation) {
     if (std::this_thread::get_id()!=owner_) return Result::wrong_thread;
     if (!started_ || !generation || generation!=generation_) return Result::invalid_argument;
     if (complete_) return Result::ok;
-    if (quarantined_ || FAILED(device_->GetDeviceRemovedReason())) {
+    if (quarantined_ || FAILED(ops_->removed_reason(device_.Get()))) {
         quarantined_=true;
         return Result::device_lost;
     }
+    if (!ended_) return Result::invalid_argument;
     BOOL done=FALSE;
-    const HRESULT hr=context_->GetData(query_.Get(), &done, sizeof(done), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+    const HRESULT hr=ops_->get_data(context_.Get(),query_.Get(),&done);
     if (hr==S_OK && done) {
         // Exact query and generation completed. Release owned pins on the R thread.
         snapshot_pin_.reset(); target_.Reset(); query_.Reset();
@@ -47,11 +83,20 @@ Result QueryRetirement::poll(std::uint64_t generation) {
         return Result::ok;
     }
     if (hr==S_FALSE) {
-        if (!flushed_) { context_->Flush(); flushed_=true; }
+        if (!flushed_) { ops_->flush(context_.Get()); flushed_=true; }
         return Result::busy;
     }
     quarantined_=true;
-    return FAILED(device_->GetDeviceRemovedReason()) ? Result::device_lost : Result::failed;
+    return FAILED(ops_->removed_reason(device_.Get())) ? Result::device_lost : Result::failed;
+}
+Result QueryRetirement::detach_lost(std::uint64_t generation) {
+    if (std::this_thread::get_id()!=owner_) return Result::wrong_thread;
+    if (!started_ || !generation || generation!=generation_) return Result::invalid_argument;
+    if (!quarantined_ || complete_ || detached_lost_) return Result::invalid_argument;
+    // No completion is asserted. Host has separately stopped use of this device.
+    query_.Reset(); target_.Reset(); context_.Reset(); device_.Reset(); snapshot_pin_.reset();
+    detached_lost_=true;
+    return Result::ok;
 }
 }
 #endif

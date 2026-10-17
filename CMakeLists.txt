@@ -19,7 +19,8 @@ if(ARS_BUILD_D3D11_SPIKE)
     add_library(ars_d3d11_spike STATIC
         src/graphics/d3d11/host_device.cpp
         src/graphics/d3d11/state_scope.cpp
-        src/graphics/d3d11/query_retirement.cpp)
+        src/graphics/d3d11/query_retirement.cpp
+        src/graphics/d3d11/close_coordinator.cpp)
     target_compile_features(ars_d3d11_spike PUBLIC cxx_std_20)
     target_include_directories(ars_d3d11_spike PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
     target_link_libraries(ars_d3d11_spike PUBLIC d3d11 dxgi d3dcompiler)
@@ -49,6 +50,15 @@ if(ARS_BUILD_D3D11_SPIKE)
     add_dependencies(ars_d3d11_live_capture ars_d3d11_query_retirement)
     add_test(NAME d2_physical_live_objects COMMAND ars_d3d11_live_capture)
     set_tests_properties(d2_physical_live_objects PROPERTIES LABELS "M1-D;PHYSICAL_GPU_REQUIRED")
+    add_executable(ars_d3d11_close_protocol tests/gpu/d3d11_close_protocol.cpp)
+    target_link_libraries(ars_d3d11_close_protocol PRIVATE ars_d3d11_spike)
+    add_test(NAME d7_warp_close_protocol COMMAND ars_d3d11_close_protocol)
+    set_tests_properties(d7_warp_close_protocol PROPERTIES LABELS "M1-D;WARP_DETERMINISTIC")
+    add_executable(ars_d3d11_close_physical tests/gpu/d3d11_close_physical.cpp)
+    target_link_libraries(ars_d3d11_close_physical PRIVATE ars_d3d11_spike)
+    add_dependencies(ars_d3d11_live_capture ars_d3d11_close_physical)
+    add_test(NAME d7_physical_close_live_objects COMMAND ars_d3d11_live_capture --close)
+    set_tests_properties(d7_physical_close_live_objects PROPERTIES LABELS "M1-D;PHYSICAL_GPU_REQUIRED")
 endif()
 
 set(CMAKE_C_STANDARD 11)

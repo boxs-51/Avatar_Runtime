@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <algorithm>
 #include <cstdio>
+#include <cwchar>
 #include <set>
 #include <string>
 #include <vector>
@@ -22,14 +23,16 @@ static std::set<std::string> live_objects(const std::string &report) {
     return objects;
 }
 
-int wmain() {
+int wmain(int argc,wchar_t **argv) {
+    const bool close_mode=argc==2 && std::wcscmp(argv[1],L"--close")==0;
+    if (argc>1 && !close_mode) return 2;
     wchar_t self[MAX_PATH]{};
     if (!GetModuleFileNameW(nullptr,self,MAX_PATH)) return 2;
     std::wstring child=self;
     const auto slash=child.find_last_of(L"\\/");
     if (slash==std::wstring::npos) return 2;
     child.resize(slash+1);
-    child+=L"ars_d3d11_query_retirement.exe";
+    child+=close_mode ? L"ars_d3d11_close_physical.exe" : L"ars_d3d11_query_retirement.exe";
     std::wstring command=L"\""+child+L"\"";
     STARTUPINFOW startup{};
     startup.cb=sizeof(startup);
@@ -92,6 +95,8 @@ int wmain() {
     const auto after=live_objects(final_report);
     std::printf("live_objects_before=%zu live_objects_after=%zu\n",before.size(),after.size());
     if (before.empty() || before!=after) return 4;
-    std::puts("PASS D06 physical debug-layer live-object identity unchanged across 100 retire/recreate cycles");
+    std::puts(close_mode ?
+        "PASS D07 physical post-close live-object identity unchanged across 100 cycles" :
+        "PASS D06 physical debug-layer live-object identity unchanged across 100 retire/recreate cycles");
     return 0;
 }

@@ -24,6 +24,7 @@ public:
     HostDevice &operator=(const HostDevice &)=delete;
     Result validate(ID3D11RenderTargetView *target, TargetInfo info) const;
     Result submit(ID3D11RenderTargetView *target, TargetInfo info);
+    Result release_owned_references();
     ID3D11DeviceContext *context() const noexcept { return context_.Get(); }
     ID3D11Device *device() const noexcept { return device_.Get(); }
     std::uint64_t generation() const noexcept { return generation_; }

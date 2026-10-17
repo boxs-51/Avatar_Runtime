@@ -60,6 +60,12 @@ HostDevice::HostDevice(ID3D11Device *device, ID3D11DeviceContext *context, std::
 HostDevice::~HostDevice() {
     if (!on_owner_thread()) std::terminate();
 }
+Result HostDevice::release_owned_references() {
+    if (!on_owner_thread()) return Result::wrong_thread;
+    vs_.Reset(); ps_.Reset(); rasterizer_.Reset(); blend_.Reset(); depth_.Reset();
+    context_.Reset(); device_.Reset();
+    return Result::ok;
+}
 
 Result HostDevice::validate(ID3D11RenderTargetView *target, TargetInfo info) const {
     if (!on_owner_thread()) return Result::wrong_thread;
