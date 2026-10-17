@@ -616,7 +616,8 @@ M2_PRE_D_PATHS = frozenset((
     "src/rendering/scene3d.cpp", "src/rendering/scene3d.hpp",
     "tests/gpu/d3d11_live_capture.cpp",
     "tests/rendering/d3d11_scene3d_pixels.cpp", "tests/rendering/scene3d_tests.cpp",
-    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m2_pre_d_custody.py",
+    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m2_d_design_custody.py",
+    "tests/contracts/test_m2_pre_d_custody.py",
 ))
 
 
