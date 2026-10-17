@@ -604,6 +604,37 @@ def check_m2_d_design(base, candidate):
     return True
 
 
+M2_PRE_D_BRANCH = "m2/pre-d-hold-closure"
+M2_PRE_D_BASE = "8ec80213e8b93f15d5254f8f523ba596000e1c30"
+M2_PRE_D_PATHS = frozenset((
+    "docs/audits/M2_PRE_D_BUILD_RAW.txt", "docs/audits/M2_PRE_D_CTEST_RAW.txt",
+    "docs/audits/M2_PRE_D_HARDWARE_RAW.txt",
+    "docs/audits/M2_PRE_D_HOLD_REASSESSMENT_20261018.md",
+    "docs/audits/M2_PRE_D_LIVE_HARDWARE_RAW.txt",
+    "docs/audits/M2_PRE_D_LIVE_WARP_RAW.txt", "docs/audits/M2_PRE_D_WARP_RAW.txt",
+    "src/rendering/d3d11_scene3d.cpp", "src/rendering/d3d11_scene3d.hpp",
+    "src/rendering/scene3d.cpp", "src/rendering/scene3d.hpp",
+    "tests/gpu/d3d11_live_capture.cpp",
+    "tests/rendering/d3d11_scene3d_pixels.cpp", "tests/rendering/scene3d_tests.cpp",
+    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m2_d_design_custody.py",
+    "tests/contracts/test_m2_pre_d_custody.py",
+))
+
+
+def check_m2_pre_d(base, candidate):
+    """Pre-D source and evidence extend only the pinned M2-D design head."""
+    require(base == M2_PRE_D_BASE, "pre-M2-D parent moved: refresh and review")
+    git("merge-base", "--is-ancestor", base, candidate)
+    check_m2_d_design(M2_D_DESIGN_BASE, base)
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == M2_PRE_D_PATHS,
+            "pre-M2-D path drift")
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path),
+                "pre-M2-D changed held/public boundary: " + path)
+    return True
+
+
 def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -656,6 +687,9 @@ def check():
         elif os.getenv("GITHUB_HEAD_REF") == M2_D_DESIGN_BRANCH:
             expected = M2_D_DESIGN_BASE
             check_m2_d_design(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M2_PRE_D_BRANCH:
+            expected = M2_PRE_D_BASE
+            check_m2_pre_d(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M1_D_BRANCH:
             expected = M1_D_BASE
             check_m1_d(expected_parent, git("rev-parse", "HEAD^2"))

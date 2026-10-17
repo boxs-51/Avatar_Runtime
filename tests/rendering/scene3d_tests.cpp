@@ -68,6 +68,22 @@ int main(int argc, char **argv) {
             test::check(ars::rendering::select_gltf_camera(camera_scene,99,8,8,camera)==ARS_E_UNSUPPORTED &&
                         camera.clip_from_world==previous,"invalid camera leaves output intact");
         }
+        {
+            ars::rendering::PreparedScene3D hosted(&resource);
+            const auto calls_before=host.calls.load();
+            test::check(ars::rendering::prepare_static_3d(model,hosted)==ARS_OK &&
+                        host.calls.load()>calls_before &&
+                        hosted.draws.get_allocator().resource()==&resource &&
+                        hosted.draws[0].vertices.get_allocator().resource()==&resource &&
+                        hosted.draws[0].indices.get_allocator().resource()==&resource,
+                        "retained CPU snapshot uses host allocator");
+            const auto retained=hosted.draws[0].vertices[0].position;
+            host.fail_at=host.calls.load()+1;
+            test::check(ars::rendering::prepare_static_3d(model,hosted)==ARS_E_OUT_OF_BUDGET &&
+                        hosted.draws[0].vertices[0].position==retained,
+                        "host allocation failure preserves committed snapshot");
+            host.fail_at=0;
+        }
         scene={};model.reset();
     }
     test::check(host.live==0,"C0 source lifetime balanced");

@@ -133,11 +133,12 @@ ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
         const auto &data=source->data();
         if (scene==assets::glb_none) scene=data.scene;
         if (scene==assets::glb_none || scene>=data.scenes.size()) return ARS_E_UNSUPPORTED;
-        std::vector<Instance> reachable;
-        std::vector<Mat> worlds(data.nodes.size(),identity);
-        std::vector<bool> visited(data.nodes.size());
+        auto *memory=out.draws.get_allocator().resource();
+        std::pmr::vector<Instance> reachable(memory);
+        std::pmr::vector<Mat> worlds(data.nodes.size(),identity,memory);
+        std::pmr::vector<bool> visited(data.nodes.size(),false,memory);
         // Explicit stack in reverse declaration order; C2 already rules out cycles.
-        std::vector<Instance> pending;
+        std::pmr::vector<Instance> pending(memory);
         for (auto i=data.scenes[scene].roots.rbegin();i!=data.scenes[scene].roots.rend();++i)
             pending.push_back({*i,identity});
         while (!pending.empty()) {
@@ -152,7 +153,7 @@ ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
             for (auto i=node.children.rbegin();i!=node.children.rend();++i)
                 pending.push_back({*i,world});
         }
-        PreparedScene3D next;
+        PreparedScene3D next(memory);
         next.source=std::move(source);
         next.gpu_budget=limits.gpu_bytes;
         std::size_t scratch=0;
@@ -181,7 +182,7 @@ ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
             if (node.mesh==assets::glb_none) continue;
             assets::require(node.mesh<data.meshes.size(), ARS_E_BAD_ASSET);
             const auto &mesh=data.meshes[node.mesh];
-            std::vector<Mat> palette;
+            std::pmr::vector<Mat> palette(memory);
             if (node.skin!=assets::glb_none) {
                 assets::require(node.skin<data.skins.size(), ARS_E_BAD_ASSET);
                 const auto &skin=data.skins[node.skin];
@@ -204,7 +205,7 @@ ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
                 add_budget(scratch,positions.count,sizeof(Vertex3D),limits.pose_bytes);
                 add_budget(next.estimated_gpu_bytes,positions.count,80,limits.gpu_bytes);
                 add_budget(next.estimated_gpu_bytes,primitive.indices.size(),sizeof(std::uint32_t),limits.gpu_bytes);
-                auto &draw=next.draws.emplace_back();
+                auto &draw=next.draws.emplace_back(memory);
                 draw.node=instance.node; draw.primitive=static_cast<std::uint32_t>(pi);
                 draw.material=material(*next.source,primitive.material);
                 for (const auto &texture:{draw.material.base_texture,draw.material.metallic_roughness_texture})
