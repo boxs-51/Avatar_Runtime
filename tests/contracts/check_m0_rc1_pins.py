@@ -593,8 +593,16 @@ def check():
                     "M2-A main parent must merge exact M1-D head")
             check_m2_a(M2_A_BASE, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M2_B_BRANCH:
-            expected = M2_B_BASE
-            check_m2_b(expected_parent, git("rev-parse", "HEAD^2"))
+            # Main must be the merge of the reviewed M2-A head onto the
+            # previous exact main commit; preserve the historical M2-B diff pin.
+            expected = expected_parent
+            require(git("rev-parse", expected + "^1") == M2_A_MAIN_PARENT and
+                    git("rev-parse", expected + "^2") ==
+                    "a87aa6968c620342d296ca59f4e9f179ddcd7ac9" and
+                    git("rev-parse", expected + "^{tree}") ==
+                    git("rev-parse", "a87aa6968c620342d296ca59f4e9f179ddcd7ac9^{tree}"),
+                    "M2-B main parent must merge exact M2-A head")
+            check_m2_b(M2_B_BASE, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M1_D_BRANCH:
             expected = M1_D_BASE
             check_m1_d(expected_parent, git("rev-parse", "HEAD^2"))
