@@ -572,8 +572,16 @@ def check_m2_c(base, candidate):
     git("merge-base", "--is-ancestor", base, candidate)
     git("merge-base", "--is-ancestor", M2_C_PARENT, base)
     check_m2_b(M2_B_BASE, M2_C_PARENT)
-    require(set(git("diff", "--name-only", base, candidate).splitlines()) == M2_C_PATHS,
+    has_repin = subprocess.run(["git", "merge-base", "--is-ancestor",
+        "a87aa6968c620342d296ca59f4e9f179ddcd7ac9", candidate],
+        cwd=ROOT).returncode == 0
+    expected_paths = M2_C_PATHS | ({"tests/contracts/test_m2_a_custody.py"} if has_repin else set())
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == expected_paths,
             "M2-C path drift")
+    if has_repin:
+        require(git("rev-parse", candidate + ":tests/contracts/test_m2_a_custody.py") ==
+                "7b6eee371732f8024fa5abc4069636dff2453537",
+                "M2-A main-parent custody blob drift")
     for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
                  "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
         require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path),
