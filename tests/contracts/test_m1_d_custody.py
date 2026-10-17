@@ -8,6 +8,9 @@ import check_m0_rc1_pins as pins
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 BASE = "f5b198137f6a96a2e33bb8ac206e53c3815bbbbc"
+# M2 stacks above this held D head. Keep auditing the exact D candidate,
+# while check_m2_a separately constrains all subsequent M2 paths.
+CANDIDATE = "dffe10c16d5585c0d50fd7745f310543e719c522"
 FROZEN = (
     "include/ars/ars.h",
     "src/abi/unsupported.cpp",
@@ -19,22 +22,24 @@ FROZEN = (
 
 class Custody(unittest.TestCase):
     def test_exact_d_branch_scope(self):
-        self.assertTrue(pins.check_m1_d(BASE, "HEAD"))
+        subprocess.run(["git", "merge-base", "--is-ancestor", CANDIDATE, "HEAD"],
+                       cwd=ROOT, check=True)
+        self.assertTrue(pins.check_m1_d(BASE, CANDIDATE))
 
     def test_extra_gpu_path_rejected(self):
         real = pins.git
         def added(*args):
             result = real(*args)
-            return result + "\nsrc/graphics/unreviewed.cpp" if args == ("diff", "--name-only", BASE, "HEAD") else result
+            return result + "\nsrc/graphics/unreviewed.cpp" if args == ("diff", "--name-only", BASE, CANDIDATE) else result
         with patch.object(pins, "git", side_effect=added):
-            with self.assertRaises(AssertionError): pins.check_m1_d(BASE, "HEAD")
+            with self.assertRaises(AssertionError): pins.check_m1_d(BASE, CANDIDATE)
 
     def test_public_abi_mutation_rejected(self):
         real = pins.git
         def changed(*args):
-            return "0" * 40 if args == ("rev-parse", "HEAD:include/ars/ars.h") else real(*args)
+            return "0" * 40 if args == ("rev-parse", CANDIDATE + ":include/ars/ars.h") else real(*args)
         with patch.object(pins, "git", side_effect=changed):
-            with self.assertRaises(AssertionError): pins.check_m1_d(BASE, "HEAD")
+            with self.assertRaises(AssertionError): pins.check_m1_d(BASE, CANDIDATE)
 
     def test_frozen_blobs_match_merged_c2(self):
         for name in FROZEN:
