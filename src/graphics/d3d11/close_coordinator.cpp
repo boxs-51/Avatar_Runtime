@@ -1,5 +1,7 @@
 #include "close_coordinator.hpp"
 #ifdef _WIN32
+#include <new>
+#include <stdexcept>
 namespace ars::graphics::d3d11 {
 CloseCoordinator::CloseCoordinator(ID3D11Device *device, ID3D11DeviceContext *context,
                                    std::uint64_t generation, QueryOps *ops)
@@ -11,8 +13,18 @@ Result CloseCoordinator::submit(ID3D11RenderTargetView *target, TargetInfo info,
     if (phase_==Phase::lost_quarantined || phase_==Phase::detached_lost) return Result::device_lost;
     if (close_requested() || phase_!=Phase::active) return Result::busy;
     const auto valid=backend_.validate(target,info);
+    if (valid==Result::device_lost) phase_=Phase::lost_quarantined;
     if (valid!=Result::ok) return valid;
-    auto retirement=std::make_unique<QueryRetirement>(ops_);
+    std::unique_ptr<QueryRetirement> retirement;
+    try {
+        retirement=std::make_unique<QueryRetirement>(ops_);
+        // Reserve before any draw: retaining an accepted submission must not allocate.
+        pending_.reserve(pending_.size()+1);
+    } catch (const std::bad_alloc &) {
+        return Result::failed;
+    } catch (const std::length_error &) {
+        return Result::failed;
+    }
     const auto ready=retirement->prepare(backend_.device(),backend_.context(),target,
                                          backend_.generation(),std::move(snapshot_pin));
     if (ready!=Result::ok) {

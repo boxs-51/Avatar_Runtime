@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <memory>
 #include <thread>
+#include <vector>
 
 using Microsoft::WRL::ComPtr;
 using ars::graphics::Result;
@@ -78,6 +79,24 @@ int main() {
         ops.status=S_OK; ops.done=TRUE;
         CHECK(close.poll_close(8)==Result::ok && close.phase()==CloseCoordinator::Phase::drained,12);
         CHECK(witness.expired() && close.pending_count()==0,13);
+    }
+    {
+        Script ops;
+        CloseCoordinator close(f.device.Get(),f.context.Get(),80,&ops);
+        std::vector<std::weak_ptr<int>> witnesses;
+        for (int i=0;i<64;++i) {
+            auto pin=std::make_shared<int>(i);
+            witnesses.push_back(pin);
+            CHECK(close.submit(f.target.Get(),{80,16,16},pin)==Result::ok,35);
+        }
+        CHECK(close.pending_count()==witnesses.size(),36);
+        close.begin_close();
+        ops.status=S_FALSE;
+        CHECK(close.poll_close(80)==Result::busy,37);
+        for (const auto &pin : witnesses) CHECK(!pin.expired(),38);
+        ops.status=S_OK;
+        CHECK(close.poll_close(80)==Result::ok && close.pending_count()==0,39);
+        for (const auto &pin : witnesses) CHECK(pin.expired(),40);
     }
     {
         Script ops;
