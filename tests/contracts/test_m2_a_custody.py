@@ -11,6 +11,12 @@ CANDIDATE = "10f542f7acb10527bace0dca6d7c608b20018896"
 
 
 class Custody(unittest.TestCase):
+    def test_main_parent_contains_exact_m1_d_merge(self):
+        self.assertEqual(pins.git("rev-parse", pins.M2_A_MAIN_PARENT + "^1"),
+                         "f5b198137f6a96a2e33bb8ac206e53c3815bbbbc")
+        self.assertEqual(pins.git("rev-parse", pins.M2_A_MAIN_PARENT + "^2"),
+                         pins.M2_A_BASE)
+
     def test_exact_m2_scope(self):
         subprocess.run(["git", "merge-base", "--is-ancestor", CANDIDATE, "HEAD"],
                        cwd=ROOT, check=True)
