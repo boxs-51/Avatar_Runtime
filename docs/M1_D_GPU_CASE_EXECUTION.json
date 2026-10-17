@@ -12,15 +12,59 @@
   "cases": {
     "D00": "HOLD: G00 technical-method review unresolved",
     "D01": "PASS: physical host device draw and RGBA readback 64,127,191,255",
-    "D02": "PARTIAL: null, stale generation, wrong dimensions/device, overlapping SRV; no stale host RTV lifetime injection",
-    "D03": "PARTIAL: wrong-thread entry/poll rejected; no concurrent host stress",
+    "D02": "PARTIAL; HOLD_DIRECT_TEST for retained old host RTV across real resize and generation handoff: null, stale generation, wrong dimensions/device, overlapping SRV already tested",
+    "D03": "PARTIAL; HOLD_DIRECT_TEST for concurrent host immediate-context serialization and resize/close stress: wrong-thread entry/poll and controlled close-intent race already tested",
     "D04": "PASS tested state inventory: topology, VS/PS with zero class instances, rasterizer, two viewports, eight RTV slots, DSV, blend factor/mask, depth/stencil restored after draw, validation reject and scoped recoverable failure",
     "D05": "PASS private query paths: physical BUSY then exact completion over 100 cycles; deterministic S_FALSE, S_OK true/false, failed GetData and removed reason tests; 64-entry pending WARP backlog",
-    "D06": "PARTIAL: snapshot/target pins held through BUSY and quarantine; physical post-close reports only identical two host device/context objects across 100 cycles; actual device-loss teardown untested",
+    "D06": "PARTIAL; HOLD_DIRECT_TEST for post-loss teardown and post-host-release leak report: pins held through BUSY/quarantine and physical healthy post-close host-only report already tested",
     "D07": "PASS private physical 100 close/recreate cycles: BUSY until query completion, pins released on R, debug-layer host-only live-object identities 2 before/after, zero errors; WARP close/submission race, 64-entry pending backlog and wrong-thread checks; retirement capacity preallocated before draw",
-    "D08": "HOLD: deterministic WARP removal/reset and failed-query quarantine/ack/recovery paths pass, but no actual device removal/reset runner or physical teardown evidence",
-    "D09": "PARTIAL: Windows MSVC shared 33/33 and static 31/31 CTest at exact GPU source, Python contracts 135/135; new-head CI pending",
-    "D10": "PARTIAL: named physical runner, exact-source raw logs and hashes retained for D07; D08 actual loss and independent review missing"
+    "D08": "HOLD_DIRECT_TEST: deterministic WARP removal/reset and failed-query quarantine/ack/recovery paths pass, but actual device removal/reset and physical teardown require a dedicated reset-capable runner",
+    "D09": "PARTIAL: Windows MSVC shared 33/33 and static 31/31 CTest at exact GPU source, Python contracts 135/135, exact-head M1-D/M0/P0/M1-A/B3 CI pass; C2 CI still running at 2026-10-17 check",
+    "D10": "PARTIAL; HOLD_DIRECT_TEST for actual-loss raw logs and independent method review: named physical runner and source-pinned D07 logs/hashes already retained"
   },
+  "deferred_direct_tests": [
+    {
+      "id": "D02_STALE_RTV_RESIZE",
+      "status": "HOLD_DIRECT_TEST",
+      "reason": "No host resize handoff test retains the old RTV safely while rejecting its old generation.",
+      "resume_when": "A host integration harness owns both old and replacement targets on one R thread.",
+      "pass_evidence": "Old RTV remains COM-valid only for the test, stale generation rejects before state mutation, replacement target submits, and both generations retire without leaks."
+    },
+    {
+      "id": "D03_HOST_CONCURRENCY",
+      "status": "HOLD_DIRECT_TEST",
+      "reason": "Controlled close-intent race and wrong-thread rejection do not prove host-wide immediate-context serialization under resize/close stress.",
+      "resume_when": "A real host R-thread admission and resize/close harness exists.",
+      "pass_evidence": "Bounded concurrent stress log shows no off-R D3D calls, no post-close admission, and no early release or stuck drain."
+    },
+    {
+      "id": "D06_D08_PHYSICAL_LOSS",
+      "status": "HOLD_DIRECT_TEST",
+      "reason": "The owner has no dedicated reset-capable GPU runner; injected HRESULTs are control-flow evidence only.",
+      "resume_when": "A disposable Windows GPU runner supports driver reset and recovery without risking the shared workstation.",
+      "pass_evidence": "Capture actual DXGI removed/reset reason, old-generation quarantine, host teardown barrier, new-device recovery, post-host-release live-object report, raw logs/hashes and exact source SHA."
+    },
+    {
+      "id": "G00_TECHNICAL_METHOD",
+      "status": "HOLD_REVIEW_AND_DIRECT_TEST",
+      "reason": "Host-quiesced Boolean has no independently demonstrated teardown barrier; no separate exact-head method disposition or historical RED-first witness exists.",
+      "resume_when": "Host handoff contract is implemented and reviewable at a pinned source SHA.",
+      "pass_evidence": "Review admission/close linearization, error/cleanup paths and host barrier with runnable negative cases; record reviewer identity and limits without backdating a RED witness."
+    },
+    {
+      "id": "G01_PUBLIC_RUNTIME",
+      "status": "HOLD_DIRECT_TEST",
+      "reason": "Public render/drain and model/source paths still return UNSUPPORTED; private build/CI cannot establish integrated runtime behavior.",
+      "resume_when": "A separately authorized public runtime integration exists.",
+      "pass_evidence": "Linked C consumer exercises real model/source/render/drain/close on exact head with capabilities matching behavior and no premature GPU release."
+    },
+    {
+      "id": "G02_PUBLIC_ASSET_INTEGRATION",
+      "status": "HOLD_DIRECT_TEST",
+      "reason": "Private CPU validation/fuzz evidence does not prove public model/character activation or the GPU upload boundary.",
+      "resume_when": "Validated immutable CPU assets are connected to the public runtime path.",
+      "pass_evidence": "Run valid and hostile JSON/ZIP/GLB corpus, both full fuzz campaigns, activation/rollback and zero-GPU-allocation-on-reject checks on exact integrated head."
+    }
+  ],
   "verdict": "PRIVATE_SPIKE_PARTIAL; M1-D_ACCEPTANCE_HOLD; PUBLIC_RENDER_DISABLED"
 }

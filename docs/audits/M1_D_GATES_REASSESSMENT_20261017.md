@@ -23,4 +23,19 @@ The source follow-up found an allocation after accepted draw when appending a re
 | G01 build/runtime | **HOLD for the full gate:** the private D3D11 library and historical ABI/core compile; public `ars_runtime_render`/drain and model/source paths remain UNSUPPORTED, capability zero. | Real integrated public runtime behavior and linked consumer acceptance on the exact head; a bounded build foundation alone is not a working SDK. |
 | G02 asset validation | **HOLD for the full gate:** M1-C1/C2 private CPU parsers and both 3600-second CI fuzz jobs pass, but public model/character activation and full integrated G02 evidence are absent. | Integrate validated immutable CPU assets through the public runtime boundary without premature GPU upload; rerun the full hostile corpus and gate-specific review. |
 
-All 87 M1-B whole-case verdicts remain HOLD, PASS 0. G03/G04/G05 and public GPU activation are out of this increment. A green CI matrix is required for source provenance but does not change the HOLD decisions above. The PR remains draft pending a separate merge decision.
+## Direct tests deferred under HOLD
+
+`HOLD_DIRECT_TEST` identifies a missing observation, not a failed test or permission to infer PASS from CI. The exact cases, prerequisites and pass evidence are machine-readable in `docs/M1_D_GPU_CASE_EXECUTION.json` under `deferred_direct_tests`.
+
+| Scope held for direct test | Existing evidence retained | Run when available; evidence required to lift HOLD |
+| --- | --- | --- |
+| D02 old RTV across resize | Stale generation, wrong device/dimensions and overlapping SRV reject. | Host harness retains an old RTV safely; reject old generation before state mutation, submit replacement generation, retire both without leaks. Never dereference a released raw pointer. |
+| D03 host concurrency | Wrong-thread rejection and controlled close-intent/submit race pass. | Real host R-thread admission plus bounded resize/close stress proves serialized immediate-context access, no post-close admission and no early release. |
+| D06/D08 actual loss | WARP injected removal/reset, quarantine and acknowledgement paths pass; healthy physical close report passes. | Dedicated disposable Windows GPU runner with reset/recovery: capture actual DXGI reason, old-generation quarantine, host teardown ordering, new device, post-host-release live-object report, exact source and raw log hashes. The user has confirmed this runner is unavailable now. |
+| G00 technical-method | Owner design YES and same-account source review are recorded. | Demonstrate the host teardown barrier and negative/error paths on pinned source; record a separate method disposition and reviewer limitations. The absent historical RED-before-implementation witness cannot be supplied retroactively. |
+| G01 public runtime | Private D3D11 and historical ABI/core build and test. | After separately authorized integration, a linked C consumer must exercise actual model/source/render/drain/close and verify advertised capabilities against behavior on exact head. |
+| G02 public asset path | Private CPU validation and source-pinned parser/fuzz evidence exist. | After integration, run valid and hostile JSON/ZIP/GLB through public model/character activation, both full fuzz campaigns, rollback and no-GPU-allocation-on-reject checks on exact head. |
+
+The 87 M1-B whole-case runtime verdicts likewise remain HOLD until their respective public source/security paths and direct cases exist; their design oracles and passing private/CI checks are not a substitute. The remaining G03/G04/G05 cases are outside this M1-D increment and receive no inferred PASS.
+
+The M1-B whole-case count remains PASS 0 of 87. A green CI matrix is required for source provenance but does not change the HOLD decisions above. The PR remains draft pending a separate merge decision.
