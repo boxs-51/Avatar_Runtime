@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import check_m0_rc1_pins as pins
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-CANDIDATE = "6e3e013c8211a7a2c20ea3520ca2a5be599f79fb"
+CANDIDATE = "c6612f267e41e9b25b25e0cc7183169c20e99df9"
 
 
 class Custody(unittest.TestCase):
