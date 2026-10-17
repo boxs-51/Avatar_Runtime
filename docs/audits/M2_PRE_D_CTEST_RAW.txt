@@ -1,20 +1,20 @@
 ﻿Test project E:/Avatar_Runtime/build/m2-c-private
     Start  7: c2_glb_reader
-1/5 Test  #7: c2_glb_reader ....................   Passed    0.02 sec
+1/5 Test  #7: c2_glb_reader ....................   Passed    0.05 sec
     Start  8: c2_glb_validation
-2/5 Test  #8: c2_glb_validation ................   Passed    0.03 sec
+2/5 Test  #8: c2_glb_validation ................   Passed    0.09 sec
     Start  9: c2_dual_mode
-3/5 Test  #9: c2_dual_mode .....................   Passed   12.41 sec
+3/5 Test  #9: c2_dual_mode .....................   Passed   13.64 sec
     Start 16: m2_private_3d_scene
-4/5 Test #16: m2_private_3d_scene ..............   Passed    0.01 sec
+4/5 Test #16: m2_private_3d_scene ..............   Passed    0.03 sec
     Start 17: m2_warp_3d_pixels
-5/5 Test #17: m2_warp_3d_pixels ................   Passed    0.80 sec
+5/5 Test #17: m2_warp_3d_pixels ................   Passed    0.83 sec
 
 100% tests passed out of 5
 
 Label Time Summary:
-M2                    =   0.81 sec*proc (2 tests)
-PRIVATE_CPU_ONLY      =   0.01 sec*proc (1 test)
-WARP_DETERMINISTIC    =   0.80 sec*proc (1 test)
+M2                    =   0.86 sec*proc (2 tests)
+PRIVATE_CPU_ONLY      =   0.03 sec*proc (1 test)
+WARP_DETERMINISTIC    =   0.83 sec*proc (1 test)
 
-Total Test time (real) =  13.28 sec
+Total Test time (real) =  14.64 sec
