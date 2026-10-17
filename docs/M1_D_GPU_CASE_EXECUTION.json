@@ -16,9 +16,9 @@
     "D03": "PARTIAL_LOCAL_PASS; HOLD_HOST_INTEGRATION: physical private harness ran 100 off-thread close-intent versus R-thread submit cases (50 admitted, 50 preclosed BUSY), then exact drain; production host-wide immediate-context serialization still untested",
     "D04": "PASS tested state inventory: topology, VS/PS with zero class instances, rasterizer, two viewports, eight RTV slots, DSV, blend factor/mask, depth/stencil restored after draw, validation reject and scoped recoverable failure",
     "D05": "PASS private query paths: physical BUSY then exact completion over 100 cycles; deterministic S_FALSE, S_OK true/false, failed GetData and removed reason tests; 64-entry pending WARP backlog",
-    "D06": "PARTIAL; HOLD_DIRECT_TEST for post-loss teardown and post-host-release leak report: pins held through BUSY/quarantine and physical healthy post-close host-only report already tested",
+    "D06": "PARTIAL; HOLD_CARRY_TO_M2 for post-loss teardown and post-host-release leak report: pins held through BUSY/quarantine and physical healthy post-close host-only report already tested",
     "D07": "PASS private physical 100 close/recreate cycles: BUSY until query completion, pins released on R, debug-layer host-only live-object identities 2 before/after, zero errors; 198 old-RTV rejects and 100 close-intent admission cases; WARP backlog/wrong-thread checks; retirement capacity preallocated before draw",
-    "D08": "HOLD_DIRECT_TEST: deterministic WARP removal/reset and failed-query quarantine/ack/recovery paths pass, but actual device removal/reset and physical teardown require a dedicated reset-capable runner",
+    "D08": "HOLD_CARRY_TO_M2: deterministic WARP removal/reset and failed-query quarantine/ack/recovery paths pass, but actual device removal/reset and physical teardown require a dedicated reset-capable runner",
     "D09": "PARTIAL: Windows MSVC shared 33/33 and static 31/31 CTest at exact GPU source; private local C2 native groups 3/3; Python contracts and new-head CI to be checked after evidence commit",
     "D10": "PARTIAL; HOLD_DIRECT_TEST for actual-loss raw logs and independent method review: named physical runner and source-pinned D07 logs/hashes already retained"
   },
@@ -40,11 +40,20 @@
       "pass_evidence": "Bounded real-host stress log shows no off-R D3D calls, no post-close admission, and no early release or stuck drain."
     },
     {
-      "id": "D06_D08_PHYSICAL_LOSS",
-      "status": "HOLD_DIRECT_TEST",
+      "id": "D06_POST_LOSS_LIFETIME",
+      "status": "HOLD_CARRY_TO_M2",
+      "target_stage": "M2",
+      "reason": "Healthy close and injected quarantine retain/release paths pass; no physical post-loss host-reference teardown and live-object report exists.",
+      "resume_when": "A disposable Windows GPU runner and integrated M2 host teardown are available.",
+      "pass_evidence": "At actual loss, preserve old-generation pins until a proved host teardown barrier; after host-held references release, capture a source-pinned debug live-object report with zero SDK survivors."
+    },
+    {
+      "id": "D08_ACTUAL_DEVICE_LOSS",
+      "status": "HOLD_CARRY_TO_M2",
+      "target_stage": "M2",
       "reason": "The owner has no dedicated reset-capable GPU runner; injected HRESULTs are control-flow evidence only.",
       "resume_when": "A disposable Windows GPU runner supports driver reset and recovery without risking the shared workstation.",
-      "pass_evidence": "Capture actual DXGI removed/reset reason, old-generation quarantine, host teardown barrier, new-device recovery, post-host-release live-object report, raw logs/hashes and exact source SHA."
+      "pass_evidence": "Capture actual DXGI removed/reset reason, quarantine, host teardown ordering, replacement device recovery, old-resource rejection, raw logs/hashes and exact source SHA."
     },
     {
       "id": "G00_TECHNICAL_METHOD",

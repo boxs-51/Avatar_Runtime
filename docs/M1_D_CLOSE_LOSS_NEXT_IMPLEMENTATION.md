@@ -4,6 +4,8 @@
 
 **Implementation follow-up (2026-10-17):** Private source `0bcdca7f8024a1a6765526942591406bdb25a0bd` implements the close coordinator, terminal query paths and injected loss quarantine, including pre-draw retirement capacity reservation and local hardware D02/D03 harness cases. The exact-source results and updated HOLD decisions are in `audits/M1_D_GATES_REASSESSMENT_20261017.md`; the remainder of this document records the pre-implementation design and is not retrospective PASS evidence.
 
+**Owner M2 handoff (2026-10-17):** The remaining real-device D06 post-loss lifetime and D08 removal/recovery experiments stay **HOLD** and are tracked for direct execution in M2. The owner has confirmed that no dedicated reset-capable runner exists now. This changes the scheduling of those two experiments, not their verdict or the M1-D/full-gate acceptance criteria; see the separate `D06_POST_LOSS_LIFETIME` and `D08_ACTUAL_DEVICE_LOSS` records in `M1_D_GPU_CASE_EXECUTION.json`.
+
 ## What the existing spike proves and where it stops
 
 The private Windows opt-in host backend draws and restores the pipeline state it touches. An event query retires each of 100 recreated targets; pins remain held until the exact query completes. The D3D11 debug layer reported the same seven live-object identities before and after that loop. Shared/static CTest passed 31/31 and 29/29 on the named GTX 1060 runner; 135 Python contracts and exact-head M1-D CI passed. These results do not cover a close request while work is pending, post-close COM lifetime, failed `GetData`, actual device removal/reset, or concurrent host close/resize. The public render/drain ABI and capability remain disabled.
