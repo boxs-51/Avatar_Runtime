@@ -643,7 +643,9 @@ def check_m2_pre_d(base, candidate):
     require(base == M2_PRE_D_BASE, "pre-M2-D parent moved: refresh and review")
     git("merge-base", "--is-ancestor", base, candidate)
     check_m2_d_design(M2_D_DESIGN_BASE, base)
-    require(set(git("diff", "--name-only", base, candidate).splitlines()) == M2_PRE_D_PATHS,
+    expected_paths = M2_PRE_D_PATHS | (
+        {"tests/contracts/test_m2_a_custody.py"} if carried_m2_a_main_pin(candidate) else set())
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == expected_paths,
             "pre-M2-D path drift")
     for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
                  "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
