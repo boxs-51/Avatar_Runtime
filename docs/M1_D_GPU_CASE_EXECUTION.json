@@ -19,7 +19,7 @@
     "D06": "PARTIAL: snapshot/target pins held through BUSY and quarantine; physical post-close reports only identical two host device/context objects across 100 cycles; actual device-loss teardown untested",
     "D07": "PASS private physical 100 close/recreate cycles: BUSY until query completion, pins released on R, debug-layer host-only live-object identities 2 before/after, zero errors; WARP close/submission race and wrong-thread checks",
     "D08": "HOLD: deterministic WARP removal/reset and failed-query quarantine/ack/recovery paths pass, but no actual device removal/reset runner or physical teardown evidence",
-    "D09": "PARTIAL: Windows MSVC shared 33/33 and static 31/31 CTest at exact GPU source; Python custody and new-head CI pending evidence commit",
+    "D09": "PARTIAL: Windows MSVC shared 33/33 and static 31/31 CTest at exact GPU source, Python contracts 135/135; new-head CI pending",
     "D10": "PARTIAL: named physical runner, exact-source raw logs and hashes retained for D07; D08 actual loss and independent review missing"
   },
   "verdict": "PRIVATE_SPIKE_PARTIAL; M1-D_ACCEPTANCE_HOLD; PUBLIC_RENDER_DISABLED"
