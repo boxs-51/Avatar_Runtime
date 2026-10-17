@@ -57,8 +57,14 @@ float depth_pixel(ID3D11Device *device,ID3D11DeviceContext *context,
 } // namespace
 
 int main(int argc,char **argv) {
-    check(argc==2 || (argc==3 && std::string_view(argv[2])=="--hardware"),"corpus and mode");
-    const bool hardware=argc==3;
+    check(argc==2 || (argc==3 && (std::string_view(argv[2])=="--hardware" ||
+                                    std::string_view(argv[2])=="--live-report" ||
+                                    std::string_view(argv[2])=="--live-hardware")),
+          "corpus and mode");
+    const bool hardware=argc==3 && (std::string_view(argv[2])=="--hardware" ||
+                                    std::string_view(argv[2])=="--live-hardware");
+    const bool live_report=argc==3 && (std::string_view(argv[2])=="--live-report" ||
+                                       std::string_view(argv[2])=="--live-hardware");
     ComPtr<ID3D11Device> device;
     ComPtr<ID3D11DeviceContext> context;
     D3D_FEATURE_LEVEL feature{};
@@ -88,6 +94,13 @@ int main(int argc,char **argv) {
     if (debug_enabled) check(SUCCEEDED(device.As(&debug_queue)),"D3D11 debug queue");
     ars::graphics::d3d11::HostDevice backend(device.Get(),context.Get(),37);
     auto t=target(device.Get(),8);
+    ComPtr<ID3D11Debug> debug_device;
+    if (live_report) {
+        check(debug_enabled && SUCCEEDED(device.As(&debug_device)),"debug device for live baseline");
+        context->ClearState();context->Flush();
+        OutputDebugStringA("ARS_LIVE_BASELINE\n");
+        debug_device->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+    }
     test::Host host;
     {
         ars::assets::Resource resource(test::Host::allocate,test::Host::release,&host);
@@ -329,6 +342,11 @@ int main(int argc,char **argv) {
         scene={};model.reset();depth.Reset();
     }
     check(host.live==0,"GLB ownership released");
+    if (live_report) {
+        context->ClearState();context->Flush();
+        OutputDebugStringA("ARS_LIVE_FINAL\n");
+        debug_device->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+    }
     if (debug_queue) {
         for (UINT64 i=0;i<debug_queue->GetNumStoredMessages();++i) {
             SIZE_T length=0;

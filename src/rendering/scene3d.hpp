@@ -2,6 +2,7 @@
 #include "../assets/validated_cpu_model.hpp"
 #include <array>
 #include <memory>
+#include <memory_resource>
 #include <vector>
 
 namespace ars::rendering {
@@ -25,10 +26,12 @@ struct Material3D {
     bool double_sided = false;
 };
 struct Draw3D {
+    Draw3D(std::pmr::memory_resource *memory=std::pmr::get_default_resource())
+        : vertices(memory), indices(memory) {}
     std::uint32_t node = 0, primitive = 0;
     Material3D material;
-    std::vector<Vertex3D> vertices;
-    std::vector<std::uint32_t> indices;
+    std::pmr::vector<Vertex3D> vertices;
+    std::pmr::vector<std::uint32_t> indices;
 };
 struct Camera3D {
     std::array<double,16> clip_from_world{};
@@ -42,9 +45,11 @@ struct CameraNode3D {
     std::array<double,16> world{};
 };
 struct PreparedScene3D {
+    PreparedScene3D(std::pmr::memory_resource *memory=std::pmr::get_default_resource())
+        : draws(memory), cameras(memory) {}
     std::shared_ptr<const assets::GlbModel> source;
-    std::vector<Draw3D> draws;
-    std::vector<CameraNode3D> cameras;
+    std::pmr::vector<Draw3D> draws;
+    std::pmr::vector<CameraNode3D> cameras;
     std::size_t estimated_gpu_bytes = 0;
     std::size_t gpu_budget = 0;
 };
