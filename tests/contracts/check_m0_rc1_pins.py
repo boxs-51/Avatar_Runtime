@@ -546,6 +546,40 @@ def check_m2_b(base, candidate):
     return True
 
 
+M2_C_BRANCH = "m2/3d-render-implementation"
+M2_C_BASE = "058e8e7159c5f262a452e69f8764e032e4776415"
+M2_C_PARENT = "6e3e013c8211a7a2c20ea3520ca2a5be599f79fb"
+M2_C_PATHS = frozenset((
+    ".github/workflows/m2-3d-pixels.yml", "CMakeLists.txt",
+    "docs/M2_C_GLB_RENDER_DESIGN.md", "docs/audits/M2_C_IMPLEMENTATION_EVIDENCE.md",
+    "docs/audits/M2_C_BUILD_RAW.txt", "docs/audits/M2_C_CTEST_RAW.txt",
+    "docs/audits/M2_C_WARP_RAW.txt", "docs/audits/M2_C_HARDWARE_RAW.txt",
+    "src/graphics/backend.hpp", "src/graphics/d3d11/state_scope.cpp",
+    "src/graphics/d3d11/state_scope.hpp",
+    "src/rendering/scene3d.cpp", "src/rendering/scene3d.hpp",
+    "src/rendering/d3d11_scene3d.cpp", "src/rendering/d3d11_scene3d.hpp",
+    "tests/assets/fixtures/generate_fixtures.py", "tests/assets/fixtures/manifest.json",
+    "tests/rendering/scene3d_tests.cpp", "tests/rendering/d3d11_scene3d_pixels.cpp",
+    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m2_b_custody.py",
+    "tests/contracts/test_m2_c_custody.py",
+))
+
+
+def check_m2_c(base, candidate):
+    """M2-C source remains stacked on the exact private design/document head."""
+    require(base == M2_C_BASE, "M2-C design parent moved: refresh and review")
+    git("merge-base", "--is-ancestor", base, candidate)
+    git("merge-base", "--is-ancestor", M2_C_PARENT, base)
+    check_m2_b(M2_B_BASE, M2_C_PARENT)
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == M2_C_PATHS,
+            "M2-C path drift")
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path),
+                "M2-C changed held/public boundary: " + path)
+    return True
+
+
 def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -592,6 +626,9 @@ def check():
         elif os.getenv("GITHUB_HEAD_REF") == M2_B_BRANCH:
             expected = M2_B_BASE
             check_m2_b(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M2_C_BRANCH:
+            expected = M2_C_BASE
+            check_m2_c(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M1_D_BRANCH:
             expected = M1_D_BASE
             check_m1_d(expected_parent, git("rev-parse", "HEAD^2"))

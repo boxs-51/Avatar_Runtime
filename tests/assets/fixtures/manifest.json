@@ -1080,6 +1080,141 @@
     "stage": "C2"
   },
   {
+    "id": "positive-m2-3d-pose.glb",
+    "file": "positive-m2-3d-pose.glb",
+    "sha256": "cbbcef0f53b60493825c97dd38a82c33b5be5639b473320519f6bf7249a30b89",
+    "bytes": 2936,
+    "expected": "OK",
+    "family": "M2-C two-joint morph pose",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-node-weight.glb",
+    "file": "positive-m2-3d-node-weight.glb",
+    "sha256": "a9b94fec9293334300da3b2d50ae38d6d6ca5e3b2049b5e9ed20ca96048bc813",
+    "bytes": 2952,
+    "expected": "OK",
+    "family": "M2-C node weight overrides mesh",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-tangent.glb",
+    "file": "positive-m2-3d-tangent.glb",
+    "sha256": "88603ab6a6fed2fe48f35afb0e9fca0b9f3d435b5f99dfb99c533178d46f2d42",
+    "bytes": 3420,
+    "expected": "OK",
+    "family": "M2-C morph tangent before nonuniform skin",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-flat.glb",
+    "file": "positive-m2-3d-flat.glb",
+    "sha256": "6966cf067a7022c508658e615a6a7d48fb90dab80a5175794586e1a894c4652e",
+    "bytes": 2856,
+    "expected": "OK",
+    "family": "M2-C flat color GPU pose",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-camera-perspective.glb",
+    "file": "positive-m2-3d-camera-perspective.glb",
+    "sha256": "cd82c2217ca62d5d0b9402fc88b753f8f281b2cd234ca72de264eef228f63a8e",
+    "bytes": 3008,
+    "expected": "OK",
+    "family": "M2-C selected perspective camera",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-camera-orthographic.glb",
+    "file": "positive-m2-3d-camera-orthographic.glb",
+    "sha256": "3c2c8bc4301fbc70b1ce3b6fb7db2e1495833ad4b3e43d470ab4d411f79c8813",
+    "bytes": 3004,
+    "expected": "OK",
+    "family": "M2-C selected orthographic camera",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-camera-infinite.glb",
+    "file": "positive-m2-3d-camera-infinite.glb",
+    "sha256": "ec0bdae31430697839a47b78d6631dc8292a6b0af0a0ce791c84e01ba5227712",
+    "bytes": 3000,
+    "expected": "OK",
+    "family": "M2-C infinite far perspective camera",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-texture.glb",
+    "file": "positive-m2-3d-texture.glb",
+    "sha256": "ba015bf7d5f1900d500cddcc80864c854cdbd2dfda6d9a47dd137283a7d3fb91",
+    "bytes": 3064,
+    "expected": "OK",
+    "family": "M2-C sRGB base and linear MR",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-mask.glb",
+    "file": "positive-m2-3d-mask.glb",
+    "sha256": "7b3d7ddc0031fcb834554095460915a34febb0436cb5652f0415bb74b9a1634b",
+    "bytes": 3132,
+    "expected": "OK",
+    "family": "M2-C inclusive alpha cutoff",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-blend.glb",
+    "file": "positive-m2-3d-blend.glb",
+    "sha256": "bfe26c2b435d99609746fb63ff5268c682196363f61d21431ead77928ce4d390",
+    "bytes": 3116,
+    "expected": "OK",
+    "family": "M2-C transparent overlap",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-unsupported.glb",
+    "file": "positive-m2-3d-unsupported.glb",
+    "sha256": "196595c8216869f3de672c9d7acc0b7995d2076c0bcde355ec1ca2f28f4ed06f",
+    "bytes": 3092,
+    "expected": "OK",
+    "family": "M2-C valid but unrenderable material",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-repeat.glb",
+    "file": "positive-m2-3d-repeat.glb",
+    "sha256": "4c1840a01bb4a8323e9d1415cf886ef6bbdb127bc3116a4408d9b886dbca29b7",
+    "bytes": 3332,
+    "expected": "OK",
+    "family": "M2-C 2x2 sampler repeat",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-clamp.glb",
+    "file": "positive-m2-3d-clamp.glb",
+    "sha256": "f4a64339f2a4980965e48bd20790417fe93650d32c8d05d931bde76628a390a3",
+    "bytes": 3332,
+    "expected": "OK",
+    "family": "M2-C 2x2 sampler clamp",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-filter-point.glb",
+    "file": "positive-m2-3d-filter-point.glb",
+    "sha256": "1db210242d1f06781bb8c7ad0e84a65694914f38cef19686544684787683818c",
+    "bytes": 3332,
+    "expected": "OK",
+    "family": "M2-C 2x2 sampler point",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-filter-linear.glb",
+    "file": "positive-m2-3d-filter-linear.glb",
+    "sha256": "f21c41529f03b38e1aae164ed1ac70dcae001e7d33e89cfb77c44c767a2fa56d",
+    "bytes": 3332,
+    "expected": "OK",
+    "family": "M2-C 2x2 sampler linear",
+    "stage": "M2"
+  },
+  {
     "id": "glb-joint-index.glb",
     "file": "glb-joint-index.glb",
     "sha256": "74e5fc9ec4a4fb84b699bb252ceeca5ea7a3a4323bd11978cc5f44cb7ea18a74",
