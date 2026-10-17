@@ -124,6 +124,22 @@ int main(int argc,char **argv) {
             if (polled==Result::busy) std::this_thread::yield();
         }
         check(polled==Result::ok && retirement.complete() && !retirement.holds_pin(),"exact query");
+        {
+            auto snapshot=std::make_shared<const ars::rendering::PreparedScene3D>(scene);
+            std::weak_ptr<const ars::rendering::PreparedScene3D> witness=snapshot;
+            ars::graphics::d3d11::QueryRetirement pinned_query;
+            check(ars::rendering::render_offscreen_3d(backend,t.view.Get(),info,
+                                                       snapshot,camera,pinned_query)==Result::ok,
+                  "independent CPU snapshot submit");
+            snapshot.reset();
+            check(!witness.expired() && pinned_query.holds_pin(),"CPU snapshot pinned by query");
+            Result pinned=Result::busy;
+            for (int i=0;i<10000 && pinned==Result::busy;++i) {
+                pinned=pinned_query.poll(info.generation);
+                if (pinned==Result::busy) std::this_thread::yield();
+            }
+            check(pinned==Result::ok && witness.expired(),"CPU snapshot retired after exact query");
+        }
         UINT count=1;D3D11_VIEWPORT restored{};context->RSGetViewports(&count,&restored);
         check(count==1 && restored.TopLeftX==1 && restored.Width==2,"host viewport restored");
         ComPtr<ID3D11ShaderResourceView> restored_view;
@@ -185,9 +201,10 @@ int main(int argc,char **argv) {
             return prepared;
         };
         auto submit=[&](const ars::rendering::PreparedScene3D &prepared,
-                        ComPtr<ID3D11Texture2D> *capture=nullptr) {
+                        ComPtr<ID3D11Texture2D> *capture=nullptr,
+                        ars::rendering::GpuCreateProbe *probe=nullptr) {
             ars::graphics::d3d11::QueryRetirement q;
-            check(ars::rendering::render_offscreen_3d(backend,t.view.Get(),info,prepared,camera,q,capture)==Result::ok,
+            check(ars::rendering::render_offscreen_3d(backend,t.view.Get(),info,prepared,camera,q,capture,probe)==Result::ok,
                   "material GPU submit");
             Result result=Result::busy;
             for (int i=0;i<10000 && result==Result::busy;++i) {
@@ -206,6 +223,21 @@ int main(int argc,char **argv) {
                     unsigned(red[2]),unsigned(red[3]));
         check(near_pixel(red,{129,3,3,255}),
               "base sRGB and linear MR pixel");
+        ars::rendering::GpuCreateProbe count_creates;
+        submit(textured,nullptr,&count_creates);
+        check(count_creates.attempts>=15,"GPU allocation probe covers texture and depth");
+        const auto before_failure=pixel(context.Get(),t,4,4);
+        for (std::size_t fail_at=1;fail_at<=count_creates.attempts;++fail_at) {
+            ars::rendering::GpuCreateProbe fail{fail_at};
+            ars::graphics::d3d11::QueryRetirement rejected_create;
+            check(ars::rendering::render_offscreen_3d(backend,t.view.Get(),info,textured,
+                                                       camera,rejected_create,nullptr,&fail)==
+                      Result::out_of_budget && fail.attempts==fail_at &&
+                      !rejected_create.holds_pin() &&
+                      pixel(context.Get(),t,4,4)==before_failure,
+                  "injected GPU create failure preserves old target and pin state");
+        }
+        std::printf("M2C_INJECTED_GPU_CREATE=%zu\n",count_creates.attempts);
         auto repeat=load("positive-m2-3d-repeat.glb");
         auto clamp=load("positive-m2-3d-clamp.glb");
         submit(repeat);
@@ -229,6 +261,28 @@ int main(int argc,char **argv) {
         check(near_pixel(point_pixel,{10,129,10,255}) &&
               near_pixel(linear_pixel,{99,99,10,255}),
               "declared point and linear filtering pixels");
+        auto minified=point_filter;
+        minified.draws[0].material.base_texture.wrap_s=10497;
+        minified.draws[0].material.base_texture.wrap_t=10497;
+        minified.draws[0].vertices[0].uv={0,0};
+        minified.draws[0].vertices[1].uv={8,0};
+        minified.draws[0].vertices[2].uv={0,8};
+        std::array<std::array<unsigned char,4>,6> min_pixels{};
+        constexpr std::array<std::uint32_t,6> min_modes{9728,9729,9984,9985,9986,9987};
+        for (std::size_t i=0;i<min_modes.size();++i) {
+            minified.draws[0].material.base_texture.min_filter=min_modes[i];
+            submit(minified);
+            min_pixels[i]=pixel(context.Get(),t,4,4);
+            std::printf("M2C_MIN_FILTER_%u=%u,%u,%u\n",min_modes[i],
+                unsigned(min_pixels[i][0]),unsigned(min_pixels[i][1]),
+                unsigned(min_pixels[i][2]));
+        }
+        check(near_pixel(min_pixels[0],{10,129,10,255}) &&
+              min_pixels[1]!=min_pixels[2],
+              "no-mip minification samples the base level");
+        for (std::size_t i=2;i<min_pixels.size();++i)
+            check(near_pixel(min_pixels[i],{99,99,99,255}),
+                  "declared mip minification samples generated level");
         auto masked=load("positive-m2-3d-mask.glb");
         submit(masked);
         check(pixel(context.Get(),t,4,4)[0]>80,"MASK cutoff inclusive boundary");
