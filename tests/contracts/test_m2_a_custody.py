@@ -11,6 +11,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 class Custody(unittest.TestCase):
     def test_main_parent_contains_exact_m1_d_merge(self):
+        self.assertEqual(pins.git("rev-parse", pins.M2_A_MAIN_PARENT + "^1"),
+                         "f5b198137f6a96a2e33bb8ac206e53c3815bbbbc")
         self.assertEqual(pins.git("rev-parse", pins.M2_A_MAIN_PARENT + "^2"),
                          pins.M2_A_BASE)
 
