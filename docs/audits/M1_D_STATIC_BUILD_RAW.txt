@@ -1,15 +1,4 @@
-CMake is re-running because E:/Avatar_Runtime/build/m1-d-static/CMakeFiles/generate.stamp is out-of-date.
-  the file 'E:/Avatar_Runtime/CMakeLists.txt'
-  is newer than 'E:/Avatar_Runtime/build/m1-d-static/CMakeFiles/generate.stamp.depend'
-  result='-1'
--- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.19045.
--- ARS PREP-ONLY: nonfunctional ABI stub and contract model, NOT SDK engine
--- M1-A BUILD FOUNDATION: ABI version + bounded UNSUPPORTED, NOT a working runtime
--- B2 private CPU authority: public source/model/character/update/render and GPU remain unsupported
--- Configuring done (0.1s)
--- Generating done (0.6s)
--- Build files have been written to: E:/Avatar_Runtime/build/m1-d-static
-MSBuild version 18.8.2+ce25c0108 for .NET Framework
+﻿MSBuild version 18.8.2+ce25c0108 for .NET Framework
 
   ars_runtime_components.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\ars_runtime_components.dir\Debug\ars_runtime_components.lib
   ars_abi_design_stub.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_abi_design_stub.dll
@@ -19,24 +8,13 @@ MSBuild version 18.8.2+ce25c0108 for .NET Framework
   ars_contract_test_stub.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_p0_contract.dll
   ars_contract_smoke_c.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_contract_smoke_c.exe
   ars_contract_smoke_cpp.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_contract_smoke_cpp.exe
-  host_device.cpp
-  query_retirement.cpp
   close_coordinator.cpp
-  Generating Code...
   ars_d3d11_spike.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_spike.lib
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
-  d3d11_close_physical.cpp
   ars_d3d11_close_physical.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_close_physical.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
-  d3d11_close_protocol.cpp
   ars_d3d11_close_protocol.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_close_protocol.exe
-  d3d11_host_smoke.cpp
   ars_d3d11_host_smoke.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_host_smoke.exe
-  d3d11_query_retirement.cpp
   ars_d3d11_query_retirement.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_query_retirement.exe
-  d3d11_live_capture.cpp
   ars_d3d11_live_capture.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_live_capture.exe
-  d3d11_state_restore.cpp
   ars_d3d11_state_restore.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_state_restore.exe
   ars_foundation.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\lib\Debug\ars_foundation.lib
   ars_foundation_contract.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_foundation_contract.exe

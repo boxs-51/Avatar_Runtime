@@ -1,6 +1,6 @@
 # M1-D follow-up and G00/G01/G02 reassessment — 2026-10-17
 
-**Candidate GPU source:** `c7edebd25b179e41b208ebfb5b35b2eec74ccb33` (tree `e30c5231d7e955e8dffa32043ebdedf9a19d10f6`). **Base:** merged M1-C2 `f5b198137f6a96a2e33bb8ac206e53c3815bbbbc`. Source is on draft PR #30, not merged. This is a same-account technical review (`INDEPENDENCE_NOT_AVAILABLE`); no actor-distinct approval or public capability is claimed.
+**Candidate GPU source:** `f258812791a666bca9985a3966e062ccdf9f4e49` (tree `6cf71700d87c3bc00b75cfb2fac0820f935d4f20`). **Base:** merged M1-C2 `f5b198137f6a96a2e33bb8ac206e53c3815bbbbc`. Source is on draft PR #30, not merged. This is a same-account technical review (`INDEPENDENCE_NOT_AVAILABLE`); no actor-distinct approval or public capability is claimed.
 
 ## Observed implementation and evidence
 
@@ -9,6 +9,8 @@
 On the named Windows 10 / NVIDIA GTX 1060 3GB runner, source-pinned shared/static CTest passed 33/33 and 31/31. Five physical GPU tests and one deterministic WARP test ran in each configuration. The new physical test completed 100 target recreate/close cycles with 100 BUSY observations, no expired pin during BUSY and zero debug-layer errors. A debug-output capture compared the live-object reports before any backend and after all 100 closes: the same two host-owned device/context identities remained; no SDK shader/state/query/target object survived close. The WARP test covers empty/repeated close, concurrent close-intent during admitted submit, wrong-thread drain, one-time flush on S_FALSE, exact successful completion, failed GetData, S_OK with false event data, injected DXGI removed/reset reasons, fail-closed quarantine, wrong-thread/false/repeated teardown acknowledgement and new-device recovery. Raw logs and SHA-256 values are listed in `M1_D_BUILD_EVIDENCE.md`.
 
 The user confirmed that no dedicated reset-capable GPU runner is available. No actual TDR or device removal was attempted on the shared workstation. The injected HRESULT tests prove only this private control flow. This is consistent with Microsoft's documented separation between not-ready `GetData` and available data, and its requirement to recreate device-dependent resources after actual removal: https://learn.microsoft.com/en-us/windows/win32/api/d3d11/nf-d3d11-id3d11devicecontext-getdata and https://learn.microsoft.com/en-us/windows/uwp/gaming/handling-device-lost-scenarios.
+
+The source follow-up found an allocation after accepted draw when appending a retirement entry. That could throw before the in-flight query was registered, triggering the pending-retirement destructor invariant. The candidate now allocates the entry and reserves vector capacity before draw, maps `bad_alloc`/`length_error` to a failed submission before GPU mutation, and keeps post-draw insertion allocation-free. A 64-submission WARP backlog checks that every pin survives BUSY and releases at exact completion. Validation-detected device loss now transitions to quarantine too. This is a code-level method correction; there is no deterministic allocator-failure or physical device-loss proof, and it does not supply the missing host teardown barrier.
 
 ## Gate decisions
 

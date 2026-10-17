@@ -1,4 +1,4 @@
-MSBuild version 18.8.2+ce25c0108 for .NET Framework
+﻿MSBuild version 18.8.2+ce25c0108 for .NET Framework
 
   ars_runtime_components.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\ars_runtime_components.dir\Debug\ars_runtime_components.lib
   ars_abi_design_stub.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\bin\Debug\ars_abi_design_stub.dll
@@ -8,14 +8,13 @@ MSBuild version 18.8.2+ce25c0108 for .NET Framework
   ars_contract_test_stub.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\bin\Debug\ars_p0_contract.dll
   ars_contract_smoke_c.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\bin\Debug\ars_contract_smoke_c.exe
   ars_contract_smoke_cpp.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\bin\Debug\ars_contract_smoke_cpp.exe
+  close_coordinator.cpp
   ars_d3d11_spike.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\Debug\ars_d3d11_spike.lib
   ars_d3d11_close_physical.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\Debug\ars_d3d11_close_physical.exe
   ars_d3d11_close_protocol.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\Debug\ars_d3d11_close_protocol.exe
-  d3d11_host_smoke.cpp
   ars_d3d11_host_smoke.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\Debug\ars_d3d11_host_smoke.exe
   ars_d3d11_query_retirement.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\Debug\ars_d3d11_query_retirement.exe
   ars_d3d11_live_capture.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\Debug\ars_d3d11_live_capture.exe
-  d3d11_state_restore.cpp
   ars_d3d11_state_restore.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\Debug\ars_d3d11_state_restore.exe
   ars_foundation.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\bin\Debug\ars_foundation.dll
   ars_foundation_contract.vcxproj -> E:\Avatar_Runtime\build\m1-d-regression\bin\Debug\ars_foundation_contract.exe
