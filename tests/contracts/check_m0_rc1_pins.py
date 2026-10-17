@@ -547,6 +547,37 @@ def check_m2_b(base, candidate):
     return True
 
 
+M2_C_DESIGN_BRANCH = "m2/3d-design"
+M2_C_DESIGN_BASE = "6e3e013c8211a7a2c20ea3520ca2a5be599f79fb"
+M2_C_DESIGN_PATHS = frozenset((
+    "docs/M2_C_GLB_RENDER_DESIGN.md",
+    "docs/M2_D06_D08_LOSS_VERIFICATION_DESIGN.md",
+    "tests/contracts/check_m0_rc1_pins.py",
+    "tests/contracts/test_m2_a_custody.py",
+    "tests/contracts/test_m2_b_custody.py",
+))
+
+
+def check_m2_c_design(base, candidate):
+    """The design only carries the exact M2-A main custody through M2-B."""
+    require(base == M2_C_DESIGN_BASE, "M2-C design source parent moved")
+    git("merge-base", "--is-ancestor", base, candidate)
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) ==
+            M2_C_DESIGN_PATHS, "M2-C design path drift")
+    require(subprocess.run(["git", "merge-base", "--is-ancestor",
+                "a87aa6968c620342d296ca59f4e9f179ddcd7ac9", candidate],
+                cwd=ROOT).returncode == 0 and
+            git("rev-parse", candidate + ":tests/contracts/test_m2_a_custody.py") ==
+            "7b6eee371732f8024fa5abc4069636dff2453537",
+            "M2-C design lost M2-A main custody")
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) ==
+                git("rev-parse", base + ":" + path),
+                "M2-C design changed held/public boundary: " + path)
+    return True
+
+
 def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -603,6 +634,16 @@ def check():
                     git("rev-parse", "a87aa6968c620342d296ca59f4e9f179ddcd7ac9^{tree}"),
                     "M2-B main parent must merge exact M2-A head")
             check_m2_b(M2_B_BASE, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M2_C_DESIGN_BRANCH:
+            expected = expected_parent
+            require(git("rev-parse", expected + "^1") ==
+                    "d179bee01c625ed3d06584b5e3df5f6bb653b994" and
+                    git("rev-parse", expected + "^2") ==
+                    "c6612f267e41e9b25b25e0cc7183169c20e99df9" and
+                    git("rev-parse", expected + "^{tree}") ==
+                    git("rev-parse", "c6612f267e41e9b25b25e0cc7183169c20e99df9^{tree}"),
+                    "M2-C design main parent must merge exact M2-B head")
+            check_m2_c_design(M2_C_DESIGN_BASE, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M1_D_BRANCH:
             expected = M1_D_BASE
             check_m1_d(expected_parent, git("rev-parse", "HEAD^2"))
