@@ -28,18 +28,22 @@ int wmain(int argc,wchar_t **argv) {
     const bool m2c_mode=argc==3 && (std::wcscmp(argv[1],L"--m2c")==0 ||
                                        std::wcscmp(argv[1],L"--m2c-hardware")==0);
     const bool m2c_hardware=m2c_mode && std::wcscmp(argv[1],L"--m2c-hardware")==0;
-    if (argc>1 && !close_mode && !m2c_mode) return 2;
+    const bool m2d_mode=argc==4 && (std::wcscmp(argv[1],L"--m2d")==0 ||
+                                       std::wcscmp(argv[1],L"--m2d-hardware")==0);
+    const bool m2d_hardware=m2d_mode && std::wcscmp(argv[1],L"--m2d-hardware")==0;
+    if (argc>1 && !close_mode && !m2c_mode && !m2d_mode) return 2;
     wchar_t self[MAX_PATH]{};
     if (!GetModuleFileNameW(nullptr,self,MAX_PATH)) return 2;
     std::wstring child=self;
     const auto slash=child.find_last_of(L"\\/");
     if (slash==std::wstring::npos) return 2;
-    if (m2c_mode) {
+    if (m2c_mode || m2d_mode) {
         const auto parent=child.find_last_of(L"\\/",slash-1);
         if (parent==std::wstring::npos) return 2;
         const auto config=child.substr(parent+1,slash-parent-1);
         child.resize(parent+1);
-        child+=L"bin\\"+config+L"\\ars_m2_3d_pixels.exe";
+        child+=L"bin\\"+config+(m2d_mode?L"\\ars_m2_dual_pixels.exe":
+                                     L"\\ars_m2_3d_pixels.exe");
     } else {
         child.resize(slash+1);
         child+=close_mode ? L"ars_d3d11_close_physical.exe" : L"ars_d3d11_query_retirement.exe";
@@ -47,6 +51,9 @@ int wmain(int argc,wchar_t **argv) {
     std::wstring command=L"\""+child+L"\"";
     if (m2c_mode) command+=L" \""+std::wstring(argv[2])+L"\" "+
                            (m2c_hardware?L"--live-hardware":L"--live-report");
+    if (m2d_mode) command+=L" \""+std::wstring(argv[2])+L"\" \""+
+                           std::wstring(argv[3])+L"\" "+
+                           (m2d_hardware?L"--live-hardware":L"--live-report");
     STARTUPINFOW startup{};
     startup.cb=sizeof(startup);
     PROCESS_INFORMATION process{};
@@ -108,7 +115,8 @@ int wmain(int argc,wchar_t **argv) {
     const auto after=live_objects(final_report);
     std::printf("live_objects_before=%zu live_objects_after=%zu\n",before.size(),after.size());
     if (before.empty() || before!=after) return 4;
-    std::puts(m2c_mode ? "PASS M2-C healthy 3D live-object identity unchanged" :
+    std::puts(m2d_mode ? "PASS M2-D dual-mode live-object identity unchanged" :
+        m2c_mode ? "PASS M2-C healthy 3D live-object identity unchanged" :
         close_mode ? "PASS D07 physical post-close live-object identity unchanged across 100 cycles" :
         "PASS D06 physical debug-layer live-object identity unchanged across 100 retire/recreate cycles");
     return 0;
