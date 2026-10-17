@@ -11,6 +11,9 @@ def png(w=1,h=1):
  raw=b'\0\xff\0\0\xff'
  stream=b'\x78\x01\x01'+struct.pack('<HH',len(raw),65535-len(raw))+raw+struct.pack('>I',zlib.adler32(raw))
  return b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',w,h,8,6,0,0,0))+chunk(b'IDAT',stream)+chunk(b'IEND',b'')
+def png_2x2():
+ raw=b'\0'+bytes([255,0,0,255,0,255,0,255])+b'\0'+bytes([0,0,255,255,255,255,255,255])
+ return b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',2,2,8,6,0,0,0))+chunk(b'IDAT',zlib.compress(raw,0))+chunk(b'IEND',b'')
 def archive(items):
  data=io.BytesIO()
  with zipfile.ZipFile(data,'w') as z:
@@ -205,6 +208,82 @@ times=full.accessor([0,1],shape='SCALAR',min=[0],max=[1]);translations=full.acce
 full.doc['animations']=[{'samplers':[{'input':times,'output':translations},{'input':times,'output':rotations,'interpolation':'STEP'},{'input':times,'output':weights}],'channels':[{'sampler':0,'target':{'node':1,'path':'translation'}},{'sampler':1,'target':{'node':1,'path':'rotation'}},{'sampler':2,'target':{'node':0,'path':'weights'}}]}]
 pngview=full.view(png());full.doc.update(images=[{'bufferView':pngview,'mimeType':'image/png'}],textures=[{'source':0}],materials=[{'pbrMetallicRoughness':{'baseColorTexture':{'index':0}}}]);primitive['material']=0
 save('positive-glb-full.glb',full.bytes(),'OK','skin morph animation embedded PNG','C2')
+# M2-C pixel/projection fixture: two distinct joint transforms and a nonzero
+# morph distinguish morph-before-skin from skin-before-morph.
+render=copy.deepcopy(full)
+rp=render.doc['meshes'][0]['primitives'][0]
+rp['attributes']['JOINTS_0']=render.accessor([[0,0,0,0],[1,0,0,0],[1,0,0,0]],5121,'VEC4')
+rp['attributes']['WEIGHTS_0']=render.accessor([[1,0,0,0]]*3,shape='VEC4')
+render.doc['meshes'][0]['weights']=[1]
+render.doc['nodes']=[{'name':'Body','mesh':0,'skin':0,'children':[1,2]},
+                     {'name':'JointX','translation':[1,0,0],'scale':[2,1,1]},
+                     {'name':'JointY','translation':[0,1,0]}]
+render.doc['skins']=[{'joints':[1,2],'skeleton':0,
+                      'inverseBindMatrices':render.accessor([[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]]*2,shape='MAT4')}]
+render.doc.pop('animations')
+save('positive-m2-3d-pose.glb',render.bytes(),'OK','M2-C two-joint morph pose','M2')
+render_override=copy.deepcopy(render)
+render_override.doc['nodes'][0]['weights']=[0]
+save('positive-m2-3d-node-weight.glb',render_override.bytes(),'OK','M2-C node weight overrides mesh','M2')
+render_tangent=copy.deepcopy(render)
+tp=render_tangent.doc['meshes'][0]['primitives'][0]
+tp['attributes']['NORMAL']=render_tangent.accessor([[0,0,1]]*3)
+tp['attributes']['TANGENT']=render_tangent.accessor([[1,0,0,1]]*3,shape='VEC4')
+tp['targets'][0]['TANGENT']=render_tangent.accessor([[0,1,0]]*3)
+save('positive-m2-3d-tangent.glb',render_tangent.bytes(),'OK',
+     'M2-C morph tangent before nonuniform skin','M2')
+render_flat=copy.deepcopy(render)
+render_flat.doc['materials']=[{'pbrMetallicRoughness':{'baseColorFactor':[0,1,0,1]}}]
+render_flat.doc.pop('textures');render_flat.doc.pop('images')
+save('positive-m2-3d-flat.glb',render_flat.bytes(),'OK','M2-C flat color GPU pose','M2')
+for camera_kind,projection in [('perspective',{'yfov':1.5707963267948966,'znear':0.1,'zfar':10}),
+                                ('orthographic',{'xmag':1,'ymag':1,'znear':0.1,'zfar':10})]:
+ camera_case=copy.deepcopy(render_flat)
+ camera_case.doc['nodes'].append({'name':'Camera','camera':0,'translation':[0.5,1,3]})
+ camera_case.doc['scenes'][0]['nodes']=[0,3]
+ camera_case.doc['cameras']=[{'type':camera_kind,camera_kind:projection}]
+ save('positive-m2-3d-camera-'+camera_kind+'.glb',camera_case.bytes(),'OK',
+      'M2-C selected '+camera_kind+' camera','M2')
+camera_infinite=copy.deepcopy(render_flat)
+camera_infinite.doc['nodes'].append({'name':'Camera','camera':0,'translation':[0.5,1,3]})
+camera_infinite.doc['scenes'][0]['nodes']=[0,3]
+camera_infinite.doc['cameras']=[{'type':'perspective','perspective':
+                                 {'yfov':1.5707963267948966,'znear':0.1}}]
+save('positive-m2-3d-camera-infinite.glb',camera_infinite.bytes(),'OK',
+     'M2-C infinite far perspective camera','M2')
+render_texture=copy.deepcopy(render)
+render_texture.doc['samplers']=[{'magFilter':9729,'minFilter':9987,'wrapS':10497,'wrapT':33071}]
+render_texture.doc['textures'][0]['sampler']=0
+render_texture.doc['materials'][0]['pbrMetallicRoughness']['metallicRoughnessTexture']={'index':0}
+save('positive-m2-3d-texture.glb',render_texture.bytes(),'OK','M2-C sRGB base and linear MR','M2')
+render_mask=copy.deepcopy(render_texture)
+render_mask.doc['materials'][0].update(alphaMode='MASK',alphaCutoff=0.5)
+render_mask.doc['materials'][0]['pbrMetallicRoughness']['baseColorFactor']=[1,1,1,0.5]
+save('positive-m2-3d-mask.glb',render_mask.bytes(),'OK','M2-C inclusive alpha cutoff','M2')
+render_blend=copy.deepcopy(render_texture)
+render_blend.doc['materials'][0]['alphaMode']='BLEND'
+render_blend.doc['materials'][0]['pbrMetallicRoughness']['baseColorFactor']=[1,1,1,0.5]
+save('positive-m2-3d-blend.glb',render_blend.bytes(),'OK','M2-C transparent overlap','M2')
+render_unsupported=copy.deepcopy(render_texture)
+render_unsupported.doc['materials'][0]['normalTexture']={'index':0}
+save('positive-m2-3d-unsupported.glb',render_unsupported.bytes(),'OK','M2-C valid but unrenderable material','M2')
+for wrap_name,wrap in [('repeat',10497),('clamp',33071)]:
+ swatch=copy.deepcopy(render)
+ swatch.doc['images']=[{'bufferView':swatch.view(png_2x2()),'mimeType':'image/png'}]
+ swatch.doc['samplers']=[{'magFilter':9728,'minFilter':9728,'wrapS':wrap,'wrapT':33071}]
+ swatch.doc['textures'][0]['sampler']=0
+ swatch.doc['meshes'][0]['primitives'][0]['attributes']['TEXCOORD_0']=swatch.accessor([[1.25,0.25]]*3,shape='VEC2')
+ swatch.doc['materials'][0]['pbrMetallicRoughness'].update(metallicFactor=0,roughnessFactor=1)
+ save('positive-m2-3d-'+wrap_name+'.glb',swatch.bytes(),'OK','M2-C 2x2 sampler '+wrap_name,'M2')
+for filter_name,mag in [('point',9728),('linear',9729)]:
+ swatch=copy.deepcopy(render)
+ swatch.doc['images']=[{'bufferView':swatch.view(png_2x2()),'mimeType':'image/png'}]
+ swatch.doc['samplers']=[{'magFilter':mag,'minFilter':9728,'wrapS':33071,'wrapT':33071}]
+ swatch.doc['textures'][0]['sampler']=0
+ swatch.doc['meshes'][0]['primitives'][0]['attributes']['TEXCOORD_0']=swatch.accessor([[0.5,0.25]]*3,shape='VEC2')
+ swatch.doc['materials'][0]['pbrMetallicRoughness'].update(metallicFactor=0,roughnessFactor=1)
+ save('positive-m2-3d-filter-'+filter_name+'.glb',swatch.bytes(),'OK',
+      'M2-C 2x2 sampler '+filter_name,'M2')
 for label,change in [
  ('glb-joint-index',lambda x: x.binary.__setitem__(x.doc['bufferViews'][x.doc['accessors'][2]['bufferView']]['byteOffset'],1)),
  ('glb-weight-zero',lambda x:struct.pack_into('<f',x.binary,x.doc['bufferViews'][x.doc['accessors'][3]['bufferView']]['byteOffset'],0)),

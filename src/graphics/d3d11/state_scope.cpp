@@ -9,8 +9,11 @@ StateScope::StateScope(ID3D11DeviceContext *context) : context_(context) {
     context_->VSGetShader(vs_.GetAddressOf(), vs_classes_.data(), &vs_count_);
     context_->PSGetShader(ps_.GetAddressOf(), ps_classes_.data(), &ps_count_);
     context_->VSGetConstantBuffers(0,1,vs_constant_.GetAddressOf());
-    context_->PSGetShaderResources(0,1,ps_resource_.GetAddressOf());
-    context_->PSGetSamplers(0,1,ps_sampler_.GetAddressOf());
+    ID3D11ShaderResourceView *resources[2]{};
+    ID3D11SamplerState *samplers[2]{};
+    context_->PSGetShaderResources(0,2,resources);
+    context_->PSGetSamplers(0,2,samplers);
+    for (std::size_t i=0;i<2;++i) { ps_resources_[i].Attach(resources[i]); ps_samplers_[i].Attach(samplers[i]); }
     context_->RSGetState(rasterizer_.GetAddressOf());
     context_->RSGetViewports(&viewport_count_, viewports_.data());
     ID3D11RenderTargetView *views[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT]{};
@@ -28,11 +31,11 @@ StateScope::~StateScope() {
     context_->VSSetShader(vs_.Get(), vs_classes_.data(), vs_count_);
     context_->PSSetShader(ps_.Get(), ps_classes_.data(), ps_count_);
     ID3D11Buffer *constant=vs_constant_.Get();
-    ID3D11ShaderResourceView *resource=ps_resource_.Get();
-    ID3D11SamplerState *sampler=ps_sampler_.Get();
+    ID3D11ShaderResourceView *resources[]{ps_resources_[0].Get(),ps_resources_[1].Get()};
+    ID3D11SamplerState *samplers[]{ps_samplers_[0].Get(),ps_samplers_[1].Get()};
     context_->VSSetConstantBuffers(0,1,&constant);
-    context_->PSSetShaderResources(0,1,&resource);
-    context_->PSSetSamplers(0,1,&sampler);
+    context_->PSSetShaderResources(0,2,resources);
+    context_->PSSetSamplers(0,2,samplers);
     context_->RSSetState(rasterizer_.Get());
     context_->RSSetViewports(viewport_count_, viewports_.data());
     ID3D11RenderTargetView *views[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT]{};

@@ -17,8 +17,8 @@ class StateScope {
     Microsoft::WRL::ComPtr<ID3D11VertexShader> vs_;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> ps_;
     Microsoft::WRL::ComPtr<ID3D11Buffer> vs_constant_;
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> ps_resource_;
-    Microsoft::WRL::ComPtr<ID3D11SamplerState> ps_sampler_;
+    std::array<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>,2> ps_resources_;
+    std::array<Microsoft::WRL::ComPtr<ID3D11SamplerState>,2> ps_samplers_;
     std::array<ID3D11ClassInstance *, 256> vs_classes_{};
     std::array<ID3D11ClassInstance *, 256> ps_classes_{};
     UINT vs_count_=256, ps_count_=256;
