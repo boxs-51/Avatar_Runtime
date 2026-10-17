@@ -490,6 +490,33 @@ def check_m1_d(base, candidate):
     return True
 
 
+M2_A_BRANCH = "m2/2d-render-foundation"
+M2_A_BASE = "dffe10c16d5585c0d50fd7745f310543e719c522"
+M2_A_PATHS = frozenset((
+    ".github/workflows/m2-2d-reference.yml", "CMakeLists.txt",
+    "docs/M2_RENDERING_EXECUTION_PLAN.md", "docs/audits/M2_A_BUILD_EVIDENCE.md",
+    "docs/audits/M2_A_BUILD_RAW.txt", "docs/audits/M2_A_CTEST_RAW.txt",
+    "src/rendering/scene2d.cpp", "src/rendering/scene2d.hpp",
+    "tests/rendering/scene2d_tests.cpp",
+    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m1_d_custody.py",
+    "tests/contracts/test_m2_a_custody.py",
+))
+
+
+def check_m2_a(base, candidate):
+    """The first M2 increment must be stacked on the exact held M1-D head."""
+    require(base == M2_A_BASE, "M2-A parent moved: refresh and review")
+    git("merge-base", "--is-ancestor", base, candidate)
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == M2_A_PATHS,
+            "M2-A path drift")
+    check_m1_d(M1_D_BASE, base)
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path),
+                "M2-A changed held/public boundary: " + path)
+    return True
+
+
 def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -530,6 +557,9 @@ def check():
         if os.getenv("GITHUB_HEAD_REF") == M1_C2_BRANCH:
             expected = M1_C2_BASE
             check_m1_c2(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M2_A_BRANCH:
+            expected = M2_A_BASE
+            check_m2_a(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M1_D_BRANCH:
             expected = M1_D_BASE
             check_m1_d(expected_parent, git("rev-parse", "HEAD^2"))
