@@ -566,22 +566,28 @@ M2_C_PATHS = frozenset((
 ))
 
 
+def carried_m2_a_main_pin(candidate):
+    """Recognize only the exact M2-A custody blob carried by merge ancestry."""
+    carried = subprocess.run(["git", "merge-base", "--is-ancestor",
+        "a87aa6968c620342d296ca59f4e9f179ddcd7ac9", candidate],
+        cwd=ROOT).returncode == 0
+    if carried:
+        require(git("rev-parse", candidate + ":tests/contracts/test_m2_a_custody.py") ==
+                "7b6eee371732f8024fa5abc4069636dff2453537",
+                "M2-A main-parent custody blob drift")
+    return carried
+
+
 def check_m2_c(base, candidate):
     """M2-C source remains stacked on the exact private design/document head."""
     require(base == M2_C_BASE, "M2-C design parent moved: refresh and review")
     git("merge-base", "--is-ancestor", base, candidate)
     git("merge-base", "--is-ancestor", M2_C_PARENT, base)
     check_m2_b(M2_B_BASE, M2_C_PARENT)
-    has_repin = subprocess.run(["git", "merge-base", "--is-ancestor",
-        "a87aa6968c620342d296ca59f4e9f179ddcd7ac9", candidate],
-        cwd=ROOT).returncode == 0
+    has_repin = carried_m2_a_main_pin(candidate)
     expected_paths = M2_C_PATHS | ({"tests/contracts/test_m2_a_custody.py"} if has_repin else set())
     require(set(git("diff", "--name-only", base, candidate).splitlines()) == expected_paths,
             "M2-C path drift")
-    if has_repin:
-        require(git("rev-parse", candidate + ":tests/contracts/test_m2_a_custody.py") ==
-                "7b6eee371732f8024fa5abc4069636dff2453537",
-                "M2-A main-parent custody blob drift")
     for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
                  "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
         require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path),
@@ -604,7 +610,9 @@ def check_m2_d_design(base, candidate):
     require(base == M2_D_DESIGN_BASE, "M2-D design parent moved: refresh and review")
     git("merge-base", "--is-ancestor", base, candidate)
     check_m2_c(M2_C_BASE, base)
-    require(set(git("diff", "--name-only", base, candidate).splitlines()) == M2_D_DESIGN_PATHS,
+    expected_paths = M2_D_DESIGN_PATHS | (
+        {"tests/contracts/test_m2_a_custody.py"} if carried_m2_a_main_pin(candidate) else set())
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == expected_paths,
             "M2-D design path drift")
     for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
                  "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
