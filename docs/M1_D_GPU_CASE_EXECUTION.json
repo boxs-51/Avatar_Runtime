@@ -1,7 +1,7 @@
 {
   "kind": "M1-D-private-physical-partial-evidence",
-  "tested_source_sha": "f258812791a666bca9985a3966e062ccdf9f4e49",
-  "tested_tree": "6cf71700d87c3bc00b75cfb2fac0820f935d4f20",
+  "tested_source_sha": "0bcdca7f8024a1a6765526942591406bdb25a0bd",
+  "tested_tree": "b4b38322bda132ff822a3ce3035b7d3f15d30dee",
   "runner": {
     "os": "Windows 10 Pro 10.0.19045",
     "gpu": "NVIDIA GeForce GTX 1060 3GB",
@@ -12,30 +12,32 @@
   "cases": {
     "D00": "HOLD: G00 technical-method review unresolved",
     "D01": "PASS: physical host device draw and RGBA readback 64,127,191,255",
-    "D02": "PARTIAL; HOLD_DIRECT_TEST for retained old host RTV across real resize and generation handoff: null, stale generation, wrong dimensions/device, overlapping SRV already tested",
-    "D03": "PARTIAL; HOLD_DIRECT_TEST for concurrent host immediate-context serialization and resize/close stress: wrong-thread entry/poll and controlled close-intent race already tested",
+    "D02": "PARTIAL_LOCAL_PASS; HOLD_HOST_INTEGRATION: physical private harness safely retained old RTV across resize; 198 stale-generation/old-size rejections before new target submission over 100 cycles; real host handoff and target provenance still untested",
+    "D03": "PARTIAL_LOCAL_PASS; HOLD_HOST_INTEGRATION: physical private harness ran 100 off-thread close-intent versus R-thread submit cases (50 admitted, 50 preclosed BUSY), then exact drain; production host-wide immediate-context serialization still untested",
     "D04": "PASS tested state inventory: topology, VS/PS with zero class instances, rasterizer, two viewports, eight RTV slots, DSV, blend factor/mask, depth/stencil restored after draw, validation reject and scoped recoverable failure",
     "D05": "PASS private query paths: physical BUSY then exact completion over 100 cycles; deterministic S_FALSE, S_OK true/false, failed GetData and removed reason tests; 64-entry pending WARP backlog",
     "D06": "PARTIAL; HOLD_DIRECT_TEST for post-loss teardown and post-host-release leak report: pins held through BUSY/quarantine and physical healthy post-close host-only report already tested",
-    "D07": "PASS private physical 100 close/recreate cycles: BUSY until query completion, pins released on R, debug-layer host-only live-object identities 2 before/after, zero errors; WARP close/submission race, 64-entry pending backlog and wrong-thread checks; retirement capacity preallocated before draw",
+    "D07": "PASS private physical 100 close/recreate cycles: BUSY until query completion, pins released on R, debug-layer host-only live-object identities 2 before/after, zero errors; 198 old-RTV rejects and 100 close-intent admission cases; WARP backlog/wrong-thread checks; retirement capacity preallocated before draw",
     "D08": "HOLD_DIRECT_TEST: deterministic WARP removal/reset and failed-query quarantine/ack/recovery paths pass, but actual device removal/reset and physical teardown require a dedicated reset-capable runner",
-    "D09": "PARTIAL: Windows MSVC shared 33/33 and static 31/31 CTest at exact GPU source, Python contracts 135/135, exact-head M1-D/M0/P0/M1-A/B3 CI pass; C2 CI still running at 2026-10-17 check",
+    "D09": "PARTIAL: Windows MSVC shared 33/33 and static 31/31 CTest at exact GPU source; private local C2 native groups 3/3; Python contracts and new-head CI to be checked after evidence commit",
     "D10": "PARTIAL; HOLD_DIRECT_TEST for actual-loss raw logs and independent method review: named physical runner and source-pinned D07 logs/hashes already retained"
   },
   "deferred_direct_tests": [
     {
       "id": "D02_STALE_RTV_RESIZE",
-      "status": "HOLD_DIRECT_TEST",
-      "reason": "No host resize handoff test retains the old RTV safely while rejecting its old generation.",
-      "resume_when": "A host integration harness owns both old and replacement targets on one R thread.",
-      "pass_evidence": "Old RTV remains COM-valid only for the test, stale generation rejects before state mutation, replacement target submits, and both generations retire without leaks."
+      "status": "HOLD_HOST_INTEGRATION",
+      "reason": "The local physical private harness now retains the old RTV safely and rejects stale generation/size, but it does not bind RTV provenance to a production host resize handoff.",
+      "local_evidence": "100 hardware close/recreate cycles; 198 old-RTV rejects, 100 accepted replacement targets, zero debug errors; source-pinned D07 raw log.",
+      "resume_when": "A real host integration owns old/new RTV generations on one R thread.",
+      "pass_evidence": "Host resize handoff rejects old target before mutation, new target submits, and both generations retire without leaks; no released raw pointer is dereferenced."
     },
     {
       "id": "D03_HOST_CONCURRENCY",
-      "status": "HOLD_DIRECT_TEST",
-      "reason": "Controlled close-intent race and wrong-thread rejection do not prove host-wide immediate-context serialization under resize/close stress.",
-      "resume_when": "A real host R-thread admission and resize/close harness exists.",
-      "pass_evidence": "Bounded concurrent stress log shows no off-R D3D calls, no post-close admission, and no early release or stuck drain."
+      "status": "HOLD_HOST_INTEGRATION",
+      "reason": "The local physical private harness now runs off-thread close intent against R-thread submission; it cannot prove every production host immediate-context caller is serialized.",
+      "local_evidence": "100 hardware admission cases: 50 accepted before close, 50 BUSY after close; each drained on R with zero debug errors; source-pinned D07 raw log.",
+      "resume_when": "A production host R-thread admission and resize/close harness exists.",
+      "pass_evidence": "Bounded real-host stress log shows no off-R D3D calls, no post-close admission, and no early release or stuck drain."
     },
     {
       "id": "D06_D08_PHYSICAL_LOSS",
@@ -61,7 +63,8 @@
     {
       "id": "G02_PUBLIC_ASSET_INTEGRATION",
       "status": "HOLD_DIRECT_TEST",
-      "reason": "Private CPU validation/fuzz evidence does not prove public model/character activation or the GPU upload boundary.",
+      "reason": "Private CPU validation/fuzz evidence, including local C2 native 3/3, does not prove public model/character activation or the GPU upload boundary.",
+      "local_evidence": "C2 GLB reader, GLB validation and dual-mode groups 3/3 in RelWithDebInfo against generated 176-fixture corpus; offline reference checks disabled; raw C2 local log retained.",
       "resume_when": "Validated immutable CPU assets are connected to the public runtime path.",
       "pass_evidence": "Run valid and hostile JSON/ZIP/GLB corpus, both full fuzz campaigns, activation/rollback and zero-GPU-allocation-on-reject checks on exact integrated head."
     }

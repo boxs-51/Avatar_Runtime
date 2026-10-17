@@ -435,12 +435,13 @@ def check_m1_c2(base, candidate):
 
 M1_D_BRANCH = "m1/d-d3d11-interop-spike"
 M1_D_BASE = "f5b198137f6a96a2e33bb8ac206e53c3815bbbbc"
-M1_D_GPU_SOURCE = "f258812791a666bca9985a3966e062ccdf9f4e49"
+M1_D_GPU_SOURCE = "0bcdca7f8024a1a6765526942591406bdb25a0bd"
 M1_D_PATHS = frozenset((
     ".github/workflows/m1-d-gpu.yml", "CMakeLists.txt",
     "docs/M1_D_CLOSE_LOSS_NEXT_IMPLEMENTATION.md",
     "docs/M1_D_GPU_CASE_EXECUTION.json", "docs/audits/M1_D_BUILD_EVIDENCE.md",
     "docs/audits/M1_D_BUILD_RAW.txt", "docs/audits/M1_D_CTEST_RAW.txt",
+    "docs/audits/M1_D_C2_LOCAL_RAW.txt",
     "docs/audits/M1_D_D1_RAW.txt", "docs/audits/M1_D_D2_RAW.txt",
     "docs/audits/M1_D_D4_RAW.txt", "docs/audits/M1_D_D6_RAW.txt",
     "docs/audits/M1_D_D7_CLOSE_RAW.txt", "docs/audits/M1_D_D8_INJECTED_RAW.txt",
