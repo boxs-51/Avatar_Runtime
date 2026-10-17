@@ -492,6 +492,7 @@ def check_m1_d(base, candidate):
 
 M2_A_BRANCH = "m2/2d-render-foundation"
 M2_A_BASE = "dffe10c16d5585c0d50fd7745f310543e719c522"
+M2_A_MAIN_PARENT = "aba66eae8f651614da5b86711e0745009f45d24f"
 M2_A_PATHS = frozenset((
     ".github/workflows/m2-2d-reference.yml", "CMakeLists.txt",
     "docs/M2_RENDERING_EXECUTION_PLAN.md", "docs/audits/M2_A_BUILD_EVIDENCE.md",
@@ -621,8 +622,10 @@ def check():
             expected = M1_C2_BASE
             check_m1_c2(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M2_A_BRANCH:
-            expected = M2_A_BASE
-            check_m2_a(expected_parent, git("rev-parse", "HEAD^2"))
+            expected = M2_A_MAIN_PARENT
+            require(git("rev-parse", expected + "^2") == M2_A_BASE,
+                    "M2-A main parent must merge exact M1-D head")
+            check_m2_a(M2_A_BASE, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M2_B_BRANCH:
             expected = M2_B_BASE
             check_m2_b(expected_parent, git("rev-parse", "HEAD^2"))
