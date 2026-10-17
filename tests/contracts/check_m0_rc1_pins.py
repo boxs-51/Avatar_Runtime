@@ -433,6 +433,63 @@ def check_m1_c2(base, candidate):
     require(ledger["scope"] == "M1_C2_PRIVATE_CPU_GLB_DUAL" and ledger["base"] == base and not ledger["public_activation"] and ledger["full_g02_verdict"] == "HOLD" and ledger["B_whole_case_HOLD"] == 87 and ledger["B_whole_case_PASS"] == 0, "C2 fabricated activation/full G02 result")
     return True
 
+M1_D_BRANCH = "m1/d-d3d11-interop-spike"
+M1_D_BASE = "f5b198137f6a96a2e33bb8ac206e53c3815bbbbc"
+M1_D_GPU_SOURCE = "0bcdca7f8024a1a6765526942591406bdb25a0bd"
+M1_D_PATHS = frozenset((
+    ".github/workflows/m1-d-gpu.yml", "CMakeLists.txt",
+    "docs/M1_D_CLOSE_LOSS_NEXT_IMPLEMENTATION.md",
+    "docs/M1_D_GPU_CASE_EXECUTION.json", "docs/audits/M1_D_BUILD_EVIDENCE.md",
+    "docs/audits/M1_D_BUILD_RAW.txt", "docs/audits/M1_D_CTEST_RAW.txt",
+    "docs/audits/M1_D_C2_LOCAL_RAW.txt",
+    "docs/audits/M1_D_D1_RAW.txt", "docs/audits/M1_D_D2_RAW.txt",
+    "docs/audits/M1_D_D4_RAW.txt", "docs/audits/M1_D_D6_RAW.txt",
+    "docs/audits/M1_D_D7_CLOSE_RAW.txt", "docs/audits/M1_D_D8_INJECTED_RAW.txt",
+    "docs/audits/M1_D_GATES_REASSESSMENT_20261017.md",
+    "docs/audits/M1_D_STATIC_BUILD_RAW.txt", "docs/audits/M1_D_STATIC_CTEST_RAW.txt",
+    "src/graphics/backend.hpp",
+    "src/graphics/d3d11/host_device.cpp", "src/graphics/d3d11/host_device.hpp",
+    "src/graphics/d3d11/close_coordinator.cpp", "src/graphics/d3d11/close_coordinator.hpp",
+    "src/graphics/d3d11/query_retirement.cpp", "src/graphics/d3d11/query_retirement.hpp",
+    "src/graphics/d3d11/state_scope.cpp", "src/graphics/d3d11/state_scope.hpp",
+    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m1_c2_custody.py",
+    "tests/contracts/test_m1_d_custody.py", "tests/gpu/d3d11_host_smoke.cpp",
+    "tests/gpu/d3d11_query_retirement.cpp", "tests/gpu/d3d11_live_capture.cpp",
+    "tests/gpu/d3d11_state_restore.cpp", "tests/gpu/d3d11_close_physical.cpp",
+    "tests/gpu/d3d11_close_protocol.cpp",
+))
+
+
+def check_m1_d(base, candidate):
+    """Accept only the private GPU spike stacked on the exact merged C2 base."""
+    require(base == M1_D_BASE, "M1-D base moved: refresh and review")
+    git("merge-base", "--is-ancestor", base, candidate)
+    git("merge-base", "--is-ancestor", M1_D_GPU_SOURCE, candidate)
+    changed = set(git("diff", "--name-only", base, candidate).splitlines())
+    require(changed == M1_D_PATHS, f"M1-D path drift: {sorted(changed ^ M1_D_PATHS)}")
+    frozen = ("include/ars/ars.h", "src/abi/unsupported.cpp", "src/abi/runtime_api.cpp",
+              "docs/ADR_0001_D3D11_G00_DESIGN_RC1.md",
+              "docs/G00_SECURITY_87_CASE_INVENTORY.json", "docs/M0_CONTRACT_PARENT_PINS.json")
+    for path in frozen:
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path),
+                "M1-D changed frozen boundary: " + path)
+    gpu_paths = tuple(path for path in M1_D_PATHS if path.startswith(("src/graphics/", "tests/gpu/")))
+    for path in gpu_paths:
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", M1_D_GPU_SOURCE + ":" + path),
+                "Physical evidence no longer names exact GPU source: " + path)
+    old = ast.parse(git("show", base + ":tests/contracts/check_m0_rc1_pins.py"))
+    new = ast.parse(git("show", candidate + ":tests/contracts/check_m0_rc1_pins.py"))
+    for name in ("check_m1_a", "check_m1_b1", "check_m1_b2", "check_m1_b3", "check_m1_c1", "check_m1_c2", "validate_blob_manifest"):
+        prior = next(node for node in old.body if isinstance(node, ast.FunctionDef) and node.name == name)
+        current = next(node for node in new.body if isinstance(node, ast.FunctionDef) and node.name == name)
+        require(ast.dump(prior) == ast.dump(current), "M1-D diluted historical gate: " + name)
+    ledger = json.loads(git("show", candidate + ":docs/M1_D_GPU_CASE_EXECUTION.json"))
+    require(ledger["tested_source_sha"] == M1_D_GPU_SOURCE and
+            ledger["verdict"] == "PRIVATE_SPIKE_PARTIAL; M1-D_ACCEPTANCE_HOLD; PUBLIC_RENDER_DISABLED",
+            "M1-D evidence fabricated activation or full PASS")
+    return True
+
+
 def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -473,6 +530,9 @@ def check():
         if os.getenv("GITHUB_HEAD_REF") == M1_C2_BRANCH:
             expected = M1_C2_BASE
             check_m1_c2(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M1_D_BRANCH:
+            expected = M1_D_BASE
+            check_m1_d(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M1_C1_BRANCH:
             expected = M1_C1_BASE
             check_m1_c1(expected_parent, git("rev-parse", "HEAD^2"))

@@ -1,0 +1,39 @@
+name: M1-D private D3D11 compile and contract guards
+on:
+  pull_request:
+    paths:
+      - 'CMakeLists.txt'
+      - 'src/graphics/**'
+      - 'tests/gpu/**'
+      - 'docs/audits/M1_D*'
+      - '.github/workflows/m1-d-gpu.yml'
+permissions:
+  contents: read
+jobs:
+  windows-compile:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Build private spike and historical ABI/core
+        shell: pwsh
+        run: |
+          cmake -S . -B build/m1-d -A x64 -DARS_BUILD_D3D11_SPIKE=ON -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=ON
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build build/m1-d --config Debug --parallel 2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # Hosted runners cannot certify a named physical GPU.
+          ctest --test-dir build/m1-d -C Debug --output-on-failure -LE PHYSICAL_GPU_REQUIRED
+          exit $LASTEXITCODE
+  linux-guard:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: D3D11 opt-in must fail on Linux
+        shell: bash
+        run: |
+          if cmake -S . -B build/m1-d-linux -DARS_BUILD_D3D11_SPIKE=ON; then
+            echo 'D3D11 option unexpectedly configured on Linux'; exit 1
+          fi
+          cmake -S . -B build/m1-d-cpu -DARS_BUILD_D3D11_SPIKE=OFF
+          cmake --build build/m1-d-cpu --parallel 2
+          ctest --test-dir build/m1-d-cpu --output-on-failure
