@@ -1,0 +1,13 @@
+# M2-B private offscreen 2D pixel contract — 2026-10-17
+
+This contract applies only to the opt-in D3D11 private pass. It does not activate `ars_runtime_render` or promote G03. Input must be a `PreparedScene2D` made from a validated CPU model, plus that model's matching atlas. The caller owns one D3D11 immediate context on R, an RGBA8 UNORM, single-sample target from the same device/generation, and the query retirement lifecycle. The pass clears its offscreen target to transparent black before drawing; resize is a new target/viewport, never a mutation of canvas geometry.
+
+| Rule | Exact M2-B choice |
+| --- | --- |
+| Canvas and pixel centers | `vertices_px` use top-left canvas pixels. Canvas `(0,0)` maps to NDC `(-1,+1)` and `(W,H)` to `(+1,-1)`; the D3D viewport scales to target dimensions. Target pixel center is `(x+0.5,y+0.5)`. No legacy half-pixel offset. |
+| UV and atlas rectangle | `uv` is normalized within the part's `atlas_rect_px`. Clamp each component to `[0,1]`; map 0 and 1 to the centers of the first and last texel in the rectangle. Point sampling plus clamp addressing prevents adjacent atlas-rect bleed. The atlas is uploaded as `R8G8B8A8_UNORM` without implicit sRGB conversion. |
+| Source color | PNG bytes are interpreted as straight-alpha RGBA. The shader computes `a = texel.a * effective_layer_opacity` and emits `(texel.rgb * a, a)` in UNORM numeric space. This is a deliberate byte-space v0.1 rule; linear-light/sRGB conversion requires a later contract revision and new golden pixels. |
+| Composition | Draws follow M2-A order. Premultiplied over uses RGB and alpha factors `ONE, INV_SRC_ALPHA`, add operation; no depth/stencil or culling. Zero-opacity and hidden parts have no draw. Transparent pixels must not introduce color fringes. |
+| Lifetime and host state | Build all GPU resources before target mutation. Prepare an exact D3D11 event query that retains the target and resource bundle; end after the pass and release on query completion. Save/restore every touched IA, VS, PS, RS and OM slot. A device-removal result quarantines the query; actual driver-loss recovery stays HOLD under D08. |
+
+The direct golden readback cases are UV endpoints, layer order and opacity, hidden/empty transparent output, target resize, malformed input before mutation, host pipeline restoration, and pending-query lifetime. They run on WARP in CI and on a named physical adapter locally when available. These checks establish a private 2D pixel method only; G03 needs integrated host behavior, dynamic hide/show and resource/loss evidence, with D06/D08 physical holds retained.
