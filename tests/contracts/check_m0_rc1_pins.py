@@ -580,6 +580,30 @@ def check_m2_c(base, candidate):
     return True
 
 
+M2_D_DESIGN_BRANCH = "m2/dual-mode-design"
+M2_D_DESIGN_BASE = "710b3504eb6e1619bf75842082d1fc35df225249"
+M2_D_DESIGN_PATHS = frozenset((
+    "docs/M2_D_HOLD_LEDGER_AND_SWITCH_DESIGN.md",
+    "tests/contracts/check_m0_rc1_pins.py",
+    "tests/contracts/test_m2_c_custody.py",
+    "tests/contracts/test_m2_d_design_custody.py",
+))
+
+
+def check_m2_d_design(base, candidate):
+    """The M2-D planning PR adds only its document and custody refresh."""
+    require(base == M2_D_DESIGN_BASE, "M2-D design parent moved: refresh and review")
+    git("merge-base", "--is-ancestor", base, candidate)
+    check_m2_c(M2_C_BASE, base)
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == M2_D_DESIGN_PATHS,
+            "M2-D design path drift")
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path),
+                "M2-D design changed held/public boundary: " + path)
+    return True
+
+
 def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -629,6 +653,9 @@ def check():
         elif os.getenv("GITHUB_HEAD_REF") == M2_C_BRANCH:
             expected = M2_C_BASE
             check_m2_c(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M2_D_DESIGN_BRANCH:
+            expected = M2_D_DESIGN_BASE
+            check_m2_d_design(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M1_D_BRANCH:
             expected = M1_D_BASE
             check_m1_d(expected_parent, git("rev-parse", "HEAD^2"))
