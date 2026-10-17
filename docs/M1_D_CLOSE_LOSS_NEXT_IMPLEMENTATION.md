@@ -2,6 +2,8 @@
 
 **Status:** design candidate for the next private D3D11 code increment, based on PR #30 source `4efbe25cc99ab75fb64f3e23e34d9e53c5910a59`. This document is a work plan, not an implementation result, G00 approval, M1-D PASS, public API change or merge authorization. The current per-case verdict remains `PRIVATE_SPIKE_PARTIAL; M1-D_ACCEPTANCE_HOLD; PUBLIC_RENDER_DISABLED`.
 
+**Implementation follow-up (2026-10-17):** Private source `c7edebd25b179e41b208ebfb5b35b2eec74ccb33` implements the close coordinator, terminal query paths and injected loss quarantine. The exact-source results and updated HOLD decisions are in `audits/M1_D_GATES_REASSESSMENT_20261017.md`; the remainder of this document records the pre-implementation design and is not retrospective PASS evidence.
+
 ## What the existing spike proves and where it stops
 
 The private Windows opt-in host backend draws and restores the pipeline state it touches. An event query retires each of 100 recreated targets; pins remain held until the exact query completes. The D3D11 debug layer reported the same seven live-object identities before and after that loop. Shared/static CTest passed 31/31 and 29/29 on the named GTX 1060 runner; 135 Python contracts and exact-head M1-D CI passed. These results do not cover a close request while work is pending, post-close COM lifetime, failed `GetData`, actual device removal/reset, or concurrent host close/resize. The public render/drain ABI and capability remain disabled.

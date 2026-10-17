@@ -1,69 +1,74 @@
 Test project E:/Avatar_Runtime/build/m1-d-static
       Start  1: d1_physical_host_smoke
- 1/29 Test  #1: d1_physical_host_smoke ...........   Passed    0.38 sec
+ 1/31 Test  #1: d1_physical_host_smoke ...........   Passed    0.35 sec
       Start  2: d1_physical_state_restore
- 2/29 Test  #2: d1_physical_state_restore ........   Passed    0.24 sec
+ 2/31 Test  #2: d1_physical_state_restore ........   Passed    0.24 sec
       Start  3: d2_physical_query_retirement
- 3/29 Test  #3: d2_physical_query_retirement .....   Passed    1.73 sec
+ 3/31 Test  #3: d2_physical_query_retirement .....   Passed    1.34 sec
       Start  4: d2_physical_live_objects
- 4/29 Test  #4: d2_physical_live_objects .........   Passed    3.33 sec
-      Start  5: prep_abi_c11
- 5/29 Test  #5: prep_abi_c11 .....................   Passed    0.26 sec
-      Start  6: prep_abi_cpp20
- 6/29 Test  #6: prep_abi_cpp20 ...................   Passed    0.03 sec
-      Start  7: prep_r5_state_machine
- 7/29 Test  #7: prep_r5_state_machine ............   Passed    0.14 sec
-      Start  8: prep_abi20_c11
- 8/29 Test  #8: prep_abi20_c11 ...................   Passed    0.08 sec
-      Start  9: prep_abi20_cpp20
- 9/29 Test  #9: prep_abi20_cpp20 .................   Passed    0.02 sec
-      Start 10: foundation_bounded_contract
-10/29 Test #10: foundation_bounded_contract ......   Passed    0.02 sec
-      Start 11: foundation_cpp20
-11/29 Test #11: foundation_cpp20 .................   Passed    0.02 sec
-      Start 12: b1_public_c
-12/29 Test #12: b1_public_c ......................   Passed    0.16 sec
-      Start 13: b1_public_cpp_races
-13/29 Test #13: b1_public_cpp_races ..............   Passed    0.20 sec
-      Start 14: b1_registry_components
-14/29 Test #14: b1_registry_components ...........   Passed    0.07 sec
-      Start 15: b1_lifecycle_components
-15/29 Test #15: b1_lifecycle_components ..........   Passed    0.09 sec
-      Start 16: b2_native_security_os
-16/29 Test #16: b2_native_security_os ............   Passed    0.04 sec
-      Start 17: b2_source_authority
-17/29 Test #17: b2_source_authority ..............   Passed    0.22 sec
-      Start 18: b2_controlled_authority_races
-18/29 Test #18: b2_controlled_authority_races ....   Passed   12.12 sec
-      Start 19: b3_provenance
-19/29 Test #19: b3_provenance ....................   Passed    0.32 sec
-      Start 20: b3_snapshots
-20/29 Test #20: b3_snapshots .....................   Passed    0.08 sec
-      Start 21: b3_publish_revoke
-21/29 Test #21: b3_publish_revoke ................   Passed    9.26 sec
-      Start 22: b3_publish_expiry
-22/29 Test #22: b3_publish_expiry ................   Passed    7.30 sec
-      Start 23: b3_publish_rotate
-23/29 Test #23: b3_publish_rotate ................   Passed    5.15 sec
-      Start 24: b3_publish_close
-24/29 Test #24: b3_publish_close .................   Passed    4.85 sec
-      Start 25: b3_publish_time
-25/29 Test #25: b3_publish_time ..................   Passed    8.85 sec
-      Start 26: b3_publish_clock
-26/29 Test #26: b3_publish_clock .................   Passed    4.65 sec
-      Start 27: b3_publish_atomic
-27/29 Test #27: b3_publish_atomic ................   Passed    5.28 sec
-      Start 28: b3_publish_reader
-28/29 Test #28: b3_publish_reader ................   Passed    0.19 sec
-      Start 29: b3_publish_order
-29/29 Test #29: b3_publish_order .................   Passed    5.04 sec
+ 4/31 Test  #4: d2_physical_live_objects .........   Passed    2.13 sec
+      Start  5: d7_warp_close_protocol
+ 5/31 Test  #5: d7_warp_close_protocol ...........   Passed    0.05 sec
+      Start  6: d7_physical_close_live_objects
+ 6/31 Test  #6: d7_physical_close_live_objects ...   Passed    2.69 sec
+      Start  7: prep_abi_c11
+ 7/31 Test  #7: prep_abi_c11 .....................   Passed    0.03 sec
+      Start  8: prep_abi_cpp20
+ 8/31 Test  #8: prep_abi_cpp20 ...................   Passed    0.04 sec
+      Start  9: prep_r5_state_machine
+ 9/31 Test  #9: prep_r5_state_machine ............   Passed    0.04 sec
+      Start 10: prep_abi20_c11
+10/31 Test #10: prep_abi20_c11 ...................   Passed    0.03 sec
+      Start 11: prep_abi20_cpp20
+11/31 Test #11: prep_abi20_cpp20 .................   Passed    0.01 sec
+      Start 12: foundation_bounded_contract
+12/31 Test #12: foundation_bounded_contract ......   Passed    0.01 sec
+      Start 13: foundation_cpp20
+13/31 Test #13: foundation_cpp20 .................   Passed    0.02 sec
+      Start 14: b1_public_c
+14/31 Test #14: b1_public_c ......................   Passed    0.08 sec
+      Start 15: b1_public_cpp_races
+15/31 Test #15: b1_public_cpp_races ..............   Passed    0.24 sec
+      Start 16: b1_registry_components
+16/31 Test #16: b1_registry_components ...........   Passed    0.05 sec
+      Start 17: b1_lifecycle_components
+17/31 Test #17: b1_lifecycle_components ..........   Passed    0.07 sec
+      Start 18: b2_native_security_os
+18/31 Test #18: b2_native_security_os ............   Passed    0.03 sec
+      Start 19: b2_source_authority
+19/31 Test #19: b2_source_authority ..............   Passed    0.18 sec
+      Start 20: b2_controlled_authority_races
+20/31 Test #20: b2_controlled_authority_races ....   Passed   10.97 sec
+      Start 21: b3_provenance
+21/31 Test #21: b3_provenance ....................   Passed    0.39 sec
+      Start 22: b3_snapshots
+22/31 Test #22: b3_snapshots .....................   Passed    0.24 sec
+      Start 23: b3_publish_revoke
+23/31 Test #23: b3_publish_revoke ................   Passed    6.04 sec
+      Start 24: b3_publish_expiry
+24/31 Test #24: b3_publish_expiry ................   Passed    5.54 sec
+      Start 25: b3_publish_rotate
+25/31 Test #25: b3_publish_rotate ................   Passed    6.25 sec
+      Start 26: b3_publish_close
+26/31 Test #26: b3_publish_close .................   Passed    6.66 sec
+      Start 27: b3_publish_time
+27/31 Test #27: b3_publish_time ..................   Passed    8.89 sec
+      Start 28: b3_publish_clock
+28/31 Test #28: b3_publish_clock .................   Passed    4.82 sec
+      Start 29: b3_publish_atomic
+29/31 Test #29: b3_publish_atomic ................   Passed    5.61 sec
+      Start 30: b3_publish_reader
+30/31 Test #30: b3_publish_reader ................   Passed    0.18 sec
+      Start 31: b3_publish_order
+31/31 Test #31: b3_publish_order .................   Passed    5.70 sec
 
-100% tests passed out of 29
+100% tests passed out of 31
 
 Label Time Summary:
-M1-D                     =   5.69 sec*proc (4 tests)
-NON_PRODUCTION           =   0.53 sec*proc (5 tests)
-PHYSICAL_GPU_REQUIRED    =   5.69 sec*proc (4 tests)
-contract-prep            =   0.53 sec*proc (5 tests)
+M1-D                     =   6.80 sec*proc (6 tests)
+NON_PRODUCTION           =   0.15 sec*proc (5 tests)
+PHYSICAL_GPU_REQUIRED    =   6.75 sec*proc (5 tests)
+WARP_DETERMINISTIC       =   0.05 sec*proc (1 test)
+contract-prep            =   0.15 sec*proc (5 tests)
 
-Total Test time (real) =  70.21 sec
+Total Test time (real) =  68.97 sec

@@ -1,0 +1,13 @@
+debug_messages=4 errors=0
+PASS D07 physical 100 close/recreate cycles busy=100 feature=b000
+child_exit=0 baseline_bytes=242 final_bytes=242
+BASELINE_DEBUG_REPORT
+D3D11 WARNING: Live ID3D11Device at 0x000001A8179E5CF0, Refcount: 4 [ STATE_CREATION WARNING #441: LIVE_DEVICE]
+D3D11 WARNING: 	Live ID3D11Context at 0x000001A8179E9340, Refcount: 1, IntRef: 1 [ STATE_CREATION WARNING #2097226: LIVE_CONTEXT]
+
+FINAL_DEBUG_REPORT
+D3D11 WARNING: Live ID3D11Device at 0x000001A8179E5CF0, Refcount: 4 [ STATE_CREATION WARNING #441: LIVE_DEVICE]
+D3D11 WARNING: 	Live ID3D11Context at 0x000001A8179E9340, Refcount: 1, IntRef: 1 [ STATE_CREATION WARNING #2097226: LIVE_CONTEXT]
+
+live_objects_before=2 live_objects_after=2
+PASS D07 physical post-close live-object identity unchanged across 100 cycles

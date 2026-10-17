@@ -1,8 +1,8 @@
 # M1-D private D3D11 spike: exact-source evidence
 
-Source commit: `f51375ae74e32f2bdabba29aa3549967468e3c24` (tree `2a4d85672edc584051a744f0d0d91cf077f55275`), based on merged C2 `f5b198137f6a96a2e33bb8ac206e53c3815bbbbc`. The evidence files in this directory are produced from that code commit; this documentation commit does not change the tested GPU code.
+Source commit: `c7edebd25b179e41b208ebfb5b35b2eec74ccb33` (tree `e30c5231d7e955e8dffa32043ebdedf9a19d10f6`), based on merged C2 `f5b198137f6a96a2e33bb8ac206e53c3815bbbbc`. The evidence files in this directory are produced from that code commit; this documentation commit does not change the tested GPU code.
 
-Runner: Microsoft Windows 10 Pro 10.0.19045, NVIDIA GeForce GTX 1060 3GB, driver 32.0.15.8157, D3D11 feature level `0xb000` (11.0), VS 2026 MSVC 19.51.36252.0, Windows SDK 10.0.26100.0. The D2 test created a device with the D3D debug layer. Its InfoQueue recorded 14 live-report warnings and zero errors; the warnings are expected from two explicit live-object reports while backend state is alive. This is a local physical runner, not a hosted CI GPU result.
+Runner: Microsoft Windows 10 Pro 10.0.19045, NVIDIA GeForce GTX 1060 3GB, driver 32.0.15.8157, D3D11 feature level `0xb000` (11.0), VS 2026 MSVC 19.51.36252.0, Windows SDK 10.0.26100.0. The D07 close test created a hardware device with the D3D debug layer; its InfoQueue recorded four explicit live-report warnings and zero errors. WARP supplied deterministic injected-error cases. This is a local physical runner, not a hosted CI GPU result.
 
 Commands run from repository root (all exit 0):
 
@@ -14,25 +14,29 @@ build/m1-d-regression/Debug/ars_d3d11_host_smoke.exe
 build/m1-d-regression/Debug/ars_d3d11_query_retirement.exe
 build/m1-d-regression/Debug/ars_d3d11_state_restore.exe
 build/m1-d-regression/Debug/ars_d3d11_live_capture.exe
-python -m unittest tests.contracts.test_m1_d_custody -v
+build/m1-d-regression/Debug/ars_d3d11_close_protocol.exe
+build/m1-d-regression/Debug/ars_d3d11_live_capture.exe --close
+python -m unittest discover -s tests/contracts -p 'test_m1_d_custody.py' -v
 cmake -S . -B build/m1-d-static -G "Visual Studio 18 2026" -A x64 -DARS_BUILD_D3D11_SPIKE=ON -DARS_BUILD_FOUNDATION=ON -DARS_BUILD_RUNTIME_CORE=ON -DBUILD_SHARED_LIBS=OFF
 cmake --build build/m1-d-static --config Debug --parallel 1
 ctest --test-dir build/m1-d-static -C Debug --output-on-failure
 ```
 
-The shared CTest set passed 31/31 and the static set passed 29/29. D1 readback was RGBA `64,127,191,255`; it rejected null, stale generation, wrong dimensions, another device, wrong thread and an overlapping host SRV. D04 captured and compared every state category touched by the private draw: IA topology, VS/PS shader identity (zero class instances), rasterizer, two viewports, all eight RTV slots, DSV, blend state/factor/mask and depth state/stencil reference. Identity and values matched after a real draw, invalid-generation rejection and scoped recoverable failure. D2 ran 100 target resize/recreate and event-query retire cycles. Every cycle returned BUSY at least once (`busy=100` total); the snapshot witness and target reference stayed held until the matching query completed. Wrong generation and wrong thread polling were rejected. Debug-layer live-object reports captured seven identical object identities before and after 100 cycles, with no growth. This compares the loop lifetime, not post-close teardown. No runtime close was exercised.
+The shared CTest set passed 33/33 and the static set passed 31/31. D1 readback was RGBA `64,127,191,255`; it rejected null, stale generation, wrong dimensions, another device, wrong thread and an overlapping host SRV. D04 compared every state category touched by the private draw after success, validation rejection and scoped recoverable failure. The original D2 path ran 100 target recreate/event-query retire cycles, each returning BUSY before completion. D07 ran another 100 **close/recreate** cycles on the physical GPU; every close returned BUSY before exact completion, the pin survived BUSY and expired after close, and debug-layer reports before/after showed the same two host-owned device/context identities with no backend object remaining. The WARP test exercised idempotent close, a controlled admission/close race, wrong-thread rejection, S_FALSE and failed GetData, S_OK with false completion data, injected removal/reset, quarantine, teardown acknowledgement and new-device recovery. Injected HRESULTs are not physical device loss.
 
-The first PR30 CI run at evidence commit `244e6a3423ca721884367352fff4d75d97eb7bdd` passed both Windows compile and Linux guard jobs ([run 38910470237](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38910470237)). An additive C2 custody-test repair then pinned its historical candidate to `0eb1560e0cdfa5a7f44b77efc8dbf559dbc014ef` instead of later `HEAD`, without changing GPU source. Exact-head PR30 CI at evidence SHA `4efbe25cc99ab75fb64f3e23e34d9e53c5910a59` passed [M1-D Windows compile and Linux guard](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38914157654), [M0](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38914157846), [P0](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38914157058), [M1-A](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38914157097) and [M1-B3](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38914157331). The [C2 matrix](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38914157432) was still running at the 2026-10-16 check, including its 3600-second fuzz campaigns. The local full Python contract suite passed 135/135 with a writable Windows temp directory.
+The preceding PR30 head `ee135e476e59e8f9ddac25114f06bd9400bf3f51` passed [M1-D compile/guard CI](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38917076141), [M0](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38917076214), [P0](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38917076136), [M1-A](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38917076145), [M1-B3](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38917076151) and [M1-C2 including both fuzz jobs](https://github.com/boxs-51/Avatar_Runtime/actions/runs/38917076152). CI at the new D07/D08 source/evidence head must be checked separately.
 
 | Raw file | SHA-256 |
 | --- | --- |
-| `M1_D_BUILD_RAW.txt` | `BD123C9FF0289D419CB35FA3C6E933ED04CAE65E0D5CCE586B699EA186F54243` |
-| `M1_D_CTEST_RAW.txt` | `D81088ACC16A3160EFBCEF883BD67129C8A39A43BEA8C14D40631E9EC742386F` |
-| `M1_D_STATIC_BUILD_RAW.txt` | `0BB53383A709570B44ABACE914608D187088C058DC8FEEEC6AC11AF57A83DD3C` |
-| `M1_D_STATIC_CTEST_RAW.txt` | `77BB6C240B68902C60B8913CE1C77E081124616C8DF8CDBBD07C0E11A53E49E1` |
+| `M1_D_BUILD_RAW.txt` | `F3420BD52E66E4DC93198075BCB8976341461111D1ABB80EDF92D1355E1D47F2` |
+| `M1_D_CTEST_RAW.txt` | `241B7FB96A1E046C1F4D9DE51DB38CD7537647790599DD5BFE8442CBD9CF0715` |
+| `M1_D_STATIC_BUILD_RAW.txt` | `A1F0062A2D156FC954E39EC560F037744E0726944F71C8AD21A1C7BF66352FB8` |
+| `M1_D_STATIC_CTEST_RAW.txt` | `7DB923520CE862B2DAE0CA4AD5B969E1C3EF96A4B72B47F8E15253F2209BF7B4` |
 | `M1_D_D1_RAW.txt` | `E814118CF887052C6D92FCEABA3261659D059B254D226E71F01C310A664B8673` |
 | `M1_D_D2_RAW.txt` | `6F8F814AAF32F7A50DBBE44F82930426D508A4F9790EBED5575737FB721AA99F` |
 | `M1_D_D4_RAW.txt` | `BD709C0FD95257BD28CC9C98A53760697B053F2E586788E466528F9B02C408D0` |
-| `M1_D_D6_RAW.txt` | `FE95B00EF1769EBC0B6BC5EAF324B341972E93BEDB3F90C587B358D25C659327` |
+| `M1_D_D6_RAW.txt` | `D2AC6C048C2E30B381F7489309EFD707D2E3A77CDF4CD5F36E7A9B00034D0199` |
+| `M1_D_D7_CLOSE_RAW.txt` | `AB3B8EAA71B945A32F614561FE281938BA8D31BE5D6641404AC71440DB0145EC` |
+| `M1_D_D8_INJECTED_RAW.txt` | `4E084ECECEB3C3368D02AB066215A8468B3CD4AAF5913F95E77670A48B962257` |
 
-The evidence is deliberately partial. G00 technical-method review remains HOLD. There is no device removal/reset injection, no host close with in-flight GPU work, no post-teardown live-object count, no physical Linux GPU execution (not in scope), and no independently reviewed source/physical result. The private `QueryRetirement` fails closed if destroyed while pending; its quarantined teardown path is not implemented, so device-loss/close acceptance remains HOLD. The public render/drain symbols and capability bit remain unchanged and unsupported. Full G02 and 87 B whole-case gates retain their previous HOLD states. This spike does not certify G03/G04/G05, public activation or release.
+The evidence is still partial. The user confirmed no dedicated reset-capable runner is available, so no actual device removal/reset was induced on this shared workstation; D08 remains HOLD. The teardown acknowledgement is a host promise, not an independently verified OS barrier. G00 technical-method, full G01/G02 and all 87 B whole-case gates remain HOLD. The private `QueryRetirement` still fails closed if destroyed while pending without completed query or acknowledged lost-device teardown. Public render/drain and the graphics capability bit remain unsupported. This spike does not certify G03/G04/G05, public activation or release.

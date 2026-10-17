@@ -6,67 +6,49 @@ CMake is re-running because E:/Avatar_Runtime/build/m1-d-static/CMakeFiles/gener
 -- ARS PREP-ONLY: nonfunctional ABI stub and contract model, NOT SDK engine
 -- M1-A BUILD FOUNDATION: ABI version + bounded UNSUPPORTED, NOT a working runtime
 -- B2 private CPU authority: public source/model/character/update/render and GPU remain unsupported
--- Configuring done (0.3s)
--- Generating done (0.4s)
+-- Configuring done (0.1s)
+-- Generating done (0.6s)
 -- Build files have been written to: E:/Avatar_Runtime/build/m1-d-static
 MSBuild version 18.8.2+ce25c0108 for .NET Framework
 
-  1>Checking Build System
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_runtime_components.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\ars_runtime_components.dir\Debug\ars_runtime_components.lib
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_abi_design_stub.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_abi_design_stub.dll
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_abi_design_smoke_c.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_abi_design_smoke_c.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_abi_design_smoke_cpp.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_abi_design_smoke_cpp.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_contract_r5_model.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_contract_r5_model.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_contract_test_stub.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_p0_contract.dll
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_contract_smoke_c.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_contract_smoke_c.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_contract_smoke_cpp.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_contract_smoke_cpp.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
+  host_device.cpp
+  query_retirement.cpp
+  close_coordinator.cpp
+  Generating Code...
   ars_d3d11_spike.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_spike.lib
   Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
-  ars_d3d11_host_smoke.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_host_smoke.exe
+  d3d11_close_physical.cpp
+  ars_d3d11_close_physical.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_close_physical.exe
   Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
+  d3d11_close_protocol.cpp
+  ars_d3d11_close_protocol.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_close_protocol.exe
+  d3d11_host_smoke.cpp
+  ars_d3d11_host_smoke.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_host_smoke.exe
   d3d11_query_retirement.cpp
   ars_d3d11_query_retirement.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_query_retirement.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   d3d11_live_capture.cpp
   ars_d3d11_live_capture.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_live_capture.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   d3d11_state_restore.cpp
   ars_d3d11_state_restore.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\Debug\ars_d3d11_state_restore.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_foundation.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\lib\Debug\ars_foundation.lib
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_foundation_contract.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_foundation_contract.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_foundation_cpp.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_foundation_cpp.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_handle_registry_tests.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_handle_registry_tests.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_provenance_tests.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_provenance_tests.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_publish_race_tests.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_publish_race_tests.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_runtime_core.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\lib\Debug\ars_runtime_core.lib
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_runtime_core_contract.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_runtime_core_contract.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_runtime_core_cpp.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_runtime_core_cpp.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_runtime_lifecycle_tests.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_runtime_lifecycle_tests.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_security_os_tests.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_security_os_tests.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_snapshot_lifetime_tests.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_snapshot_lifetime_tests.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_source_authority_race_tests.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_source_authority_race_tests.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt
   ars_source_authority_tests.vcxproj -> E:\Avatar_Runtime\build\m1-d-static\bin\Debug\ars_source_authority_tests.exe
-  Building Custom Rule E:/Avatar_Runtime/CMakeLists.txt

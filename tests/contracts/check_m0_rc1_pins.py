@@ -435,7 +435,7 @@ def check_m1_c2(base, candidate):
 
 M1_D_BRANCH = "m1/d-d3d11-interop-spike"
 M1_D_BASE = "f5b198137f6a96a2e33bb8ac206e53c3815bbbbc"
-M1_D_GPU_SOURCE = "f51375ae74e32f2bdabba29aa3549967468e3c24"
+M1_D_GPU_SOURCE = "c7edebd25b179e41b208ebfb5b35b2eec74ccb33"
 M1_D_PATHS = frozenset((
     ".github/workflows/m1-d-gpu.yml", "CMakeLists.txt",
     "docs/M1_D_CLOSE_LOSS_NEXT_IMPLEMENTATION.md",
@@ -443,15 +443,19 @@ M1_D_PATHS = frozenset((
     "docs/audits/M1_D_BUILD_RAW.txt", "docs/audits/M1_D_CTEST_RAW.txt",
     "docs/audits/M1_D_D1_RAW.txt", "docs/audits/M1_D_D2_RAW.txt",
     "docs/audits/M1_D_D4_RAW.txt", "docs/audits/M1_D_D6_RAW.txt",
+    "docs/audits/M1_D_D7_CLOSE_RAW.txt", "docs/audits/M1_D_D8_INJECTED_RAW.txt",
+    "docs/audits/M1_D_GATES_REASSESSMENT_20261017.md",
     "docs/audits/M1_D_STATIC_BUILD_RAW.txt", "docs/audits/M1_D_STATIC_CTEST_RAW.txt",
     "src/graphics/backend.hpp",
     "src/graphics/d3d11/host_device.cpp", "src/graphics/d3d11/host_device.hpp",
+    "src/graphics/d3d11/close_coordinator.cpp", "src/graphics/d3d11/close_coordinator.hpp",
     "src/graphics/d3d11/query_retirement.cpp", "src/graphics/d3d11/query_retirement.hpp",
     "src/graphics/d3d11/state_scope.cpp", "src/graphics/d3d11/state_scope.hpp",
     "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m1_c2_custody.py",
     "tests/contracts/test_m1_d_custody.py", "tests/gpu/d3d11_host_smoke.cpp",
     "tests/gpu/d3d11_query_retirement.cpp", "tests/gpu/d3d11_live_capture.cpp",
-    "tests/gpu/d3d11_state_restore.cpp",
+    "tests/gpu/d3d11_state_restore.cpp", "tests/gpu/d3d11_close_physical.cpp",
+    "tests/gpu/d3d11_close_protocol.cpp",
 ))
 
 
