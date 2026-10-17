@@ -22,7 +22,7 @@ jobs:
           cmake --build build/m1-d --config Debug --parallel 2
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           # Hosted runners cannot certify a named physical GPU.
-          ctest --test-dir build/m1-d -C Debug --output-on-failure -E '^d[12]_physical_'
+          ctest --test-dir build/m1-d -C Debug --output-on-failure -LE PHYSICAL_GPU_REQUIRED
           exit $LASTEXITCODE
   linux-guard:
     runs-on: ubuntu-24.04
