@@ -1,6 +1,6 @@
 # M2 MOC3: next implementation contract
 
-**Status:** P0 generic comparison harness implemented; P1 is the next code slice. No gate promotion or public activation. **Parent:** I0 probe on `m2/moc3-i0-private-probe` (`1bbdbd1`). The official Live2D SDK remains deferred. Private model inputs and their derived outputs must remain local and gitignored. This plan refines [the I0-I3 roadmap](M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md); it does not replace the M2-D or D06/D08 acceptance requirements.
+**Status:** P0 generic comparison harness and a private P1 session/snapshot slice implemented; P1 admission coverage remains partial. No gate promotion or public activation. **Parent:** I0 probe on `m2/moc3-i0-private-probe` (`1bbdbd1`). The official Live2D SDK remains deferred. Private model inputs and their derived outputs must remain local and gitignored. This plan refines [the I0-I3 roadmap](M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md); it does not replace the M2-D or D06/D08 acceptance requirements.
 
 ## Problem ledger and decision points
 
@@ -26,7 +26,9 @@ The exact sample-specific measurements, reproductions and images are in an ignor
 
 P0's comparison tool accepts two normalized UTF-8 JSON files with `parameters` (`id`, `value`) and `drawables` (`id`, full `vertices` with `pos`/`uv`, full triangle `indices`, `opacity`, `texture_index`, `render_order`, mask ID list). Explicit switches account for the right-hand UV V flip, reverse winding and triangle stream order. A truncated vertex/index export is rejected. Reports from private inputs belong under gitignored `build/`; the tool prints only a status token to stdout.
 
-P1 is the next code slice. P2's author-intended pixel verdict still requires an authorized independent image reference; P3 physics equivalence needs a complete host clock/pose path. Changes to public `ars/ars.h`, ARS2D limits or model schema are outside this plan.
+The first P1 slice is built behind `ARS_BUILD_MOC3_INDEPENDENT=OFF` by default. It pins the evaluator source, admits only a selected `.moc3` under a canonical local root, applies checked parameter updates on the owning thread and publishes an immutable drawable snapshot only after preparation succeeds. It rejects offscreen groups and blend modes outside the implemented subset. Texture bytes, manifest coupling, public file admission and the D3D11 consumer are not implemented. Full P1 acceptance needs direct negative fixtures for unsupported feature records, repeat-parameter semantics, process-isolation review and exact memory accounting including transient allocations; no public capability is advertised.
+
+P2's author-intended pixel verdict still requires an authorized independent image reference; P3 physics equivalence needs a complete host clock/pose path. Changes to public `ars/ars.h`, ARS2D limits or model schema are outside this plan.
 
 ## Choice of evaluator
 
