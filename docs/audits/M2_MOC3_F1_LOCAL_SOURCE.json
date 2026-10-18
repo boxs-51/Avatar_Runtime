@@ -1,0 +1,27 @@
+{
+  "parent_head": "472aa1624a70710b8f2498dcd6d2e20fa7fe64b4",
+  "source_sha256": {
+    "scripts/moc3_local_replay.py": "3fee080638af353916757226a4febe9b0f70b4b2b77bd1bca50c5724aade7707",
+    "scripts/moc3_package_admission.py": "71b1fb3b000931c7853ba122061748f13f2ac3a190d7e378dfc17d503fbe0173",
+    "scripts/moc3_session.py": "351cbec767cbde4af691fc7d04c85b7fa221c3320cc0e097c96a2e38de2208e3",
+    "scripts/moc3_memory.py": "8be6c03c97c63ae91e297562ef6802e4bbf34e27d34966d27fcdee30a008bf72",
+    "src/moc3/harness_bridge.cpp": "adef330247dca8a6d2717cf7f6575ef9ad89e6ec763daab3c0fae3e2c616ff15",
+    "src/moc3/independent_snapshot.cpp": "35c1c7fb702589f1c350ac5a0a15520ae2eec5ede240d971674bcb55edf44b9f",
+    "src/moc3/independent_snapshot.hpp": "def314b42eeb63802e4b5cb5ec4ac62467803ea236f3366fe33dcab633cec998",
+    "tests/moc3/snapshot_tests.cpp": "233d6efeee9c9aed30d1cca6e4886428a739a5f9284ca28429d3411a4fd80488",
+    "tests/moc3/test_package_admission.py": "de23fdb95bed15811f89cd6aa8a3bc61baf6cc206eb96c4e5bc58db50360c305",
+    "tests/moc3/test_harness_api.py": "fd5d68ec46bf359e3da70988af9024ed9797857d7d215da79a4d4709494d6a5d",
+    "scripts/moc3_test_harness.py": "dcaef6491863d70cffc1939be9c9aa791cc9f7fa3677ba853d5bedddcd5a73b7",
+    "scripts/moc3_harness_client.py": "f15985a6cb32abd353be94c9ef766381b78d6c5f1b944ca4cbc60d47d1c1a285",
+    "CMakeLists.txt": "d582e1676ab7d5e7e5cb22c329f4078fc21ecd938517f58773b661615346c0f0"
+  },
+  "binary_sha256": "32cd65477458063a7bd403d4e603e6ce5244829aff90411e9e1085d1d3969f79",
+  "native_test_sha256": "644a35d2fde77b14c2a12e5c7ad249f2c0fb1ce37fa73d1827e12e00fb8bc93b",
+  "dependency_revision": "1069334965522df5d0b791e97f01e26b19c45456",
+  "completed_utc": "2026-10-18T15:48:50.263520+00:00",
+  "local_cpu_verdict": "PASS",
+  "local_run_ref": "build/moc3-f1-local/run-db321538257447168525a514bfdb0759.json",
+  "local_api_ref": "build/moc3-f1-local/api-c48f97d917ca446aa3cdf8608a9aa32e.json",
+  "public_ci_role": "CORROBORATING_ONLY",
+  "worktree_state": "UNCOMMITTED_CONTENT_HASHED"
+}

@@ -1,8 +1,10 @@
 #include "independent_snapshot.hpp"
 
+#include <algorithm>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <iostream>
 #include <limits>
 #include <thread>
@@ -53,6 +55,11 @@ int main(int argc, char** argv) {
     std::unique_ptr<Session> session;
     CHECK(Session::open(test_root, "../moc3-escape.moc3", Budget{}, session) == Result::invalid_path);
     CHECK(!session);
+
+    const std::vector<std::uint8_t> invalid_blob{'N','O','P','E'};
+    CHECK(Session::open_blob(invalid_blob, 1, Budget{}, session) == Result::invalid_model);
+    CHECK(Session::open_blob(invalid_blob, 0, Budget{}, session) == Result::out_of_budget);
+    CHECK(!session);
     CHECK(Session::open(test_root, "missing.moc3", Budget{}, session) == Result::invalid_path);
     CHECK(Session::open(test_root, "tiny.moc3", Budget{}, session) == Result::invalid_model);
     CHECK(Session::open(test_root, "invalid.moc3", Budget{}, session) == Result::invalid_model);
@@ -63,6 +70,8 @@ int main(int argc, char** argv) {
         const auto relative = std::filesystem::path(argv[3]);
         const std::string parameter_id = argv[4];
         const float parameter_value = std::stof(argv[5]);
+        std::ifstream source(root / relative, std::ios::binary);
+        std::vector<std::uint8_t> blob{std::istreambuf_iterator<char>(source), {}};
         auto limited = Budget{};
         limited.max_moc_bytes = 8;
         CHECK(Session::open(root, relative, limited, session) == Result::out_of_budget);
@@ -83,6 +92,23 @@ int main(int argc, char** argv) {
         const auto baseline = session->current();
         CHECK(baseline && !baseline->drawables.empty());
         const auto baseline_hash = geometry_hash(*baseline);
+        const auto original_drawables = baseline->drawables;
+        // Every declared open/snapshot checkpoint fails transactionally. The
+        // existing out session and its immutable snapshot must survive intact.
+        for (int fault = 0; fault < 5 + static_cast<int>(baseline->drawables.size()); ++fault) {
+            auto* prior = session.get();
+            CHECK(Session::open_blob(blob, Budget{}.max_atlases, Budget{}, session, fault)
+                  == Result::allocation_failed);
+            CHECK(session.get() == prior && session->current() == baseline);
+            CHECK(session->current()->drawables == original_drawables);
+        }
+        std::unique_ptr<Session> copied;
+        CHECK(Session::open_blob(blob, Budget{}.max_atlases, Budget{}, copied) == Result::ok);
+        std::fill(blob.begin(), blob.end(), 0); // caller buffer can be changed/released
+        CHECK(copied->update_complete({}) == Result::ok);
+        CHECK(copied->current()->drawables == original_drawables);
+        CHECK(Session::open_blob(blob, Budget{}.max_atlases, Budget{}, copied) == Result::invalid_model);
+        CHECK(copied->current()->drawables == original_drawables);
         CHECK(session->update({{"missing-parameter", 1}}) == Result::invalid_parameter);
         CHECK(session->current() == baseline);
         CHECK(session->update({{parameter_id, std::numeric_limits<float>::infinity()}})
@@ -109,11 +135,26 @@ int main(int argc, char** argv) {
         CHECK(geometry_hash(*session->current()) == changed_hash);
         CHECK(geometry_hash(*baseline) == baseline_hash); // old immutable scene remains live
 
+        CHECK(session->update_complete(pose) == Result::ok);
+        CHECK(geometry_hash(*session->current()) == changed_hash);
+        const auto complete_changed = session->current();
+        CHECK(session->update_complete({{parameter_id, std::numeric_limits<float>::infinity()}})
+              == Result::invalid_parameter);
+        CHECK(session->current() == complete_changed);
+        CHECK(session->update_complete({{parameter_id, parameter_value},
+                                        {parameter_id, parameter_value}})
+              == Result::invalid_parameter);
+        CHECK(session->current() == complete_changed);
+        CHECK(session->update_complete({}) == Result::ok);
+        CHECK(session->current()->drawables == original_drawables);
+        CHECK(session->update_complete({}) == Result::ok);
+        CHECK(session->current()->drawables == original_drawables);
+
         Result wrong_thread = Result::ok;
-        std::thread worker([&] { wrong_thread = session->update({}); });
+        std::thread worker([&] { wrong_thread = session->update_complete({}); });
         worker.join();
         CHECK(wrong_thread == Result::wrong_thread);
-        CHECK(geometry_hash(*session->current()) == changed_hash);
+        CHECK(geometry_hash(*session->current()) == baseline_hash);
         session.reset();
         CHECK(geometry_hash(*baseline) == baseline_hash);
     }

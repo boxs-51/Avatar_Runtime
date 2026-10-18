@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <memory>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -35,10 +36,12 @@ struct Budget {
 
 struct Vertex {
     float x = 0, y = 0, u = 0, v = 0;
+    bool operator==(const Vertex&) const = default;
 };
 
 struct Color {
     float r = 1, g = 1, b = 1, a = 1;
+    bool operator==(const Color&) const = default;
 };
 
 struct Drawable {
@@ -56,6 +59,7 @@ struct Drawable {
     bool visible = true;
     Color multiply;
     Color screen;
+    bool operator==(const Drawable&) const = default;
 };
 
 struct Snapshot {
@@ -73,11 +77,20 @@ public:
     static Result open(const std::filesystem::path& local_root,
                        const std::filesystem::path& relative_moc,
                        Budget budget, std::unique_ptr<Session>& out) noexcept;
+    // Copies exactly the admitted blob. No filesystem access. The atlas count
+    // is the actual immutable package size, not merely a resource ceiling.
+    static Result open_blob(std::span<const std::uint8_t> moc,
+                            std::size_t texture_count, Budget budget,
+                            std::unique_ptr<Session>& out,
+                            int fail_checkpoint = -1) noexcept;
     ~Session();
     Session(const Session&) = delete;
     Session& operator=(const Session&) = delete;
 
     Result update(const std::vector<Parameter>& parameters) noexcept;
+    // Complete pose: reset unspecified parameters to model defaults in the
+    // same transactional update as the supplied finite overrides.
+    Result update_complete(const std::vector<Parameter>& overrides) noexcept;
     std::shared_ptr<const Snapshot> current() const noexcept { return current_.load(); }
 
     // Deterministic private fault injection; -1 disables it.

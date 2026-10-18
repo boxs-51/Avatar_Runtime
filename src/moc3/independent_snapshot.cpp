@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string_view>
 #include <thread>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 
@@ -82,17 +83,46 @@ Result Session::open(const std::filesystem::path& local_root,
         if (error || size < 4) return Result::invalid_model;
         if (size > budget.max_moc_bytes ||
             size > std::numeric_limits<unsigned int>::max()) return Result::out_of_budget;
+        std::vector<std::uint8_t> blob(static_cast<std::size_t>(size));
+        std::ifstream input(child, std::ios::binary);
+        if (!input.read(reinterpret_cast<char*>(blob.data()),
+                        static_cast<std::streamsize>(size))) return Result::invalid_model;
+        return open_blob(blob, budget.max_atlases, budget, out);
+    } catch (const std::bad_alloc&) {
+        return Result::allocation_failed;
+    } catch (const std::length_error&) {
+        return Result::out_of_budget;
+    } catch (const std::filesystem::filesystem_error&) {
+        return Result::invalid_path;
+    }
+}
 
+Result Session::open_blob(std::span<const std::uint8_t> blob,
+                          std::size_t texture_count, Budget budget,
+                          std::unique_ptr<Session>& out, int fail_checkpoint) noexcept {
+    try {
+        if (blob.size() < 4) return Result::invalid_model;
+        if (blob.size() > budget.max_moc_bytes ||
+            blob.size() > std::numeric_limits<unsigned int>::max() ||
+            texture_count == 0 || texture_count > budget.max_atlases ||
+            budget.max_model_bytes == 0 || budget.max_snapshot_bytes < sizeof(Snapshot))
+            return Result::out_of_budget;
+        auto checkpoint = [&] {
+            if (fail_checkpoint == 0) throw std::bad_alloc();
+            if (fail_checkpoint > 0) --fail_checkpoint;
+        };
+        checkpoint();
         auto candidate = std::unique_ptr<Session>(new Session);
         candidate->budget_ = budget;
+        candidate->budget_.max_atlases = texture_count;
+        checkpoint();
         candidate->impl_ = std::make_unique<Impl>();
-        candidate->impl_->moc_memory = _aligned_malloc(static_cast<std::size_t>(size), csmAlignofMoc);
+        checkpoint();
+        candidate->impl_->moc_memory = _aligned_malloc(blob.size(), csmAlignofMoc);
         if (!candidate->impl_->moc_memory) return Result::allocation_failed;
-        std::ifstream input(child, std::ios::binary);
-        if (!input.read(static_cast<char*>(candidate->impl_->moc_memory),
-                        static_cast<std::streamsize>(size))) return Result::invalid_model;
+        std::memcpy(candidate->impl_->moc_memory, blob.data(), blob.size());
         auto* moc_bytes = candidate->impl_->moc_memory;
-        const auto moc_size = static_cast<unsigned int>(size);
+        const auto moc_size = static_cast<unsigned int>(blob.size());
         if (std::memcmp(moc_bytes, "MOC3", 4) != 0 ||
             csmGetMocVersion(moc_bytes, moc_size) == csmMocVersion_Unknown ||
             !csmHasMocConsistency(moc_bytes, moc_size)) return Result::invalid_model;
@@ -100,21 +130,23 @@ Result Session::open(const std::filesystem::path& local_root,
         if (!moc) return Result::invalid_model;
         const auto model_size = csmGetSizeofModel(moc);
         if (!model_size || model_size > budget.max_model_bytes) return Result::out_of_budget;
+        checkpoint();
         candidate->impl_->model_memory = _aligned_malloc(model_size, csmAlignofModel);
         if (!candidate->impl_->model_memory) return Result::allocation_failed;
         candidate->impl_->model = csmInitializeModelInPlace(moc, candidate->impl_->model_memory,
                                                             model_size);
         if (!candidate->impl_->model) return Result::invalid_model;
-        const auto status = candidate->update({});
+        checkpoint();
+        candidate->fail_after_ = fail_checkpoint;
+        const auto status = candidate->update_complete({});
         if (status != Result::ok) return status;
+        candidate->fail_after_ = -1;
         out = std::move(candidate);
         return Result::ok;
     } catch (const std::bad_alloc&) {
         return Result::allocation_failed;
     } catch (const std::length_error&) {
         return Result::out_of_budget;
-    } catch (const std::filesystem::filesystem_error&) {
-        return Result::invalid_path;
     }
 }
 
@@ -289,6 +321,54 @@ Result Session::update(const std::vector<Parameter>& parameters) noexcept {
         return Result::allocation_failed;
     } catch (const std::length_error&) {
         rollback();
+        return Result::out_of_budget;
+    }
+}
+
+Result Session::update_complete(const std::vector<Parameter>& overrides) noexcept {
+    if (!impl_ || !impl_->valid || !impl_->model) return Result::invalid_model;
+    if (std::this_thread::get_id() != impl_->owner) return Result::wrong_thread;
+    try {
+        auto* model = impl_->model;
+        const int count = csmGetParameterCount(model);
+        if (count < 0 || count > 4096 || overrides.size() > static_cast<std::size_t>(count))
+            return Result::out_of_budget;
+        const auto* ids = csmGetParameterIds(model);
+        const auto* defaults = csmGetParameterDefaultValues(model);
+        const auto* minimum = csmGetParameterMinimumValues(model);
+        const auto* maximum = csmGetParameterMaximumValues(model);
+        if (count && (!ids || !defaults || !minimum || !maximum)) return Result::invalid_model;
+        std::unordered_map<std::string, std::size_t> index;
+        index.reserve(static_cast<std::size_t>(count));
+        std::vector<Parameter> complete;
+        complete.reserve(static_cast<std::size_t>(count));
+        for (int i = 0; i < count; ++i) {
+            std::size_t size = 0;
+            if (!bounded_id(ids[i], size) || !std::isfinite(defaults[i]) ||
+                !std::isfinite(minimum[i]) || !std::isfinite(maximum[i]) ||
+                minimum[i] > defaults[i] || defaults[i] > maximum[i])
+                return Result::invalid_model;
+            std::string id(ids[i], size);
+            if (!index.emplace(id, static_cast<std::size_t>(i)).second)
+                return Result::invalid_model;
+            complete.push_back({std::move(id), defaults[i]});
+        }
+        std::unordered_set<std::string> seen;
+        seen.reserve(overrides.size());
+        for (const auto& setting : overrides) {
+            if (!std::isfinite(setting.value) || !seen.emplace(setting.id).second)
+                return Result::invalid_parameter;
+            const auto found = index.find(setting.id);
+            if (found == index.end()) return Result::invalid_parameter;
+            const auto at = found->second;
+            if (setting.value < minimum[at] || setting.value > maximum[at])
+                return Result::invalid_parameter;
+            complete[at].value = setting.value;
+        }
+        return update(complete);
+    } catch (const std::bad_alloc&) {
+        return Result::allocation_failed;
+    } catch (const std::length_error&) {
         return Result::out_of_budget;
     }
 }

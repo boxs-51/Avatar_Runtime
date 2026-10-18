@@ -53,7 +53,7 @@ Result D3D11DualModeHost::prepare_target(Pending &candidate,std::uint32_t width,
 }
 Result D3D11DualModeHost::start(std::unique_ptr<Pending> candidate,Result result) {
     if (result==Result::ok) { pending_=std::move(candidate);return Result::ok; }
-    if (candidate->query.holds_pin()) {
+    if (candidate->query.holds_target()) {
         candidate->query.mark_lost();
         pending_=std::move(candidate);
         lost_=true;
@@ -113,6 +113,26 @@ Result D3D11DualModeHost::poll_commit() {
     ++target_epoch_;
     pending_.reset();
     return Result::ok;
+}
+Result D3D11DualModeHost::request_moc(const MocPass& pass,std::uint64_t pose,
+    std::uint32_t width,std::uint32_t height,bool fail_target_create) {
+    if(!backend_.on_owner_thread())return Result::wrong_thread;
+    if(lost_)return Result::device_lost;
+    if(closed_||closing_.load(std::memory_order_acquire)||pending_)return Result::busy;
+    if(!pass||!pose||!width||!height||width>2048||height>2048)return Result::invalid_argument;
+    try {
+        auto candidate=std::make_unique<Pending>(ops_);
+        candidate->mode=Mode::moc3;candidate->pose=pose;
+        auto result=prepare_target(*candidate,width,height,fail_target_create);
+        if(result!=Result::ok)return result;
+        // The candidate must stay alive across exceptions once the callback
+        // has prepared/submitted its query. start() quarantines such pins.
+        try {
+            result=pass(backend_,candidate->view.Get(),{backend_.generation(),width,height},candidate->query);
+        }catch(const std::bad_alloc&){result=Result::out_of_budget;
+        }catch(...){result=Result::failed;}
+        return start(std::move(candidate),result);
+    }catch(const std::bad_alloc&){return Result::out_of_budget;}
 }
 Result D3D11DualModeHost::begin_close() noexcept {
     closing_.store(true,std::memory_order_release);
