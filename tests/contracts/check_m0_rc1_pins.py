@@ -716,7 +716,9 @@ def check_m2_d_stack_main(base, candidate):
             "M2-D stack must start from the exact M2-B main merge")
     git("merge-base", "--is-ancestor", "c6612f267e41e9b25b25e0cc7183169c20e99df9", candidate)
     for revision in ("fde316166bf2177a235d08ca0213a294ad426d91",
-                     "5bdcdcb", "29edcc2", "cfe2544"):
+                     "5bdcdcbd2579f79061dcd0b11acd9d7063e786be",
+                     "29edcc2842b050b0e45ce16aab0d4b048b753614",
+                     "cfe2544124316c5f1093fbb1035a67805ebf8455"):
         git("merge-base", "--is-ancestor", revision, candidate)
     check_m2_d_impl(M2_D_IMPL_BASE, candidate)
     expected_paths = (M2_C_DESIGN_PATHS | M2_C_PATHS | M2_D_DESIGN_PATHS |
