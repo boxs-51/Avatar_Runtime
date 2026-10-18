@@ -518,6 +518,35 @@ def check_m2_a(base, candidate):
     return True
 
 
+M2_B_BRANCH = "m2/2d-offscreen"
+M2_B_BASE = "10f542f7acb10527bace0dca6d7c608b20018896"
+M2_B_PATHS = frozenset((
+    ".github/workflows/m2-2d-pixels.yml", "CMakeLists.txt",
+    "docs/M2_B_PIXEL_CONTRACT.md", "docs/audits/M2_B_BUILD_EVIDENCE.md",
+    "docs/audits/M2_B_BUILD_RAW.txt", "docs/audits/M2_B_CTEST_RAW.txt",
+    "docs/audits/M2_B_HARDWARE_RAW.txt",
+    "src/graphics/d3d11/state_scope.cpp", "src/graphics/d3d11/state_scope.hpp",
+    "src/rendering/d3d11_scene2d.cpp", "src/rendering/d3d11_scene2d.hpp",
+    "tests/rendering/d3d11_scene2d_pixels.cpp",
+    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m2_a_custody.py",
+    "tests/contracts/test_m2_b_custody.py",
+))
+
+
+def check_m2_b(base, candidate):
+    """Private pixel pass extends only the pinned M2-A head."""
+    require(base == M2_B_BASE, "M2-B parent moved: refresh and review")
+    git("merge-base", "--is-ancestor", base, candidate)
+    check_m2_a(M2_A_BASE, base)
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == M2_B_PATHS,
+            "M2-B path drift")
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path),
+                "M2-B changed held/public boundary: " + path)
+    return True
+
+
 def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -563,6 +592,17 @@ def check():
             require(git("rev-parse", expected + "^2") == M2_A_BASE,
                     "M2-A main parent must merge exact M1-D head")
             check_m2_a(M2_A_BASE, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M2_B_BRANCH:
+            # Main must be the merge of the reviewed M2-A head onto the
+            # previous exact main commit; preserve the historical M2-B diff pin.
+            expected = expected_parent
+            require(git("rev-parse", expected + "^1") == M2_A_MAIN_PARENT and
+                    git("rev-parse", expected + "^2") ==
+                    "a87aa6968c620342d296ca59f4e9f179ddcd7ac9" and
+                    git("rev-parse", expected + "^{tree}") ==
+                    git("rev-parse", "a87aa6968c620342d296ca59f4e9f179ddcd7ac9^{tree}"),
+                    "M2-B main parent must merge exact M2-A head")
+            check_m2_b(M2_B_BASE, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M1_D_BRANCH:
             expected = M1_D_BASE
             check_m1_d(expected_parent, git("rev-parse", "HEAD^2"))

@@ -10,8 +10,15 @@ namespace ars::graphics::d3d11 {
 class StateScope {
     ID3D11DeviceContext *context_;
     D3D11_PRIMITIVE_TOPOLOGY topology_{};
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> input_layout_;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> vertex_buffer_, index_buffer_;
+    UINT vertex_stride_=0, vertex_offset_=0, index_offset_=0;
+    DXGI_FORMAT index_format_=DXGI_FORMAT_UNKNOWN;
     Microsoft::WRL::ComPtr<ID3D11VertexShader> vs_;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> ps_;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> vs_constant_;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> ps_resource_;
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> ps_sampler_;
     std::array<ID3D11ClassInstance *, 256> vs_classes_{};
     std::array<ID3D11ClassInstance *, 256> ps_classes_{};
     UINT vs_count_=256, ps_count_=256;
