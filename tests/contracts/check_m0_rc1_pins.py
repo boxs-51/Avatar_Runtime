@@ -701,6 +701,37 @@ def check_m2_d_impl(base, candidate):
     return True
 
 
+M2_D_STACK_MAIN_PARENT = "8723ef174a7db98b05fd031aa39dbd910e5ba2db"
+
+
+def check_m2_d_stack_main(base, candidate):
+    """Review the complete private M2-C/D stack against merged M2-B."""
+    require(base == M2_D_STACK_MAIN_PARENT, "M2-D stack main parent moved")
+    require(git("rev-parse", base + "^1") ==
+            "d179bee01c625ed3d06584b5e3df5f6bb653b994" and
+            git("rev-parse", base + "^2") ==
+            "c6612f267e41e9b25b25e0cc7183169c20e99df9" and
+            git("rev-parse", base + "^{tree}") ==
+            git("rev-parse", "c6612f267e41e9b25b25e0cc7183169c20e99df9^{tree}"),
+            "M2-D stack must start from the exact M2-B main merge")
+    git("merge-base", "--is-ancestor", "c6612f267e41e9b25b25e0cc7183169c20e99df9", candidate)
+    for revision in ("fde316166bf2177a235d08ca0213a294ad426d91",
+                     "5bdcdcb", "29edcc2", "cfe2544"):
+        git("merge-base", "--is-ancestor", revision, candidate)
+    check_m2_d_impl(M2_D_IMPL_BASE, candidate)
+    expected_paths = (M2_C_DESIGN_PATHS | M2_C_PATHS | M2_D_DESIGN_PATHS |
+                      M2_PRE_D_PATHS | M2_D_IMPL_PATHS) - {
+                          "tests/contracts/test_m2_a_custody.py"}
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == expected_paths,
+            "M2-D stack main path drift")
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) ==
+                git("rev-parse", base + ":" + path),
+                "M2-D stack changed held/public boundary: " + path)
+    return True
+
+
 M2_C_DESIGN_BRANCH = "m2/3d-design"
 M2_C_DESIGN_BASE = "6e3e013c8211a7a2c20ea3520ca2a5be599f79fb"
 M2_C_DESIGN_PATHS = frozenset((
@@ -798,8 +829,8 @@ def check():
             expected = M2_PRE_D_BASE
             check_m2_pre_d(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M2_D_IMPL_BRANCH:
-            expected = M2_D_IMPL_BASE
-            check_m2_d_impl(expected_parent, git("rev-parse", "HEAD^2"))
+            expected = M2_D_STACK_MAIN_PARENT
+            check_m2_d_stack_main(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M2_C_DESIGN_BRANCH:
             expected = expected_parent
             require(git("rev-parse", expected + "^1") ==

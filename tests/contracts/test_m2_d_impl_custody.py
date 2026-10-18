@@ -6,6 +6,13 @@ import check_m0_rc1_pins as pins
 
 
 class Custody(unittest.TestCase):
+    def test_complete_stack_against_merged_m2_b(self):
+        self.assertTrue(pins.check_m2_d_stack_main(pins.M2_D_STACK_MAIN_PARENT, "HEAD"))
+
+    def test_stack_rejects_moved_main_parent(self):
+        with self.assertRaises(AssertionError):
+            pins.check_m2_d_stack_main(pins.M2_A_MAIN_PARENT, "HEAD")
+
     def test_exact_scope(self):
         self.assertTrue(pins.check_m2_d_impl(pins.M2_D_IMPL_BASE, "HEAD"))
 
