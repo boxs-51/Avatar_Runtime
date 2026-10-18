@@ -485,6 +485,8 @@ if(ARS_BUILD_ASSET_VALIDATOR)
         -s "${CMAKE_CURRENT_SOURCE_DIR}/tests/assets" -p test_cubism_static_preview.py)
     add_test(NAME cubism_l0_preflight COMMAND "${Python3_EXECUTABLE}" -m unittest discover
         -s "${CMAKE_CURRENT_SOURCE_DIR}/tests/assets" -p test_cubism_preflight.py)
+    add_test(NAME moc3_snapshot_comparison COMMAND "${Python3_EXECUTABLE}" -m unittest discover
+        -s "${CMAKE_CURRENT_SOURCE_DIR}/tests/moc3" -p test_compare_snapshots.py)
     set_tests_properties(c2_glb_reader c2_glb_validation c2_dual_mode PROPERTIES TIMEOUT 600)
     add_test(NAME c1_schema_process COMMAND ars_schema_worker_tests $<TARGET_FILE:ars_schema_worker> $<TARGET_FILE:ars_schema_worker_fake> $<TARGET_FILE:ars_schema_worker_resource_probe>)
     add_test(NAME c1_zip COMMAND ars_zip_reader_tests "${ARS_C1_CORPUS}")
