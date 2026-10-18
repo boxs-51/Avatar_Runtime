@@ -4,8 +4,9 @@
 #include <stdexcept>
 namespace ars::graphics::d3d11 {
 CloseCoordinator::CloseCoordinator(ID3D11Device *device, ID3D11DeviceContext *context,
-                                   std::uint64_t generation, QueryOps *ops)
-    : backend_(device,context,generation), ops_(ops) {}
+                                   std::uint64_t generation, QueryOps *ops,
+                                   HostTeardownReceipt::Authority authority)
+    : backend_(device,context,generation), ops_(ops), host_authority_(std::move(authority)) {}
 
 Result CloseCoordinator::submit(ID3D11RenderTargetView *target, TargetInfo info,
                                 std::shared_ptr<const void> snapshot_pin) {
@@ -74,10 +75,15 @@ Result CloseCoordinator::poll_close(std::uint64_t generation) {
     phase_=Phase::drained;
     return Result::ok;
 }
-Result CloseCoordinator::acknowledge_lost_teardown(std::uint64_t generation, bool host_quiesced) {
+Result CloseCoordinator::acknowledge_lost_teardown(std::uint64_t generation,
+                                                   HostTeardownReceipt &receipt) {
     if (!backend_.on_owner_thread()) return Result::wrong_thread;
-    if (!generation || generation!=backend_.generation() || !host_quiesced ||
-        phase_!=Phase::lost_quarantined) return Result::invalid_argument;
+    const auto state=receipt.state_;
+    if (!generation || generation!=backend_.generation() ||
+        phase_!=Phase::lost_quarantined || !close_requested() ||
+        !state || state!=host_authority_.state_ || !state->issued || state->consumed ||
+        state->generation!=generation || state->device!=backend_.device() ||
+        state->owner!=std::this_thread::get_id()) return Result::invalid_argument;
     for (auto &entry : pending_) {
         if (entry->complete()) continue;
         const auto released=entry->detach_lost(generation);
@@ -87,6 +93,8 @@ Result CloseCoordinator::acknowledge_lost_teardown(std::uint64_t generation, boo
     const auto released=backend_.release_owned_references();
     if (released!=Result::ok) return released;
     phase_=Phase::detached_lost;
+    state->consumed=true;
+    receipt.state_.reset();
     return Result::ok;
 }
 }

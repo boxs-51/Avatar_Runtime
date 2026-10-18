@@ -734,6 +734,35 @@ def check_m2_d_stack_main(base, candidate):
     return True
 
 
+M2_E_BRANCH = "m2/host-teardown-receipt"
+M2_E_BASE = "ef28b2f7d12c3b993a4a2fbc80eca8426ff68fc3"
+M2_E_PATHS = frozenset((
+    "CMakeLists.txt", "docs/M2_E_HOST_HANDOFF_PLAN.md",
+    "src/graphics/d3d11/close_coordinator.cpp",
+    "src/graphics/d3d11/close_coordinator.hpp",
+    "src/graphics/d3d11/teardown_receipt.cpp",
+    "src/graphics/d3d11/teardown_receipt.hpp",
+    "tests/gpu/d3d11_close_protocol.cpp",
+    "tests/contracts/check_m0_rc1_pins.py",
+    "tests/contracts/test_m2_e_custody.py",
+))
+
+
+def check_m2_e(base, candidate):
+    """Private receipt work extends only the exact #37 source and scoped paths."""
+    require(base == M2_E_BASE, "M2-E source parent moved")
+    git("merge-base", "--is-ancestor", base, candidate)
+    check_m2_d_stack_main(M2_D_STACK_MAIN_PARENT, base)
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == M2_E_PATHS,
+            "M2-E path drift")
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) ==
+                git("rev-parse", base + ":" + path),
+                "M2-E changed held/public boundary: " + path)
+    return True
+
+
 M2_C_DESIGN_BRANCH = "m2/3d-design"
 M2_C_DESIGN_BASE = "6e3e013c8211a7a2c20ea3520ca2a5be599f79fb"
 M2_C_DESIGN_PATHS = frozenset((
@@ -833,6 +862,15 @@ def check():
         elif os.getenv("GITHUB_HEAD_REF") == M2_D_IMPL_BRANCH:
             expected = M2_D_STACK_MAIN_PARENT
             check_m2_d_stack_main(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M2_E_BRANCH:
+            expected = expected_parent
+            if expected != M2_E_BASE:
+                require(git("rev-parse", expected + "^1") == M2_D_STACK_MAIN_PARENT and
+                        git("rev-parse", expected + "^2") == M2_E_BASE and
+                        git("rev-parse", expected + "^{tree}") ==
+                        git("rev-parse", M2_E_BASE + "^{tree}"),
+                        "M2-E main parent must merge exact #37 head")
+            check_m2_e(M2_E_BASE, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M2_C_DESIGN_BRANCH:
             expected = expected_parent
             require(git("rev-parse", expected + "^1") ==

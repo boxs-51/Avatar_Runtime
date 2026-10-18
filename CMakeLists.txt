@@ -20,7 +20,8 @@ if(ARS_BUILD_D3D11_SPIKE)
         src/graphics/d3d11/host_device.cpp
         src/graphics/d3d11/state_scope.cpp
         src/graphics/d3d11/query_retirement.cpp
-        src/graphics/d3d11/close_coordinator.cpp)
+        src/graphics/d3d11/close_coordinator.cpp
+        src/graphics/d3d11/teardown_receipt.cpp)
     target_compile_features(ars_d3d11_spike PUBLIC cxx_std_20)
     target_include_directories(ars_d3d11_spike PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
     target_link_libraries(ars_d3d11_spike PUBLIC d3d11 dxgi d3dcompiler)
