@@ -744,6 +744,7 @@ M2_E_PATHS = frozenset((
     "src/graphics/d3d11/teardown_receipt.hpp",
     "tests/gpu/d3d11_close_protocol.cpp",
     "tests/contracts/check_m0_rc1_pins.py",
+    "tests/contracts/test_m2_d_impl_custody.py",
     "tests/contracts/test_m2_e_custody.py",
 ))
 
