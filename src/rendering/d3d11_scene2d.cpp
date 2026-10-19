@@ -19,6 +19,7 @@ struct Vertex {
 struct Constants { float canvas_x,canvas_y,atlas_x,atlas_y; };
 struct Range { UINT count, start; };
 struct FrameResources {
+    std::shared_ptr<const void> snapshot_owner;
     ComPtr<ID3D11Texture2D> texture;
     ComPtr<ID3D11ShaderResourceView> view;
     ComPtr<ID3D11Buffer> vertices, indices, constants;
@@ -170,13 +171,15 @@ Result build(ID3D11Device *device,const PreparedScene2D &scene,const assets::Ima
 graphics::Result render_offscreen_2d(graphics::d3d11::HostDevice &backend,
     ID3D11RenderTargetView *target,graphics::TargetInfo info,
     const PreparedScene2D &scene,const assets::Image &atlas,
-    graphics::d3d11::QueryRetirement &retirement) {
+    graphics::d3d11::QueryRetirement &retirement,
+    std::shared_ptr<const void> snapshot_owner) {
     if (!backend.on_owner_thread()) return Result::wrong_thread;
     const auto valid=backend.validate(target,info);
     if (valid!=Result::ok) return valid;
     if (!valid_scene(scene,atlas)) return Result::invalid_argument;
     try {
         auto frame=std::make_shared<FrameResources>();
+        frame->snapshot_owner=std::move(snapshot_owner);
         const auto ready=build(backend.device(),scene,atlas,*frame);
         if (ready!=Result::ok) return ready;
         const auto prepared=retirement.prepare(backend.device(),backend.context(),target,

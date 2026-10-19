@@ -547,6 +547,224 @@ def check_m2_b(base, candidate):
     return True
 
 
+M2_C_BRANCH = "m2/3d-render-implementation"
+M2_C_BASE = "058e8e7159c5f262a452e69f8764e032e4776415"
+M2_C_PARENT = "6e3e013c8211a7a2c20ea3520ca2a5be599f79fb"
+M2_C_PATHS = frozenset((
+    ".github/workflows/m2-3d-pixels.yml", "CMakeLists.txt",
+    "docs/M2_C_GLB_RENDER_DESIGN.md", "docs/audits/M2_C_IMPLEMENTATION_EVIDENCE.md",
+    "docs/audits/M2_C_BUILD_RAW.txt", "docs/audits/M2_C_CTEST_RAW.txt",
+    "docs/audits/M2_C_WARP_RAW.txt", "docs/audits/M2_C_HARDWARE_RAW.txt",
+    "src/graphics/backend.hpp", "src/graphics/d3d11/state_scope.cpp",
+    "src/graphics/d3d11/state_scope.hpp",
+    "src/rendering/scene3d.cpp", "src/rendering/scene3d.hpp",
+    "src/rendering/d3d11_scene3d.cpp", "src/rendering/d3d11_scene3d.hpp",
+    "tests/assets/fixtures/generate_fixtures.py", "tests/assets/fixtures/manifest.json",
+    "tests/rendering/scene3d_tests.cpp", "tests/rendering/d3d11_scene3d_pixels.cpp",
+    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m2_b_custody.py",
+    "tests/contracts/test_m2_c_custody.py",
+))
+
+
+def carried_m2_a_main_pin(candidate):
+    """Recognize only the exact M2-A custody blob carried by merge ancestry."""
+    carried = subprocess.run(["git", "merge-base", "--is-ancestor",
+        "a87aa6968c620342d296ca59f4e9f179ddcd7ac9", candidate],
+        cwd=ROOT).returncode == 0
+    if carried:
+        require(git("rev-parse", candidate + ":tests/contracts/test_m2_a_custody.py") ==
+                "7b6eee371732f8024fa5abc4069636dff2453537",
+                "M2-A main-parent custody blob drift")
+    return carried
+
+
+def carried_m2_b_main_pin(candidate):
+    """Recognize only the exact M2-B custody blob carried by merge ancestry."""
+    carried = subprocess.run(["git", "merge-base", "--is-ancestor",
+        "fde316166bf2177a235d08ca0213a294ad426d91", candidate],
+        cwd=ROOT).returncode == 0
+    if carried:
+        require(git("rev-parse", candidate + ":tests/contracts/test_m2_b_custody.py") ==
+                "835e4618c44f3c9db38f984f17346ce6d7d45242",
+                "M2-B main-parent custody blob drift")
+    return carried
+
+
+def check_m2_c(base, candidate):
+    """M2-C source remains stacked on the exact private design/document head."""
+    require(base == M2_C_BASE, "M2-C design parent moved: refresh and review")
+    git("merge-base", "--is-ancestor", base, candidate)
+    git("merge-base", "--is-ancestor", M2_C_PARENT, base)
+    check_m2_b(M2_B_BASE, M2_C_PARENT)
+    has_repin = carried_m2_a_main_pin(candidate)
+    expected_paths = M2_C_PATHS | ({"tests/contracts/test_m2_a_custody.py"} if has_repin else set())
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == expected_paths,
+            "M2-C path drift")
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path),
+                "M2-C changed held/public boundary: " + path)
+    return True
+
+
+M2_D_DESIGN_BRANCH = "m2/dual-mode-design"
+M2_D_DESIGN_BASE = "710b3504eb6e1619bf75842082d1fc35df225249"
+M2_D_DESIGN_PATHS = frozenset((
+    "docs/M2_D_HOLD_LEDGER_AND_SWITCH_DESIGN.md",
+    "tests/contracts/check_m0_rc1_pins.py",
+    "tests/contracts/test_m2_c_custody.py",
+    "tests/contracts/test_m2_d_design_custody.py",
+))
+
+
+def check_m2_d_design(base, candidate):
+    """The M2-D planning PR adds only its document and custody refresh."""
+    require(base == M2_D_DESIGN_BASE, "M2-D design parent moved: refresh and review")
+    git("merge-base", "--is-ancestor", base, candidate)
+    check_m2_c(M2_C_BASE, base)
+    expected_paths = M2_D_DESIGN_PATHS | (
+        {"tests/contracts/test_m2_a_custody.py"} if carried_m2_a_main_pin(candidate) else set()) | (
+        {"tests/contracts/test_m2_b_custody.py"} if carried_m2_b_main_pin(candidate) else set())
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == expected_paths,
+            "M2-D design path drift")
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path),
+                "M2-D design changed held/public boundary: " + path)
+    return True
+
+
+M2_PRE_D_BRANCH = "m2/pre-d-hold-closure"
+M2_PRE_D_BASE = "8ec80213e8b93f15d5254f8f523ba596000e1c30"
+M2_PRE_D_PATHS = frozenset((
+    "docs/audits/M2_PRE_D_BUILD_RAW.txt", "docs/audits/M2_PRE_D_CTEST_RAW.txt",
+    "docs/audits/M2_PRE_D_HARDWARE_RAW.txt",
+    "docs/audits/M2_PRE_D_HOLD_REASSESSMENT_20261018.md",
+    "docs/audits/M2_PRE_D_LIVE_HARDWARE_RAW.txt",
+    "docs/audits/M2_PRE_D_LIVE_WARP_RAW.txt", "docs/audits/M2_PRE_D_WARP_RAW.txt",
+    "src/rendering/d3d11_scene3d.cpp", "src/rendering/d3d11_scene3d.hpp",
+    "src/rendering/scene3d.cpp", "src/rendering/scene3d.hpp",
+    "tests/gpu/d3d11_live_capture.cpp",
+    "tests/rendering/d3d11_scene3d_pixels.cpp", "tests/rendering/scene3d_tests.cpp",
+    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m2_d_design_custody.py",
+    "tests/contracts/test_m2_pre_d_custody.py",
+))
+
+
+def check_m2_pre_d(base, candidate):
+    """Pre-D source and evidence extend only the pinned M2-D design head."""
+    require(base == M2_PRE_D_BASE, "pre-M2-D parent moved: refresh and review")
+    git("merge-base", "--is-ancestor", base, candidate)
+    check_m2_d_design(M2_D_DESIGN_BASE, base)
+    expected_paths = M2_PRE_D_PATHS | (
+        {"tests/contracts/test_m2_a_custody.py"} if carried_m2_a_main_pin(candidate) else set()) | (
+        {"tests/contracts/test_m2_b_custody.py"} if carried_m2_b_main_pin(candidate) else set())
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == expected_paths,
+            "pre-M2-D path drift")
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path),
+                "pre-M2-D changed held/public boundary: " + path)
+    return True
+
+
+M2_D_IMPL_BRANCH = "m2/dual-mode-implementation"
+M2_D_IMPL_BASE = "d96ff59ba0642308f0b656709fbccb511d142a93"
+M2_D_IMPL_PATHS = frozenset((
+    ".github/workflows/m2-dual-mode.yml", "CMakeLists.txt",
+    "src/rendering/d3d11_dual_mode_host.cpp", "src/rendering/d3d11_dual_mode_host.hpp",
+    "src/rendering/d3d11_scene2d.cpp", "src/rendering/d3d11_scene2d.hpp",
+    "tests/gpu/d3d11_live_capture.cpp", "tests/rendering/d3d11_dual_mode_pixels.cpp",
+    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m2_pre_d_custody.py",
+    "tests/contracts/test_m2_d_impl_custody.py",
+    "docs/audits/M2_D_BUILD_RAW.txt", "docs/audits/M2_D_CTEST_RAW.txt",
+    "docs/audits/M2_D_WARP_RAW.txt", "docs/audits/M2_D_HARDWARE_RAW.txt",
+    "docs/audits/M2_D_LIVE_WARP_RAW.txt", "docs/audits/M2_D_LIVE_HARDWARE_RAW.txt",
+    "docs/audits/M2_D_IMPLEMENTATION_EVIDENCE.md",
+))
+
+
+def check_m2_d_impl(base, candidate):
+    """The private dual-mode host extends only the pinned pre-D evidence head."""
+    require(base == M2_D_IMPL_BASE, "M2-D implementation parent moved: refresh and review")
+    git("merge-base", "--is-ancestor", base, candidate)
+    check_m2_pre_d(M2_PRE_D_BASE, base)
+    expected_paths = M2_D_IMPL_PATHS | (
+        {"tests/contracts/test_m2_a_custody.py"} if carried_m2_a_main_pin(candidate) else set()) | (
+        {"tests/contracts/test_m2_b_custody.py"} if carried_m2_b_main_pin(candidate) else set())
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == expected_paths,
+            "M2-D implementation path drift")
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) == git("rev-parse", base + ":" + path),
+                "M2-D implementation changed held/public boundary: " + path)
+    return True
+
+
+M2_D_STACK_MAIN_PARENT = "8723ef174a7db98b05fd031aa39dbd910e5ba2db"
+
+
+def check_m2_d_stack_main(base, candidate):
+    """Review the complete private M2-C/D stack against merged M2-B."""
+    require(base == M2_D_STACK_MAIN_PARENT, "M2-D stack main parent moved")
+    require(git("rev-parse", base + "^1") ==
+            "d179bee01c625ed3d06584b5e3df5f6bb653b994" and
+            git("rev-parse", base + "^2") ==
+            "c6612f267e41e9b25b25e0cc7183169c20e99df9" and
+            git("rev-parse", base + "^{tree}") ==
+            git("rev-parse", "c6612f267e41e9b25b25e0cc7183169c20e99df9^{tree}"),
+            "M2-D stack must start from the exact M2-B main merge")
+    git("merge-base", "--is-ancestor", "c6612f267e41e9b25b25e0cc7183169c20e99df9", candidate)
+    for revision in ("fde316166bf2177a235d08ca0213a294ad426d91",
+                     "5bdcdcbd2579f79061dcd0b11acd9d7063e786be",
+                     "29edcc2842b050b0e45ce16aab0d4b048b753614",
+                     "cfe2544124316c5f1093fbb1035a67805ebf8455"):
+        git("merge-base", "--is-ancestor", revision, candidate)
+    check_m2_d_impl(M2_D_IMPL_BASE, candidate)
+    expected_paths = (M2_C_DESIGN_PATHS | M2_C_PATHS | M2_D_DESIGN_PATHS |
+                      M2_PRE_D_PATHS | M2_D_IMPL_PATHS) - {
+                          "tests/contracts/test_m2_a_custody.py"}
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) == expected_paths,
+            "M2-D stack main path drift")
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) ==
+                git("rev-parse", base + ":" + path),
+                "M2-D stack changed held/public boundary: " + path)
+    return True
+
+
+M2_C_DESIGN_BRANCH = "m2/3d-design"
+M2_C_DESIGN_BASE = "6e3e013c8211a7a2c20ea3520ca2a5be599f79fb"
+M2_C_DESIGN_PATHS = frozenset((
+    "docs/M2_C_GLB_RENDER_DESIGN.md",
+    "docs/M2_D06_D08_LOSS_VERIFICATION_DESIGN.md",
+    "tests/contracts/check_m0_rc1_pins.py",
+    "tests/contracts/test_m2_a_custody.py",
+    "tests/contracts/test_m2_b_custody.py",
+))
+
+
+def check_m2_c_design(base, candidate):
+    """The design only carries the exact M2-A main custody through M2-B."""
+    require(base == M2_C_DESIGN_BASE, "M2-C design source parent moved")
+    git("merge-base", "--is-ancestor", base, candidate)
+    require(set(git("diff", "--name-only", base, candidate).splitlines()) ==
+            M2_C_DESIGN_PATHS, "M2-C design path drift")
+    require(subprocess.run(["git", "merge-base", "--is-ancestor",
+                "a87aa6968c620342d296ca59f4e9f179ddcd7ac9", candidate],
+                cwd=ROOT).returncode == 0 and
+            git("rev-parse", candidate + ":tests/contracts/test_m2_a_custody.py") ==
+            "7b6eee371732f8024fa5abc4069636dff2453537",
+            "M2-C design lost M2-A main custody")
+    for path in ("include/ars/ars.h", "src/abi/unsupported.cpp",
+                 "src/abi/runtime_api.cpp", "docs/M1_D_GPU_CASE_EXECUTION.json"):
+        require(git("rev-parse", candidate + ":" + path) ==
+                git("rev-parse", base + ":" + path),
+                "M2-C design changed held/public boundary: " + path)
+    return True
+
+
 def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -603,6 +821,28 @@ def check():
                     git("rev-parse", "a87aa6968c620342d296ca59f4e9f179ddcd7ac9^{tree}"),
                     "M2-B main parent must merge exact M2-A head")
             check_m2_b(M2_B_BASE, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M2_C_BRANCH:
+            expected = M2_C_BASE
+            check_m2_c(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M2_D_DESIGN_BRANCH:
+            expected = M2_D_DESIGN_BASE
+            check_m2_d_design(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M2_PRE_D_BRANCH:
+            expected = M2_PRE_D_BASE
+            check_m2_pre_d(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M2_D_IMPL_BRANCH:
+            expected = M2_D_STACK_MAIN_PARENT
+            check_m2_d_stack_main(expected_parent, git("rev-parse", "HEAD^2"))
+        elif os.getenv("GITHUB_HEAD_REF") == M2_C_DESIGN_BRANCH:
+            expected = expected_parent
+            require(git("rev-parse", expected + "^1") ==
+                    "d179bee01c625ed3d06584b5e3df5f6bb653b994" and
+                    git("rev-parse", expected + "^2") ==
+                    "c6612f267e41e9b25b25e0cc7183169c20e99df9" and
+                    git("rev-parse", expected + "^{tree}") ==
+                    git("rev-parse", "c6612f267e41e9b25b25e0cc7183169c20e99df9^{tree}"),
+                    "M2-C design main parent must merge exact M2-B head")
+            check_m2_c_design(M2_C_DESIGN_BASE, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M1_D_BRANCH:
             expected = M1_D_BASE
             check_m1_d(expected_parent, git("rev-parse", "HEAD^2"))

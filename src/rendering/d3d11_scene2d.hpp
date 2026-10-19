@@ -10,6 +10,7 @@ namespace ars::rendering {
 graphics::Result render_offscreen_2d(graphics::d3d11::HostDevice &backend,
     ID3D11RenderTargetView *target, graphics::TargetInfo info,
     const PreparedScene2D &scene, const assets::Image &atlas,
-    graphics::d3d11::QueryRetirement &retirement);
+    graphics::d3d11::QueryRetirement &retirement,
+    std::shared_ptr<const void> snapshot_owner = {});
 } // namespace ars::rendering
 #endif

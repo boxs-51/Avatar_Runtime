@@ -1,0 +1,3 @@
+﻿M2D_ADAPTER=WARP vendor=1414 device=008c feature=b000 debug=1
+M2D_2D_PIXEL=255,0,0,255 M2D_3D_PIXEL=75,0,0,255
+PASS M2-D WARP 100 switches, 100 resizes, 100 close races, OOM rollback and injected loss
