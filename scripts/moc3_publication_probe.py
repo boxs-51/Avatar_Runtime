@@ -4,13 +4,15 @@ import queue
 import subprocess
 import threading
 import time
+from moc3_native_test_target import configured_target
 ROOT=Path(__file__).resolve().parents[1]
-BIN=ROOT/'build/m2-d-private/bin/Release'
+PUBLICATION_HOST=configured_target('ARS_MOC3_PUBLICATION_HOST_EXE',ROOT/'build/m2-d-private/bin/Release/ars_moc3_packet_publication_host.exe')
+BIN=PUBLICATION_HOST.parent
 
 class PublicationProbe:
     def __init__(self,folder,hardware=False):
         self.folder=Path(folder);self.folder.mkdir(parents=True,exist_ok=True)
-        self.process=subprocess.Popen([str(BIN/'ars_moc3_packet_publication_host.exe'),str(self.folder),'--hardware' if hardware else '--warp'],
+        self.process=subprocess.Popen([str(PUBLICATION_HOST),str(self.folder),'--hardware' if hardware else '--warp'],
                                       stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL)
         self.responses=queue.Queue(maxsize=128)
         def reader():

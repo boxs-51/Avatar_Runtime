@@ -7,10 +7,11 @@ import sys
 import unittest
 ROOT=Path(__file__).resolve().parents[2];sys.path.insert(0,str(ROOT/'scripts'))
 from moc3_physics import Physics
+from moc3_native_test_target import configured_target
 
 class NativeReference(unittest.TestCase):
     def test_fixed_clock_controls_and_release(self):
-        executable=ROOT/'build/moc3-public-isolation/bin/Release/ars_moc3_retained_physics_tests.exe'
+        executable=configured_target('ARS_MOC3_PHYSICS_TEST_EXE',ROOT/'build/moc3-public-isolation/bin/Release/ars_moc3_retained_physics_tests.exe')
         if not executable.exists():self.skipTest('native optional build unavailable')
         def f32(value):return struct.unpack('<f',struct.pack('<f',value))[0]
         for name in ('generated_physics3.json','generated_physics3_multichain.json'):
