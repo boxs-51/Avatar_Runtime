@@ -16,6 +16,7 @@ struct D3D11DualModeHost::Pending {
     ComPtr<ID3D11Texture2D> texture;
     ComPtr<ID3D11RenderTargetView> view;
     QueryRetirement query;
+    std::shared_ptr<PublicationFence> fence;
 };
 namespace {
 struct Pins2D {
@@ -106,6 +107,10 @@ Result D3D11DualModeHost::poll_commit() {
     const auto result=pending_->query.poll(backend_.generation());
     if (result==Result::busy) return result;
     if (result!=Result::ok) { lost_=true;return result; }
+    if(pending_->fence){
+        const auto decision=closing_.load(std::memory_order_acquire)?Result::failed:pending_->fence->commit();
+        if(decision!=Result::ok){pending_.reset();return decision;}
+    }
     active_texture_=std::move(pending_->texture);
     active_view_=std::move(pending_->view);
     mode_=pending_->mode;pose_generation_=pending_->pose;
@@ -115,13 +120,14 @@ Result D3D11DualModeHost::poll_commit() {
     return Result::ok;
 }
 Result D3D11DualModeHost::request_moc(const MocPass& pass,std::uint64_t pose,
-    std::uint32_t width,std::uint32_t height,bool fail_target_create) {
+    std::uint32_t width,std::uint32_t height,bool fail_target_create,std::shared_ptr<PublicationFence> fence) {
     if(!backend_.on_owner_thread())return Result::wrong_thread;
     if(lost_)return Result::device_lost;
     if(closed_||closing_.load(std::memory_order_acquire)||pending_)return Result::busy;
     if(!pass||!pose||!width||!height||width>2048||height>2048)return Result::invalid_argument;
     try {
         auto candidate=std::make_unique<Pending>(ops_);
+        candidate->fence=std::move(fence);
         candidate->mode=Mode::moc3;candidate->pose=pose;
         auto result=prepare_target(*candidate,width,height,fail_target_create);
         if(result!=Result::ok)return result;

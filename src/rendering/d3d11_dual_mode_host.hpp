@@ -13,6 +13,12 @@ namespace ars::rendering {
 class D3D11DualModeHost {
 public:
     enum class Mode { none, two_d, three_d, moc3 };
+    struct PublicationFence {
+        virtual ~PublicationFence()=default;
+        // Trusted owner only: final decision after exact query completion.
+        // Success must be followed only by nonthrowing publication operations.
+        virtual graphics::Result commit() noexcept=0;
+    };
 private:
     struct Pending;
     graphics::d3d11::HostDevice backend_;
@@ -44,7 +50,8 @@ public:
     using MocPass=std::function<graphics::Result(graphics::d3d11::HostDevice&,
         ID3D11RenderTargetView*,graphics::TargetInfo,graphics::d3d11::QueryRetirement&)>;
     graphics::Result request_moc(const MocPass&,std::uint64_t pose_generation,
-        std::uint32_t width,std::uint32_t height,bool fail_target_create=false);
+        std::uint32_t width,std::uint32_t height,bool fail_target_create=false,
+        std::shared_ptr<PublicationFence> fence={});
     graphics::Result poll_commit();
     graphics::Result begin_close() noexcept;
     graphics::Result poll_close();

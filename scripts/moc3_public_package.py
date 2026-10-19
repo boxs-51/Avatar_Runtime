@@ -48,6 +48,11 @@ def admit_zip(package:bytes,manifest_entry:str)->Admission:
 
 
 def evaluate_zip(package:bytes,manifest_entry:str,frames,*,physics=False)->Admission:
+    return _run_envelope(*_prepare_evaluation(package,manifest_entry,frames,physics=physics))
+
+
+def _prepare_evaluation(package:bytes,manifest_entry:str,frames,*,physics=False):
+    # Trusted transport custody can be prepared before its native authorization grant.
     if type(physics) is not bool:raise ValueError('INVALID_PHYSICS_MODE')
     nonce=secrets.randbits(64) or 1;payload=_package_envelope(package,manifest_entry,nonce)
     if type(frames) not in (tuple,list) or not 1<=len(frames)<=8:raise ValueError('INVALID_COMPLETE_FRAMES')
@@ -68,7 +73,7 @@ def evaluate_zip(package:bytes,manifest_entry:str,frames,*,physics=False)->Admis
             if type(slot) is not int or not 0<=slot<4096 or slot in seen or type(value) not in (int,float) or not -1<=value<=1 or not math.isfinite(value):
                 raise ValueError('INVALID_BINDING')
             seen.add(slot);commands.extend(struct.pack('<If',slot,value))
-    return _run_envelope(payload+commands,nonce,'--simulate' if physics else '--evaluate')
+    return payload+commands,nonce,'--simulate' if physics else '--evaluate'
 
 
 def _run_envelope(payload:bytes,nonce:int,mode='--package')->Admission:

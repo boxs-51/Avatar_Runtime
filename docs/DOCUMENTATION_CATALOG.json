@@ -8,9 +8,9 @@
   "scope": "README.md + every file recursively under docs/; build/, local-assets/, source/tests excluded from document inventory",
   "classification_is_gate_approval": false,
   "counts": {
-    "reference": 81,
-    "completed": 31,
-    "in_progress": 17,
+    "reference": 82,
+    "completed": 33,
+    "in_progress": 18,
     "obsolete": 4
   },
   "baseline_counts": {
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 133,
+  "total_documents": 137,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -42,7 +42,7 @@
       "reason": "Điểm vào hiện hành, đã cập nhật trạng thái private components và link tới catalog/ledger.",
       "lifecycle": "reference",
       "related_paths": [],
-      "reviewed_sha256": "f041164a0774714067fb0adbcabfd412fb95e58a475f7de256ae0a76cce32a66",
+      "reviewed_sha256": "9281d6175123bc268b2d09a6ebcdbd9ec81d54568009f9bcbdc820043bd55d12",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "README.md"
@@ -414,7 +414,7 @@
       "reason": "Kế hoạch hiện hành: PUB-02 retained evaluator, PUB-04 publication, PUB-05 SDK, PUB-06 qualification.",
       "lifecycle": "active",
       "related_paths": [],
-      "reviewed_sha256": "748b9a7ecdfc9892e0f4b905696626c6adfe9f003c0ebef371c78c65287f4d5f",
+      "reviewed_sha256": "5924d75e417beae33113136f63d47e4986c101ce2a36a7f8b055fb1a57ce942a",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md",
@@ -426,7 +426,7 @@
       "reason": "Ledger hiện hành cho product gates, public F4/SDK/release và physical HOLD.",
       "lifecycle": "active",
       "related_paths": [],
-      "reviewed_sha256": "8018558adfd4a7b930d33f085112d3bdf489647b261c7d2b5a267b4dbfb80092",
+      "reviewed_sha256": "816c71ca2c6eae9e9d51840d9e0f4c8de458fba0a895fd0ba3615060c2569b04",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_MOC3_F4_RELEASE_LEDGER.md",
@@ -1652,6 +1652,46 @@
       "encoding": "utf-8",
       "document_kind": "structured_record",
       "reviewed_sha256": "d2954dbaf68c45715a9f4859e060be5b3f0bf2ca6fb92e7b066be01b27e2891f"
+    },
+    {
+      "path": "docs/in-progress/M2_MOC3_PUB04_A_PUBLICATION_DESIGN.md",
+      "category": "in_progress",
+      "lifecycle": "maintained_contract",
+      "reason": "Maintained bounded host publication contract; live worker ACK and full product transaction remain HOLD.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "d273c344552db17a5624fc00fac58f5ee7be8c97d7023cf3b4d391d8c7696413"
+    },
+    {
+      "path": "docs/completed/audits/M2_MOC3_PUB04_A_ACCEPTANCE.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Actual local core/query/fence/target publication and negative-retention proof in bounded scope.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "52425790e15e99fde886cf86182142ffdf990a16380726e5491f2a919310ea33"
+    },
+    {
+      "path": "docs/completed/audits/M2_MOC3_PUB04_A_REVIEW.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Independent publication review and malformed-transport P2 closure.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "dd6daf4bc3f54e3befb37fc5f77b01dc66bcffde5647026281ae1926eca1634e"
+    },
+    {
+      "path": "docs/reference/audits/M2_MOC3_PUB04_A_SOURCE.json",
+      "category": "reference",
+      "lifecycle": "reference",
+      "reason": "Exact tested code/binary/core/security/motion/dependency custody; public-safe metadata only.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "structured_record",
+      "reviewed_sha256": "1945d4b749e3ef2cbc69fe8fdba920eea2dae7ac646185745f85c0fa72ca3159"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1663,8 +1703,8 @@
     "classification_is_gate_approval": false
   },
   "latest_checkpoint": {
-    "basis_head": "89f732db11db6774c9dfe5f0cc298d6356437b38",
-    "scope": "PUB-02-B bounded isolated physics local acceptance",
+    "basis_head": "9a9ccd62ec7546472b7051b20d648b2dd16cebfd",
+    "scope": "PUB-04-A bounded core-authorized packet publication",
     "new_documents": 4,
     "classification_is_gate_approval": false
   }

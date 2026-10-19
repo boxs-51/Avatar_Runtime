@@ -16,6 +16,14 @@ state inside the same short isolated batch. Static and parameter modes retain
 their previous meanings. Physics in this opt-in batch is now simulated; it does
 not close persistent interactive lifetime, host authority or PUB-04 publication.
 
+PUB-04-A follow-on: [core-authorized packet publication](M2_MOC3_PUB04_A_PUBLICATION_DESIGN.md)
+and [local acceptance](../completed/audits/M2_MOC3_PUB04_A_ACCEPTANCE.md) demonstrate
+exact GPU completion followed by the real final core fence, acceptance of a batch
+cursor and target swap. Actual worker crash, stale/invalid response, cancellation,
+expiry and query-ready revoke preserve the prior frame. This closes only the
+bounded host-acceptance slice; worker particle-state acknowledgement and the
+long-lived product transaction remain HOLD.
+
 The owner chose arbitrary public-user MOC3 input. The completed parser-preflight prototype is a boundary experiment, not the public importer. The next implementation must use the following order; none of these steps may turn a preflight success into permission to reparse hostile MOC bytes inside the trusted host.
 
 | ID | Required implementation and direct exit witness |
