@@ -9,7 +9,7 @@
   "classification_is_gate_approval": false,
   "counts": {
     "reference": 83,
-    "completed": 37,
+    "completed": 38,
     "in_progress": 21,
     "obsolete": 4
   },
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 145,
+  "total_documents": 146,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "fa7f858b672a6a2fedc2fe428bd16d1b23dbf7a2e4fb19c9c11af9fd8b6634b7"
+      "reviewed_sha256": "99641baeba76d6b4a6e7a63383b981e7c69075f4210fa206738e5deef5b99cd0"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -1771,7 +1771,17 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "bbbcc6c80612cf23e821006492e104d31724b77dd3a1f6cc22d49dcb826ac81a"
+      "reviewed_sha256": "cd9deef69838575891309221a15fea63c48818e27131a1df49e121117019c8fa"
+    },
+    {
+      "path": "docs/completed/audits/ALPHA_53_CUSTODY_ACCEPTANCE.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Issue53 historical/canonical-path custody and narrowly scoped alpha PR dispatcher; RED/GREEN and independent review.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "bee93bd0cd42873ffb5d3f8359c4fbe9e89914bb39eff2182e55008be1e4c9bd"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1783,9 +1793,11 @@
     "classification_is_gate_approval": false
   },
   "latest_checkpoint": {
-    "basis_head": "a17d4f9",
-    "scope": "Alpha issue52 configured-native-target custody correction",
+    "basis_head": "4b05828d402003d560602718eec7d8f9f7d63d48",
+    "date": "2026-10-20",
+    "scope": "Alpha issue53 historical/canonical-path and scoped PR custody",
     "new_documents": 1,
     "classification_is_gate_approval": false
-  }
+  },
+  "date": "2026-10-20"
 }

@@ -35,8 +35,8 @@ the end so it does not block runnable local bug fixes.
 
 | Order | Issue | Scope / acceptance | State at audit |
 | --- | --- | --- | --- |
-| A01 | [#52](https://github.com/boxs-51/Avatar_Runtime/issues/52) | Bind required Python/CTest checks to the configured binary/configuration; missing targets fail; two-directory sentinel negatives | VERIFIED; [direct/independent proof](../completed/audits/ALPHA_52_NATIVE_TEST_TARGET_ACCEPTANCE.md), focused integration follows |
-| A02 | [#53](https://github.com/boxs-51/Avatar_Runtime/issues/53) | Pin original M2-E source plus ancestry; preserve historical allowlists; separate alpha checks; reconcile canonical paths for G00 manifest validation | RED:160 contracts,1 failure+3 errors |
+| A01 | [#52](https://github.com/boxs-51/Avatar_Runtime/issues/52) | Bind required Python/CTest checks to the configured binary/configuration; missing targets fail; two-directory sentinel negatives | INTEGRATED via [PR63](https://github.com/boxs-51/Avatar_Runtime/pull/63), alpha4b05828; [proof](../completed/audits/ALPHA_52_NATIVE_TEST_TARGET_ACCEPTANCE.md) |
+| A02 | [#53](https://github.com/boxs-51/Avatar_Runtime/issues/53) | Pin original M2-E source plus ancestry; preserve historical allowlists; separate alpha checks; reconcile canonical paths and narrowly route alpha PRs | VERIFIED:178 contracts +27 independent checks; [proof](../completed/audits/ALPHA_53_CUSTODY_ACCEPTANCE.md), issue records committed/integrated SHA |
 | A03 | [#54](https://github.com/boxs-51/Avatar_Runtime/issues/54) | P1 normalized packed WEIGHTS and normalized UV; integer/float geometry and pixel equivalents | OPEN inherited PR37 |
 | A04 | [#55](https://github.com/boxs-51/Avatar_Runtime/issues/55) | Apply supported COLOR_0 or typed rejection before GPU | OPEN inherited PR37 |
 | A05 | [#56](https://github.com/boxs-51/Avatar_Runtime/issues/56) | Typed allocation/removal HRESULTs and old-target quarantine | OPEN inherited PR37 |
