@@ -11,8 +11,9 @@ on:
       - 'tests/rendering/d3d11_scene3d_pixels.cpp'
       - 'tests/assets/fixtures/generate_fixtures.py'
       - 'tests/assets/fixtures/manifest.json'
-      - 'docs/M2_C_GLB_RENDER_DESIGN.md'
-      - 'docs/audits/M2_C*'
+      - 'docs/completed/M2_C_GLB_RENDER_DESIGN.md'
+      - 'docs/completed/audits/M2_C*'
+      - 'docs/reference/audits/M2_C*'
       - '.github/workflows/m2-3d-pixels.yml'
 permissions:
   contents: read

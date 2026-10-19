@@ -16,7 +16,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-PINS = ROOT / "docs" / "M0_CONTRACT_PARENT_PINS.json"
+PINS = ROOT / 'docs/reference/M0_CONTRACT_PARENT_PINS.json'
 
 # Reviewed keysets are code-owned, not loaded from the mutable pin JSON.
 # A missing field must NEVER silently shrink the claimed evidence surface.
@@ -959,12 +959,12 @@ def check():
         subprocess.run(["git", "merge-base", "--is-ancestor", pr2, "HEAD"],
                        cwd=ROOT, check=True)
     validate_blob_manifest(obj)
-    rc1 = (ROOT / "docs/V0_1_CANONICAL_CONTRACT_RC1.md").read_text("utf-8")
-    readiness = (ROOT / "docs/M0_V0_1_FREEZE_READINESS.md").read_text("utf-8")
-    abi = (ROOT / "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md").read_text("utf-8")
-    fmt = (ROOT / "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md").read_text("utf-8")
-    m1 = (ROOT / "docs/M1_SOURCE_BOOTSTRAP_PLAN.md").read_text("utf-8")
-    gpu = (ROOT / "docs/ADR_0001_D3D11_G00_DESIGN_RC1.md").read_text("utf-8")
+    rc1 = (ROOT / 'docs/reference/V0_1_CANONICAL_CONTRACT_RC1.md').read_text("utf-8")
+    readiness = (ROOT / 'docs/reference/M0_V0_1_FREEZE_READINESS.md').read_text("utf-8")
+    abi = (ROOT / 'docs/in-progress/V0_1_PUBLIC_ABI_FREEZE_MAP.md').read_text("utf-8")
+    fmt = (ROOT / 'docs/in-progress/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md').read_text("utf-8")
+    m1 = (ROOT / 'docs/obsolete/M1_SOURCE_BOOTSTRAP_PLAN.md').read_text("utf-8")
+    gpu = (ROOT / 'docs/reference/ADR_0001_D3D11_G00_DESIGN_RC1.md').read_text("utf-8")
     for doc in (rc1, readiness, abi, fmt, m1):
         require("G00" in doc and ("HOLD" in doc or "NOT FROZEN" in doc or "pending" in doc.lower()),
                 "Freeze doc incorrectly omits G00/HOLD boundary")

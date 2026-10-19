@@ -5,7 +5,7 @@ on:
       - 'CMakeLists.txt'
       - 'src/graphics/**'
       - 'tests/gpu/**'
-      - 'docs/audits/M1_D*'
+      - 'docs/reference/audits/M1_D*'
       - '.github/workflows/m1-d-gpu.yml'
 permissions:
   contents: read

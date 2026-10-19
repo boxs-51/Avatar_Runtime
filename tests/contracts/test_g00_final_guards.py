@@ -11,7 +11,7 @@ import check_m0_rc1_pins as pins
 class G00PinFailClosed(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.doc = json.loads((ROOT / "docs/M0_CONTRACT_PARENT_PINS.json").read_text("utf-8"))
+        cls.doc = json.loads((ROOT / 'docs/reference/M0_CONTRACT_PARENT_PINS.json').read_text("utf-8"))
 
     def test_original_complete_and_canonical(self):
         self.assertTrue(pins.validate_blob_manifest(self.doc))

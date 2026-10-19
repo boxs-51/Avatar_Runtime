@@ -1,0 +1,52 @@
+# F4 remaining public-input implementation contract
+
+Subsequent static checkpoint: [PNG/Physics3 admission and independent drawable/atlas guard](../completed/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md) PASS for the explicitly bounded default-pose slice. [Detailed subset contract](../completed/M2_MOC3_F4_PACKAGE_ADMISSION_DESIGN.md). Physics is validated, not simulated; persistent public evaluation, product publication, SDK and qualification below remain outstanding.
+
+PUB-02-A follow-on: [bounded retained sequence contract](M2_MOC3_PUB02_A_RETAINED_SESSION_DESIGN.md)
+implements complete parameter frames within one isolated job and independently
+validated batch output. See its [local acceptance](../completed/audits/M2_MOC3_PUB02_A_ACCEPTANCE.md)
+for actual geometry/pixel/API evidence and limits. This is progress on PUB-02/03;
+the full persistent evaluator, long-lived isolated physics and full PUB-04 product transaction
+remain HOLD. It is not a long-lived interactive service.
+
+PUB-02-B follow-on: [isolated retained physics contract](M2_MOC3_PUB02_B_ISOLATED_PHYSICS_DESIGN.md)
+and [local acceptance](../completed/audits/M2_MOC3_PUB02_B_ACCEPTANCE.md) add native
+independent Physics3 execution, disable/release/reset and transactional solver
+state inside the same short isolated batch. Static and parameter modes retain
+their previous meanings. Physics in this opt-in batch is now simulated; it does
+not close persistent interactive lifetime, host authority or PUB-04 publication.
+
+PUB-04-A follow-on: [core-authorized packet publication](M2_MOC3_PUB04_A_PUBLICATION_DESIGN.md)
+and [local acceptance](../completed/audits/M2_MOC3_PUB04_A_ACCEPTANCE.md) demonstrate
+exact GPU completion followed by the real final core fence, acceptance of a batch
+cursor and target swap. Actual worker crash, stale/invalid response, cancellation,
+expiry and query-ready revoke preserve the prior frame. This closes only the
+bounded host-acceptance slice; worker particle-state acknowledgement and the
+long-lived product transaction remain HOLD.
+
+PUB-04-B follow-on: [bounded checkpoint restore/ACK contract](M2_MOC3_PUB04_B_CHECKPOINT_DESIGN.md)
+and [local acceptance](../completed/audits/M2_MOC3_PUB04_B_ACCEPTANCE.md) add actual
+particle/velocity/clock/remainder restoration across fresh isolated jobs. Each
+candidate ACKs the exact accepted predecessor and binds the exact ZIP/entry
+identity. The final core fence accepts checkpoint, cursor and frame together;
+failed jobs, invalid ACK, cancellation, expiry and revoke retain the previous
+checkpoint bytes and image. This eight-step bridge re-parses the package per job,
+avoids fallible IPC after publication, and does not close the persistent PUB-02
+evaluator or full PUB-04 product transaction. Remaining work includes persistent
+input ownership/expiry/release and package replacement under a reviewed session
+resource policy, then public ABI and qualification below.
+
+The owner chose arbitrary public-user MOC3 input. The completed parser-preflight prototype is a boundary experiment, not the public importer. The next implementation must use the following order; none of these steps may turn a preflight success into permission to reparse hostile MOC bytes inside the trusted host.
+
+| ID | Required implementation and direct exit witness |
+| --- | --- |
+| PUB-01 package isolation | Broker accepts a bounded opaque package/upload and performs only bounded transport/file custody. Manifest/reference resolution, PNG decompression, linked physics parsing and MOC evaluation execute in the isolated worker. Define one supported package form; reject absolute/UNC/traversal/symlink/duplicate entries, compression bombs and unsupported required resources. Test actual failure before host GPU calls. Do not reuse trusted-local `admit_package` as a public trust verdict. |
+| PUB-02 retained evaluator | Persistent isolated evaluator owns admitted bytes/state and receives complete bounded parameter frames. The host owns authority, sequence and clock decisions. Retain input expiry/release/reset and late-authority-rejection behavior; worker failure must not rotate/remint host authority or advance the advertised core/image state. |
+| PUB-03 typed output boundary | Define a versioned size-delimited drawable/atlas protocol with checked byte products, count limits, finite/range-checked vertices/UV/colors/opacities, checked indices, atlas references, mask graph/order/blend subset and immutable generations. Broker independently validates before host allocation/upload. Treat worker output as hostile even after successful parsing. No executable shaders, filenames, pointers or serialized host handles. Fuzz malformed worker output separately from model input. |
+| PUB-04 host publication | Existing trusted D3D11 host consumes only fully validated immutable snapshots/atlases. Demonstrate the exact host query/final core fence/physics commit/advertise transaction and previous-frame retention on parser crash, stale output, reload failure, cancellation and late revoke. No direct user MOC/PNG parse is permitted in the host process. |
+| PUB-05 SDK and lifecycle | Freeze a separate reviewed model/character/input/render/capability ABI delta, lifetime/threading and typed status contract. Implement installed static/shared consumers, feature-OFF negative behavior and supported platform qualification. Python diagnostic endpoints and the private installed bundle are not substitutes for this SDK. |
+| PUB-06 qualification | Coverage-guided native/decoder/protocol fuzz and sanitizer evidence; a documented sanitizer memory profile without relaxing the production cap; representative quality-tier workload/fallback and GPU allocation accounting; broader network enforcement evidence; rights-cleared redistributable fixtures and references for any fidelity claim. Physical D06/D08 remain separate until a reset-capable disposable runner exists. |
+
+Safety invariants: package isolation precedes hostile decoding, typed output validation precedes GPU upload, final host authorization precedes advertisement, and model failure never falls back to trusted-local parsing. The current `CORE-LIVE`, installed consumer and `_private_manifest` selection remain explicitly trusted-local test paths and must not be wired to arbitrary public model paths.
+
+This is the implementation order under the newly selected product scope. It is not an activation request, a public ABI addition, a successful importer verdict or a retroactive change to the completed local evidence. Universal MOC3 feature compatibility and author-equivalence remain unclaimed: a safe importer may return a typed unsupported/resource rejection.

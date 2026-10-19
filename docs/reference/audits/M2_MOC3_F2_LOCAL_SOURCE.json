@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "phase": "F2",
+  "parent_head": "472aa1624a70710b8f2498dcd6d2e20fa7fe64b4",
+  "environment": {
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.10",
+    "build": "Release"
+  },
+  "binary_sha256": {
+    "ars_moc3_pixel_bridge.exe": "b03868c4db80feac4580ad66b4f2449773dceca737b66b8cdd98311a39b49041",
+    "ars_moc3_pixel_tests.exe": "67e772c505eb7ba73fdca88e11501e797406b23f7afc245abd77f21708ec714d"
+  },
+  "source_sha256": {
+    "src/moc3/d3d11_renderer.hpp": "53e1492f26183e4f182b53cf519cd5c9215b5f15310452ee3c8a2f9ce4ee54cd",
+    "src/moc3/d3d11_renderer.cpp": "4dd69ec14da869c1efdeadef5d3300878e6647555b2e2ac72503cc35852dffb6",
+    "src/moc3/pixel_bridge.cpp": "063658947fbb3b4392f1e139a1ac78ae5050bbb4103115917c944f172ca9a3cd",
+    "tests/moc3/d3d11_pixels.cpp": "c05336a55e796e4184f43a9c280cce022c0e549d97d76f1b74e20fad33d2c1dc",
+    "src/rendering/d3d11_dual_mode_host.hpp": "3ed68b50021ba35c463fa23768d81d0bc0e8fb794402d367cbeeac6afb457978",
+    "src/rendering/d3d11_dual_mode_host.cpp": "c9f5ac8687548306d1390ab30592bb6cd8f366a69ee96bda3606e83b9424569e",
+    "src/graphics/d3d11/host_device.cpp": "4f3db6cc932dda2ffb1b74011ebf3e2819482c89365b1430354b27bd585e489d",
+    "src/graphics/d3d11/state_scope.cpp": "034530f5663a68768f3d777c342527db4329d6b1cfadd0d7cdbbcb290bb2921d",
+    "src/graphics/d3d11/query_retirement.cpp": "26d749dafc8a72497f6ba606d7dbeb88d1090b426ee5273273ff65ed84e6b8ab",
+    "src/moc3/independent_snapshot.cpp": "35c1c7fb702589f1c350ac5a0a15520ae2eec5ede240d971674bcb55edf44b9f",
+    "scripts/moc3_local_pixels.py": "f0af998610efe892e41c364bd3305000854ec3ab214d6ae6f5a9f8162a7b9c03",
+    "scripts/moc3_package_admission.py": "71b1fb3b000931c7853ba122061748f13f2ac3a190d7e378dfc17d503fbe0173",
+    "scripts/moc3_test_harness.py": "e6965621d5d38facf0fe84fef9c2149a30e6822f46a9fea0f8b48969fb7910d8",
+    "scripts/moc3_process_tree.py": "cfbe4ecbb4676350c142df0b9e72df86604fc002e593eabf9f777be41f6b64d5",
+    "scripts/moc3_memory.py": "8be6c03c97c63ae91e297562ef6802e4bbf34e27d34966d27fcdee30a008bf72",
+    "src/moc3/independent_snapshot.hpp": "def314b42eeb63802e4b5cb5ec4ac62467803ea236f3366fe33dcab633cec998",
+    "tests/moc3/test_harness_api.py": "d9e9638e271517f8ffbd73b45d87043873acab71bf0480b47c3f59afd665cf5a",
+    "tests/moc3/test_process_tree.py": "5695ee69dea6ba57cd6b0fc7be094f98dfa355c7d06736837df4c473897d58a3",
+    "CMakeLists.txt": "7b5a72a6af234db26ff3ffa7bf9748fb2789031eed62272a7cfe77b46a0f405c",
+    "scripts/moc3_harness_client.py": "2e75010cf1b89fb6c27de3454921dc5f17e626dfd4588f3cdf526d28ec833a5f",
+    "launch_moc3_test_harness.bat": "d232f60da93225b9c99ae7c112df4bfdc1bc372b581138e4f4ace23154243182",
+    "scripts/moc3_verify_visible_f2.py": "6f66c865c0258f61631bf7821d0fc704f53a430f87a7e69d34b1f96646325922"
+  },
+  "verdict": "PASS_BOUNDED_TRUSTED_LOCAL_F2",
+  "recheck_visible_run": "01de6c1cceda01ae0139879f"
+}

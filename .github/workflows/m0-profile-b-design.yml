@@ -5,18 +5,18 @@ on:
       - "schemas/**"
       - "examples/**"
       - "tests/contracts/test_m0_profile_b_contract.py"
-      - "docs/SPECIFICATION_V0.1.md"
-      - "docs/V0_1_CANONICAL_CONTRACT_RC1.md"
-      - "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md"
+      - "docs/reference/SPECIFICATION_V0.1.md"
+      - "docs/reference/V0_1_CANONICAL_CONTRACT_RC1.md"
+      - "docs/in-progress/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md"
       - ".github/workflows/m0-profile-b-design.yml"
   pull_request:
     paths:
       - "schemas/**"
       - "examples/**"
       - "tests/contracts/test_m0_profile_b_contract.py"
-      - "docs/SPECIFICATION_V0.1.md"
-      - "docs/V0_1_CANONICAL_CONTRACT_RC1.md"
-      - "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md"
+      - "docs/reference/SPECIFICATION_V0.1.md"
+      - "docs/reference/V0_1_CANONICAL_CONTRACT_RC1.md"
+      - "docs/in-progress/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md"
       - ".github/workflows/m0-profile-b-design.yml"
 jobs:
   profile-b-design:

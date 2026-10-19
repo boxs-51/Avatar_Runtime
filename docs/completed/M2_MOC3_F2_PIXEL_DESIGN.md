@@ -1,0 +1,26 @@
+# M2 MOC3 F2 host pixel contract
+
+**Scope:** authorized trusted-local F2, default OFF. Local WARP and available named hardware are the primary evidence. F1 remains the immutable package/evaluator admission boundary. Public activation, authored visual equivalence, advanced/offscreen MOC blends, Physics3 and physical D06/D08 are separate.
+
+The new private renderer consumes an immutable `Snapshot`, ordered immutable RGBA8 atlas set and explicit model-to-clip view on the host render thread. It uses the existing `HostDevice`, `StateScope`, `QueryRetirement` and dual-mode host target transaction. A candidate target replaces the active target only when its exact query completes. Package/snapshot/GPU resources are pinned together until retirement. At most one candidate submission is in flight. The native session owns one immutable atlas residency cache, keyed by package identity, device and generation. Warm frames reuse these textures; a mismatched cache rejects before upload. Frame references retain the resources if the cache is destroyed before retirement. Other pipeline and stream resources are currently rebuilt per frame; continuous performance/soak acceptance is deferred.
+
+## Frozen pixel rules
+
+* Model coordinates are X right/Y up. An explicit affine scale/offset maps them to clip coordinates; tests use fixed coordinates. The private sample fits the default snapshot once and reuses that view for changed/reset poses.
+* PNG rows are top-to-bottom. MOC UV V is bottom-to-top, so sampling uses `(u, 1-v)`, clamp address and bilinear filtering, mip level zero. Generated tests choose exact texel centers and also test filtered alpha edges. No sRGB conversion occurs: atlas and target are `R8G8B8A8_UNORM` with raw encoded sample math. Clear is transparent black.
+* Color is `c = t.rgb * multiply.rgb`, followed by `c = c + screen.rgb - c * screen.rgb`. Source alpha is `a = t.a * drawable.opacity * coverage`; output is `(c*a, a)`. Multiply/screen alpha components do not affect this operation.
+* Normal blending: `rgb = src.rgb + dst.rgb*(1-src.a)`, `alpha = src.a + dst.a*(1-src.a)`.
+* Legacy additive: `rgb = src.rgb + dst.rgb`, destination alpha unchanged. Legacy multiply: `rgb = src.rgb*dst.rgb + dst.rgb*(1-src.a)`, destination alpha unchanged. These legacy modes can yield RGB greater than alpha; advanced blend modes and offscreen groups reject in F1. See the [published blend-mode distinctions](https://docs.live2d.com/en/cubism-editor-manual/blend-mode/). This renderer implements the stated equations independently.
+* Draw order is ascending render order with original drawable index as stable tie-break. Invisible/zero-opacity color drawables are skipped. Double-sided meshes disable culling; otherwise source CCW is front-facing.
+* Each clipped drawable builds one target-resolution alpha-coverage mask from its listed source meshes. Union coverage is `1 - product(1 - source_texture_alpha)`. Mask construction ignores source visibility, drawable opacity, color/blend and its own clipping; these define the source mask silhouette, not a recursive compositing graph. Normal clip uses coverage; inverted uses `1-coverage`. Mask sampling is point/clamp at the current target pixel. Mask source indices and counts are validated before any submission.
+* The mask is rebuilt into one reusable scratch target for each clipped draw, bounding intermediate residency. Its texture cannot be read and bound as RTV simultaneously. Atlas/snapshot and all scratch resources remain query-pinned.
+
+Generated numeric oracles are frozen before running: tolerance 3 byte levels for color arithmetic, exact coverage classification away from triangle edges, transparent clear, and demonstrably different outputs for atlas/UV/order/inversion/blend/culling cases. No threshold is learned from private output. Private default/changed/reset image checks prove the actual evaluator-to-host path and repeatability, not exact authored appearance without a reference.
+
+## Resources and negative gates
+
+Separate F2 ceilings: 16 atlases / 512 MiB resident atlas bytes; target side 2048 and target+mask+readback at most 64 MiB; packed vertex/index staging at most 192 MiB; existing F1 snapshot stream ceilings. Target size, counts, finite values, referenced textures/masks, compatible blend and actual byte lengths reject before clear/draw. All resource creation completes before submission, with injectable checkpoints. Failed preparation leaves the prior published target/epoch unchanged. Creation counts/bytes and local process/GPU-adapter provenance stay in ignored evidence for private input.
+
+Acceptance requires generated WARP numeric pixels, the same available hardware tests, wrong-thread/wrong-device/stale-generation/invalid-input/resize/OOM checks, hostile host pipeline state restoration, exact query pin/retirement and a private-model host readback. The API/window must show the same completed frame generation and target epoch. No frame is advertised from readiness alone. Physical device removal remains HOLD and is not induced on this machine.
+
+**Local acceptance:** PASS for this bounded trusted-local contract; see [source-pinned evidence](audits/M2_MOC3_F2_LOCAL_ACCEPTANCE.md). This does not close the remaining framework/product gates.
