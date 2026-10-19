@@ -8,6 +8,11 @@ Embeddable real-time 2D/3D character-rendering SDK under development.
 
 Start with the [documentation index and classification](docs/DOCUMENTATION_INDEX.md). It separates completed scopes, reference material, superseded plans and ongoing implementation, and identifies stale status text in historical documents.
 
+Active integration branch: **alpha**. Follow the [linear issue backlog](docs/in-progress/ALPHA_LINEAR_BACKLOG.md)
+and [integration/architecture audit](docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md).
+Alpha combines the development branches, including the separate teardown receipt.
+Known rendering and test-custody defects are tracked; integration is not release qualification.
+
 Current product work is tracked in the [F4 release ledger](docs/in-progress/M2_MOC3_F4_RELEASE_LEDGER.md) and [public-input pipeline plan](docs/in-progress/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md). The [static package admission checkpoint](docs/completed/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md) covers isolated PNG/Physics3 validation and drawable/atlas checks before GPU; physics is validated, not simulated in that slice. The subsequent [PUB-02-B bounded physics acceptance](docs/completed/audits/M2_MOC3_PUB02_B_ACCEPTANCE.md) adds opt-in isolated physics batches with local visible/API evidence. Persistent public control, full product publication and the shipping SDK remain HOLD.
 
 [PUB-04-A](docs/completed/audits/M2_MOC3_PUB04_A_ACCEPTANCE.md) adds bounded

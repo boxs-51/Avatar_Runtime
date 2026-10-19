@@ -9,8 +9,8 @@
   "classification_is_gate_approval": false,
   "counts": {
     "reference": 83,
-    "completed": 35,
-    "in_progress": 19,
+    "completed": 36,
+    "in_progress": 21,
     "obsolete": 4
   },
   "baseline_counts": {
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 141,
+  "total_documents": 144,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -42,7 +42,7 @@
       "reason": "Điểm vào hiện hành, đã cập nhật trạng thái private components và link tới catalog/ledger.",
       "lifecycle": "reference",
       "related_paths": [],
-      "reviewed_sha256": "58236cf9e3e4dee201953eb9ab3271730463badf3c866c66842bfa59ffe2c0fe",
+      "reviewed_sha256": "d3f3fa63e9a7383956318226a884132e2464de61165fc76eebec0193034352d7",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "README.md"
@@ -89,7 +89,7 @@
       "reason": "Luồng portrait/static preview riêng; vẫn có giá trị tham khảo, không chứng minh MOC drawable/physics.",
       "lifecycle": "reference",
       "related_paths": [],
-      "reviewed_sha256": "8d2220054f414d84f7fe8a942e7217a45049d13733027b78b47dd2e4e0550290",
+      "reviewed_sha256": "7b1450641d73215e2912bd1d71fe9f8c55744de1ef078588972c21d8d71e76f3",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/CUBISM_STATIC_PREVIEW_IMPORT.md",
@@ -212,7 +212,7 @@
       "reason": "Close/query private đã triển khai; host receipt/public qualification và D06/D08 còn thiếu.",
       "lifecycle": "active",
       "related_paths": [],
-      "reviewed_sha256": "d84e703c87bb93525b10e517d867cbccddd00c6d4d7ec9efd967712664e659c7",
+      "reviewed_sha256": "f740a70e7565d44f8bfea914c8beb4231028c3ea29148ab1787c3b910224a40b",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M1_D_CLOSE_LOSS_NEXT_IMPLEMENTATION.md",
@@ -224,7 +224,7 @@
       "reason": "Ledger partial/private; D06/D08 thật tiếp tục HOLD, không có disposable runner.",
       "lifecycle": "active",
       "related_paths": [],
-      "reviewed_sha256": "455fbdb4274a336ca1b6b7403ac2f2b30c24262f7bf7d5dcfdddafe1f3aa1db6",
+      "reviewed_sha256": "255cef2c85ff9f72baf62ef08a3ab4318f9d3b681133ba17bae98bf3310b9c24",
       "encoding": "utf-8",
       "document_kind": "structured_record",
       "legacy_path": "docs/M1_D_GPU_CASE_EXECUTION.json",
@@ -305,7 +305,7 @@
         "docs/reference/M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md",
         "docs/in-progress/M2_MOC3_FRAMEWORK_TARGET_DESIGN.md"
       ],
-      "reviewed_sha256": "70b8b68dcdd5a3a7280a56a1777b931c3cf8cb0b54290ec5332f195befc7844d",
+      "reviewed_sha256": "8aee9d5bd9445857a6110e773a7c28babc729b03d83b421d9266da527c137159",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_LIVE2D_DYNAMIC_ADAPTER_PLAN.md",
@@ -333,7 +333,7 @@
       "related_paths": [
         "docs/completed/audits/M2_MOC3_F2_LOCAL_ACCEPTANCE.md"
       ],
-      "reviewed_sha256": "dd650ffb1eab5c8ae95efc091e7f7d4d6f723064b8161c06bce096e0737f9df3",
+      "reviewed_sha256": "7a831d4017c2444fe146a8fda6dbc2397e0a2586f1f67f5439ddea354993a0d3",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_MOC3_F2_PIXEL_DESIGN.md",
@@ -347,7 +347,7 @@
       "related_paths": [
         "docs/completed/audits/M2_MOC3_F3_LOCAL_ACCEPTANCE.md"
       ],
-      "reviewed_sha256": "9e3eecd05f7b8757826030eeeddf7927d9e7a01f65c2d5e3d7926a7b6b5cd91e",
+      "reviewed_sha256": "27353779990ffc992816ecf8d1319a9e3041a28c093e2c202c1e7f1544f25021",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_MOC3_F3_LINKED_PHYSICS_DESIGN.md",
@@ -376,7 +376,7 @@
         "docs/completed/audits/M2_MOC3_F4_LOCAL_ACCEPTANCE.md"
       ],
       "stale_status_note": "F3 remains uncommitted là bối cảnh authoring, không phải trạng thái Git hiện tại.",
-      "reviewed_sha256": "d788a40e5cf56a0a355e45494e6038798e31750f672fcfd4d3657f592e63765f",
+      "reviewed_sha256": "aff74fe5d86d96b1527128c03ef7e13648331b54c910adcc520b448a7d1c87c3",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_MOC3_F4_INTEGRATION_DESIGN.md",
@@ -402,7 +402,7 @@
       "reason": "Public-input/isolation contract rộng hơn prototype và static admission đã hoàn tất.",
       "lifecycle": "active",
       "related_paths": [],
-      "reviewed_sha256": "c73096ed11230b4eef2669fd2a8ade59e80abebe9d30a5935f81f527723e6b19",
+      "reviewed_sha256": "615840b1896818f612c5e9d75731dfd0263740e676f602f71b4dfc893dbb5f72",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_MOC3_F4_PUBLIC_IMPORT_DESIGN.md",
@@ -414,7 +414,7 @@
       "reason": "Kế hoạch hiện hành: PUB-02 retained evaluator, PUB-04 publication, PUB-05 SDK, PUB-06 qualification.",
       "lifecycle": "active",
       "related_paths": [],
-      "reviewed_sha256": "9f51192dfaf54783e2fbd19917a44c9f0051b438777d4749832c4bcc3b9a7f12",
+      "reviewed_sha256": "4eb412bb0580edde27b2982f63b14d9e6b0c8f34ca65e9d8900c91c5f6687e13",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md",
@@ -451,7 +451,7 @@
       "lifecycle": "reference",
       "related_paths": [],
       "stale_status_note": "Đoạn chỉ có header/preflight mô tả thời điểm trước F1–F4; giữ rationale, không dùng làm hiện trạng.",
-      "reviewed_sha256": "270b43ff859bdb34ba4555a66780a1fd5b8fa59716424fb6dd5cf832fb0b35a4",
+      "reviewed_sha256": "4eac0dc47af361bbd610ccbb2451997dd7fea2baca30eadcc84da530788f300c",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md",
@@ -466,7 +466,7 @@
         "docs/in-progress/M2_MOC3_FRAMEWORK_TARGET_DESIGN.md",
         "docs/in-progress/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md"
       ],
-      "reviewed_sha256": "1ea2d44a5f2831a9a178c05b7a45cbac662d5532045769ff343ee804a989fad3",
+      "reviewed_sha256": "4d490ef75530208488756efddfd223039eec0b6ad02bb2b013d91939ef66a56e",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_MOC3_NEXT_IMPLEMENTATION.md",
@@ -491,7 +491,7 @@
       "reason": "Private A–D đã có source/evidence; G03/G04/G05 sản phẩm và loss thật chưa đóng.",
       "lifecycle": "active",
       "related_paths": [],
-      "reviewed_sha256": "170b57c849d53a37c91e3755d7631c45b01f7bd2d0410d3a7923a6ecdd6cab32",
+      "reviewed_sha256": "6f52fd240bcfe671f3e243c25d38d54757f68566e18c04bf145c4bf32c532d6f",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_RENDERING_EXECUTION_PLAN.md",
@@ -781,7 +781,7 @@
       "reason": "Private GPU spike partial; source và raw logs lịch sử, không phải M1-D đầy đủ.",
       "lifecycle": "historical_evidence",
       "related_paths": [],
-      "reviewed_sha256": "73014f766b71a3e220278d9d76e7e27324317d34718b0d22376e8c10b7cdd684",
+      "reviewed_sha256": "baff43afeee63867afedf11deb3ee335f9546330385f6f8904531e9a46bc0187",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/audits/M1_D_BUILD_EVIDENCE.md",
@@ -901,7 +901,7 @@
       "reason": "Checkpoint gate reassessment/carry-forward; D06/D08 physical vẫn giữ HOLD.",
       "lifecycle": "historical_evidence",
       "related_paths": [],
-      "reviewed_sha256": "d2487822cd7b04829ecda156c12341cc2e5d767cf6c3151c746922f413e602e1",
+      "reviewed_sha256": "ab8bcee679b2fb6a1411edd7f758fc58c2eb2ee8eba393211adecacaf14c8b21",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/audits/M1_D_GATES_REASSESSMENT_20261017.md",
@@ -937,7 +937,7 @@
       "reason": "Private 2D CPU preparation; không phải render/public gate PASS.",
       "lifecycle": "historical_evidence",
       "related_paths": [],
-      "reviewed_sha256": "f796ec6f14b46f3799301d83f7e52f4c2733fd8c4c9097ae96aa6879b1f21dac",
+      "reviewed_sha256": "50d0a5dfd23e401178a69f7e657d24f6ca5f978759af33b657e787d00b365287",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/audits/M2_A_BUILD_EVIDENCE.md",
@@ -1165,7 +1165,7 @@
       "reason": "Preflight header-only/SDK-path cũ; không dùng thay bằng native MOC evaluation/admission mới.",
       "lifecycle": "historical_evidence",
       "related_paths": [],
-      "reviewed_sha256": "a7f3b520248e2ea7079a7e53213ec26c12d0d9a652e9dddff852b9813254d0de",
+      "reviewed_sha256": "6f4ad27b87fb65c8e12e8c2d232da6fea57d599011acc18cf4a3a16ff1f827b7",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/audits/M2_LIVE2D_L0_PREFLIGHT_20261018.md",
@@ -1177,7 +1177,7 @@
       "reason": "F1 trusted-local PASS trên source snapshot lịch sử.",
       "lifecycle": "historical_evidence",
       "related_paths": [],
-      "reviewed_sha256": "f045fffa8788b36a51ccdc84582f364e9dcda03ce17d7861c1dae766ab8fbcd8",
+      "reviewed_sha256": "7f26f4ac2e385e0913de5ffb7a30b9ebdbe0bf510a9e98eb57986bfba761ce3c",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/audits/M2_MOC3_F1_LOCAL_ACCEPTANCE.md",
@@ -1213,7 +1213,7 @@
       "reason": "F2 bounded trusted-local pixel PASS trên source snapshot lịch sử.",
       "lifecycle": "historical_evidence",
       "related_paths": [],
-      "reviewed_sha256": "ee98f9c0ddeb641ef8df67f6f40bc5622f51cbe2b6cb43b39aecd733d8ed307b",
+      "reviewed_sha256": "aa5d8abe45eef39a42baa6ce97c33a9534b7d861e97227ab1fcbe73e5e162a22",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/audits/M2_MOC3_F2_LOCAL_ACCEPTANCE.md",
@@ -1249,7 +1249,7 @@
       "reason": "F3 bounded linked physics private PASS trên source snapshot lịch sử.",
       "lifecycle": "historical_evidence",
       "related_paths": [],
-      "reviewed_sha256": "9b33724d191da75a7ba94fd7b8c377e96b652497fe151ae9fb2a5d19f3aeb4d2",
+      "reviewed_sha256": "5fe6b60b33dcdfb2b6c4afd6d29e46d522d4ee00c9cd6ea8c69901605eec7e90",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/audits/M2_MOC3_F3_LOCAL_ACCEPTANCE.md",
@@ -1333,7 +1333,7 @@
       "reason": "Static package admission PASS, WARP/hardware/API/UI; giữ giới hạn atlas và physics.",
       "lifecycle": "historical_evidence",
       "related_paths": [],
-      "reviewed_sha256": "fab31aea0641896e6e852fefa2a78b9a32c1cdb5b136a7c8d5ae356dcec391d2",
+      "reviewed_sha256": "fc9ed8b6602c5a094035d6d1f6bfcd2f5acb3e8ac13df2d0628d142ea5bf1b85",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md",
@@ -1359,7 +1359,7 @@
       "reason": "Independent review PASS cho static PUB-01/PUB-03, không phải phê duyệt activation.",
       "lifecycle": "historical_evidence",
       "related_paths": [],
-      "reviewed_sha256": "39bdf3c22f55d30c2fe9a5c1a66eab541d237b7abd236d8b55a3ca1a1b700dfe",
+      "reviewed_sha256": "11dd97d57a82a12feedd64de985beb57745815110f1cbba51b6982cd12551a24",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_REVIEW.md",
@@ -1383,7 +1383,7 @@
       "reason": "Synthetic T0 harness proof; không thay chứng cứ physics/render model thật.",
       "lifecycle": "historical_evidence",
       "related_paths": [],
-      "reviewed_sha256": "1ebd9482c9c50b943db0c41b31e4da703f2141054ae560d99f01c1cec5391509",
+      "reviewed_sha256": "3103a7bbfef00fba811e9deca47ca648482fade1714ee13351f159d5dee4a503",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/audits/M2_MOC3_T0_HARNESS_EVIDENCE.md",
@@ -1581,7 +1581,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "45fb792f743bbc689c9aea7cdd2b374d1e0b795dc77f4afa35bccc92a4e8441b"
+      "reviewed_sha256": "3f5e6f9824db77798d7be02074dd78e3e902a36d6f62ff9c3daaee5c59dde62c"
     },
     {
       "path": "docs/completed/audits/M2_MOC3_PUB02_A_ACCEPTANCE.md",
@@ -1591,7 +1591,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "9b292be07e832e98068c7a5ebb60102215aaa80c9ee0f9f2ed414262303e1a42"
+      "reviewed_sha256": "becb8eeafa015f67ce639b22473b28618d1b2de27dc1f33d01de904afa927548"
     },
     {
       "path": "docs/completed/audits/M2_MOC3_PUB02_A_REVIEW.md",
@@ -1601,7 +1601,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "c13ab84485986b01f15dd7821754d75501c3d43d7220a9c78a728c27dfb3dac7"
+      "reviewed_sha256": "e728a86eac217b181cd38833210b1d7239cc0afdb9b5ef9c5b80f1fc499dcdb1"
     },
     {
       "path": "docs/reference/audits/M2_MOC3_PUB02_A_SOURCE.json",
@@ -1621,7 +1621,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "79f8a16b97612707f00c3d1f9571aa969ec028c66ab6636a2b5f41a8518c8b2d"
+      "reviewed_sha256": "3082f92d94ccb1d96fc7a9bab060cabce4724d0f17110230f4fbd94e8a64da68"
     },
     {
       "path": "docs/completed/audits/M2_MOC3_PUB02_B_ACCEPTANCE.md",
@@ -1631,7 +1631,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "0971b20ac5373789c0f708243b271988fc4fd1cf831a5c6d6f7ed52488db56b9"
+      "reviewed_sha256": "d352c83b446ebf207aef3bb57398420ca9b4e1e5751a74643e521d6908842c02"
     },
     {
       "path": "docs/completed/audits/M2_MOC3_PUB02_B_REVIEW.md",
@@ -1641,7 +1641,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "77162860de93f5a5a14e562cfd1db1fdd25c0bafab64e2f561e737022fea0046"
+      "reviewed_sha256": "ce5d9eade1265ff9c9746629934d54b3271bafb222305e2a302ed9767dc5de79"
     },
     {
       "path": "docs/reference/audits/M2_MOC3_PUB02_B_SOURCE.json",
@@ -1661,7 +1661,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "d273c344552db17a5624fc00fac58f5ee7be8c97d7023cf3b4d391d8c7696413"
+      "reviewed_sha256": "b103737a791a196c92e463abaeb7006bf0a685076ef04a99daa89d351b12a82a"
     },
     {
       "path": "docs/completed/audits/M2_MOC3_PUB04_A_ACCEPTANCE.md",
@@ -1671,7 +1671,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "52425790e15e99fde886cf86182142ffdf990a16380726e5491f2a919310ea33"
+      "reviewed_sha256": "60e90c9c94515598db9c88d3bbcf02de2377eddbc92753f2c2a0c7d8dd1f0157"
     },
     {
       "path": "docs/completed/audits/M2_MOC3_PUB04_A_REVIEW.md",
@@ -1681,7 +1681,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "dd6daf4bc3f54e3befb37fc5f77b01dc66bcffde5647026281ae1926eca1634e"
+      "reviewed_sha256": "8f3511da2f434a38e07156d3937dc1b814025e61cfce39de7c7c917a9301554f"
     },
     {
       "path": "docs/reference/audits/M2_MOC3_PUB04_A_SOURCE.json",
@@ -1701,7 +1701,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "ad708bc6a149de1238c98d6be2c3ea06c9e8aa1550cbc392744054057099fe21"
+      "reviewed_sha256": "98961d3512170ef8fc6311c89c305280063118c8b5473616f0ee30bbe3b6112a"
     },
     {
       "path": "docs/completed/audits/M2_MOC3_PUB04_B_ACCEPTANCE.md",
@@ -1711,7 +1711,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "dfdc8ef43aa84a0655cfd2a23e3ea691030f09f45d9c35ec2226e0127f543758"
+      "reviewed_sha256": "e40bd77e0bf2f323fd0464624fc1003894d996452b046d61212273a445129f54"
     },
     {
       "path": "docs/completed/audits/M2_MOC3_PUB04_B_REVIEW.md",
@@ -1721,7 +1721,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "a95a63200b1460cccd208bb8e6b66aebe8c9b24b14d0eb304b1f47e7441de399"
+      "reviewed_sha256": "7c2fb00df219a0fdd139ff63de4e5a93fc423d5f3cc58e18e9e13e147d9c6fdd"
     },
     {
       "path": "docs/reference/audits/M2_MOC3_PUB04_B_SOURCE.json",
@@ -1732,6 +1732,36 @@
       "encoding": "utf-8",
       "document_kind": "structured_record",
       "reviewed_sha256": "cb9a3cf6fff48b9fbce4ccc521719c690d708448efb0b64a40bb2c5725386cfb"
+    },
+    {
+      "path": "docs/in-progress/M2_E_HOST_HANDOFF_PLAN.md",
+      "category": "in_progress",
+      "lifecycle": "maintained_contract",
+      "reason": "PR44 maintained private receipt/production-host handoff contract; preserved original bytes and source Git path.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "9b87c873df1eb4c1663a5e7b2488d9500f23e086a0dead45971d769a63e7f151"
+    },
+    {
+      "path": "docs/in-progress/ALPHA_LINEAR_BACKLOG.md",
+      "category": "in_progress",
+      "lifecycle": "maintained_contract",
+      "reason": "Current owner-authorized alpha integration and ordered issue implementation contract.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "e6c43df454c34e2c088b6d1d267c7ae1cf86a1a487e682c1012725b8b71cbb5f"
+    },
+    {
+      "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Completed source architecture/document audit with explicit defects and unresolved integration/product gates.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "66ded4e908c74c18b81a039acad9bf748d5ea417d1228b651470baa6efecb7d5"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1743,9 +1773,9 @@
     "classification_is_gate_approval": false
   },
   "latest_checkpoint": {
-    "basis_head": "c925bb0668f5f6e3d04330dd2dd6342717000b3d",
-    "scope": "PUB-04-B bounded actual-checkpoint restore and predecessor acknowledgement",
-    "new_documents": 4,
+    "basis_head": "31ce916a72a08af27b3d87daa793b5e43cb50394",
+    "scope": "Alpha PR integration, architecture/document audit and linear issue backlog",
+    "new_documents": 3,
     "classification_is_gate_approval": false
   }
 }

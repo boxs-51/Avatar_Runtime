@@ -1,6 +1,6 @@
 # Mục lục và phân loại tài liệu
 
-Rà soát ngày **19-10-2026, Asia/Bangkok**, nhánh `m2/moc3-p1-snapshot`. Inventory hiện tại: **141 tệp**, gồm `README.md` và toàn bộ `docs/`. Mốc phân loại ban đầu có 125 tệp; PUB-02-A/B + PUB-04-A/B thêm 16 tài liệu. Xem checkpoint mới nhất ở cuối trang và catalog cho danh sách đầy đủ.
+Rà soát ngày **19-10-2026, Asia/Bangkok**, nhánh `alpha`. Inventory hiện tại: **144 tệp**, gồm `README.md` và toàn bộ `docs/`. Mốc phân loại ban đầu có 125 tệp; PUB-02-A/B + PUB-04-A/B + alpha audit thêm 19 tài liệu. Xem checkpoint mới nhất ở cuối trang và catalog cho danh sách đầy đủ.
 
 Việc phân loại đánh giá vai trò hiện tại của tài liệu. “Đã hoàn thành” chỉ áp dụng cho phạm vi component/private/test ghi ở từng dòng, không tuyên bố milestone, G00–G11 hay SDK đã hoàn tất. “Tham khảo” gồm cả contract đang áp dụng và chứng cứ lịch sử; “lỗi thời” nghĩa là không còn dùng làm kế hoạch/trạng thái hiện hành. Tài liệu đã được chuyển sang bốn thư mục theo phân loại; raw log và JSON chứng cứ giữ nguyên bytes/pins. Markdown chỉ đổi liên kết tương đối. [Bản đồ đường dẫn](DOCUMENTATION_PATHS.json) lưu legacy → canonical và hash trước/sau. Các đường dẫn trong snapshot Git/JSON lịch sử vẫn mô tả source gốc.
 
@@ -255,3 +255,9 @@ Current exhaustive inventory: **141 files**; completed **35**, reference **83**,
 | [M2_MOC3_PUB04_B_SOURCE.json](reference/audits/M2_MOC3_PUB04_B_SOURCE.json) | reference |
 
 Fresh isolated workers now restore the actual host-accepted particle/velocity/clock checkpoint and ACK its exact predecessor. Final core authorization accepts checkpoint and image together. This bounded bridge does not close persistent PUB-02/full PUB-04, shipping SDK or physical D06/D08. Earlier counts and relocation hashes are historical.
+
+<!-- ALPHA CHECKPOINT -->
+
+## Alpha integration and audit checkpoint
+
+Current inventory: **144 files**; completed **36**, reference **83**, obsolete **4**, in-progress **21**. Follow [ALPHA_LINEAR_BACKLOG.md](in-progress/ALPHA_LINEAR_BACKLOG.md) for current ordered issues, and the [source-grounded audit](completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md) for findings and evidence. PR44's [host-handoff plan](in-progress/M2_E_HOST_HANDOFF_PLAN.md) is preserved as a maintained private contract. Earlier counts/source pins are historical; integration is not release qualification.
