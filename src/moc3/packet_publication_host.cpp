@@ -33,14 +33,21 @@ int main(int argc,char** argv){
     std::cout<<"READY\n"<<std::flush;
     try{char line_buffer[257]{};unsigned commands=0;while(std::cin.getline(line_buffer,sizeof(line_buffer))){std::string line(line_buffer);
         if(line.size()>256||++commands>10000)ExitProcess(2);std::istringstream in(line);std::string command,extra;in>>command;
-        if(command=="BEGIN"){
+        if(command=="STEP_BEGIN"){
+            std::uint64_t seq,nonce,clock;std::uint32_t lease;float value;std::string key;
+            if(!(in>>seq>>nonce>>clock>>value>>lease>>key)||in>>extra||key.size()!=64)ExitProcess(2);
+            ars::moc3::admission::Digest model{};
+            auto digit=[](char c)->unsigned {if(c>='0'&&c<='9')return c-'0';if(c>='a'&&c<='f')return c-'a'+10;ExitProcess(2);};
+            for(unsigned i=0;i<32;++i)model[i]=static_cast<std::uint8_t>((digit(key[2*i])<<4)|digit(key[2*i+1]));
+            std::cout<<(owner.begin_step(seq,nonce,clock,value,lease,model)==ARS_OK?"PREPARED":"DENIED")<<std::endl;
+        }else if(command=="BEGIN"){
             std::uint64_t seq,nonce,clock;std::uint32_t index,lease;float value;
             if(!(in>>seq>>nonce>>index>>clock>>value>>lease)||in>>extra)ExitProcess(2);
             std::cout<<(owner.begin(seq,nonce,index,clock,value,lease)==ARS_OK?"PREPARED":"DENIED")<<std::endl;
-        }else if(command=="STAGE"||command=="STAGE_FAIL"){
+        }else if(command=="STAGE"||command=="STAGE_FAIL"||command=="STEP_STAGE"||command=="STEP_FAIL"){
             std::uint64_t size=0;if(!(in>>size)||in>>extra||size>ars::moc3::admission::packet_cap)ExitProcess(2);
             std::vector<std::uint8_t> bytes(static_cast<std::size_t>(size));if(!std::cin.read(reinterpret_cast<char*>(bytes.data()),bytes.size()))ExitProcess(2);
-            auto r=owner.stage(bytes,command=="STAGE_FAIL");std::cout<<(r==Result::ok?"STAGED":"REJECTED")<<std::endl;
+            auto r=command.starts_with("STEP")?owner.stage_step(bytes,command=="STEP_FAIL"):owner.stage(bytes,command=="STAGE_FAIL");std::cout<<(r==Result::ok?"STAGED":"REJECTED")<<std::endl;
         }else if(command=="POLL"){
             auto r=owner.poll();std::cout<<(r==Result::busy?"BUSY":r==Result::ok?"PUBLISHED":"REJECTED")<<std::endl;
         }else if(command=="CANCEL"){owner.cancel();std::cout<<"CANCELLED"<<std::endl;
@@ -48,6 +55,8 @@ int main(int argc,char** argv){
         }else if(command=="DELAY_ONCE"){ops.delay_once=true;std::cout<<"ARMED"<<std::endl;
         }else if(command=="STATUS"){
             auto s=owner.state();std::cout<<"STATE "<<s.core_generation<<' '<<s.host_generation<<' '<<s.epoch<<' '<<s.physics_cursor<<' '<<s.terminal<<' '<<s.pending<<' '<<s.target_matches_accepted<<' '<<s.device_calls<<' '<<s.gpu_creations<<' '<<ops.ready_calls<<' '<<s.core_status<<' '<<s.core_value<<std::endl;
+        }else if(command=="CHECKPOINT"){
+            auto& bytes=owner.checkpoint_bytes();std::ofstream f(folder/"current.checkpoint",std::ios::binary);f.write(reinterpret_cast<const char*>(bytes.data()),bytes.size());if(!f)ExitProcess(6);f.close();std::cout<<"CHECKPOINT"<<std::endl;
         }else if(command=="READBACK"){save(folder,owner.read_pixels());std::cout<<"READBACK"<<std::endl;
         }else if(command=="QUIT"){
             auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(15);auto r=owner.close();

@@ -15,6 +15,11 @@ adds real final core authorization after GPU query completion and before target
 publication, with prior-state/pixel retention on failed bounded requests. This
 qualifies one generic normalized source and host-accepted physics cursor; it does
 not acknowledge/commit a live worker's particle state or close the product gates.
+The later [PUB-04-B checkpoint bridge](../completed/audits/M2_MOC3_PUB04_B_ACCEPTANCE.md)
+restores actual particle/velocity/clock/remainder in each fresh isolated job and
+ACKs the exact host-accepted predecessor. The final core fence accepts immutable
+checkpoint and frame together. This bounded eight-step method repeats package
+decode per job; it is not the persistent evaluator or a product-gate closure.
 
 | Gate | New direct F4 contribution | Remaining qualification for this optional product path |
 | --- | --- | --- |
@@ -26,7 +31,7 @@ not acknowledge/commit a live worker's particle state or close the product gates
 | G05 mode | Existing atomic dual-mode host rollback/epoch tests remain green. | HOLD product switching: no public MOC3/native2D/3D representation switch or whole-package interactive replacement is supplied. |
 | G06 motion | Actual authorized core source, semantic candidate, linked fixed-clock physics, release, replay rejection/reset and local persistent control with bounded input leases. | HOLD broader orchestration: private single-controller API is not motion/expression/idle arbitration or the public SDK multi-source contract. |
 | G07 thread/lifetime | Core consumer owner checks, exact GPU query completion, native core publish race regressions, controlled close and whole-job cancellation. Separate ASAN core unit passes; integrated ASAN render memory acceptance fails and remains HOLD. | HOLD integrated sanitizer/platform qualification and production-host context ownership; private tests cannot close these by themselves. |
-| G08 security | Existing authority negatives plus whole-ZIP isolation and complete typed host validation before GPU; bounded PUB-04-A now couples actual final core authorization to query/target publication. Direct file/process/resource/environment/limited-loopback observations and failed-output rejection remain separate evidence. | HOLD long-lived public protocol, worker particle-state ACK and full product publication, coverage-guided fuzz and sanitizer qualification. Ordinary CORE-LIVE Job ownership only handles lifetime. Universal network attribution remains HOLD. |
+| G08 security | Existing authority negatives plus whole-ZIP isolation and complete typed host validation before GPU; bounded PUB-04-A couples final core authorization to query/target publication. PUB-04-B adds exact predecessor ACK, actual checkpoint restoration and atomic checkpoint/frame acceptance across fresh jobs. Direct file/process/resource/environment/limited-loopback observations and failed-output rejection remain separate evidence. | HOLD long-lived public protocol and full product publication, coverage-guided fuzz and sanitizer qualification. Ordinary CORE-LIVE Job ownership only handles lifetime. Universal network attribution remains HOLD. |
 | G09 performance | Bounded integration plus actual concurrent WARP/hardware five-minute warm-up and thirty-minute fixed512 continuity, two image slots, recorded timing and unchanged native-plus-owner memory cap. Detailed model-derived measurements stay ignored. | HOLD quality-tier 720p/30-FPS/fallback and retained GPU allocation qualification. The slowed fixed-clock duration proof cannot award G09. |
 | G10 SDK embed | Consumer directly links existing private core components; public C/C++ contract regressions pass and public header/ABI sources are unchanged. A private allowlisted installed CLI consumer passes both render backends outside the checkout, with an external model. | HOLD actual shipping SDK embed: model/character/render entry points remain unsupported; no new C ABI, DLL+static/package discovery or installed MOC3 consumer contract. |
 | G11 release | Dependency/license custody inventory, local bundle/notices and source-pinned technical evidence are prepared; model assets are excluded. | HOLD reproducible shipping artifacts/SBOM/notices, full gate packet and explicit release/activation decision. Private model inputs/frames must never be packaged. |
@@ -57,8 +62,12 @@ separates geometry, pixels and visible/API evidence. Physics remains
 isolated batch. Full PUB-02 and PUB-04 remain **HOLD**. This does not
 close the G00/G01/G02 product qualifications above. The subsequent
 [PUB-04-A contract](M2_MOC3_PUB04_A_PUBLICATION_DESIGN.md) supplies the bounded
-host authority/expiry/cancellation and query fence. Next remains the long-lived
-isolated state and prepare/commit ACK/reload protocol before extending to public
-interactive publication. A short successful batch is not that protocol.
+host authority/expiry/cancellation and query fence. The subsequent
+[PUB-04-B contract](M2_MOC3_PUB04_B_CHECKPOINT_DESIGN.md) supplies a bounded
+checkpoint restore/ACK bridge with exact state retention on rejection. Its
+authoritative state is the host-accepted immutable checkpoint, not a live worker
+COMMIT receipt. Next remains persistent input ownership, expiry/release and
+whole-package replacement/lifecycle under an explicit session resource policy
+before public interactive publication. The five-second job cap is unchanged.
 
 Before public SDK implementation, freeze the intended supported subset, installed consumer/capability behavior and trust boundary. Then implement/qualify public model lifecycle and persistent input ownership, followed by cross-platform/package/ABI tests, parser isolation/fuzz and the required performance workload. Obtain a redistributable test fixture without changing the private model's rights. Track physical loss on a separate runner. Existing source approval or this F4-A result does not authorize advertising a feature or waiving the missing observations.

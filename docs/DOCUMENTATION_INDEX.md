@@ -1,6 +1,6 @@
 # Mục lục và phân loại tài liệu
 
-Rà soát ngày **19-10-2026, Asia/Bangkok**, nhánh `m2/moc3-p1-snapshot`. Inventory hiện tại: **137 tệp**, gồm `README.md` và toàn bộ `docs/`. Mốc phân loại ban đầu có 125 tệp; PUB-02-A/B + PUB-04-A thêm 12 tài liệu. Xem checkpoint mới nhất ở cuối trang và catalog cho danh sách đầy đủ.
+Rà soát ngày **19-10-2026, Asia/Bangkok**, nhánh `m2/moc3-p1-snapshot`. Inventory hiện tại: **141 tệp**, gồm `README.md` và toàn bộ `docs/`. Mốc phân loại ban đầu có 125 tệp; PUB-02-A/B + PUB-04-A/B thêm 16 tài liệu. Xem checkpoint mới nhất ở cuối trang và catalog cho danh sách đầy đủ.
 
 Việc phân loại đánh giá vai trò hiện tại của tài liệu. “Đã hoàn thành” chỉ áp dụng cho phạm vi component/private/test ghi ở từng dòng, không tuyên bố milestone, G00–G11 hay SDK đã hoàn tất. “Tham khảo” gồm cả contract đang áp dụng và chứng cứ lịch sử; “lỗi thời” nghĩa là không còn dùng làm kế hoạch/trạng thái hiện hành. Tài liệu đã được chuyển sang bốn thư mục theo phân loại; raw log và JSON chứng cứ giữ nguyên bytes/pins. Markdown chỉ đổi liên kết tương đối. [Bản đồ đường dẫn](DOCUMENTATION_PATHS.json) lưu legacy → canonical và hash trước/sau. Các đường dẫn trong snapshot Git/JSON lịch sử vẫn mô tả source gốc.
 
@@ -240,3 +240,18 @@ Current exhaustive inventory: **137 files**; completed **33**, reference **82**,
 | [M2_MOC3_PUB04_A_SOURCE.json](reference/audits/M2_MOC3_PUB04_A_SOURCE.json) | reference |
 
 The bounded host now applies actual final core authorization after query completion and before target publication. Worker particle-state ACK, full PUB-04/PUB-02, SDK and physical D06/D08 remain HOLD. Earlier checkpoint counts and relocation hashes are historical.
+
+<!-- PUB04-B CHECKPOINT -->
+
+## PUB-04-B implementation checkpoint
+
+Current exhaustive inventory: **141 files**; completed **35**, reference **83**, obsolete **4**, in-progress **19**. New records:
+
+| Record | Category |
+| --- | --- |
+| [M2_MOC3_PUB04_B_CHECKPOINT_DESIGN.md](in-progress/M2_MOC3_PUB04_B_CHECKPOINT_DESIGN.md) | in_progress |
+| [M2_MOC3_PUB04_B_ACCEPTANCE.md](completed/audits/M2_MOC3_PUB04_B_ACCEPTANCE.md) | completed |
+| [M2_MOC3_PUB04_B_REVIEW.md](completed/audits/M2_MOC3_PUB04_B_REVIEW.md) | completed |
+| [M2_MOC3_PUB04_B_SOURCE.json](reference/audits/M2_MOC3_PUB04_B_SOURCE.json) | reference |
+
+Fresh isolated workers now restore the actual host-accepted particle/velocity/clock checkpoint and ACK its exact predecessor. Final core authorization accepts checkpoint and image together. This bounded bridge does not close persistent PUB-02/full PUB-04, shipping SDK or physical D06/D08. Earlier counts and relocation hashes are historical.

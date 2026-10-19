@@ -1,5 +1,6 @@
 #include "rendering/d3d11_dual_mode_host.hpp"
 #include "moc3/d3d11_renderer.hpp"
+#include "moc3/packet_publication.hpp"
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
@@ -9,6 +10,13 @@ using Host=ars::rendering::D3D11DualModeHost;
 void check(bool ok){if(!ok){std::cerr<<"PUBLICATION_FENCE_FAIL\n";std::exit(1);}}
 struct Fence:Host::PublicationFence {unsigned* calls;explicit Fence(unsigned& value):calls(&value){};Result decision=Result::failed;Result commit() noexcept override {++*calls;return decision;}};
 int main(){
+    {
+        ars::moc3::PacketPublication owner;check(owner.open()==ARS_OK);
+        check(owner.begin_step(1,42,0,0,2000,{})==ARS_OK);bool correct=false;
+        std::thread other([&]{bool denied=false;try{owner.checkpoint_bytes();}catch(...){denied=true;}
+            correct=denied&&owner.begin(2,42,1,1,0,2000)==ARS_E_WRONG_THREAD&&owner.begin_step(2,42,1,0,2000,{})==ARS_E_WRONG_THREAD&&owner.stage_step({})==Result::wrong_thread&&owner.state().core_status==ARS_E_WRONG_THREAD&&owner.close()==Result::wrong_thread;});
+        other.join();check(correct&&owner.close()==Result::ok);
+    }
     Microsoft::WRL::ComPtr<ID3D11Device> device;Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;D3D_FEATURE_LEVEL level{};
     check(SUCCEEDED(D3D11CreateDevice(nullptr,D3D_DRIVER_TYPE_WARP,nullptr,0,nullptr,0,D3D11_SDK_VERSION,&device,&level,&context)));
     auto scene=std::make_shared<ars::moc3::Snapshot>();scene->generation=1;ars::moc3::Drawable draw;draw.texture_index=0;draw.double_sided=true;draw.screen={0,0,0,1};draw.vertices={{-1,-1,0,0},{1,-1,1,0},{0,1,.5f,1}};draw.indices={0,1,2};scene->drawables.push_back(draw);

@@ -20,11 +20,14 @@ struct PacketPublication::Fence final:Host::PublicationFence {
     std::chrono::steady_clock::time_point deadline;
     std::uint64_t cursor=0;
     bool cancelled=false,committed=false;
+    std::shared_ptr<const admission::PhysicsCheckpoint> checkpoint;
+    std::shared_ptr<const std::vector<std::uint8_t>> checkpoint_bytes;
     Fence(PacketPublication* p,std::chrono::steady_clock::time_point until):owner(p),deadline(until){}
     GResult commit() noexcept override {
         if(cancelled||std::chrono::steady_clock::now()>deadline){owner->core_.discard();return GResult::failed;}
         if(owner->core_.publish()!=ARS_OK)return GResult::failed;
         // No allocation/fallible operation after successful core publication.
+        if(checkpoint){owner->accepted_state_=checkpoint;owner->accepted_state_bytes_=checkpoint_bytes;}
         owner->accepted_cursor_=cursor;committed=true;return GResult::ok;
     }
 };
@@ -32,6 +35,11 @@ PacketPublication::PacketPublication(bool hardware,graphics::d3d11::QueryOps* op
 PacketPublication::~PacketPublication(){if(!closed_&&close()!=GResult::ok)std::terminate();}
 ars_status PacketPublication::open(){const ParameterInfo channel{"request.normalized",-1,0,1};auto result=core_.open(std::span(&channel,1));if(result==ARS_OK)opened_=true;return result;}
 ars_status PacketPublication::begin(std::uint64_t sequence,std::uint64_t nonce,std::uint32_t index,std::uint64_t clock,float value,std::uint32_t lease_ms){
+    if(owner_!=std::this_thread::get_id())return ARS_E_WRONG_THREAD;
+    if(step_session_)return ARS_E_INVALID_ARGUMENT;
+    return prepare_request(sequence,nonce,index,clock,value,lease_ms);
+}
+ars_status PacketPublication::prepare_request(std::uint64_t sequence,std::uint64_t nonce,std::uint32_t index,std::uint64_t clock,float value,std::uint32_t lease_ms){
     if(owner_!=std::this_thread::get_id())return ARS_E_WRONG_THREAD;
     if(terminal_||closed_)return ARS_E_CLOSED;
     if(prepared_)return ARS_E_BUSY;
@@ -45,13 +53,16 @@ ars_status PacketPublication::begin(std::uint64_t sequence,std::uint64_t nonce,s
 GResult PacketPublication::fail() noexcept {core_.discard();prepared_=false;terminal_=true;fence_.reset();return GResult::failed;}
 GResult PacketPublication::stage(std::span<const std::uint8_t> bytes,bool fail_target){
     if(owner_!=std::this_thread::get_id())return GResult::wrong_thread;
-    if(!prepared_||terminal_||closed_||(host_&&host_->pending()))return GResult::invalid_argument;
+    if(step_session_||!prepared_||terminal_||closed_||(host_&&host_->pending()))return GResult::invalid_argument;
     admission::VerifiedSequence batch;
     if(!admission::decode_sequence(bytes,nonce_,batch)||index_>=batch.size()||batch.timestamp(index_)!=clock_||std::chrono::steady_clock::now()>fence_->deadline)return fail();
     auto scene=batch.frame(index_);fence_->cursor=scene.snapshot()->generation;
+    return submit(scene,*batch.frame(0).snapshot(),fail_target);
+}
+GResult PacketPublication::submit(const admission::VerifiedScene& scene,const Snapshot& reference,bool fail_target){
     try{
         if(!host_){
-            auto candidate_view=fit(*batch.frame(0).snapshot());D3D_FEATURE_LEVEL level{};bool debug=true;++device_calls_;
+            auto candidate_view=fit(reference);D3D_FEATURE_LEVEL level{};bool debug=true;++device_calls_;
             auto hr=D3D11CreateDevice(nullptr,hardware_?D3D_DRIVER_TYPE_HARDWARE:D3D_DRIVER_TYPE_WARP,nullptr,D3D11_CREATE_DEVICE_DEBUG,nullptr,0,D3D11_SDK_VERSION,&device_,&level,&context_);
             if(FAILED(hr)){debug=false;++device_calls_;hr=D3D11CreateDevice(nullptr,hardware_?D3D_DRIVER_TYPE_HARDWARE:D3D_DRIVER_TYPE_WARP,nullptr,0,nullptr,0,D3D11_SDK_VERSION,&device_,&level,&context_);}
             if(FAILED(hr))return fail();
@@ -65,6 +76,29 @@ GResult PacketPublication::stage(std::span<const std::uint8_t> bytes,bool fail_t
         if(result!=GResult::ok){if(host_->pending())return result;return fail();}
         return result;
     }catch(...){if(host_&&host_->pending())return GResult::failed;return fail();}
+}
+ars_status PacketPublication::begin_step(std::uint64_t sequence,std::uint64_t nonce,std::uint64_t clock,float value,std::uint32_t lease_ms,const admission::Digest& model){
+    if(owner_!=std::this_thread::get_id())return ARS_E_WRONG_THREAD;
+    if(sequence!=(accepted_state_?accepted_state_->generation+1:1))return ARS_E_INVALID_ARGUMENT;
+    if(accepted_state_&&(model!=accepted_state_->model||clock<=accepted_state_->clock||clock-accepted_state_->clock+accepted_state_->remainder>8ull*16666667))return ARS_E_INVALID_ARGUMENT;
+    if(!accepted_state_&&clock!=0)return ARS_E_INVALID_ARGUMENT;
+    auto predecessor=admission::sha256(checkpoint_bytes()); // Before core ingress consumes sequence.
+    auto result=prepare_request(sequence,nonce,static_cast<std::uint32_t>(sequence-1),clock,value,lease_ms);
+    if(result==ARS_OK){step_session_=true;request_model_=model;predecessor_=predecessor;}return result;
+}
+GResult PacketPublication::stage_step(std::span<const std::uint8_t> bytes,bool fail_target){
+    if(owner_!=std::this_thread::get_id())return GResult::wrong_thread;
+    if(!step_session_||!prepared_||terminal_||closed_||(host_&&host_->pending()))return GResult::invalid_argument;
+    admission::VerifiedStep candidate;
+    if(!admission::decode_step(bytes,nonce_,sequence_,clock_,request_model_,predecessor_,candidate)||std::chrono::steady_clock::now()>fence_->deadline)return fail();
+    if(accepted_state_){auto& next=candidate.checkpoint()->particles;auto& previous=accepted_state_->particles;
+        if(next.size()!=previous.size())return fail();for(std::size_t i=0;i<next.size();++i)if(next[i].size()!=previous[i].size())return fail();}
+    fence_->checkpoint=candidate.checkpoint();fence_->checkpoint_bytes=candidate.checkpoint_bytes();fence_->cursor=sequence_+1;
+    return submit(candidate.scene(),*candidate.scene().snapshot(),fail_target);
+}
+const std::vector<std::uint8_t>& PacketPublication::checkpoint_bytes() const {
+    need(owner_==std::this_thread::get_id());static const std::vector<std::uint8_t> empty;
+    return accepted_state_bytes_?*accepted_state_bytes_:empty;
 }
 GResult PacketPublication::poll(){
     if(owner_!=std::this_thread::get_id())return GResult::wrong_thread;

@@ -1,5 +1,6 @@
 #pragma once
 #include "package_admission.hpp"
+#include "physics_checkpoint.hpp"
 #include <memory>
 #include <thread>
 namespace ars::moc3::admission {
@@ -29,5 +30,7 @@ public:
     RetainedPhysics& operator=(const RetainedPhysics&)=delete;
     Candidate prepare(std::uint64_t,std::span<const Parameter>,bool enabled,bool reset) const;
     void commit(const Candidate&);
+    PhysicsCheckpoint checkpoint(const Candidate&,const Digest&) const;
+    void restore(const PhysicsCheckpoint&);
 };
 }

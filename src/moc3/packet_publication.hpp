@@ -1,6 +1,7 @@
 #pragma once
 #ifdef _WIN32
 #include "drawable_packet.hpp"
+#include "step_packet.hpp"
 #include "core_consumer.hpp"
 #include "d3d11_renderer.hpp"
 #include "../rendering/d3d11_dual_mode_host.hpp"
@@ -22,8 +23,14 @@ class PacketPublication {
     ID3D11Texture2D* accepted_texture_=nullptr;
     bool hardware_,opened_=false,prepared_=false,terminal_=false,closed_=false;
     GpuProbe probe_;
+    bool step_session_=false;
+    admission::Digest request_model_{},predecessor_{};
+    std::shared_ptr<const admission::PhysicsCheckpoint> accepted_state_;
+    std::shared_ptr<const std::vector<std::uint8_t>> accepted_state_bytes_;
     std::uint64_t device_calls_=0;
     graphics::Result fail() noexcept;
+    ars_status prepare_request(std::uint64_t,std::uint64_t,std::uint32_t,std::uint64_t,float,std::uint32_t);
+    graphics::Result submit(const admission::VerifiedScene&,const Snapshot&,bool);
 public:
     struct State {
         std::uint64_t core_generation=0,host_generation=0,epoch=0,physics_cursor=0,device_calls=0,gpu_creations=0;
@@ -37,6 +44,9 @@ public:
     ars_status begin(std::uint64_t sequence,std::uint64_t nonce,std::uint32_t index,
                      std::uint64_t clock,float normalized,std::uint32_t lease_ms);
     graphics::Result stage(std::span<const std::uint8_t>,bool fail_target=false);
+    ars_status begin_step(std::uint64_t,std::uint64_t,std::uint64_t,float,std::uint32_t,const admission::Digest&);
+    graphics::Result stage_step(std::span<const std::uint8_t>,bool fail_target=false);
+    const std::vector<std::uint8_t>& checkpoint_bytes() const;
     graphics::Result poll();
     void cancel() noexcept;
     ars_status revoke();

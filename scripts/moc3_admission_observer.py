@@ -15,8 +15,8 @@ from moc3_test_harness import _harden_local_path
 
 
 def observe(run,evidence,*,proof_kind="STATIC_DEFAULT_POSE"):
-    if proof_kind not in ("STATIC_DEFAULT_POSE","RETAINED_PARAMETER_SEQUENCE","RETAINED_PHYSICS_SEQUENCE","CORE_AUTHORIZED_PUBLICATION"):raise ValueError("unsupported proof kind")
-    physics='SIMULATED_BOUNDED_INDEPENDENT' if proof_kind in ('RETAINED_PHYSICS_SEQUENCE','CORE_AUTHORIZED_PUBLICATION') else 'VALIDATED_NOT_SIMULATED'
+    if proof_kind not in ("STATIC_DEFAULT_POSE","RETAINED_PARAMETER_SEQUENCE","RETAINED_PHYSICS_SEQUENCE","CORE_AUTHORIZED_PUBLICATION","CHECKPOINT_ACK_PUBLICATION"):raise ValueError("unsupported proof kind")
+    physics='SIMULATED_BOUNDED_INDEPENDENT' if proof_kind in ('RETAINED_PHYSICS_SEQUENCE','CORE_AUTHORIZED_PUBLICATION','CHECKPOINT_ACK_PUBLICATION') else 'VALIDATED_NOT_SIMULATED'
     lock=threading.Lock();state={'phase':'RUNNING','last_case':'starting','cases_passed':0,
         'physics':physics,'proof':proof_kind,'frames':{}}
     presented={};frames={};token=secrets.token_urlsafe(32);result={};ui_proof={}

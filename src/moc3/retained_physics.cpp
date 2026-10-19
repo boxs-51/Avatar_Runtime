@@ -103,4 +103,16 @@ void RetainedPhysics::commit(const Candidate& candidate){
     require(owner_==std::this_thread::get_id()&&candidate.owner_==this&&candidate.generation_==generation_+1&&bool(candidate.state_));
     state_=candidate.state_;generation_=candidate.generation_;
 }
+PhysicsCheckpoint RetainedPhysics::checkpoint(const Candidate& candidate,const Digest& model) const {
+    require(owner_==std::this_thread::get_id()&&candidate.owner_==this&&candidate.generation_==generation_+1&&bool(candidate.state_));
+    PhysicsCheckpoint out;out.model=model;out.generation=candidate.generation_;out.clock=candidate.state_->timestamp;out.remainder=candidate.state_->remainder;
+    for(auto& chain:candidate.state_->particles){std::vector<std::array<double,4>> points;for(auto& p:chain)points.push_back({p.position.x,p.position.y,p.velocity.x,p.velocity.y});out.particles.push_back(std::move(points));}return out;
+}
+void RetainedPhysics::restore(const PhysicsCheckpoint& checkpoint){
+    require(owner_==std::this_thread::get_id()&&generation_==0&&checkpoint.generation>0&&checkpoint.generation<8&&checkpoint.clock<=1000000000ull&&checkpoint.remainder<16666667&&checkpoint.particles.size()==data_->chains.size());
+    auto state=std::make_shared<State>();state->timestamp=checkpoint.clock;state->remainder=checkpoint.remainder;
+    for(std::size_t i=0;i<checkpoint.particles.size();++i){auto& chain=checkpoint.particles[i];require(chain.size()==data_->chains[i].particles.size());std::vector<Point> points;
+        for(auto& p:chain){for(auto value:p)checked(value);points.push_back({{p[0],p[1]},{p[2],p[3]}});}state->particles.push_back(std::move(points));}
+    state_=std::move(state);generation_=checkpoint.generation;
+}
 }

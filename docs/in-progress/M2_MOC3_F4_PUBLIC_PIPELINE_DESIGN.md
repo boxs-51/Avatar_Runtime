@@ -6,7 +6,7 @@ PUB-02-A follow-on: [bounded retained sequence contract](M2_MOC3_PUB02_A_RETAINE
 implements complete parameter frames within one isolated job and independently
 validated batch output. See its [local acceptance](../completed/audits/M2_MOC3_PUB02_A_ACCEPTANCE.md)
 for actual geometry/pixel/API evidence and limits. This is progress on PUB-02/03;
-the full persistent evaluator, long-lived isolated physics and PUB-04 final authority fence
+the full persistent evaluator, long-lived isolated physics and full PUB-04 product transaction
 remain HOLD. It is not a long-lived interactive service.
 
 PUB-02-B follow-on: [isolated retained physics contract](M2_MOC3_PUB02_B_ISOLATED_PHYSICS_DESIGN.md)
@@ -23,6 +23,18 @@ cursor and target swap. Actual worker crash, stale/invalid response, cancellatio
 expiry and query-ready revoke preserve the prior frame. This closes only the
 bounded host-acceptance slice; worker particle-state acknowledgement and the
 long-lived product transaction remain HOLD.
+
+PUB-04-B follow-on: [bounded checkpoint restore/ACK contract](M2_MOC3_PUB04_B_CHECKPOINT_DESIGN.md)
+and [local acceptance](../completed/audits/M2_MOC3_PUB04_B_ACCEPTANCE.md) add actual
+particle/velocity/clock/remainder restoration across fresh isolated jobs. Each
+candidate ACKs the exact accepted predecessor and binds the exact ZIP/entry
+identity. The final core fence accepts checkpoint, cursor and frame together;
+failed jobs, invalid ACK, cancellation, expiry and revoke retain the previous
+checkpoint bytes and image. This eight-step bridge re-parses the package per job,
+avoids fallible IPC after publication, and does not close the persistent PUB-02
+evaluator or full PUB-04 product transaction. Remaining work includes persistent
+input ownership/expiry/release and package replacement under a reviewed session
+resource policy, then public ABI and qualification below.
 
 The owner chose arbitrary public-user MOC3 input. The completed parser-preflight prototype is a boundary experiment, not the public importer. The next implementation must use the following order; none of these steps may turn a preflight success into permission to reparse hostile MOC bytes inside the trusted host.
 

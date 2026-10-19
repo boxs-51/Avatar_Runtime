@@ -13,5 +13,8 @@ Current product work is tracked in the [F4 release ledger](docs/in-progress/M2_M
 [PUB-04-A](docs/completed/audits/M2_MOC3_PUB04_A_ACCEPTANCE.md) adds bounded
 packet-only publication with actual core authorization after exact GPU query
 completion. Rejected candidates retain the prior core/image/accepted physics
-cursor. Full worker state acknowledgement, long-lived control and product SDK
-publication remain HOLD; this private diagnostic adds no public capability.
+cursor. [PUB-04-B](docs/completed/audits/M2_MOC3_PUB04_B_ACCEPTANCE.md) extends
+that transaction to actual particle/velocity/clock checkpoints: fresh isolated
+workers restore the last accepted state and acknowledge its digest. This is a
+bounded eight-step bridge; persistent control, full product publication and the
+shipping SDK remain HOLD. These private diagnostics add no public capability.

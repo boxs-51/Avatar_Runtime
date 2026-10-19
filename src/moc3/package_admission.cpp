@@ -1,5 +1,6 @@
 #include "package_admission.hpp"
 #include "retained_physics.hpp"
+#include "step_packet.hpp"
 #include "drawable_packet.hpp"
 #include "../assets/zip_reader.hpp"
 #include "../assets/png_decoder.hpp"
@@ -24,7 +25,7 @@ void keys(const validation::Document& doc,validation::Value v,std::initializer_l
 struct Binding {std::uint32_t slot;float value;};
 struct CompleteFrame {std::uint64_t sequence,clock;std::uint32_t control=0;std::vector<Binding> bindings;std::vector<Parameter> parameters;};
 void emit(std::uint64_t value,unsigned bytes){for(unsigned i=0;i<bytes;++i)std::cout.put(static_cast<char>(value>>(i*8)));}
-int package_worker(bool retained,bool simulate){
+int package_worker(bool retained,bool simulate,bool step){
     const char* rejection="PACKAGE_ENVELOPE_REJECTED";
     bool output_started=false;
     try{
@@ -34,20 +35,22 @@ int package_worker(bool retained,bool simulate){
         assets::Resource resource(allocate,release,nullptr,384ull*assets::MiB);
         assets::Limits limits;limits.compressed=96*assets::MiB;limits.expanded=128*assets::MiB;limits.entries=256;
         assets::Work work{limits.work};assets::canonical_path(name,&resource,limits);require(name.ends_with(".model3.json"));
-        assets::OwnedBundle bundle(resource);std::vector<CompleteFrame> frames;
+        assets::OwnedBundle bundle(resource);std::vector<CompleteFrame> frames;std::vector<std::uint8_t> checkpoint;Digest model{},predecessor{};
         {std::pmr::vector<std::uint8_t> bytes(&resource);bytes.resize(static_cast<std::size_t>(size));
          require(bool(std::cin.read(reinterpret_cast<char*>(bytes.data()),bytes.size())));
+         if(step)model=package_identity(bytes,{reinterpret_cast<const std::uint8_t*>(name.data()),name.size()});
          if(retained){
-             rejection="PACKAGE_COMMAND_REJECTED";auto count=read(4);require(count&&count<=8);frames.reserve(static_cast<std::size_t>(count));
+             rejection="PACKAGE_COMMAND_REJECTED";auto count=step?1:read(4);require(count&&count<=8);frames.reserve(static_cast<std::size_t>(count));
              std::uint64_t last=0;
              for(std::uint32_t i=0;i<count;++i){
-                 CompleteFrame f;f.sequence=read(8);f.clock=read(8);require(f.sequence==i+1&&f.clock<=1000000000ull);
-                 require(i?f.clock>last&&f.clock-last<=8ull*16666667:f.clock==0);last=f.clock;
+                 CompleteFrame f;f.sequence=read(8);f.clock=read(8);require((step?f.sequence&&f.sequence<=8:f.sequence==i+1)&&f.clock<=1000000000ull);
+                 if(!step)require(i?f.clock>last&&f.clock-last<=8ull*16666667:f.clock==0);last=f.clock;
                  f.control=static_cast<std::uint32_t>(read(4));require(simulate?f.control<=3:f.control==0);auto n=read(4);require(n<=32);std::set<std::uint32_t> seen;
                  for(std::uint32_t j=0;j<n;++j){auto slot=static_cast<std::uint32_t>(read(4));auto value=std::bit_cast<float>(static_cast<std::uint32_t>(read(4)));
                      require(slot<4096&&seen.insert(slot).second&&std::isfinite(value)&&value>=-1&&value<=1);f.bindings.push_back({slot,value});}
                  frames.push_back(std::move(f));
              }
+             if(step){auto n=read(4);require(n<=checkpoint_cap);checkpoint.resize(static_cast<std::size_t>(n));require(bool(std::cin.read(reinterpret_cast<char*>(checkpoint.data()),checkpoint.size())));predecessor=sha256(checkpoint);}
          }
          require(std::cin.peek()==EOF&&std::cin.eof()&&!std::cin.bad());
          rejection="PACKAGE_ZIP_REJECTED";assets::Work zip_work{limits.compressed+limits.work};assets::read_zip(bytes,bundle,resource,limits,zip_work);}
@@ -99,6 +102,23 @@ int package_worker(bool retained,bool simulate){
                 auto mapped=double(p.default_value)+double(v)*(v>=0?double(p.maximum)-p.default_value:double(p.default_value)-p.minimum);
                 auto value=std::clamp(static_cast<float>(mapped),p.minimum,p.maximum);
                 require(std::isfinite(value)&&value>=p.minimum&&value<=p.maximum);frame.parameters.push_back({p.id,value});
+            }
+            if(step){
+                auto& frame=frames[0];rejection="PACKAGE_COMMAND_REJECTED";
+                if(frame.sequence==1)require(checkpoint.empty()&&frame.clock==0);
+                else{PhysicsCheckpoint previous;
+                    // Previous clock is in a bounded typed header, then full validation repeats.
+                    require(checkpoint.size()>=72);std::uint64_t clock=0;for(unsigned j=0;j<8;++j)clock|=std::uint64_t(checkpoint[24+j])<<(8*j);
+                    require(decode_checkpoint(checkpoint,model,frame.sequence-1,clock,previous));
+                    require(frame.clock>previous.clock&&frame.clock-previous.clock<=8ull*16666667&&frame.clock-previous.clock+previous.remainder<=8ull*16666667);
+                    retained_physics->restore(previous);
+                }
+                auto candidate=retained_physics->prepare(frame.clock,frame.parameters,frame.control&1,frame.control&2);
+                auto next=encode_checkpoint(retained_physics->checkpoint(candidate,model));
+                require(session->update_complete(candidate.parameters())==Result::ok);auto snapshot=*session->current();snapshot.generation=frame.sequence+1;
+                require(encoded_size(snapshot,atlases)+120+next.size()<=packet_cap,ARS_E_OUT_OF_BUDGET);
+                rejection="PACKAGE_OUTPUT_REJECTED";output_started=true;encode_step(std::cout,snapshot,atlases,nonce,frame.sequence,frame.clock,model,predecessor,next,flags);
+                std::cout.flush();return std::cout?0:42;
             }
             auto one=encoded_size(*session->current(),atlases);require(one+24<=(packet_cap-32)/frames.size(),ARS_E_OUT_OF_BUDGET);
             auto total=32+(one+24)*frames.size();rejection="PACKAGE_OUTPUT_REJECTED";

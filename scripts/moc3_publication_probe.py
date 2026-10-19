@@ -38,6 +38,16 @@ class PublicationProbe:
     def stage(self,packet,*,fail_target=False):
         return self.command(('STAGE_FAIL ' if fail_target else 'STAGE ')+str(len(packet)),packet)
 
+    def begin_step(self,sequence,nonce,clock,model,value=0,lease_ms=2000):
+        return self.command(f'STEP_BEGIN {sequence} {nonce} {clock} {value:.9g} {lease_ms} {model.hex()}')
+
+    def stage_step(self,packet,*,fail_target=False):
+        return self.command(('STEP_FAIL ' if fail_target else 'STEP_STAGE ')+str(len(packet)),packet)
+
+    def checkpoint(self):
+        if self.command('CHECKPOINT')!=['CHECKPOINT']:raise RuntimeError('checkpoint readback')
+        return (self.folder/'current.checkpoint').read_bytes()
+
     def poll(self):
         deadline=time.monotonic()+20
         while time.monotonic()<deadline:

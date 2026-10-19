@@ -6,6 +6,7 @@ Physics is admitted, NOT simulated. This is not the public SDK entry point.
 from dataclasses import dataclass
 from pathlib import Path
 import ctypes
+import hashlib
 from ctypes import wintypes
 import json
 import math
@@ -76,10 +77,22 @@ def _prepare_evaluation(package:bytes,manifest_entry:str,frames,*,physics=False)
     return payload+commands,nonce,'--simulate' if physics else '--evaluate'
 
 
+def _prepare_step(package,entry,sequence,clock,bindings,control,checkpoint):
+    if type(sequence) is not int or not 1<=sequence<=8 or type(clock) is not int or not 0<=clock<=1_000_000_000:
+        raise ValueError('INVALID_STEP_IDENTITY')
+    if type(checkpoint) is not bytes or len(checkpoint)>128*1024 or (sequence==1 and (checkpoint or clock!=0)) or (sequence>1 and (len(checkpoint)<72 or clock==0)):
+        raise ValueError('INVALID_STEP_PREDECESSOR')
+    payload,nonce,_=_prepare_evaluation(package,entry,[(1,0,bindings,control)],physics=True)
+    name=entry.encode('utf-8');offset=24+len(name)+len(package)
+    command=bytearray(payload[offset+4:]);struct.pack_into('<QQ',command,0,sequence,clock)
+    identity=hashlib.sha256(struct.pack('<I',len(name))+name+package).digest()
+    return payload[:offset]+command+struct.pack('<I',len(checkpoint))+checkpoint,nonce,'--step',identity
+
+
 def _run_envelope(payload:bytes,nonce:int,mode='--package')->Admission:
     # Diagnostics can exercise worker faults, but callers cannot supply arbitrary commands.
-    if mode not in ('--package','--evaluate','--simulate','--crash','--flood','--hang'):raise ValueError('INVALID_MODE')
-    if type(payload) is not bytes or len(payload)>96*1024*1024+(4096 if mode in ('--evaluate','--simulate') else 536):raise ValueError('INVALID_ENVELOPE')
+    if mode not in ('--package','--evaluate','--simulate','--step','--crash','--flood','--hang'):raise ValueError('INVALID_MODE')
+    if type(payload) is not bytes or len(payload)>96*1024*1024+(128*1024+4096 if mode=='--step' else 4096 if mode in ('--evaluate','--simulate') else 536):raise ValueError('INVALID_ENVELOPE')
     folder=ROOT/'build/moc3-package-trials'/uuid.uuid4().hex[:24];folder.mkdir(parents=True,exist_ok=False)
     worker=folder/'worker.exe';shutil.copyfile(ISOLATED_BIN/'ars_moc3_import_worker.exe',worker)
     (folder/'worker-data.txt').write_bytes(b'generated read-only worker sentinel')
@@ -100,7 +113,7 @@ def _run_envelope(payload:bytes,nonce:int,mode='--package')->Admission:
     except (OSError,ValueError):pass
     status='ISOLATION_SETUP_REJECTED';packet=b''
     if run.returncode==0 and removed and empty:
-        if (48<=len(run.stdout)<=PACKET_CAP and run.stdout[:8]==(b'ARSEVAL1' if mode in ('--evaluate','--simulate') else b'ARSDRAW1') and
+        if (48<=len(run.stdout)<=PACKET_CAP and run.stdout[:8]==(b'ARSCAND1' if mode=='--step' else b'ARSEVAL1' if mode in ('--evaluate','--simulate') else b'ARSDRAW1') and
             state['worker_exit']==0 and state.get('wait_result')==0 and state.get('output_overflow') is False):
             # Custody only: this is not a decoded/verified scene. Host still validates every byte.
             status='PACKET_CUSTODY';packet=run.stdout
