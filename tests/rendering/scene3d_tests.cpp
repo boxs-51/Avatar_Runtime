@@ -22,6 +22,33 @@ int main(int argc, char **argv) {
         test::check(near(v[1].position[0],1.1f) && near(v[1].position[1],1),"second joint palette order");
         test::check(near(v[2].position[0],0.1f) && near(v[2].position[1],2),"second joint on third vertex");
         test::check(scene.draws[0].material.base_texture.image==0,"owned PNG reference projected");
+        bool packed_equivalent=true;
+        for (const auto bits:{"8","16"}) for (const auto mode:{"weights","uv","both"}) {
+            const auto prefix=std::string("positive-alpha54-")+bits+"-"+mode;
+            std::shared_ptr<const ars::assets::GlbModel> packed_model,float_model;
+            test::check(ars::assets::ingest_glb(test::file(root/(prefix+"-packed.glb")),resource,packed_model)==ARS_OK &&
+                        ars::assets::ingest_glb(test::file(root/(prefix+"-float.glb")),resource,float_model)==ARS_OK,
+                        "packed and equivalent float fixtures admitted");
+            ars::rendering::PreparedScene3D actual,expected;
+            test::check(ars::rendering::prepare_static_3d(packed_model,actual)==ARS_OK &&
+                        ars::rendering::prepare_static_3d(float_model,expected)==ARS_OK,
+                        "packed and float scenes project");
+            test::check(actual.draws.size()==1 && expected.draws.size()==1 &&
+                        actual.draws[0].vertices.size()==3 && expected.draws[0].vertices.size()==3,
+                        "nonempty packed/float control geometry");
+            test::check(near(expected.draws[0].vertices[1].position[0],1.1f) &&
+                        near(expected.draws[0].vertices[1].position[1],1),"joint index1 stays an integer");
+            bool same=actual.draws[0].indices==expected.draws[0].indices;
+            for (std::size_t i=0;i<3;++i) {
+                const auto &a=actual.draws[0].vertices[i],&b=expected.draws[0].vertices[i];
+                for (std::size_t c=0;c<3;++c) same=near(a.position[c],b.position[c]) && near(a.normal[c],b.normal[c]) && same;
+                for (std::size_t c=0;c<4;++c) same=near(a.tangent[c],b.tangent[c]) && same;
+                for (std::size_t c=0;c<2;++c) same=near(a.uv[c],b.uv[c]) && same;
+            }
+            std::printf("ALPHA54_CPU_%s_%s=%s\n",bits,mode,same?"PASS":"FAIL");
+            packed_equivalent=same && packed_equivalent;
+        }
+        test::check(packed_equivalent,"normalized packed weights/UV match float equivalents");
         auto override_bytes=test::file(root/"positive-m2-3d-node-weight.glb");
         std::shared_ptr<const ars::assets::GlbModel> override_model;
         test::check(ars::assets::ingest_glb(override_bytes,resource,override_model)==ARS_OK,

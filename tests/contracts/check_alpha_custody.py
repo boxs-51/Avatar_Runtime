@@ -48,6 +48,14 @@ PR_SCOPES = {
             "docs/completed/audits/ALPHA_53_CUSTODY_ACCEPTANCE.md",
             "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
             "docs/DOCUMENTATION_INDEX.md"))),
+    "fix/alpha-54-packed-gltf-accessors": (
+        "579a04cab90f73d021d88996f0af1d6571d86f94",
+        frozenset(("src/rendering/scene3d.cpp", "tests/rendering/scene3d_tests.cpp",
+            "tests/rendering/d3d11_scene3d_pixels.cpp", "tests/assets/fixtures/generate_fixtures.py",
+            "tests/assets/fixtures/manifest.json", "tests/contracts/check_alpha_custody.py",
+            "docs/completed/audits/ALPHA_54_PACKED_ACCESSORS_ACCEPTANCE.md",
+            "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
+            "docs/DOCUMENTATION_INDEX.md"))),
 }
 
 def check_alpha(candidate="HEAD", base=MAIN):

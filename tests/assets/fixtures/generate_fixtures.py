@@ -352,6 +352,30 @@ glb_case('glb-custom-uint-attribute',lambda x:x.doc['meshes'][0]['primitives'][0
 glb_case('positive-glb-custom-float',lambda x:x.doc['meshes'][0]['primitives'][0]['attributes'].update(_CUSTOM=x.accessor([0,1,2],shape='SCALAR')),'OK')
 glb_case('positive-glb-ignored-channel',lambda x:x.doc['animations'][0]['channels'][0]['target'].pop('node'),'OK',full)
 glb_case('positive-glb-tangent-without-normal',lambda x:(x.doc['meshes'][0]['primitives'][0]['attributes'].pop('NORMAL'),x.doc['meshes'][0]['primitives'][0]['targets'][0].pop('NORMAL')),'OK',normal)
+# Alpha54: append public generated controls without changing any prior oracle.
+for bits,component,maximum,quarter,half in [(8,5121,255,64,128),(16,5123,65535,16384,32768)]:
+ for mode in ('weights','uv','both'):
+  for packed in (False,True):
+   fixture=copy.deepcopy(render);attributes=fixture.doc['meshes'][0]['primitives'][0]['attributes']
+   fixture.doc['images']=[{'bufferView':fixture.view(png_2x2()),'mimeType':'image/png'}]
+   fixture.doc['samplers']=[{'magFilter':9728,'minFilter':9728,'wrapS':33071,'wrapT':33071}]
+   fixture.doc['textures'][0]['sampler']=0
+   fixture.doc['materials'][0]['pbrMetallicRoughness'].update(metallicFactor=0,roughnessFactor=1)
+   if mode in ('weights','both'):
+    attributes['JOINTS_0']=fixture.accessor([[0,1,0,0]]*3,5121,'VEC4')
+    values=[[quarter,maximum-quarter,0,0],[0,maximum,0,0],[half,maximum-half,0,0]]
+    if not packed:values=[[v/maximum for v in row] for row in values]
+    attributes['WEIGHTS_0']=fixture.accessor(values,component if packed else 5126,'VEC4',normalized=packed)
+   if mode in ('uv','both'):
+    values=[[0,quarter],[maximum,0],[half,maximum]]
+    if not packed:values=[[v/maximum for v in row] for row in values]
+    if packed and component==5121:
+     # Vertex attributes need a4-byte aligned stride, including UBYTE VEC2.
+     view=fixture.view(b''.join(struct.pack('<2Bxx',*row) for row in values),byteStride=4)
+     attributes['TEXCOORD_0']=len(fixture.doc['accessors'])
+     fixture.doc['accessors'].append({'bufferView':view,'componentType':component,'count':3,'type':'VEC2','normalized':True})
+    else:attributes['TEXCOORD_0']=fixture.accessor(values,component if packed else 5126,'VEC2',normalized=packed)
+   save(f'positive-alpha54-{bits}-{mode}-'+('packed' if packed else 'float')+'.glb',fixture.bytes(),'OK','Alpha54 packed accessor / float equivalence','M2')
 (root/'atlas.png').write_bytes(png());(root/'manifest.json').write_bytes((json.dumps(records,indent=2,ensure_ascii=False)+'\n').encode())
 if args.reference_manifest:
  reference=json.loads(pathlib.Path(args.reference_manifest).read_text(encoding='utf-8'))
