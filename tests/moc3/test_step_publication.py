@@ -8,7 +8,7 @@ import time
 import unittest
 ROOT=Path(__file__).resolve().parents[2];sys.path.insert(0,str(ROOT/'scripts'))
 from moc3_admission_fixtures import drawable_packet
-from moc3_publication_probe import PublicationProbe,retained_state,BIN
+from moc3_publication_probe import PublicationProbe,retained_state,PUBLICATION_HOST
 MODEL=hashlib.sha256(b'generated model').digest()
 
 def state(sequence,clock):
@@ -20,7 +20,7 @@ def candidate(sequence,clock,prior=b''):
     checkpoint=state(sequence,clock)
     return b'ARSCAND1'+struct.pack('<IIQQQQII',1,0,42,sequence,clock,len(packet),len(checkpoint),0)+MODEL+hashlib.sha256(prior).digest()+packet+checkpoint
 
-@unittest.skipUnless(sys.platform=='win32' and (BIN/'ars_moc3_packet_publication_host.exe').exists(),'optional native host unavailable')
+@unittest.skipUnless(sys.platform=='win32' and PUBLICATION_HOST.is_file(),'optional native host unavailable')
 class StepPublication(unittest.TestCase):
     def setUp(self):self.temp=tempfile.TemporaryDirectory(dir=ROOT/'build');self.owner=PublicationProbe(self.temp.name)
     def tearDown(self):self.owner.close();self.temp.cleanup()

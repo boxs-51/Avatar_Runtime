@@ -7,7 +7,7 @@ import time
 import unittest
 ROOT=Path(__file__).resolve().parents[2];sys.path.insert(0,str(ROOT/'scripts'))
 from moc3_admission_fixtures import drawable_packet
-from moc3_publication_probe import PublicationProbe,retained_state,BIN
+from moc3_publication_probe import PublicationProbe,retained_state,PUBLICATION_HOST
 
 def generated_sequence():
     records=[]
@@ -17,7 +17,7 @@ def generated_sequence():
         records.append(struct.pack('<QQQ',i+1,i*33333334,len(packet))+packet)
     body=b''.join(records);return b'ARSEVAL1'+struct.pack('<IIQQ',2,3,42,len(body)+32)+body
 
-@unittest.skipUnless(sys.platform=='win32' and (BIN/'ars_moc3_packet_publication_host.exe').exists(),'optional native Windows host unavailable')
+@unittest.skipUnless(sys.platform=='win32' and PUBLICATION_HOST.is_file(),'optional native Windows host unavailable')
 class PublicationTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory(dir=ROOT/'build');self.owner=PublicationProbe(self.temp.name);self.packet=generated_sequence()

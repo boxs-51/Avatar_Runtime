@@ -9,7 +9,7 @@
   "classification_is_gate_approval": false,
   "counts": {
     "reference": 83,
-    "completed": 36,
+    "completed": 37,
     "in_progress": 21,
     "obsolete": 4
   },
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 144,
+  "total_documents": 145,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "e6c43df454c34e2c088b6d1d267c7ae1cf86a1a487e682c1012725b8b71cbb5f"
+      "reviewed_sha256": "fa7f858b672a6a2fedc2fe428bd16d1b23dbf7a2e4fb19c9c11af9fd8b6634b7"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -1762,6 +1762,16 @@
       "encoding": "utf-8",
       "document_kind": "markdown",
       "reviewed_sha256": "66ded4e908c74c18b81a039acad9bf748d5ea417d1228b651470baa6efecb7d5"
+    },
+    {
+      "path": "docs/completed/audits/ALPHA_52_NATIVE_TEST_TARGET_ACCEPTANCE.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Issue52 configured-native-target RED/GREEN and independent review; bounded test-provenance correction.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "bbbcc6c80612cf23e821006492e104d31724b77dd3a1f6cc22d49dcb826ac81a"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1773,9 +1783,9 @@
     "classification_is_gate_approval": false
   },
   "latest_checkpoint": {
-    "basis_head": "31ce916a72a08af27b3d87daa793b5e43cb50394",
-    "scope": "Alpha PR integration, architecture/document audit and linear issue backlog",
-    "new_documents": 3,
+    "basis_head": "a17d4f9",
+    "scope": "Alpha issue52 configured-native-target custody correction",
+    "new_documents": 1,
     "classification_is_gate_approval": false
   }
 }

@@ -35,7 +35,7 @@ the end so it does not block runnable local bug fixes.
 
 | Order | Issue | Scope / acceptance | State at audit |
 | --- | --- | --- | --- |
-| A01 | [#52](https://github.com/boxs-51/Avatar_Runtime/issues/52) | Bind required Python/CTest checks to the configured binary/configuration; missing targets fail; two-directory sentinel negatives | READY, first branch |
+| A01 | [#52](https://github.com/boxs-51/Avatar_Runtime/issues/52) | Bind required Python/CTest checks to the configured binary/configuration; missing targets fail; two-directory sentinel negatives | VERIFIED; [direct/independent proof](../completed/audits/ALPHA_52_NATIVE_TEST_TARGET_ACCEPTANCE.md), focused integration follows |
 | A02 | [#53](https://github.com/boxs-51/Avatar_Runtime/issues/53) | Pin original M2-E source plus ancestry; preserve historical allowlists; separate alpha checks; reconcile canonical paths for G00 manifest validation | RED:160 contracts,1 failure+3 errors |
 | A03 | [#54](https://github.com/boxs-51/Avatar_Runtime/issues/54) | P1 normalized packed WEIGHTS and normalized UV; integer/float geometry and pixel equivalents | OPEN inherited PR37 |
 | A04 | [#55](https://github.com/boxs-51/Avatar_Runtime/issues/55) | Apply supported COLOR_0 or typed rejection before GPU | OPEN inherited PR37 |

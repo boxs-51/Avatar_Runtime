@@ -742,7 +742,13 @@ if(ARS_BUILD_MOC3_PUBLIC_PIPELINE)
             add_test(NAME moc3_owned_publication_fence COMMAND ars_moc3_publication_fence_tests)
             add_test(NAME moc3_packet_publication COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/moc3/test_packet_publication.py")
             add_test(NAME moc3_step_publication COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/moc3/test_step_publication.py")
-            set_tests_properties(moc3_packet_publication PROPERTIES TIMEOUT 120 LABELS "MOC3_F4;REAL_CORE;WARP_DETERMINISTIC")
+            set_tests_properties(moc3_packet_publication moc3_step_publication PROPERTIES
+                ENVIRONMENT "ARS_MOC3_PUBLICATION_HOST_EXE=$<TARGET_FILE:ars_moc3_packet_publication_host>"
+                TIMEOUT 120 LABELS "MOC3_F4;REAL_CORE;WARP_DETERMINISTIC")
+            add_test(NAME moc3_native_test_target_custody COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/tests/moc3/test_native_test_targets.py")
+            set_tests_properties(moc3_native_test_target_custody PROPERTIES
+                TIMEOUT 180 LABELS "MOC3_TEST_CUSTODY;GENERATED_ONLY")
         endif()
     endif()
     add_executable(ars_moc3_physics_admission_tests tests/moc3/physics_admission_tests.cpp)
@@ -757,6 +763,8 @@ if(ARS_BUILD_MOC3_PUBLIC_PIPELINE)
     add_test(NAME moc3_step_frontend COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/moc3/test_step_frontend.py")
     if(Python3_Interpreter_FOUND)
         add_test(NAME moc3_native_physics_reference COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/moc3/test_native_physics_reference.py")
+        set_tests_properties(moc3_native_physics_reference PROPERTIES
+            ENVIRONMENT "ARS_MOC3_PHYSICS_TEST_EXE=$<TARGET_FILE:ars_moc3_retained_physics_tests>")
     endif()
     add_executable(ars_moc3_packet_guard src/moc3/packet_guard.cpp)
     target_link_libraries(ars_moc3_packet_guard PRIVATE ars_moc3_drawable_packet)
