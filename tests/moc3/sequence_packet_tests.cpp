@@ -26,5 +26,12 @@ int main(){
     auto late=next+24+frames[1].size();field(late+24+68+20,0x7fc00000);field(late+24+68+64,4097);
     reject(valid+"x");VerifiedScene static_scene;check(!decode(bytes(frames[0]),42,static_scene));
     check(!decode_frame(bytes(frames[0]),42,3,2,static_scene));check(decode_frame(bytes(frames[0]),42,2,2,static_scene));
+    auto physics=valid;patch(physics,8,2);
+    for(auto start:{std::size_t(56),next+24,late+24}){patch(physics,start+8,3);patch(physics,start+36,131);}
+    VerifiedSequence physical;check(decode_sequence(bytes(physics),42,physical));auto physical_prior=physical.frame(0).snapshot();
+    auto physics_reject=[&](std::string data){check(!decode_sequence(bytes(data),42,physical));check(physical.frame(0).snapshot()==physical_prior);++rejected;};
+    for(auto [offset,value]:{std::pair<std::size_t,unsigned>{8,1},{late+24+8,2},{late+24+36,3},{late+24+36,128},{late+24+36,387}}){auto bad=physics;patch(bad,offset,value);physics_reject(bad);}
+    check(!decode(bytes(physics),42,static_scene));
+    for(std::size_t i=0;i<physics.size();++i)physics_reject(physics.substr(0,i));
     std::cout<<"SEQUENCE_PACKET_PASS rejected="<<rejected<<" GPU_CREATIONS=0\n";
 }

@@ -4,11 +4,17 @@
 
 ## Gate disposition
 
+New bounded checkpoint: [PUB-02-B](../completed/audits/M2_MOC3_PUB02_B_ACCEPTANCE.md)
+executes independent Physics3 inside the isolated worker, with actual ON/OFF,
+release/reset/replay, WARP/hardware pixels and mapped/API evidence. Its versioned
+batch mode is distinct from static and parameter-only admission. Whole public
+product and G00/G01/G02 qualifications stay HOLD.
+
 | Gate | New direct F4 contribution | Remaining qualification for this optional product path |
 | --- | --- | --- |
 | G00 contract | Frozen private core mapping, candidate-copy/final authorization fence, physics/host commit order, ownership and failure quarantine. Independent review supports the implementation architecture. | HOLD public contract: model/capability semantics and product ABI/packaging still require a separate reviewed change. Existing material ADR/security requirements remain authoritative. |
 | G01 build | Windows x64 MSVC C++20 Release consumer; actual pinned dependency and binary/source hashes; private target default OFF. | HOLD cross-platform/product build: MOC3 adapter is Windows-only; no Linux MOC3 consumer or shipping configuration proof. |
-| G02 asset | Private immutable inputs feed the real consumer. Static public ZIP/manifest/PNG/MOC/Physics3 decode now runs inside AppContainer; host independently validates drawable/atlas data before GPU. | HOLD complete public import: static profile/feature subset only; original over-budget atlas input rejects. Persistent evaluator/physics and public ARSCHAR model-loading ABI remain absent. |
+| G02 asset | Private immutable inputs feed the real consumer. Public ZIP/manifest/PNG/MOC/Physics3 decode runs inside AppContainer; bounded PUB-02-A/B retain evaluation and native physics across complete frames. Host independently validates every drawable/atlas batch before GPU. | HOLD complete public import: bounded feature/profile subset only; original over-budget atlas input rejects. Long-lived interactive evaluator/physics, final product publication and public ARSCHAR model-loading ABI remain absent. |
 | G03 render2D | F2 numeric WARP/hardware pixels plus actual core-to-physics-to-MOC host frames. | Private subset proof only; public SDK consumer/layer contract needs its own integrated qualification. Author equivalence is a separate unclaimed oracle. |
 | G04 render3D | Existing private dual-mode host regression runs. | MOC3 consumer selects 2D only; no new MOC3 3D capability. This does not waive baseline SDK 3D gates. |
 | G05 mode | Existing atomic dual-mode host rollback/epoch tests remain green. | HOLD product switching: no public MOC3/native2D/3D representation switch or whole-package interactive replacement is supplied. |
@@ -34,13 +40,17 @@ Public CI cannot execute the full evaluator path without a redistributable MOC3 
 
 ## Next bounded decision
 
-The next implemented slice is [PUB-02-A bounded retained evaluation](M2_MOC3_PUB02_A_RETAINED_SESSION_DESIGN.md):
+The earlier implemented slice [PUB-02-A bounded retained evaluation](M2_MOC3_PUB02_A_RETAINED_SESSION_DESIGN.md):
 one isolated evaluator processes complete parameter frames, followed by full-batch
 host validation before GPU allocation. Its [local acceptance](../completed/audits/M2_MOC3_PUB02_A_ACCEPTANCE.md)
 separates geometry, pixels and visible/API evidence. Physics remains
-**VALIDATED_NOT_SIMULATED**; full PUB-02 and PUB-04 remain **HOLD**. This does not
+**VALIDATED_NOT_SIMULATED** in that parameter-only mode. The subsequent
+[PUB-02-B contract](M2_MOC3_PUB02_B_ISOLATED_PHYSICS_DESIGN.md) and
+[acceptance](../completed/audits/M2_MOC3_PUB02_B_ACCEPTANCE.md) add opt-in
+**SIMULATED_BOUNDED_INDEPENDENT** physics with retained particle state in the
+isolated batch. Full PUB-02 and PUB-04 remain **HOLD**. This does not
 close the G00/G01/G02 product qualifications above. The next slice must design
-and prove persistent isolated physics/state lifetime and host authority/expiry/
+and prove long-lived isolated state lifetime and host authority/expiry/
 cancellation before extending to public interactive publication.
 
 Before public SDK implementation, freeze the intended supported subset, installed consumer/capability behavior and trust boundary. Then implement/qualify public model lifecycle and persistent input ownership, followed by cross-platform/package/ABI tests, parser isolation/fuzz and the required performance workload. Obtain a redistributable test fixture without changing the private model's rights. Track physical loss on a separate runner. Existing source approval or this F4-A result does not authorize advertising a feature or waiving the missing observations.

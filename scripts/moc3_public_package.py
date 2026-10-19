@@ -47,32 +47,34 @@ def admit_zip(package:bytes,manifest_entry:str)->Admission:
     return _run_envelope(_package_envelope(package,manifest_entry,nonce),nonce)
 
 
-def evaluate_zip(package:bytes,manifest_entry:str,frames)->Admission:
+def evaluate_zip(package:bytes,manifest_entry:str,frames,*,physics=False)->Admission:
+    if type(physics) is not bool:raise ValueError('INVALID_PHYSICS_MODE')
     nonce=secrets.randbits(64) or 1;payload=_package_envelope(package,manifest_entry,nonce)
     if type(frames) not in (tuple,list) or not 1<=len(frames)<=8:raise ValueError('INVALID_COMPLETE_FRAMES')
     commands=bytearray(struct.pack('<I',len(frames)));last=0
     for i,frame in enumerate(frames):
-        if type(frame) not in (tuple,list) or len(frame)!=3:raise ValueError('INVALID_COMPLETE_FRAME')
-        sequence,clock,bindings=frame
+        if type(frame) not in (tuple,list) or len(frame)!=(4 if physics else 3):raise ValueError('INVALID_COMPLETE_FRAME')
+        sequence,clock,bindings=frame[:3];control=frame[3] if physics else 0
+        if type(control) is not int or not 0<=control<=3:raise ValueError('INVALID_PHYSICS_CONTROL')
         if type(sequence) is not int or sequence!=i+1 or type(clock) is not int or not 0<=clock<=1_000_000_000:
             raise ValueError('INVALID_FRAME_IDENTITY')
         if (i==0 and clock!=0) or (i>0 and not last<clock<=last+8*16_666_667):raise ValueError('INVALID_FRAME_CLOCK')
         last=clock
         if type(bindings) not in (tuple,list) or len(bindings)>32:raise ValueError('INVALID_BINDINGS')
-        commands.extend(struct.pack('<QQII',sequence,clock,0,len(bindings)));seen=set()
+        commands.extend(struct.pack('<QQII',sequence,clock,control,len(bindings)));seen=set()
         for pair in bindings:
             if type(pair) not in (tuple,list) or len(pair)!=2:raise ValueError('INVALID_BINDING')
             slot,value=pair
             if type(slot) is not int or not 0<=slot<4096 or slot in seen or type(value) not in (int,float) or not -1<=value<=1 or not math.isfinite(value):
                 raise ValueError('INVALID_BINDING')
             seen.add(slot);commands.extend(struct.pack('<If',slot,value))
-    return _run_envelope(payload+commands,nonce,'--evaluate')
+    return _run_envelope(payload+commands,nonce,'--simulate' if physics else '--evaluate')
 
 
 def _run_envelope(payload:bytes,nonce:int,mode='--package')->Admission:
     # Diagnostics can exercise worker faults, but callers cannot supply arbitrary commands.
-    if mode not in ('--package','--evaluate','--crash','--flood','--hang'):raise ValueError('INVALID_MODE')
-    if type(payload) is not bytes or len(payload)>96*1024*1024+(4096 if mode=='--evaluate' else 536):raise ValueError('INVALID_ENVELOPE')
+    if mode not in ('--package','--evaluate','--simulate','--crash','--flood','--hang'):raise ValueError('INVALID_MODE')
+    if type(payload) is not bytes or len(payload)>96*1024*1024+(4096 if mode in ('--evaluate','--simulate') else 536):raise ValueError('INVALID_ENVELOPE')
     folder=ROOT/'build/moc3-package-trials'/uuid.uuid4().hex[:24];folder.mkdir(parents=True,exist_ok=False)
     worker=folder/'worker.exe';shutil.copyfile(ISOLATED_BIN/'ars_moc3_import_worker.exe',worker)
     (folder/'worker-data.txt').write_bytes(b'generated read-only worker sentinel')
@@ -93,7 +95,7 @@ def _run_envelope(payload:bytes,nonce:int,mode='--package')->Admission:
     except (OSError,ValueError):pass
     status='ISOLATION_SETUP_REJECTED';packet=b''
     if run.returncode==0 and removed and empty:
-        if (48<=len(run.stdout)<=PACKET_CAP and run.stdout[:8]==(b'ARSEVAL1' if mode=='--evaluate' else b'ARSDRAW1') and
+        if (48<=len(run.stdout)<=PACKET_CAP and run.stdout[:8]==(b'ARSEVAL1' if mode in ('--evaluate','--simulate') else b'ARSDRAW1') and
             state['worker_exit']==0 and state.get('wait_result')==0 and state.get('output_overflow') is False):
             # Custody only: this is not a decoded/verified scene. Host still validates every byte.
             status='PACKET_CUSTODY';packet=run.stdout

@@ -1,4 +1,5 @@
 #include "package_admission.hpp"
+#include "retained_physics.hpp"
 #include "drawable_packet.hpp"
 #include "../assets/zip_reader.hpp"
 #include "../assets/png_decoder.hpp"
@@ -21,10 +22,11 @@ void keys(const validation::Document& doc,validation::Value v,std::initializer_l
 }
 }
 struct Binding {std::uint32_t slot;float value;};
-struct CompleteFrame {std::uint64_t sequence,clock;std::vector<Binding> bindings;std::vector<Parameter> parameters;};
+struct CompleteFrame {std::uint64_t sequence,clock;std::uint32_t control=0;std::vector<Binding> bindings;std::vector<Parameter> parameters;};
 void emit(std::uint64_t value,unsigned bytes){for(unsigned i=0;i<bytes;++i)std::cout.put(static_cast<char>(value>>(i*8)));}
-int package_worker(bool retained){
+int package_worker(bool retained,bool simulate){
     const char* rejection="PACKAGE_ENVELOPE_REJECTED";
+    bool output_started=false;
     try{
         char magic[8]{};require(bool(std::cin.read(magic,8))&&std::memcmp(magic,"ARSMPK01",8)==0);
         auto nonce=read(8),name_size=read(4),size=read(4);require(nonce&&name_size&&name_size<=512&&size>=22&&size<=96ull*assets::MiB);
@@ -41,7 +43,7 @@ int package_worker(bool retained){
              for(std::uint32_t i=0;i<count;++i){
                  CompleteFrame f;f.sequence=read(8);f.clock=read(8);require(f.sequence==i+1&&f.clock<=1000000000ull);
                  require(i?f.clock>last&&f.clock-last<=8ull*16666667:f.clock==0);last=f.clock;
-                 require(read(4)==0);auto n=read(4);require(n<=32);std::set<std::uint32_t> seen;
+                 f.control=static_cast<std::uint32_t>(read(4));require(simulate?f.control<=3:f.control==0);auto n=read(4);require(n<=32);std::set<std::uint32_t> seen;
                  for(std::uint32_t j=0;j<n;++j){auto slot=static_cast<std::uint32_t>(read(4));auto value=std::bit_cast<float>(static_cast<std::uint32_t>(read(4)));
                      require(slot<4096&&seen.insert(slot).second&&std::isfinite(value)&&value>=-1&&value<=1);f.bindings.push_back({slot,value});}
                  frames.push_back(std::move(f));
@@ -71,11 +73,20 @@ int package_worker(bool retained){
         }
         rejection="PACKAGE_MOC_REJECTED";Budget budget;budget.max_drawables=4096;budget.max_atlases=16;std::unique_ptr<Session> session;
         require(Session::open_blob(moc.bytes,atlases.images.size(),budget,session)==Result::ok);
-        std::uint32_t flags=0;
+        std::uint32_t flags=0;std::unique_ptr<RetainedPhysics> retained_physics;
         if(refs.has("Physics")){
             rejection="PACKAGE_PHYSICS_REJECTED";auto& physics=reference(refs.at("Physics"),".physics3.json");std::vector<ParameterInfo> catalog;
-            require(session->parameter_info(catalog)==Result::ok);validate_physics(physics.bytes,catalog,resource,limits,work);flags|=physics_validated;
+            require(session->parameter_info(catalog)==Result::ok);
+            if(simulate){
+                // The local name above is the immutable linked member, never a path in the host.
+                auto candidate=std::make_unique<RetainedPhysics>(physics.bytes,catalog,resource,limits,work);
+                flags|=128;
+                // Keep the typed solver alive across this complete batch.
+                retained_physics=std::move(candidate);
+            }else validate_physics(physics.bytes,catalog,resource,limits,work);
+            flags|=physics_validated;
         }
+        if(simulate){rejection="PACKAGE_PHYSICS_REJECTED";require(bool(retained_physics));}
         unsigned bit=2;for(auto key:{"Motions","Expressions","Pose","UserData","DisplayInfo"}){if(refs.has(key))flags|=1u<<bit;++bit;}
         // Worker output is deliberately not a trust verdict. Host repeats complete validation.
         if(retained){
@@ -91,16 +102,19 @@ int package_worker(bool retained){
             }
             auto one=encoded_size(*session->current(),atlases);require(one+24<=(packet_cap-32)/frames.size(),ARS_E_OUT_OF_BUDGET);
             auto total=32+(one+24)*frames.size();rejection="PACKAGE_OUTPUT_REJECTED";
-            std::cout.write("ARSEVAL1",8);emit(1,4);emit(frames.size(),4);emit(nonce,8);emit(total,8);
+            output_started=true;std::cout.write("ARSEVAL1",8);emit(simulate?2:1,4);emit(frames.size(),4);emit(nonce,8);emit(total,8);
             for(auto& frame:frames){
-                require(session->update_complete(frame.parameters)==Result::ok);
+                RetainedPhysics::Candidate candidate;
+                if(simulate)candidate=retained_physics->prepare(frame.clock,frame.parameters,frame.control&1,frame.control&2);
+                require(session->update_complete(simulate?candidate.parameters():frame.parameters)==Result::ok);
                 auto snapshot=session->current();require(snapshot->generation==frame.sequence+1&&encoded_size(*snapshot,atlases)==one);
-                emit(frame.sequence,8);emit(frame.clock,8);emit(one,8);encode_frame(std::cout,*snapshot,atlases,nonce,flags,2);
+                emit(frame.sequence,8);emit(frame.clock,8);emit(one,8);encode_frame(std::cout,*snapshot,atlases,nonce,flags,simulate?3:2);
+                if(simulate)retained_physics->commit(candidate);
             }
-        }else{rejection="PACKAGE_OUTPUT_REJECTED";encode(std::cout,*session->current(),atlases,nonce,flags);}
+        }else{rejection="PACKAGE_OUTPUT_REJECTED";output_started=true;encode(std::cout,*session->current(),atlases,nonce,flags);}
         std::cout.flush();return std::cout?0:42;
-    }catch(const assets::Failure& failure){std::cout<<(failure.status==ARS_E_OUT_OF_BUDGET?"PACKAGE_BUDGET_REJECTED":rejection)<<"\n";return 0;}
-     catch(const std::bad_alloc&){std::cout<<"PACKAGE_BUDGET_REJECTED\n";return 0;}
-     catch(...){std::cout<<rejection<<"\n";return 0;}
+    }catch(const assets::Failure& failure){if(output_started)return 42;std::cout<<(failure.status==ARS_E_OUT_OF_BUDGET?"PACKAGE_BUDGET_REJECTED":rejection)<<"\n";return 0;}
+     catch(const std::bad_alloc&){if(output_started)return 42;std::cout<<"PACKAGE_BUDGET_REJECTED\n";return 0;}
+     catch(...){if(output_started)return 42;std::cout<<rejection<<"\n";return 0;}
 }
 }

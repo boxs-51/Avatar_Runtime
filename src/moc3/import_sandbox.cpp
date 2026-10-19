@@ -51,7 +51,7 @@ int wmain(int argc,wchar_t** argv){
     if(argc<4)return 2;
     std::size_t output_cap=64;
 #ifdef ARS_MOC3_PACKAGE_ADMISSION
-    const bool package=std::wstring(argv[3])==L"--package"||std::wstring(argv[3])==L"--evaluate";
+    const bool package=std::wstring(argv[3])==L"--package"||std::wstring(argv[3])==L"--evaluate"||std::wstring(argv[3])==L"--simulate";
     if(package)output_cap=192ull*1024*1024;
 #else
     const bool package=false;

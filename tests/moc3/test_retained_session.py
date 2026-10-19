@@ -34,6 +34,14 @@ class GeometryOracle(unittest.TestCase):
 
 @unittest.skipUnless(sys.platform=='win32','Windows isolation diagnostics')
 class RetainedFrontend(unittest.TestCase):
+    def test_physics_is_separate_and_controls_are_bounded(self):
+        with patch.object(broker,'_run_envelope') as run:
+            broker.evaluate_zip(bytes(22),'m.model3.json',[(1,0,[],3),(2,16666667,[],0)],physics=True)
+            self.assertEqual(run.call_args.args[2],'--simulate')
+            for control in (-1,4,True,1.0):
+                with self.assertRaises(ValueError):broker.evaluate_zip(bytes(22),'m.model3.json',[(1,0,[],control)],physics=True)
+            with self.assertRaises(ValueError):broker.evaluate_zip(bytes(22),'m.model3.json',[(1,0,[],1)])
+            with self.assertRaises(ValueError):broker.evaluate_zip(bytes(22),'m.model3.json',[(1,0,[])],physics=True)
     def test_complete_frames_are_explicitly_opt_in(self):
         with patch.object(broker,'_run_envelope') as run:
             broker.evaluate_zip(bytes(22),'m.model3.json',[(1,0,[]),(2,16666667,[(0,.5)]),(3,33333334,[])])

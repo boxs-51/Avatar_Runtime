@@ -39,7 +39,7 @@ int main(int argc,char** argv){
     bool hardware=std::string_view(argv[3])=="--hardware";if(!hardware&&std::string_view(argv[3])!="--warp")return 2;
     auto output=std::filesystem::path(argv[1]);std::filesystem::create_directories(output);
     std::uint64_t device_calls=0;ars::moc3::GpuProbe probe;
-    auto proof=[&](const char* status,std::uint32_t flags=0){std::ofstream f(output/"admission.json");f<<"{\"status\":\""<<status<<"\",\"device_creation_calls\":"<<device_calls<<",\"gpu_resource_creations\":"<<probe.creations<<",\"flags\":"<<flags<<",\"physics\":\""<<((flags&3)==3?"VALIDATED_NOT_SIMULATED":"ABSENT")<<"\"}";};
+    auto proof=[&](const char* status,std::uint32_t flags=0){std::ofstream f(output/"admission.json");f<<"{\"status\":\""<<status<<"\",\"device_creation_calls\":"<<device_calls<<",\"gpu_resource_creations\":"<<probe.creations<<",\"flags\":"<<flags<<",\"physics\":\""<<((flags&128)?"SIMULATED_BOUNDED_INDEPENDENT":(flags&3)==3?"VALIDATED_NOT_SIMULATED":"ABSENT")<<"\"}";};
     try{
         _setmode(_fileno(stdin),_O_BINARY);std::vector<std::uint8_t> bytes;char chunk[16384];
         while(std::cin){std::cin.read(chunk,sizeof(chunk));auto n=std::cin.gcount();if(std::size_t(n)>ars::moc3::admission::packet_cap-bytes.size()){proof("REJECTED");return 3;}bytes.insert(bytes.end(),chunk,chunk+n);}

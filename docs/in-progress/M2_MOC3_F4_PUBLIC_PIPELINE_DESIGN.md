@@ -6,8 +6,15 @@ PUB-02-A follow-on: [bounded retained sequence contract](M2_MOC3_PUB02_A_RETAINE
 implements complete parameter frames within one isolated job and independently
 validated batch output. See its [local acceptance](../completed/audits/M2_MOC3_PUB02_A_ACCEPTANCE.md)
 for actual geometry/pixel/API evidence and limits. This is progress on PUB-02/03;
-the full persistent evaluator, isolated physics and PUB-04 final authority fence
+the full persistent evaluator, long-lived isolated physics and PUB-04 final authority fence
 remain HOLD. It is not a long-lived interactive service.
+
+PUB-02-B follow-on: [isolated retained physics contract](M2_MOC3_PUB02_B_ISOLATED_PHYSICS_DESIGN.md)
+and [local acceptance](../completed/audits/M2_MOC3_PUB02_B_ACCEPTANCE.md) add native
+independent Physics3 execution, disable/release/reset and transactional solver
+state inside the same short isolated batch. Static and parameter modes retain
+their previous meanings. Physics in this opt-in batch is now simulated; it does
+not close persistent interactive lifetime, host authority or PUB-04 publication.
 
 The owner chose arbitrary public-user MOC3 input. The completed parser-preflight prototype is a boundary experiment, not the public importer. The next implementation must use the following order; none of these steps may turn a preflight success into permission to reparse hostile MOC bytes inside the trusted host.
 

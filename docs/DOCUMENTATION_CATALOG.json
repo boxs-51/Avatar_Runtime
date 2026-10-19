@@ -8,9 +8,9 @@
   "scope": "README.md + every file recursively under docs/; build/, local-assets/, source/tests excluded from document inventory",
   "classification_is_gate_approval": false,
   "counts": {
-    "reference": 80,
-    "completed": 29,
-    "in_progress": 16,
+    "reference": 81,
+    "completed": 31,
+    "in_progress": 17,
     "obsolete": 4
   },
   "baseline_counts": {
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 129,
+  "total_documents": 133,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -42,7 +42,7 @@
       "reason": "Điểm vào hiện hành, đã cập nhật trạng thái private components và link tới catalog/ledger.",
       "lifecycle": "reference",
       "related_paths": [],
-      "reviewed_sha256": "c71752ac7ea1a35247f0a577dac497e25e576086e72ff955e1164aa767852770",
+      "reviewed_sha256": "f041164a0774714067fb0adbcabfd412fb95e58a475f7de256ae0a76cce32a66",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "README.md"
@@ -414,7 +414,7 @@
       "reason": "Kế hoạch hiện hành: PUB-02 retained evaluator, PUB-04 publication, PUB-05 SDK, PUB-06 qualification.",
       "lifecycle": "active",
       "related_paths": [],
-      "reviewed_sha256": "ed46969d5cddc1aa7288056180829834050c6866779e5bce5d1e27f729dae898",
+      "reviewed_sha256": "748b9a7ecdfc9892e0f4b905696626c6adfe9f003c0ebef371c78c65287f4d5f",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md",
@@ -426,7 +426,7 @@
       "reason": "Ledger hiện hành cho product gates, public F4/SDK/release và physical HOLD.",
       "lifecycle": "active",
       "related_paths": [],
-      "reviewed_sha256": "33c2dfdea82b7ed1ac1c3e1bef8fb81799f2c8edda126bbdb8a61ba2ea86a520",
+      "reviewed_sha256": "8018558adfd4a7b930d33f085112d3bdf489647b261c7d2b5a267b4dbfb80092",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_MOC3_F4_RELEASE_LEDGER.md",
@@ -1612,6 +1612,46 @@
       "encoding": "utf-8",
       "document_kind": "structured_record",
       "reviewed_sha256": "721c2fe84a38145672792d4f63fc397b51bac3e0d8998a4f4a21cafccefd2ed8"
+    },
+    {
+      "path": "docs/in-progress/M2_MOC3_PUB02_B_ISOLATED_PHYSICS_DESIGN.md",
+      "category": "in_progress",
+      "lifecycle": "maintained_contract",
+      "reason": "Maintained contract for bounded isolated physics; full persistent PUB-02/PUB-04 remain HOLD.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "79f8a16b97612707f00c3d1f9571aa969ec028c66ab6636a2b5f41a8518c8b2d"
+    },
+    {
+      "path": "docs/completed/audits/M2_MOC3_PUB02_B_ACCEPTANCE.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Direct local isolated native physics/geometry/pixel/API acceptance in a bounded batch.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "0971b20ac5373789c0f708243b271988fc4fd1cf831a5c6d6f7ed52488db56b9"
+    },
+    {
+      "path": "docs/completed/audits/M2_MOC3_PUB02_B_REVIEW.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Independent native solver/protocol and final local evidence review.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "77162860de93f5a5a14e562cfd1db1fdd25c0bafab64e2f561e737022fea0046"
+    },
+    {
+      "path": "docs/reference/audits/M2_MOC3_PUB02_B_SOURCE.json",
+      "category": "reference",
+      "lifecycle": "reference",
+      "reason": "Exact tested public source/binary/dependency custody; no private model data.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "structured_record",
+      "reviewed_sha256": "d2954dbaf68c45715a9f4859e060be5b3f0bf2ca6fb92e7b066be01b27e2891f"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1619,6 +1659,12 @@
   "follow_on_checkpoint": {
     "basis_head": "d72d148e9b2617f0aab9b0704ecea6927318d386",
     "scope": "DOC-MOVE + PUB-02-A bounded local acceptance",
+    "new_documents": 4,
+    "classification_is_gate_approval": false
+  },
+  "latest_checkpoint": {
+    "basis_head": "89f732db11db6774c9dfe5f0cc298d6356437b38",
+    "scope": "PUB-02-B bounded isolated physics local acceptance",
     "new_documents": 4,
     "classification_is_gate_approval": false
   }

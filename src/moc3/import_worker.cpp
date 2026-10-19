@@ -92,9 +92,9 @@ int wmain(int argc,wchar_t** argv){
         return 27;
     }
 #ifdef ARS_MOC3_PACKAGE_ADMISSION
-    if(mode==L"--package"||mode==L"--evaluate"){
+    if(mode==L"--package"||mode==L"--evaluate"||mode==L"--simulate"){
         _setmode(_fileno(stdin),_O_BINARY);_setmode(_fileno(stdout),_O_BINARY);
-        std::ios::sync_with_stdio(false);return ars::moc3::admission::package_worker(mode==L"--evaluate");
+        std::ios::sync_with_stdio(false);return ars::moc3::admission::package_worker(mode!=L"--package",mode==L"--simulate");
     }
 #endif
     if(mode!=L"--moc")return 28;

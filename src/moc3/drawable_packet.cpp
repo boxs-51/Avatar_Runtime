@@ -23,9 +23,10 @@ struct Meta {std::uint32_t indices=0,masks=0;std::size_t mask_offset=0;};
 // Pass one deliberately has fixed scratch, no attacker-count-based allocations.
 void walk(Reader& r,std::uint64_t nonce,std::uint64_t generation,std::uint32_t version,Snapshot* scene,AtlasSet* images,std::uint32_t& flags){
     auto magic=r.take(8);need(std::memcmp(magic.data(),"ARSDRAW1",8)==0);
-    need((version==1&&generation==1)||(version==2&&generation>=2&&generation<=9));
+    need((version==1&&generation==1)||((version==2||version==3)&&generation>=2&&generation<=9));
     need(r.u32()==version);need(r.integer(8)==r.bytes.size());need(r.integer(8)==generation);
-    need(nonce&&r.integer(8)==nonce);flags=r.u32();need((flags&~127u)==0&&((flags&3)==0||(flags&3)==3));
+    need(nonce&&r.integer(8)==nonce);flags=r.u32();need((flags&~255u)==0&&((flags&3)==0||(flags&3)==3));
+    need(version==3?(flags&131u)==131u:(flags&128u)==0);
     auto na=r.u32(),nd=r.u32();need(na&&na<=16&&nd&&nd<=4096);
     std::uint64_t texels=0,vertices=0,indices=0,masks=0,mask_work=0;
     if(images)images->images.reserve(na);if(scene){scene->generation=generation;scene->drawables.reserve(nd);}
@@ -94,7 +95,7 @@ void encode_frame(std::ostream& out,const Snapshot& scene,const AtlasSet& images
 bool decode_sequence(std::span<const std::uint8_t> bytes,std::uint64_t nonce,VerifiedSequence& output) noexcept {
     try{
         need(bytes.size()>=32&&bytes.size()<=packet_cap);Reader r{bytes};auto magic=r.take(8);
-        need(std::memcmp(magic.data(),"ARSEVAL1",8)==0&&r.u32()==1);auto count=r.u32();need(count&&count<=8);
+        need(std::memcmp(magic.data(),"ARSEVAL1",8)==0);auto version=r.u32();need(version==1||version==2);auto count=r.u32();need(count&&count<=8);
         need(nonce&&r.integer(8)==nonce&&r.integer(8)==bytes.size());
         std::array<std::span<const std::uint8_t>,8> packets{};std::array<std::uint64_t,8> clocks{};
         for(std::uint32_t i=0;i<count;++i){
@@ -104,9 +105,9 @@ bool decode_sequence(std::span<const std::uint8_t> bytes,std::uint64_t nonce,Ver
         }
         need(r.pos==r.bytes.size());
         // All inner streams pass a nonallocating pass before ANY decoded frame allocation.
-        for(std::uint32_t i=0;i<count;++i)need(validate_frame(packets[i],nonce,i+2,2));
+        for(std::uint32_t i=0;i<count;++i)need(validate_frame(packets[i],nonce,i+2,version+1));
         VerifiedSequence candidate;candidate.frames_.reserve(count);candidate.clocks_.reserve(count);
-        for(std::uint32_t i=0;i<count;++i){VerifiedScene scene;need(decode_frame(packets[i],nonce,i+2,2,scene));candidate.frames_.push_back(std::move(scene));candidate.clocks_.push_back(clocks[i]);}
+        for(std::uint32_t i=0;i<count;++i){VerifiedScene scene;need(decode_frame(packets[i],nonce,i+2,version+1,scene));candidate.frames_.push_back(std::move(scene));candidate.clocks_.push_back(clocks[i]);}
         output=std::move(candidate);return true;
     }catch(...){return false;}
 }

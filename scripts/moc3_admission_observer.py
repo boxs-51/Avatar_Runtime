@@ -1,4 +1,4 @@
-"""Visible, authenticated local observer for the STATIC admission proof (no animation).
+"""Visible, authenticated local observer for bounded admission proofs.
 
 API and Tk consume the same immutable readback bytes. No asset upload/import endpoint.
 """
@@ -15,9 +15,10 @@ from moc3_test_harness import _harden_local_path
 
 
 def observe(run,evidence,*,proof_kind="STATIC_DEFAULT_POSE"):
-    if proof_kind not in ("STATIC_DEFAULT_POSE","RETAINED_PARAMETER_SEQUENCE"):raise ValueError("unsupported proof kind")
+    if proof_kind not in ("STATIC_DEFAULT_POSE","RETAINED_PARAMETER_SEQUENCE","RETAINED_PHYSICS_SEQUENCE"):raise ValueError("unsupported proof kind")
+    physics='SIMULATED_BOUNDED_INDEPENDENT' if proof_kind=='RETAINED_PHYSICS_SEQUENCE' else 'VALIDATED_NOT_SIMULATED'
     lock=threading.Lock();state={'phase':'RUNNING','last_case':'starting','cases_passed':0,
-        'physics':'VALIDATED_NOT_SIMULATED','proof':proof_kind,'frames':{}}
+        'physics':physics,'proof':proof_kind,'frames':{}}
     presented={};frames={};token=secrets.token_urlsafe(32);result={};ui_proof={}
     class Handler(BaseHTTPRequestHandler):
         def log_message(self,*_args):pass
@@ -44,7 +45,7 @@ def observe(run,evidence,*,proof_kind="STATIC_DEFAULT_POSE"):
     root=tk.Tk();root.title('Avatar Runtime - '+proof_kind)
     root.geometry('1080x650')
     title=tk.Label(root,text='PNG / Physics3 admission -> independent drawable guard -> GPU',font=('Segoe UI',15));title.pack(pady=8)
-    label=tk.Label(root,text=proof_kind+' | Physics VALIDATED, NOT SIMULATED',font=('Segoe UI',12));label.pack()
+    label=tk.Label(root,text=proof_kind+' | '+physics,font=('Segoe UI',12));label.pack()
     progress=tk.Label(root,text='Starting isolated checks',font=('Consolas',10));progress.pack(pady=8)
     row=tk.Frame(root);row.pack();panels={};photos={}
     for backend in ('warp','hardware'):
@@ -55,7 +56,7 @@ def observe(run,evidence,*,proof_kind="STATIC_DEFAULT_POSE"):
             if frame:
                 backend=frame['backend'];frames[backend]=frame
                 state['frames'][backend]={'width':512,'height':512,'ppm_sha256':hashlib.sha256(frame['ppm']).hexdigest(),
-                    'rgba_sha256':hashlib.sha256(frame['rgba']).hexdigest(),'physics':'VALIDATED_NOT_SIMULATED','pose':frame.get('pose','DEFAULT'),'sequence':frame.get('sequence',0)}
+                    'rgba_sha256':hashlib.sha256(frame['rgba']).hexdigest(),'physics':physics,'pose':frame.get('pose','DEFAULT'),'sequence':frame.get('sequence',0)}
     def work():
         try:result['report']=run(notify)
         except Exception as error:result['report']={'verdict':'FAIL','reason':type(error).__name__}
