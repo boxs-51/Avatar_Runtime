@@ -67,12 +67,18 @@ Result HostDevice::release_owned_references() {
     return Result::ok;
 }
 
+Result HostDevice::mark_lost() {
+    if (!on_owner_thread()) return Result::wrong_thread;
+    lost_=true;
+    return Result::device_lost;
+}
+
 Result HostDevice::validate(ID3D11RenderTargetView *target, TargetInfo info) const {
     if (!on_owner_thread()) return Result::wrong_thread;
     if (!device_ || !context_ || !target || !generation_ || !info.generation || !info.width || !info.height)
         return Result::invalid_argument;
     if (info.generation!=generation_) return Result::invalid_argument;
-    if (FAILED(device_->GetDeviceRemovedReason())) return Result::device_lost;
+    if (lost_ || FAILED(device_->GetDeviceRemovedReason())) return Result::device_lost;
     Microsoft::WRL::ComPtr<ID3D11Device> context_device, target_device;
     context_->GetDevice(&context_device);
     target->GetDevice(&target_device);

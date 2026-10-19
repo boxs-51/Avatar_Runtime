@@ -318,6 +318,78 @@ int main(int argc,char **argv) {
                   "injected GPU create failure preserves old target and pin state");
         }
         std::printf("M2C_INJECTED_GPU_CREATE=%zu\n",count_creates.attempts);
+        bool status_matrix=true;
+        const std::array<HRESULT,6> failures{E_OUTOFMEMORY,E_FAIL,DXGI_ERROR_DEVICE_REMOVED,
+            DXGI_ERROR_DEVICE_RESET,DXGI_ERROR_DEVICE_HUNG,E_FAIL};
+        const std::array<Result,6> expected_status{Result::out_of_budget,Result::failed,
+            Result::device_lost,Result::device_lost,Result::device_lost,Result::device_lost};
+        for (std::size_t at=1;at<=count_creates.attempts;++at) for (std::size_t kind=0;kind<failures.size();++kind) {
+            ars::graphics::d3d11::HostDevice isolated(device.Get(),context.Get(),info.generation);
+            ars::rendering::GpuCreateProbe failure{at,0,failures[kind],kind==5?DXGI_ERROR_DEVICE_REMOVED:S_OK};
+            ars::graphics::d3d11::QueryRetirement rejected;
+            ComPtr<ID3D11Texture2D> unchanged_capture=t.image;
+            const auto result=ars::rendering::render_offscreen_3d(isolated,t.view.Get(),info,textured,
+                camera,rejected,std::addressof(unchanged_capture),&failure);
+            const bool loss=expected_status[kind]==Result::device_lost;
+            const bool passed=result==expected_status[kind] && failure.attempts==at &&
+                !rejected.holds_pin() && !rejected.holds_target() && !rejected.complete() &&
+                unchanged_capture.Get()==t.image.Get() && pixel(context.Get(),t,4,4)==before_failure &&
+                isolated.validate(t.view.Get(),info)==(loss?Result::device_lost:Result::ok);
+            if (!passed && at==1) std::printf("ALPHA56_DIAGNOSTIC_%zu=result%d expected%d attempts%zu pin%d target%d complete%d capture%d pixel%d validate%d\n",
+                kind,int(result),int(expected_status[kind]),failure.attempts,int(rejected.holds_pin()),int(rejected.holds_target()),
+                int(rejected.complete()),int(unchanged_capture.Get()==t.image.Get()),int(pixel(context.Get(),t,4,4)==before_failure),int(isolated.validate(t.view.Get(),info)));
+            status_matrix=passed && status_matrix;
+            std::printf("ALPHA56_CREATE_%zu_%zu=%s\n",at,kind,passed?"PASS":"FAIL");
+            ars::rendering::GpuCreateProbe blocked;
+            ars::graphics::d3d11::QueryRetirement retry;
+            const auto retried=ars::rendering::render_offscreen_3d(isolated,t.view.Get(),info,textured,camera,retry,nullptr,&blocked);
+            status_matrix=(retried==(loss?Result::device_lost:Result::ok) && (!loss || blocked.attempts==0)) && status_matrix;
+            // A broken baseline may submit successfully. Retire it honestly
+            // before asserting failure, rather than tripping the lifetime guard.
+            if (retried==Result::ok) {
+                Result drained=Result::busy;
+                for (int spin=0;spin<10000 && drained==Result::busy;++spin) {
+                    drained=retry.poll(info.generation);if (drained==Result::busy) std::this_thread::yield();
+                }
+                check(drained==Result::ok,"unexpected baseline submission still retires safely");
+            }
+        }
+        struct QueryCreateFailure final : ars::graphics::d3d11::QueryOps {
+            HRESULT failure=E_FAIL,reason=S_OK;bool attempted=false;
+            HRESULT create_query(ID3D11Device *,const D3D11_QUERY_DESC *,ID3D11Query **) override { attempted=true;return failure; }
+            HRESULT removed_reason(ID3D11Device *) override { return attempted?reason:S_OK; }
+            HRESULT get_data(ID3D11DeviceContext *,ID3D11Query *,BOOL *) override { return E_FAIL; }
+            void flush(ID3D11DeviceContext *) override {}
+        };
+        for (std::size_t kind=0;kind<failures.size();++kind) {
+            QueryCreateFailure ops;ops.failure=failures[kind];ops.reason=kind==5?DXGI_ERROR_DEVICE_REMOVED:S_OK;
+            ars::graphics::d3d11::HostDevice isolated(device.Get(),context.Get(),info.generation);
+            ars::graphics::d3d11::QueryRetirement rejected(&ops);
+            const auto result=ars::rendering::render_offscreen_3d(isolated,t.view.Get(),info,textured,camera,rejected);
+            const bool passed=result==expected_status[kind] && !rejected.holds_pin() &&
+                !rejected.holds_target() && !rejected.complete() && pixel(context.Get(),t,4,4)==before_failure &&
+                isolated.validate(t.view.Get(),info)==(kind>=2?Result::device_lost:Result::ok);
+            status_matrix=passed && status_matrix;
+            std::printf("ALPHA56_QUERY_%zu=%s\n",kind,passed?"PASS":"FAIL");
+        }
+        check(device->GetDeviceRemovedReason()==S_OK,"injected loss never removes native device");
+        ars::graphics::d3d11::HostDevice replacement(device.Get(),context.Get(),info.generation+1);
+        auto replacement_info=info;++replacement_info.generation;
+        auto replacement_target=target(device.Get(),8);
+        check(replacement.validate(replacement_target.view.Get(),replacement_info)==Result::ok,"fresh backend generation admits healthy replacement");
+        ars::graphics::d3d11::QueryRetirement replacement_query;
+        check(ars::rendering::render_offscreen_3d(replacement,replacement_target.view.Get(),replacement_info,textured,
+            camera,replacement_query)==Result::ok,"replacement generation renders on fresh target");
+        Result replacement_done=Result::busy;
+        for (int spin=0;spin<10000 && replacement_done==Result::busy;++spin) {
+            replacement_done=replacement_query.poll(replacement_info.generation);
+            if (replacement_done==Result::busy) std::this_thread::yield();
+        }
+        check(replacement_done==Result::ok && pixel(context.Get(),replacement_target,4,4)==before_failure,
+            "replacement exact retirement and healthy pixels");
+        std::fflush(stdout);
+        check(status_matrix,"typed HRESULT and lost-backend quarantine matrix");
+
         auto repeat=load("positive-m2-3d-repeat.glb");
         auto clamp=load("positive-m2-3d-clamp.glb");
         submit(repeat);

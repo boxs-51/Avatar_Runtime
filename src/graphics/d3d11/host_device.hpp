@@ -16,6 +16,7 @@ class HostDevice {
     Microsoft::WRL::ComPtr<ID3D11DepthStencilState> depth_;
     std::thread::id owner_;
     std::uint64_t generation_;
+    bool lost_ = false;
     Result init();
 public:
     HostDevice(ID3D11Device *device, ID3D11DeviceContext *context, std::uint64_t generation);
@@ -25,6 +26,7 @@ public:
     Result validate(ID3D11RenderTargetView *target, TargetInfo info) const;
     Result submit(ID3D11RenderTargetView *target, TargetInfo info);
     Result release_owned_references();
+    Result mark_lost();
     ID3D11DeviceContext *context() const noexcept { return context_.Get(); }
     ID3D11Device *device() const noexcept { return device_.Get(); }
     std::uint64_t generation() const noexcept { return generation_; }

@@ -1,6 +1,7 @@
 #include "d3d11_scene3d.hpp"
 #ifdef _WIN32
 #include "../graphics/d3d11/state_scope.hpp"
+#include "../graphics/d3d11/creation_status.hpp"
 #include <d3dcompiler.h>
 #include <algorithm>
 #include <cmath>
@@ -39,7 +40,15 @@ struct Frame {
     ComPtr<ID3D11DepthStencilView> dsv;
     std::vector<Range> ranges;
 };
-bool allow(GpuCreateProbe *probe) noexcept { return !probe || probe->allow(); }
+template<class Create>
+Result create_resource(ID3D11Device *device,GpuCreateProbe *probe,Create &&create) {
+    const bool injected=probe && !probe->allow();
+    const HRESULT hr=injected?probe->failure:create();
+    if (SUCCEEDED(hr)) return Result::ok;
+    const HRESULT reason=injected && FAILED(probe->removed_reason)?
+        probe->removed_reason:device->GetDeviceRemovedReason();
+    return graphics::d3d11::creation_status(hr,reason);
+}
 constexpr char shader[]=R"(
 Texture2D baseTexture : register(t0);
 Texture2D mrTexture : register(t1);
@@ -151,14 +160,14 @@ Result make_texture(ID3D11Device *device,ID3D11DeviceContext *context,
     desc.Usage=D3D11_USAGE_DEFAULT;
     desc.BindFlags=D3D11_BIND_SHADER_RESOURCE|D3D11_BIND_RENDER_TARGET;
     desc.MiscFlags=D3D11_RESOURCE_MISC_GENERATE_MIPS;
-    if (!allow(probe)) return Result::out_of_budget;
-    if (FAILED(device->CreateTexture2D(&desc,nullptr,&texture))) return Result::failed;
+    if (const auto created=create_resource(device,probe,[&] { return device->CreateTexture2D(&desc,nullptr,&texture); });
+        created!=Result::ok) return created;
     const auto format=srgb?DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:DXGI_FORMAT_R8G8B8A8_UNORM;
     D3D11_SHADER_RESOURCE_VIEW_DESC srv{};
     srv.Format=format;srv.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE2D;
     srv.Texture2D.MostDetailedMip=0;srv.Texture2D.MipLevels=UINT(-1);
-    if (!allow(probe)) return Result::out_of_budget;
-    if (FAILED(device->CreateShaderResourceView(texture.Get(),&srv,&view))) return Result::failed;
+    if (const auto created=create_resource(device,probe,[&] { return device->CreateShaderResourceView(texture.Get(),&srv,&view); });
+        created!=Result::ok) return created;
     context->UpdateSubresource(texture.Get(),0,nullptr,image.rgba.data(),image.width*4,0);
     context->GenerateMips(view.Get());
     D3D11_SAMPLER_DESC s{};
@@ -174,8 +183,7 @@ Result make_texture(ID3D11Device *device,ID3D11DeviceContext *context,
     };
     s.AddressU=address(ref.wrap_s);s.AddressV=address(ref.wrap_t);
     s.AddressW=D3D11_TEXTURE_ADDRESS_CLAMP;
-    if (!allow(probe)) return Result::out_of_budget;
-    return SUCCEEDED(device->CreateSamplerState(&s,&sampler))?Result::ok:Result::failed;
+    return create_resource(device,probe,[&] { return device->CreateSamplerState(&s,&sampler); });
 }
 Result build(ID3D11Device *device,const PreparedScene3D &scene,const Camera3D &camera,
              graphics::TargetInfo info,ID3D11DeviceContext *context,Frame &frame,
@@ -243,15 +251,15 @@ Result build(ID3D11Device *device,const PreparedScene3D &scene,const Camera3D &c
         desc.BindFlags=D3D11_BIND_VERTEX_BUFFER;
         desc.ByteWidth=static_cast<UINT>(vertices.size()*sizeof(Vertex));
         data.pSysMem=vertices.data();
-        if (!allow(probe)) return Result::out_of_budget;
-        if (FAILED(device->CreateBuffer(&desc,&data,&frame.vertices))) return Result::failed;
+        if (const auto created=create_resource(device,probe,[&] { return device->CreateBuffer(&desc,&data,&frame.vertices); });
+        created!=Result::ok) return created;
     }
     if (!indices.empty()) {
         desc.BindFlags=D3D11_BIND_INDEX_BUFFER;
         desc.ByteWidth=static_cast<UINT>(indices.size()*sizeof(std::uint32_t));
         data.pSysMem=indices.data();
-        if (!allow(probe)) return Result::out_of_budget;
-        if (FAILED(device->CreateBuffer(&desc,&data,&frame.indices))) return Result::failed;
+        if (const auto created=create_resource(device,probe,[&] { return device->CreateBuffer(&desc,&data,&frame.indices); });
+        created!=Result::ok) return created;
     }
     ComPtr<ID3DBlob> vs_code,ps_code,errors;
     if (FAILED(D3DCompile(shader,sizeof(shader)-1,nullptr,nullptr,nullptr,"VS","vs_4_0",
@@ -259,12 +267,10 @@ Result build(ID3D11Device *device,const PreparedScene3D &scene,const Camera3D &c
         FAILED(D3DCompile(shader,sizeof(shader)-1,nullptr,nullptr,nullptr,"PS","ps_4_0",
                           D3DCOMPILE_ENABLE_STRICTNESS,0,&ps_code,&errors)))
         return Result::failed;
-    if (!allow(probe)) return Result::out_of_budget;
-    if (FAILED(device->CreateVertexShader(vs_code->GetBufferPointer(),vs_code->GetBufferSize(),nullptr,&frame.vs)))
-        return Result::failed;
-    if (!allow(probe)) return Result::out_of_budget;
-    if (FAILED(device->CreatePixelShader(ps_code->GetBufferPointer(),ps_code->GetBufferSize(),nullptr,&frame.ps)))
-        return Result::failed;
+    if (const auto created=create_resource(device,probe,[&] { return device->CreateVertexShader(vs_code->GetBufferPointer(),vs_code->GetBufferSize(),nullptr,&frame.vs); });
+        created!=Result::ok) return created;
+    if (const auto created=create_resource(device,probe,[&] { return device->CreatePixelShader(ps_code->GetBufferPointer(),ps_code->GetBufferSize(),nullptr,&frame.ps); });
+        created!=Result::ok) return created;
     const D3D11_INPUT_ELEMENT_DESC layout[]{
         {"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,offsetof(Vertex,clip),D3D11_INPUT_PER_VERTEX_DATA,0},
         {"NORMAL",0,DXGI_FORMAT_R32G32B32_FLOAT,0,offsetof(Vertex,normal),D3D11_INPUT_PER_VERTEX_DATA,0},
@@ -272,18 +278,17 @@ Result build(ID3D11Device *device,const PreparedScene3D &scene,const Camera3D &c
         {"COLOR",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,offsetof(Vertex,base),D3D11_INPUT_PER_VERTEX_DATA,0},
         {"TEXCOORD",1,DXGI_FORMAT_R32G32B32A32_FLOAT,0,offsetof(Vertex,metallic),D3D11_INPUT_PER_VERTEX_DATA,0},
         {"TEXCOORD",2,DXGI_FORMAT_R32G32B32_FLOAT,0,offsetof(Vertex,has_base),D3D11_INPUT_PER_VERTEX_DATA,0}};
-    if (!allow(probe)) return Result::out_of_budget;
-    if (FAILED(device->CreateInputLayout(layout,6,vs_code->GetBufferPointer(),vs_code->GetBufferSize(),&frame.layout)))
-        return Result::failed;
+    if (const auto created=create_resource(device,probe,[&] { return device->CreateInputLayout(layout,6,vs_code->GetBufferPointer(),vs_code->GetBufferSize(),&frame.layout); });
+        created!=Result::ok) return created;
     D3D11_RASTERIZER_DESC raster{};
     raster.FillMode=D3D11_FILL_SOLID; raster.CullMode=D3D11_CULL_NONE; raster.DepthClipEnable=TRUE;
     raster.FrontCounterClockwise=camera.front_counter_clockwise?TRUE:FALSE;
-    if (!allow(probe)) return Result::out_of_budget;
-    if (FAILED(device->CreateRasterizerState(&raster,&frame.raster))) return Result::failed;
+    if (const auto created=create_resource(device,probe,[&] { return device->CreateRasterizerState(&raster,&frame.raster); });
+        created!=Result::ok) return created;
     D3D11_BLEND_DESC blend{};
     blend.RenderTarget[0].RenderTargetWriteMask=D3D11_COLOR_WRITE_ENABLE_ALL;
-    if (!allow(probe)) return Result::out_of_budget;
-    if (FAILED(device->CreateBlendState(&blend,&frame.opaque_blend))) return Result::failed;
+    if (const auto created=create_resource(device,probe,[&] { return device->CreateBlendState(&blend,&frame.opaque_blend); });
+        created!=Result::ok) return created;
     blend.RenderTarget[0].BlendEnable=TRUE;
     blend.RenderTarget[0].SrcBlend=D3D11_BLEND_ONE;
     blend.RenderTarget[0].DestBlend=D3D11_BLEND_INV_SRC_ALPHA;
@@ -291,24 +296,24 @@ Result build(ID3D11Device *device,const PreparedScene3D &scene,const Camera3D &c
     blend.RenderTarget[0].SrcBlendAlpha=D3D11_BLEND_ONE;
     blend.RenderTarget[0].DestBlendAlpha=D3D11_BLEND_INV_SRC_ALPHA;
     blend.RenderTarget[0].BlendOpAlpha=D3D11_BLEND_OP_ADD;
-    if (!allow(probe)) return Result::out_of_budget;
-    if (FAILED(device->CreateBlendState(&blend,&frame.alpha_blend))) return Result::failed;
+    if (const auto created=create_resource(device,probe,[&] { return device->CreateBlendState(&blend,&frame.alpha_blend); });
+        created!=Result::ok) return created;
     D3D11_DEPTH_STENCIL_DESC depth{};
     depth.DepthEnable=TRUE; depth.DepthWriteMask=D3D11_DEPTH_WRITE_MASK_ALL;
     depth.DepthFunc=D3D11_COMPARISON_LESS; depth.StencilEnable=FALSE;
-    if (!allow(probe)) return Result::out_of_budget;
-    if (FAILED(device->CreateDepthStencilState(&depth,&frame.depth_write))) return Result::failed;
+    if (const auto created=create_resource(device,probe,[&] { return device->CreateDepthStencilState(&depth,&frame.depth_write); });
+        created!=Result::ok) return created;
     depth.DepthWriteMask=D3D11_DEPTH_WRITE_MASK_ZERO;
-    if (!allow(probe)) return Result::out_of_budget;
-    if (FAILED(device->CreateDepthStencilState(&depth,&frame.depth_read))) return Result::failed;
+    if (const auto created=create_resource(device,probe,[&] { return device->CreateDepthStencilState(&depth,&frame.depth_read); });
+        created!=Result::ok) return created;
     D3D11_TEXTURE2D_DESC texture{};
     texture.Width=info.width;texture.Height=info.height;texture.MipLevels=1;texture.ArraySize=1;
     texture.Format=DXGI_FORMAT_D32_FLOAT;texture.SampleDesc.Count=1;
     texture.Usage=D3D11_USAGE_DEFAULT;texture.BindFlags=D3D11_BIND_DEPTH_STENCIL;
-    if (!allow(probe)) return Result::out_of_budget;
-    if (FAILED(device->CreateTexture2D(&texture,nullptr,&frame.depth))) return Result::failed;
-    if (!allow(probe)) return Result::out_of_budget;
-    if (FAILED(device->CreateDepthStencilView(frame.depth.Get(),nullptr,&frame.dsv))) return Result::failed;
+    if (const auto created=create_resource(device,probe,[&] { return device->CreateTexture2D(&texture,nullptr,&frame.depth); });
+        created!=Result::ok) return created;
+    if (const auto created=create_resource(device,probe,[&] { return device->CreateDepthStencilView(frame.depth.Get(),nullptr,&frame.dsv); });
+        created!=Result::ok) return created;
     return Result::ok;
 }
 } // namespace
@@ -328,10 +333,16 @@ graphics::Result render_offscreen_3d(graphics::d3d11::HostDevice &backend,
         auto frame=std::make_shared<Frame>();
         frame->snapshot=scene;
         const auto ready=build(backend.device(),*scene,camera,info,backend.context(),*frame,probe);
-        if (ready!=Result::ok) return ready;
+        if (ready!=Result::ok) {
+            if (ready==Result::device_lost) backend.mark_lost();
+            return ready;
+        }
         const auto prepared=retirement.prepare(backend.device(),backend.context(),target,
                                                 backend.generation(),frame);
-        if (prepared!=Result::ok) return prepared;
+        if (prepared!=Result::ok) {
+            if (prepared==Result::device_lost) backend.mark_lost();
+            return prepared;
+        }
         {
             graphics::d3d11::StateScope restore(backend.context());
             auto *context=backend.context();
@@ -365,7 +376,7 @@ graphics::Result render_offscreen_3d(graphics::d3d11::HostDevice &backend,
             }
         }
         if (FAILED(backend.device()->GetDeviceRemovedReason())) {
-            retirement.mark_lost();return Result::device_lost;
+            retirement.mark_lost();backend.mark_lost();return Result::device_lost;
         }
         if (depth_capture) *depth_capture=frame->depth;
         return retirement.end();
