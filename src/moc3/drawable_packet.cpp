@@ -21,13 +21,14 @@ struct Reader {
 void add(std::uint64_t& total,std::uint64_t n,std::uint64_t cap){need(n<=cap-total);total+=n;}
 struct Meta {std::uint32_t indices=0,masks=0;std::size_t mask_offset=0;};
 // Pass one deliberately has fixed scratch, no attacker-count-based allocations.
-void walk(Reader& r,std::uint64_t nonce,Snapshot* scene,AtlasSet* images,std::uint32_t& flags){
+void walk(Reader& r,std::uint64_t nonce,std::uint64_t generation,std::uint32_t version,Snapshot* scene,AtlasSet* images,std::uint32_t& flags){
     auto magic=r.take(8);need(std::memcmp(magic.data(),"ARSDRAW1",8)==0);
-    need(r.u32()==1);need(r.integer(8)==r.bytes.size());need(r.integer(8)==1);
+    need((version==1&&generation==1)||(version==2&&generation>=2&&generation<=9));
+    need(r.u32()==version);need(r.integer(8)==r.bytes.size());need(r.integer(8)==generation);
     need(nonce&&r.integer(8)==nonce);flags=r.u32();need((flags&~127u)==0&&((flags&3)==0||(flags&3)==3));
     auto na=r.u32(),nd=r.u32();need(na&&na<=16&&nd&&nd<=4096);
     std::uint64_t texels=0,vertices=0,indices=0,masks=0,mask_work=0;
-    if(images)images->images.reserve(na);if(scene){scene->generation=1;scene->drawables.reserve(nd);}
+    if(images)images->images.reserve(na);if(scene){scene->generation=generation;scene->drawables.reserve(nd);}
     for(std::uint32_t i=0;i<na;++i){
         auto w=r.u32(),h=r.u32();auto size=r.integer(8);need(w&&h&&w<=8192&&h<=8192&&size==std::uint64_t(w)*h*4);
         add(texels,size,128ull*1024*1024);auto data=r.take(static_cast<std::size_t>(size));
@@ -59,17 +60,26 @@ void walk(Reader& r,std::uint64_t nonce,Snapshot* scene,AtlasSet* images,std::ui
 void put(std::ostream& out,std::uint64_t value,unsigned n){for(unsigned i=0;i<n;++i)out.put(static_cast<char>(value>>(8*i)));if(!out)throw Invalid{};}
 void real(std::ostream& out,float f){put(out,std::bit_cast<std::uint32_t>(f),4);}
 }
-bool decode(std::span<const std::uint8_t> bytes,std::uint64_t nonce,VerifiedScene& output) noexcept {
+bool validate_frame(std::span<const std::uint8_t> bytes,std::uint64_t nonce,std::uint64_t generation,std::uint32_t version) noexcept {
+    try{need(bytes.size()>=48&&bytes.size()<=packet_cap);std::uint32_t flags=0;Reader r{bytes};walk(r,nonce,generation,version,nullptr,nullptr,flags);return true;}catch(...){return false;}
+}
+bool decode(std::span<const std::uint8_t> bytes,std::uint64_t nonce,VerifiedScene& output) noexcept {return decode_frame(bytes,nonce,1,1,output);}
+bool decode_frame(std::span<const std::uint8_t> bytes,std::uint64_t nonce,std::uint64_t generation,std::uint32_t version,VerifiedScene& output) noexcept {
     try{
-        need(bytes.size()>=48&&bytes.size()<=packet_cap);std::uint32_t flags=0;Reader first{bytes};walk(first,nonce,nullptr,nullptr,flags);
-        auto scene=std::make_shared<Snapshot>();auto images=std::make_shared<AtlasSet>();Reader second{bytes};walk(second,nonce,scene.get(),images.get(),flags);
+        need(bytes.size()>=48&&bytes.size()<=packet_cap);std::uint32_t flags=0;Reader first{bytes};walk(first,nonce,generation,version,nullptr,nullptr,flags);
+        auto scene=std::make_shared<Snapshot>();auto images=std::make_shared<AtlasSet>();Reader second{bytes};walk(second,nonce,generation,version,scene.get(),images.get(),flags);
         VerifiedScene candidate;candidate.snapshot_=std::move(scene);candidate.atlases_=std::move(images);candidate.flags_=flags;output=std::move(candidate);return true;
     }catch(...){return false;}
 }
-void encode(std::ostream& out,const Snapshot& scene,const AtlasSet& images,std::uint64_t nonce,std::uint32_t flags){
+std::uint64_t encoded_size(const Snapshot& scene,const AtlasSet& images){
     std::uint64_t size=48;for(auto& a:images.images)add(size,16+a.rgba.size(),packet_cap);
     for(auto& d:scene.drawables)add(size,68+std::uint64_t(d.vertices.size())*16+std::uint64_t(d.indices.size())*2+std::uint64_t(d.masks.size())*4,packet_cap);
-    out.write("ARSDRAW1",8);put(out,1,4);put(out,size,8);put(out,scene.generation,8);put(out,nonce,8);put(out,flags,4);put(out,images.images.size(),4);put(out,scene.drawables.size(),4);
+    return size;
+}
+void encode(std::ostream& out,const Snapshot& scene,const AtlasSet& images,std::uint64_t nonce,std::uint32_t flags){encode_frame(out,scene,images,nonce,flags,1);}
+void encode_frame(std::ostream& out,const Snapshot& scene,const AtlasSet& images,std::uint64_t nonce,std::uint32_t flags,std::uint32_t version){
+    const auto size=encoded_size(scene,images);
+    out.write("ARSDRAW1",8);put(out,version,4);put(out,size,8);put(out,scene.generation,8);put(out,nonce,8);put(out,flags,4);put(out,images.images.size(),4);put(out,scene.drawables.size(),4);
     for(auto& a:images.images){put(out,a.width,4);put(out,a.height,4);put(out,a.rgba.size(),8);out.write(reinterpret_cast<const char*>(a.rgba.data()),a.rgba.size());}
     for(auto& d:scene.drawables){
         for(auto v:{d.texture_index,d.draw_order,d.render_order,d.blend_mode})put(out,std::bit_cast<std::uint32_t>(v),4);
@@ -81,4 +91,24 @@ void encode(std::ostream& out,const Snapshot& scene,const AtlasSet& images,std::
     }
     if(!out)throw Invalid{};
 }
+bool decode_sequence(std::span<const std::uint8_t> bytes,std::uint64_t nonce,VerifiedSequence& output) noexcept {
+    try{
+        need(bytes.size()>=32&&bytes.size()<=packet_cap);Reader r{bytes};auto magic=r.take(8);
+        need(std::memcmp(magic.data(),"ARSEVAL1",8)==0&&r.u32()==1);auto count=r.u32();need(count&&count<=8);
+        need(nonce&&r.integer(8)==nonce&&r.integer(8)==bytes.size());
+        std::array<std::span<const std::uint8_t>,8> packets{};std::array<std::uint64_t,8> clocks{};
+        for(std::uint32_t i=0;i<count;++i){
+            need(r.integer(8)==i+1);auto clock=r.integer(8);need(clock<=1000000000ull);
+            need(i?clock>clocks[i-1]&&clock-clocks[i-1]<=8ull*16666667:clock==0);clocks[i]=clock;
+            auto length=r.integer(8);need(length>=48&&length<=r.bytes.size()-r.pos);packets[i]=r.take(static_cast<std::size_t>(length));
+        }
+        need(r.pos==r.bytes.size());
+        // All inner streams pass a nonallocating pass before ANY decoded frame allocation.
+        for(std::uint32_t i=0;i<count;++i)need(validate_frame(packets[i],nonce,i+2,2));
+        VerifiedSequence candidate;candidate.frames_.reserve(count);candidate.clocks_.reserve(count);
+        for(std::uint32_t i=0;i<count;++i){VerifiedScene scene;need(decode_frame(packets[i],nonce,i+2,2,scene));candidate.frames_.push_back(std::move(scene));candidate.clocks_.push_back(clocks[i]);}
+        output=std::move(candidate);return true;
+    }catch(...){return false;}
+}
+
 }

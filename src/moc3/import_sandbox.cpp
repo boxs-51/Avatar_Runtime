@@ -51,7 +51,7 @@ int wmain(int argc,wchar_t** argv){
     if(argc<4)return 2;
     std::size_t output_cap=64;
 #ifdef ARS_MOC3_PACKAGE_ADMISSION
-    const bool package=std::wstring(argv[3])==L"--package";
+    const bool package=std::wstring(argv[3])==L"--package"||std::wstring(argv[3])==L"--evaluate";
     if(package)output_cap=192ull*1024*1024;
 #else
     const bool package=false;
@@ -147,10 +147,10 @@ int wmain(int argc,wchar_t** argv){
     if(wait!=WAIT_OBJECT_0){std::cout<<"TIMEOUT_REJECTED"<<std::endl;return 0;}
     if(code!=0){std::cout<<"WORKER_REJECTED"<<std::endl;return 0;}
     if(package){
-        if(output.size()>=48&&output.compare(0,8,"ARSDRAW1")==0){
+        if(output.size()>=48&&(output.compare(0,8,"ARSDRAW1")==0||output.compare(0,8,"ARSEVAL1")==0)){
             _setmode(_fileno(stdout),_O_BINARY);std::cout.write(output.data(),output.size());return std::cout?0:15;
         }
-        const std::vector<std::string> errors={"PACKAGE_BUDGET_REJECTED\n","PACKAGE_ENVELOPE_REJECTED\n","PACKAGE_ZIP_REJECTED\n","PACKAGE_MANIFEST_REJECTED\n","PACKAGE_PNG_REJECTED\n","PACKAGE_MOC_REJECTED\n","PACKAGE_PHYSICS_REJECTED\n","PACKAGE_OUTPUT_REJECTED\n"};
+        const std::vector<std::string> errors={"PACKAGE_COMMAND_REJECTED\n","PACKAGE_BUDGET_REJECTED\n","PACKAGE_ENVELOPE_REJECTED\n","PACKAGE_ZIP_REJECTED\n","PACKAGE_MANIFEST_REJECTED\n","PACKAGE_PNG_REJECTED\n","PACKAGE_MOC_REJECTED\n","PACKAGE_PHYSICS_REJECTED\n","PACKAGE_OUTPUT_REJECTED\n"};
         if(std::find(errors.begin(),errors.end(),output)!=errors.end()){std::cout<<output;return 0;}
         std::cout<<"OUTPUT_REJECTED"<<std::endl;return 0;
     }

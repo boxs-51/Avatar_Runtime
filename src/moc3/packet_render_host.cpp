@@ -30,8 +30,10 @@ ars::moc3::View fit(const ars::moc3::Snapshot& snapshot){
 }
 }
 int main(int argc,char** argv){
-    if(argc!=4&&argc!=5)return 2;std::uint64_t nonce=0;auto end=argv[2]+std::char_traits<char>::length(argv[2]);auto parsed=std::from_chars(argv[2],end,nonce);
+    if(argc!=4&&argc!=5&&argc!=6)return 2;std::uint64_t nonce=0;auto end=argv[2]+std::char_traits<char>::length(argv[2]);auto parsed=std::from_chars(argv[2],end,nonce);
     if(parsed.ec!=std::errc{}||parsed.ptr!=end||!nonce)return 2;
+    std::uint32_t frame_index=0;bool sequence=argc==6&&std::string_view(argv[4])=="--sequence";
+    if(argc==6){if(!sequence)return 2;auto end_index=argv[5]+std::char_traits<char>::length(argv[5]);auto p=std::from_chars(argv[5],end_index,frame_index);if(p.ec!=std::errc{}||p.ptr!=end_index||frame_index>=8)return 2;}
     QueryFault fault;bool injected=argc==5;
     if(injected){auto mode=std::string_view(argv[4]);if(mode!="--query-timeout"&&mode!="--query-loss")return 2;fault.loss=mode=="--query-loss";}
     bool hardware=std::string_view(argv[3])=="--hardware";if(!hardware&&std::string_view(argv[3])!="--warp")return 2;
@@ -43,9 +45,13 @@ int main(int argc,char** argv){
         while(std::cin){std::cin.read(chunk,sizeof(chunk));auto n=std::cin.gcount();if(std::size_t(n)>ars::moc3::admission::packet_cap-bytes.size()){proof("REJECTED");return 3;}bytes.insert(bytes.end(),chunk,chunk+n);}
         if(!std::cin.eof()||std::cin.bad()){proof("REJECTED");return 3;}
         ars::moc3::admission::VerifiedScene scene;
-        if(!ars::moc3::admission::decode(bytes,nonce,scene)){proof("REJECTED");std::cout<<"REJECTED GPU_CREATIONS=0\n";return 3;}
+        ars::moc3::admission::VerifiedSequence batch;
+        bool valid=false;
+        if(sequence){valid=ars::moc3::admission::decode_sequence(bytes,nonce,batch)&&frame_index<batch.size();if(valid)scene=batch.frame(frame_index);}
+        else valid=ars::moc3::admission::decode(bytes,nonce,scene);
+        if(!valid){proof("REJECTED");std::cout<<"REJECTED GPU_CREATIONS=0\n";return 3;}
         // This is the first reachable GPU operation, after full independent two-pass decoding.
-        bytes.clear();bytes.shrink_to_fit();auto view=fit(*scene.snapshot());
+        bytes.clear();bytes.shrink_to_fit();auto view=fit(sequence?*batch.frame(0).snapshot():*scene.snapshot());
         ComPtr<ID3D11Device> device;ComPtr<ID3D11DeviceContext> context;D3D_FEATURE_LEVEL level{};
         ++device_calls;auto hr=D3D11CreateDevice(nullptr,hardware?D3D_DRIVER_TYPE_HARDWARE:D3D_DRIVER_TYPE_WARP,nullptr,D3D11_CREATE_DEVICE_DEBUG,nullptr,0,D3D11_SDK_VERSION,&device,&level,&context);
         bool debug=SUCCEEDED(hr);if(FAILED(hr)){++device_calls;hr=D3D11CreateDevice(nullptr,hardware?D3D_DRIVER_TYPE_HARDWARE:D3D_DRIVER_TYPE_WARP,nullptr,0,nullptr,0,D3D11_SDK_VERSION,&device,&level,&context);}

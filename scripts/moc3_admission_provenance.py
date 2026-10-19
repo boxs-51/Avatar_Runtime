@@ -17,9 +17,11 @@ SOURCE_FILES=(
  'scripts/moc3_local_replay.py','scripts/moc3_package_admission.py','scripts/moc3_local_physics.py','scripts/moc3_memory.py',
  'scripts/moc3_process_tree.py','scripts/moc3_local_pixels.py','scripts/moc3_session.py','scripts/moc3_test_harness.py',
  'tests/moc3/drawable_packet_tests.cpp','tests/moc3/physics_admission_tests.cpp','tests/moc3/test_public_package.py',
- 'docs/completed/M2_MOC3_F4_PACKAGE_ADMISSION_DESIGN.md')
+ 'docs/completed/M2_MOC3_F4_PACKAGE_ADMISSION_DESIGN.md',
+ 'docs/in-progress/M2_MOC3_PUB02_A_RETAINED_SESSION_DESIGN.md',
+ 'scripts/moc3_verify_retained_session.py','tests/moc3/sequence_packet_tests.cpp','tests/moc3/test_retained_session.py')
 BINARY_FILES=tuple('build/moc3-public-isolation/bin/Release/'+name for name in (
- 'ars_moc3_import_worker.exe','ars_moc3_import_sandbox.exe','ars_moc3_packet_guard.exe','ars_moc3_packet_tests.exe','ars_moc3_physics_admission_tests.exe'))+tuple(
+ 'ars_moc3_import_worker.exe','ars_moc3_import_sandbox.exe','ars_moc3_packet_guard.exe','ars_moc3_packet_tests.exe','ars_moc3_physics_admission_tests.exe','ars_moc3_sequence_tests.exe'))+tuple(
  'build/m2-d-private/bin/Release/'+name for name in ('ars_moc3_packet_render_host.exe','ars_moc3_pixel_bridge.exe'))
 
 def capture():

@@ -2,6 +2,13 @@
 
 Subsequent static checkpoint: [PNG/Physics3 admission and independent drawable/atlas guard](../completed/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md) PASS for the explicitly bounded default-pose slice. [Detailed subset contract](../completed/M2_MOC3_F4_PACKAGE_ADMISSION_DESIGN.md). Physics is validated, not simulated; persistent public evaluation, product publication, SDK and qualification below remain outstanding.
 
+PUB-02-A follow-on: [bounded retained sequence contract](M2_MOC3_PUB02_A_RETAINED_SESSION_DESIGN.md)
+implements complete parameter frames within one isolated job and independently
+validated batch output. See its [local acceptance](../completed/audits/M2_MOC3_PUB02_A_ACCEPTANCE.md)
+for actual geometry/pixel/API evidence and limits. This is progress on PUB-02/03;
+the full persistent evaluator, isolated physics and PUB-04 final authority fence
+remain HOLD. It is not a long-lived interactive service.
+
 The owner chose arbitrary public-user MOC3 input. The completed parser-preflight prototype is a boundary experiment, not the public importer. The next implementation must use the following order; none of these steps may turn a preflight success into permission to reparse hostile MOC bytes inside the trusted host.
 
 | ID | Required implementation and direct exit witness |

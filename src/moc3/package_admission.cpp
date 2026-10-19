@@ -8,6 +8,8 @@
 #include <iostream>
 #include <malloc.h>
 #include <set>
+#include <bit>
+#include <cmath>
 namespace ars::moc3::admission {
 namespace {
 using assets::require;using validation::Kind;
@@ -18,7 +20,10 @@ void keys(const validation::Document& doc,validation::Value v,std::initializer_l
     require(v.kind()==Kind::object);for(auto i:v.node().children)require(std::find(allowed.begin(),allowed.end(),std::string_view(doc.nodes[i].key))!=allowed.end());
 }
 }
-int package_worker(){
+struct Binding {std::uint32_t slot;float value;};
+struct CompleteFrame {std::uint64_t sequence,clock;std::vector<Binding> bindings;std::vector<Parameter> parameters;};
+void emit(std::uint64_t value,unsigned bytes){for(unsigned i=0;i<bytes;++i)std::cout.put(static_cast<char>(value>>(i*8)));}
+int package_worker(bool retained){
     const char* rejection="PACKAGE_ENVELOPE_REJECTED";
     try{
         char magic[8]{};require(bool(std::cin.read(magic,8))&&std::memcmp(magic,"ARSMPK01",8)==0);
@@ -27,9 +32,22 @@ int package_worker(){
         assets::Resource resource(allocate,release,nullptr,384ull*assets::MiB);
         assets::Limits limits;limits.compressed=96*assets::MiB;limits.expanded=128*assets::MiB;limits.entries=256;
         assets::Work work{limits.work};assets::canonical_path(name,&resource,limits);require(name.ends_with(".model3.json"));
-        assets::OwnedBundle bundle(resource);
+        assets::OwnedBundle bundle(resource);std::vector<CompleteFrame> frames;
         {std::pmr::vector<std::uint8_t> bytes(&resource);bytes.resize(static_cast<std::size_t>(size));
-         require(bool(std::cin.read(reinterpret_cast<char*>(bytes.data()),bytes.size()))&&std::cin.peek()==EOF&&std::cin.eof()&&!std::cin.bad());
+         require(bool(std::cin.read(reinterpret_cast<char*>(bytes.data()),bytes.size())));
+         if(retained){
+             rejection="PACKAGE_COMMAND_REJECTED";auto count=read(4);require(count&&count<=8);frames.reserve(static_cast<std::size_t>(count));
+             std::uint64_t last=0;
+             for(std::uint32_t i=0;i<count;++i){
+                 CompleteFrame f;f.sequence=read(8);f.clock=read(8);require(f.sequence==i+1&&f.clock<=1000000000ull);
+                 require(i?f.clock>last&&f.clock-last<=8ull*16666667:f.clock==0);last=f.clock;
+                 require(read(4)==0);auto n=read(4);require(n<=32);std::set<std::uint32_t> seen;
+                 for(std::uint32_t j=0;j<n;++j){auto slot=static_cast<std::uint32_t>(read(4));auto value=std::bit_cast<float>(static_cast<std::uint32_t>(read(4)));
+                     require(slot<4096&&seen.insert(slot).second&&std::isfinite(value)&&value>=-1&&value<=1);f.bindings.push_back({slot,value});}
+                 frames.push_back(std::move(f));
+             }
+         }
+         require(std::cin.peek()==EOF&&std::cin.eof()&&!std::cin.bad());
          rejection="PACKAGE_ZIP_REJECTED";assets::Work zip_work{limits.compressed+limits.work};assets::read_zip(bytes,bundle,resource,limits,zip_work);}
         rejection="PACKAGE_MANIFEST_REJECTED";auto& manifest=bundle.find(name);validation::Document doc(&resource);
         validation::parse_json({reinterpret_cast<const char*>(manifest.bytes.data()),manifest.bytes.size()},doc,limits,work);
@@ -60,7 +78,27 @@ int package_worker(){
         }
         unsigned bit=2;for(auto key:{"Motions","Expressions","Pose","UserData","DisplayInfo"}){if(refs.has(key))flags|=1u<<bit;++bit;}
         // Worker output is deliberately not a trust verdict. Host repeats complete validation.
-        rejection="PACKAGE_OUTPUT_REJECTED";encode(std::cout,*session->current(),atlases,nonce,flags);std::cout.flush();return std::cout?0:42;
+        if(retained){
+            rejection="PACKAGE_COMMAND_REJECTED";std::vector<ParameterInfo> catalog;require(session->parameter_info(catalog)==Result::ok&&catalog.size()<=4096);
+            std::set<std::string> names;
+            for(auto& p:catalog)require(names.insert(p.id).second&&std::isfinite(p.minimum)&&std::isfinite(p.default_value)&&std::isfinite(p.maximum)&&p.minimum>=-1e6&&p.maximum<=1e6&&p.minimum<=p.default_value&&p.default_value<=p.maximum);
+            // Every command is bound/validated before the first evaluator update or output byte.
+            for(auto& frame:frames)for(auto binding:frame.bindings){
+                require(binding.slot<catalog.size());auto& p=catalog[binding.slot];auto v=binding.value;
+                auto mapped=double(p.default_value)+double(v)*(v>=0?double(p.maximum)-p.default_value:double(p.default_value)-p.minimum);
+                auto value=std::clamp(static_cast<float>(mapped),p.minimum,p.maximum);
+                require(std::isfinite(value)&&value>=p.minimum&&value<=p.maximum);frame.parameters.push_back({p.id,value});
+            }
+            auto one=encoded_size(*session->current(),atlases);require(one+24<=(packet_cap-32)/frames.size(),ARS_E_OUT_OF_BUDGET);
+            auto total=32+(one+24)*frames.size();rejection="PACKAGE_OUTPUT_REJECTED";
+            std::cout.write("ARSEVAL1",8);emit(1,4);emit(frames.size(),4);emit(nonce,8);emit(total,8);
+            for(auto& frame:frames){
+                require(session->update_complete(frame.parameters)==Result::ok);
+                auto snapshot=session->current();require(snapshot->generation==frame.sequence+1&&encoded_size(*snapshot,atlases)==one);
+                emit(frame.sequence,8);emit(frame.clock,8);emit(one,8);encode_frame(std::cout,*snapshot,atlases,nonce,flags,2);
+            }
+        }else{rejection="PACKAGE_OUTPUT_REJECTED";encode(std::cout,*session->current(),atlases,nonce,flags);}
+        std::cout.flush();return std::cout?0:42;
     }catch(const assets::Failure& failure){std::cout<<(failure.status==ARS_E_OUT_OF_BUDGET?"PACKAGE_BUDGET_REJECTED":rejection)<<"\n";return 0;}
      catch(const std::bad_alloc&){std::cout<<"PACKAGE_BUDGET_REJECTED\n";return 0;}
      catch(...){std::cout<<rejection<<"\n";return 0;}

@@ -195,3 +195,18 @@ Việc phân loại đánh giá vai trò hiện tại của tài liệu. “Đã
 Bản đồ di chuyển: [DOCUMENTATION_PATHS.json](DOCUMENTATION_PATHS.json).
 
 Di chuy?n th? m?c ?? qua review ??c l?p: 81 match workflow/document gi? nguy?n; governance 9/9 PASS; G00/RC1 checks PASS; contract suite 155/157 PASS v?i ??ng hai l?i M2-D ?? c? t? tr??c, kh?ng c? l?i m?i. Kh?ng suy ra whole-baseline PASS.
+
+<!-- PUB02-A CHECKPOINT -->
+
+## PUB-02-A implementation checkpoint
+
+The classification baseline above has 125 files. This follow-on adds four records; the current exhaustive inventory has **129 files**: completed **29**, reference **80**, obsolete **4**, in-progress **16**. The original 121-file relocation map is a historical checkpoint; later document edits do not rewrite its hashes.
+
+| Record | Category |
+| --- | --- |
+| [M2_MOC3_PUB02_A_RETAINED_SESSION_DESIGN.md](in-progress/M2_MOC3_PUB02_A_RETAINED_SESSION_DESIGN.md) | in_progress |
+| [M2_MOC3_PUB02_A_ACCEPTANCE.md](completed/audits/M2_MOC3_PUB02_A_ACCEPTANCE.md) | completed |
+| [M2_MOC3_PUB02_A_REVIEW.md](completed/audits/M2_MOC3_PUB02_A_REVIEW.md) | completed |
+| [M2_MOC3_PUB02_A_SOURCE.json](reference/audits/M2_MOC3_PUB02_A_SOURCE.json) | reference |
+
+Full PUB-02/PUB-04, isolated physics, public SDK and physical D06/D08 remain HOLD. Bounded parameter movement is not physics simulation.

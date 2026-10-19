@@ -34,4 +34,13 @@ Public CI cannot execute the full evaluator path without a redistributable MOC3 
 
 ## Next bounded decision
 
+The next implemented slice is [PUB-02-A bounded retained evaluation](M2_MOC3_PUB02_A_RETAINED_SESSION_DESIGN.md):
+one isolated evaluator processes complete parameter frames, followed by full-batch
+host validation before GPU allocation. Its [local acceptance](../completed/audits/M2_MOC3_PUB02_A_ACCEPTANCE.md)
+separates geometry, pixels and visible/API evidence. Physics remains
+**VALIDATED_NOT_SIMULATED**; full PUB-02 and PUB-04 remain **HOLD**. This does not
+close the G00/G01/G02 product qualifications above. The next slice must design
+and prove persistent isolated physics/state lifetime and host authority/expiry/
+cancellation before extending to public interactive publication.
+
 Before public SDK implementation, freeze the intended supported subset, installed consumer/capability behavior and trust boundary. Then implement/qualify public model lifecycle and persistent input ownership, followed by cross-platform/package/ABI tests, parser isolation/fuzz and the required performance workload. Obtain a redistributable test fixture without changing the private model's rights. Track physical loss on a separate runner. Existing source approval or this F4-A result does not authorize advertising a feature or waiving the missing observations.

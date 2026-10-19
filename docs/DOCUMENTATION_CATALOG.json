@@ -8,9 +8,9 @@
   "scope": "README.md + every file recursively under docs/; build/, local-assets/, source/tests excluded from document inventory",
   "classification_is_gate_approval": false,
   "counts": {
-    "reference": 79,
-    "completed": 27,
-    "in_progress": 15,
+    "reference": 80,
+    "completed": 29,
+    "in_progress": 16,
     "obsolete": 4
   },
   "baseline_counts": {
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 125,
+  "total_documents": 129,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -414,7 +414,7 @@
       "reason": "Kế hoạch hiện hành: PUB-02 retained evaluator, PUB-04 publication, PUB-05 SDK, PUB-06 qualification.",
       "lifecycle": "active",
       "related_paths": [],
-      "reviewed_sha256": "5b5588fb0b84e08ce4174423e8a5601ad73cca5e326adf920ae41189dcd5f0aa",
+      "reviewed_sha256": "ed46969d5cddc1aa7288056180829834050c6866779e5bce5d1e27f729dae898",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md",
@@ -426,7 +426,7 @@
       "reason": "Ledger hiện hành cho product gates, public F4/SDK/release và physical HOLD.",
       "lifecycle": "active",
       "related_paths": [],
-      "reviewed_sha256": "a03d8fc57a2e772e46f86b24ebafe92d5fe0c541b9bf1b5076d467d440346049",
+      "reviewed_sha256": "33c2dfdea82b7ed1ac1c3e1bef8fb81799f2c8edda126bbdb8a61ba2ea86a520",
       "encoding": "utf-8",
       "document_kind": "markdown",
       "legacy_path": "docs/M2_MOC3_F4_RELEASE_LEDGER.md",
@@ -1572,8 +1572,54 @@
       "related_paths": [],
       "reviewed_sha256": null,
       "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/in-progress/M2_MOC3_PUB02_A_RETAINED_SESSION_DESIGN.md",
+      "category": "in_progress",
+      "lifecycle": "maintained_contract",
+      "reason": "Maintained bounded PUB-02-A contract; full persistent PUB-02/04 remains HOLD.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "45fb792f743bbc689c9aea7cdd2b374d1e0b795dc77f4afa35bccc92a4e8441b"
+    },
+    {
+      "path": "docs/completed/audits/M2_MOC3_PUB02_A_ACCEPTANCE.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Bounded retained evaluator sequence: local XY/pixel/visible API acceptance; no physics simulation or product release.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "9b292be07e832e98068c7a5ebb60102215aaa80c9ee0f9f2ed414262303e1a42"
+    },
+    {
+      "path": "docs/completed/audits/M2_MOC3_PUB02_A_REVIEW.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Independent retained-sequence review and closure of RET-04 geometry verification finding.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "c13ab84485986b01f15dd7821754d75501c3d43d7220a9c78a728c27dfb3dac7"
+    },
+    {
+      "path": "docs/reference/audits/M2_MOC3_PUB02_A_SOURCE.json",
+      "category": "reference",
+      "lifecycle": "reference",
+      "reason": "Exact public source/binary/dependency custody for the bounded retained local acceptance.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "structured_record",
+      "reviewed_sha256": "721c2fe84a38145672792d4f63fc397b51bac3e0d8998a4f4a21cafccefd2ed8"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
-  "layout_basis_head": "f2f13614ed0e1f643e5ddb702bf5033f4873768f"
+  "layout_basis_head": "f2f13614ed0e1f643e5ddb702bf5033f4873768f",
+  "follow_on_checkpoint": {
+    "basis_head": "d72d148e9b2617f0aab9b0704ecea6927318d386",
+    "scope": "DOC-MOVE + PUB-02-A bounded local acceptance",
+    "new_documents": 4,
+    "classification_is_gate_approval": false
+  }
 }
