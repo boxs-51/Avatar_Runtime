@@ -795,6 +795,34 @@ def check_m2_c_design(base, candidate):
     return True
 
 
+FROZEN_DOCUMENT_ALIASES = {
+    "docs/P0_OWNER_REMEDIATION_V0.5.md": "docs/reference/P0_OWNER_REMEDIATION_V0.5.md",
+    "docs/ADR_P0_SECURITY_R2.md": "docs/reference/ADR_P0_SECURITY_R2.md",
+    "docs/ACCEPTANCE_GATES_V0.1.md": "docs/reference/ACCEPTANCE_GATES_V0.1.md",
+    "docs/SPECIFICATION_V0.1.md": "docs/reference/SPECIFICATION_V0.1.md",
+    "docs/ADR_0001_D3D11_G00_DESIGN_RC1.md": "docs/reference/ADR_0001_D3D11_G00_DESIGN_RC1.md",
+    "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md": "docs/reference/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+    "docs/V0_1_CANONICAL_CONTRACT_RC1.md": "docs/reference/V0_1_CANONICAL_CONTRACT_RC1.md",
+    "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md": "docs/in-progress/V0_1_PUBLIC_ABI_FREEZE_MAP.md",
+    "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md": "docs/in-progress/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md",
+}
+
+
+def frozen_blob_at(revision, path):
+    """Resolve only reviewed, identity-preserving aliases; never search docs."""
+    def lookup(name):
+        try:
+            return git("rev-parse", revision + ":" + name)
+        except subprocess.CalledProcessError:
+            return None
+    legacy = lookup(path)
+    canonical = lookup(FROZEN_DOCUMENT_ALIASES[path]) if path in FROZEN_DOCUMENT_ALIASES else None
+    require(legacy is not None or canonical is not None, "Missing required frozen path: " + path)
+    require(legacy is None or canonical is None or legacy == canonical,
+            "Divergent frozen path aliases: " + path)
+    return canonical if canonical is not None else legacy
+
+
 def validate_blob_manifest(obj, revision="HEAD"):
     """Check immutable required paths, blob syntax and Git tree contents.
 
@@ -812,7 +840,7 @@ def validate_blob_manifest(obj, revision="HEAD"):
                     f"Invalid SHA for {path}")
             require(not path.startswith("/") and ".." not in Path(path).parts,
                     f"Unsafe provenance path: {path}")
-            actual = git("rev-parse", revision + ":" + path)
+            actual = frozen_blob_at(revision, path)
             require(actual == sha,
                     f"Incorrect {field} blob: {path}; expected {sha}, got {actual}")
     return True
@@ -832,7 +860,11 @@ def check():
         expected_parent = git("rev-parse", "HEAD^1")
         # Exact authorization is per candidate kind, never a broad audit-branch bypass.
         child = obj.get("audit_child", {})
-        if os.getenv("GITHUB_HEAD_REF") == M1_C2_BRANCH:
+        if os.getenv("GITHUB_BASE_REF") == "alpha":
+            from check_alpha_custody import check_alpha_pull_request
+            expected = check_alpha_pull_request(expected_parent, git("rev-parse", "HEAD^2"),
+                                                os.getenv("GITHUB_HEAD_REF"))
+        elif os.getenv("GITHUB_HEAD_REF") == M1_C2_BRANCH:
             expected = M1_C2_BASE
             check_m1_c2(expected_parent, git("rev-parse", "HEAD^2"))
         elif os.getenv("GITHUB_HEAD_REF") == M2_A_BRANCH:

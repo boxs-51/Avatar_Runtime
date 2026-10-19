@@ -2,6 +2,8 @@
 import json
 import sys
 import unittest
+import subprocess
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -42,6 +44,31 @@ class G00PinFailClosed(unittest.TestCase):
         copy["source_blobs"]["schemas/character_manifest_v0.1.schema.json"]="0"*40
         with self.assertRaises(AssertionError):
             pins.validate_blob_manifest(copy)
+
+    def test_original_legacy_revision_still_matches(self):
+        self.assertTrue(pins.validate_blob_manifest(self.doc, "f2f13614ed0e1f643e5ddb702bf5033f4873768f"))
+
+    def test_alias_does_not_change_manifest_keyset(self):
+        copy=json.loads(json.dumps(self.doc));old="docs/P0_OWNER_REMEDIATION_V0.5.md"
+        copy["source_blobs"][pins.FROZEN_DOCUMENT_ALIASES[old]]=copy["source_blobs"].pop(old)
+        with self.assertRaises(AssertionError):
+            pins.validate_blob_manifest(copy)
+
+    def test_missing_divergent_and_wrong_aliases_rejected(self):
+        old="docs/P0_OWNER_REMEDIATION_V0.5.md";canonical=pins.FROZEN_DOCUMENT_ALIASES[old]
+        expected=self.doc["source_blobs"][old]
+        for mode in ("missing", "divergent", "both_wrong", "canonical_wrong"):
+            real=pins.git
+            def altered(*args):
+                if args[0]=="rev-parse" and args[1] in ("HEAD:"+old,"HEAD:"+canonical):
+                    if mode=="missing":raise subprocess.CalledProcessError(128,["git",*args])
+                    if args[1]=="HEAD:"+canonical:return "0"*40
+                    if mode=="canonical_wrong":raise subprocess.CalledProcessError(128,["git",*args])
+                    return expected if mode=="divergent" else "0"*40
+                return real(*args)
+            with self.subTest(mode=mode),patch.object(pins,"git",side_effect=altered):
+                with self.assertRaises(AssertionError):
+                    pins.validate_blob_manifest(self.doc)
 
 if __name__ == "__main__":
     unittest.main()

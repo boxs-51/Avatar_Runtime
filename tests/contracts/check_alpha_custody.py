@@ -1,0 +1,81 @@
+"""Frozen alpha integration custody, not permission for descendant source changes."""
+import json
+import check_m0_rc1_pins as pins
+
+MAIN = "8723ef174a7db98b05fd031aa39dbd910e5ba2db"
+INTEGRATION = "31ce916a72a08af27b3d87daa793b5e43cb50394"
+MOC3_BASE = "ec30b6c6b305f8d495864e3a33818d07106a1abd"
+SOURCE_HEADS = (
+    "ef28b2f7d12c3b993a4a2fbc80eca8426ff68fc3",
+    "59f4a08006733c8e4fe61c4f899d77c150656b1c",
+    "58425b2ff1684f2610fc7da146f2877760520cb7",
+    "bfe1bd617863065ea4b591a658d65cac46b3dedc",
+    "6b64a844d530eafb5ca27e7e6028f082ef2688d2",
+    "ee0530386c91b6157e14b4739a798a4d8b475db8",
+    "1bbdbd1d6fc2a93bb264f3dea1af3976f4b243c1",
+    "366fe6abfe98e0b74b15b98f1c10db70611405f4",
+    MOC3_BASE,
+)
+RECEIPT_DELTA = frozenset((
+    "CMakeLists.txt", "docs/M2_E_HOST_HANDOFF_PLAN.md",
+    "src/graphics/d3d11/close_coordinator.cpp", "src/graphics/d3d11/close_coordinator.hpp",
+    "src/graphics/d3d11/teardown_receipt.cpp", "src/graphics/d3d11/teardown_receipt.hpp",
+    "tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m2_d_impl_custody.py",
+    "tests/contracts/test_m2_e_custody.py", "tests/gpu/d3d11_close_protocol.cpp",
+))
+HELD_PATHS = (
+    "include/ars/ars.h", "src/abi/runtime_api.cpp", "src/abi/unsupported.cpp",
+    "docs/in-progress/audits/M1_B_CASE_EXECUTION.json",
+    "docs/in-progress/M1_D_GPU_CASE_EXECUTION.json",
+)
+
+# Reviewed issue scopes only. This is not an alpha/* wildcard or approval source.
+PR_SCOPES = {
+    "fix/alpha-52-native-test-targets": (
+        "a17d4f92d246ad189b569527b05b471f076eb8b2",
+        frozenset(("CMakeLists.txt", "scripts/moc3_native_test_target.py",
+            "scripts/moc3_publication_probe.py", "scripts/moc3_admission_provenance.py",
+            "tests/moc3/test_native_physics_reference.py", "tests/moc3/test_packet_publication.py",
+            "tests/moc3/test_step_publication.py", "tests/moc3/test_native_test_targets.py",
+            "docs/completed/audits/ALPHA_52_NATIVE_TEST_TARGET_ACCEPTANCE.md",
+            "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
+            "docs/DOCUMENTATION_INDEX.md"))),
+    "fix/alpha-53-historical-custody": (
+        "4b05828d402003d560602718eec7d8f9f7d63d48",
+        frozenset(("tests/contracts/check_m0_rc1_pins.py", "tests/contracts/test_m2_e_custody.py",
+            "tests/contracts/test_g00_final_guards.py", "tests/contracts/check_alpha_custody.py",
+            "tests/contracts/test_alpha_integration_custody.py",
+            "docs/completed/audits/ALPHA_53_CUSTODY_ACCEPTANCE.md",
+            "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
+            "docs/DOCUMENTATION_INDEX.md"))),
+}
+
+def check_alpha(candidate="HEAD", base=MAIN):
+    pins.require(base == MAIN, "Frozen alpha main parent moved")
+    pins.git("merge-base", "--is-ancestor", INTEGRATION, candidate)
+    commits = pins.git("rev-list", "--first-parent", "--reverse", MAIN + ".." + INTEGRATION).splitlines()
+    pins.require(len(commits) == len(SOURCE_HEADS), "Alpha merge count drift")
+    parent = MAIN
+    for commit, source in zip(commits, SOURCE_HEADS):
+        pins.require(pins.git("rev-parse", commit + "^1") == parent, "Alpha merge parent drift")
+        pins.require(pins.git("rev-parse", commit + "^2") == source, "Alpha source/order drift")
+        pins.git("merge-base", "--is-ancestor", source, INTEGRATION)
+        parent = commit
+    changed = set(pins.git("diff", "--name-only", MOC3_BASE, INTEGRATION).splitlines())
+    pins.require(changed == RECEIPT_DELTA, "Alpha changed more than the separate PR44 receipt")
+    for path in HELD_PATHS:
+        pins.require(pins.git("rev-parse", candidate + ":" + path) ==
+                     pins.git("rev-parse", INTEGRATION + ":" + path), "Alpha held/public blob drift: " + path)
+    original = json.loads(pins.git("show", INTEGRATION + ":docs/reference/M0_CONTRACT_PARENT_PINS.json"))
+    pins.validate_blob_manifest(original, candidate)
+    return True
+
+def check_alpha_pull_request(base, candidate, branch):
+    pins.require(branch in PR_SCOPES, "Unregistered alpha issue branch")
+    expected, paths = PR_SCOPES[branch]
+    pins.require(base == expected, "Alpha issue base moved: fresh reconciliation required")
+    pins.git("merge-base", "--is-ancestor", base, candidate)
+    changed = set(pins.git("diff", "--name-only", base, candidate).splitlines())
+    pins.require(changed == paths, "Alpha issue path scope drift")
+    check_alpha(candidate)
+    return expected
