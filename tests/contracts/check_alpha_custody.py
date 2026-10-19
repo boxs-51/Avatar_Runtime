@@ -65,6 +65,15 @@ PR_SCOPES = {
             "docs/completed/audits/ALPHA_55_VERTEX_COLOR_ACCEPTANCE.md",
             "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
             "docs/DOCUMENTATION_INDEX.md"))),
+    "fix/alpha-56-d3d-failure-status": (
+        "76dc6282b2b52b015bd38bfdccb8400539a710f6",
+        frozenset(("src/graphics/d3d11/creation_status.hpp", "src/graphics/d3d11/host_device.hpp",
+            "src/graphics/d3d11/host_device.cpp", "src/graphics/d3d11/query_retirement.hpp",
+            "src/graphics/d3d11/query_retirement.cpp", "src/rendering/d3d11_scene3d.hpp",
+            "src/rendering/d3d11_scene3d.cpp", "tests/rendering/d3d11_scene3d_pixels.cpp",
+            "tests/contracts/check_alpha_custody.py", "docs/completed/audits/ALPHA_56_D3D_FAILURE_ACCEPTANCE.md",
+            "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
+            "docs/DOCUMENTATION_INDEX.md"))),
 }
 
 def check_alpha(candidate="HEAD", base=MAIN):

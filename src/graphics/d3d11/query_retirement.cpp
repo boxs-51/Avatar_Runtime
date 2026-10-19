@@ -1,4 +1,5 @@
 #include "query_retirement.hpp"
+#include "creation_status.hpp"
 #ifdef _WIN32
 #include <exception>
 namespace ars::graphics::d3d11 {
@@ -40,7 +41,8 @@ Result QueryRetirement::prepare(ID3D11Device *device, ID3D11DeviceContext *conte
         return Result::invalid_argument;
     D3D11_QUERY_DESC desc{D3D11_QUERY_EVENT, 0};
     Microsoft::WRL::ComPtr<ID3D11Query> query;
-    if (FAILED(device->CreateQuery(&desc, &query))) return Result::failed;
+    const auto created=ops_->create_query(device,&desc,&query);
+    if (FAILED(created)) return creation_status(created,ops_->removed_reason(device));
     device_=device; context_=context; target_=target; query_=std::move(query);
     snapshot_pin_=std::move(snapshot_pin); generation_=generation; started_=true;
     return Result::ok;

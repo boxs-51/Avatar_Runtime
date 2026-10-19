@@ -10,6 +10,8 @@ namespace ars::rendering {
 struct GpuCreateProbe {
     std::size_t fail_at = 0;
     std::size_t attempts = 0;
+    HRESULT failure = E_OUTOFMEMORY;
+    HRESULT removed_reason = S_OK;
     bool allow() noexcept { return ++attempts != fail_at; }
 };
 // Camera3D is a column-major, right-handed world-to-D3D-clip matrix. The caller

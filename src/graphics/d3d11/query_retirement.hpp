@@ -10,6 +10,9 @@ namespace ars::graphics::d3d11 {
 // Injectable only inside the private backend. Production uses Direct3D calls.
 struct QueryOps {
     virtual ~QueryOps()=default;
+    virtual HRESULT create_query(ID3D11Device *device, const D3D11_QUERY_DESC *desc, ID3D11Query **query) {
+        return device->CreateQuery(desc,query);
+    }
     virtual HRESULT removed_reason(ID3D11Device *device) = 0;
     virtual HRESULT get_data(ID3D11DeviceContext *context, ID3D11Query *query, BOOL *done) = 0;
     virtual void flush(ID3D11DeviceContext *context) = 0;
