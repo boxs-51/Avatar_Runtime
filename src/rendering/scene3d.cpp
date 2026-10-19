@@ -67,6 +67,14 @@ Vec read3(const assets::GlbAccessor &a, std::size_t i) {
     assets::require(a.components>=3 && i<a.count, ARS_E_BAD_ASSET);
     return {a.values[i*a.components],a.values[i*a.components+1],a.values[i*a.components+2]};
 }
+double normalized_component(const assets::GlbAccessor &a, std::size_t index) {
+    const auto value=a.values.at(index);
+    if (!a.normalized) return value;
+    // Validated WEIGHTS/TEXCOORD packed profiles use only these unsigned types.
+    if (a.component==5121) return value/255.;
+    if (a.component==5123) return value/65535.;
+    assets::fail(ARS_E_UNSUPPORTED);
+}
 Mat read_matrix(const assets::GlbAccessor &a, std::size_t i) {
     assets::require(a.components==16 && i<a.count, ARS_E_BAD_ASSET);
     Mat m{};
@@ -249,7 +257,7 @@ ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
                         const auto &j=data.accessors.at(primitive.joints), &w=data.accessors.at(primitive.weights);
                         Vec sp{},sn{},st{};
                         for (std::size_t k=0;k<4;++k) {
-                            const auto weight=w.values[vi*4+k];
+                            const auto weight=normalized_component(w,vi*4+k);
                             if (weight==0) continue;
                             const auto joint=static_cast<std::size_t>(j.values[vi*4+k]);
                             if (joint>=palette.size()) assets::fail(ARS_E_BAD_ASSET);
@@ -275,7 +283,7 @@ ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
                     v.tangent[3]=checked(handedness);
                     if (primitive.uv!=assets::glb_none) {
                         const auto &uv=data.accessors.at(primitive.uv);
-                        v.uv={checked(uv.values[vi*2]),checked(uv.values[vi*2+1])};
+                        v.uv={checked(normalized_component(uv,vi*2)),checked(normalized_component(uv,vi*2+1))};
                     }
                     draw.vertices.push_back(v);
                 }

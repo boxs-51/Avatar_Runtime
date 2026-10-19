@@ -9,7 +9,7 @@
   "classification_is_gate_approval": false,
   "counts": {
     "reference": 83,
-    "completed": 38,
+    "completed": 39,
     "in_progress": 21,
     "obsolete": 4
   },
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 146,
+  "total_documents": 147,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "99641baeba76d6b4a6e7a63383b981e7c69075f4210fa206738e5deef5b99cd0"
+      "reviewed_sha256": "91138daf73a8e1101db707667f8fc3cd70884a351a3ff8e5c2543b6eb9547695"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -1781,7 +1781,17 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "bee93bd0cd42873ffb5d3f8359c4fbe9e89914bb39eff2182e55008be1e4c9bd"
+      "reviewed_sha256": "03c04d74ebb019c7c9ae6ddf5d03e99a7f637a8fcbbd7a42cd074e584be9566b"
+    },
+    {
+      "path": "docs/completed/audits/ALPHA_54_PACKED_ACCESSORS_ACCEPTANCE.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Issue54 normalized packed weights/UV with generated CPU and WARP/hardware RED/GREEN equivalence; independent review.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "28d2978c7f7008b0d8f2da9f6175c74cff5e9b0b2afa1aaaa66230eaac97d3c0"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1793,9 +1803,9 @@
     "classification_is_gate_approval": false
   },
   "latest_checkpoint": {
-    "basis_head": "4b05828d402003d560602718eec7d8f9f7d63d48",
+    "basis_head": "579a04cab90f73d021d88996f0af1d6571d86f94",
     "date": "2026-10-20",
-    "scope": "Alpha issue53 historical/canonical-path and scoped PR custody",
+    "scope": "Alpha issue54 packed GLB weight/UV normalization",
     "new_documents": 1,
     "classification_is_gate_approval": false
   },

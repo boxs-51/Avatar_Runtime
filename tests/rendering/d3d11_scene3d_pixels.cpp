@@ -54,6 +54,17 @@ float depth_pixel(ID3D11Device *device,ID3D11DeviceContext *context,
                                                           y*m.RowPitch+x*sizeof(float));
     context->Unmap(staging.Get(),0);return result;
 }
+std::array<std::array<unsigned char,4>,64> frame(ID3D11DeviceContext *context,const Target &t) {
+    context->CopyResource(t.staging.Get(),t.image.Get());
+    D3D11_MAPPED_SUBRESOURCE mapped{};
+    check(SUCCEEDED(context->Map(t.staging.Get(),0,D3D11_MAP_READ,0,&mapped)),"packed frame map");
+    std::array<std::array<unsigned char,4>,64> result{};
+    for (unsigned y=0;y<8;++y) for (unsigned x=0;x<8;++x) {
+        const auto *p=static_cast<const unsigned char *>(mapped.pData)+y*mapped.RowPitch+x*4;
+        result[y*8+x]={p[0],p[1],p[2],p[3]};
+    }
+    context->Unmap(t.staging.Get(),0);return result;
+}
 } // namespace
 
 int main(int argc,char **argv) {
@@ -226,6 +237,21 @@ int main(int argc,char **argv) {
             }
             check(result==Result::ok && q.complete(),"material exact query");
         };
+        bool packed_pixels_equivalent=true;
+        for (const auto bits:{"8","16"}) for (const auto mode:{"weights","uv","both"}) {
+            const auto prefix=std::string("positive-alpha54-")+bits+"-"+mode;
+            auto packed=load((prefix+"-packed.glb").c_str());
+            auto floating=load((prefix+"-float.glb").c_str());
+            submit(floating);const auto expected=frame(context.Get(),t);
+            bool varied=false;for (const auto &p:expected) varied=varied || p!=expected[0];
+            check(varied,"float reference is not an empty/uniform image");
+            submit(packed);const auto actual=frame(context.Get(),t);bool same=true;
+            for (std::size_t i=0;i<actual.size();++i) for (std::size_t c=0;c<4;++c)
+                same=std::abs(int(actual[i][c])-int(expected[i][c]))<=1 && same;
+            std::printf("ALPHA54_PIXELS_%s_%s=%s\n",bits,mode,same?"PASS":"FAIL");
+            packed_pixels_equivalent=same && packed_pixels_equivalent;
+        }
+        check(packed_pixels_equivalent,"whole packed/float frames agree within1byte rounding");
         auto textured=load("positive-m2-3d-texture.glb");
         check(textured.draws[0].material.base_texture.wrap_t==33071 &&
               textured.draws[0].material.metallic_roughness_texture.image==0,

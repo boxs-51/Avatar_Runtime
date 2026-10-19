@@ -1717,5 +1717,113 @@
     "expected": "OK",
     "family": "GLB checked CPU subset",
     "stage": "C2"
+  },
+  {
+    "id": "positive-alpha54-8-weights-float.glb",
+    "file": "positive-alpha54-8-weights-float.glb",
+    "sha256": "b2e6cd1de6444b508afd17309c19047eebfb7c5630845913929492ac6bdc8609",
+    "bytes": 3496,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-8-weights-packed.glb",
+    "file": "positive-alpha54-8-weights-packed.glb",
+    "sha256": "0aa4da5ddf1789bb9683b152f3dacb4277fb9b50995f56995e7987634da1cdbb",
+    "bytes": 3460,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-8-uv-float.glb",
+    "file": "positive-alpha54-8-uv-float.glb",
+    "sha256": "33d90b775dcbd13133e8d43b0e67e556b54962f1357fa5870ec5c84385d8751d",
+    "bytes": 3352,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-8-uv-packed.glb",
+    "file": "positive-alpha54-8-uv-packed.glb",
+    "sha256": "b513a8861357de3787a2dc77a7b7d4d63695bc42399d520d7c5d8db8b5f2fc25",
+    "bytes": 3352,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-8-both-float.glb",
+    "file": "positive-alpha54-8-both-float.glb",
+    "sha256": "915e31b43ef59fe52a6fd8f818aa99da97a29c3119790236133d878758fddf0d",
+    "bytes": 3648,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-8-both-packed.glb",
+    "file": "positive-alpha54-8-both-packed.glb",
+    "sha256": "5e5dc2f8efbb3126c2adc76b7bb94ce0d9942d87a2cb7fbd4b86256ffc76d749",
+    "bytes": 3612,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-16-weights-float.glb",
+    "file": "positive-alpha54-16-weights-float.glb",
+    "sha256": "154ff5985efec2b3a19a8fb1edac8e06a667ab9f8933929d672d0c4d3f0a67d2",
+    "bytes": 3496,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-16-weights-packed.glb",
+    "file": "positive-alpha54-16-weights-packed.glb",
+    "sha256": "663c04f792e61d39e2316602af27c730410b8199af3249d86d78739fccc83239",
+    "bytes": 3472,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-16-uv-float.glb",
+    "file": "positive-alpha54-16-uv-float.glb",
+    "sha256": "2dcf3f730fad5d39c94e2bfd333806605945ab44f48e1ac9cb63bfa5d73cc41a",
+    "bytes": 3352,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-16-uv-packed.glb",
+    "file": "positive-alpha54-16-uv-packed.glb",
+    "sha256": "52f791dd1ba79caff4d68f416c5dc0d9b879e6520cfea9664479e05dc0623d04",
+    "bytes": 3340,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-16-both-float.glb",
+    "file": "positive-alpha54-16-both-float.glb",
+    "sha256": "80ec9647b22b523b7e9c4f43b1c90ce597ab217f16edd7d5ad3bde6d9d1c042f",
+    "bytes": 3648,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-16-both-packed.glb",
+    "file": "positive-alpha54-16-both-packed.glb",
+    "sha256": "9e8067702ee2afdc509c37303a24a23c7f4eb0c0d13972ba0819d58dbb4e2b12",
+    "bytes": 3612,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
   }
 ]
