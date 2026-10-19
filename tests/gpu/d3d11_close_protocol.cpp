@@ -9,6 +9,8 @@ using Microsoft::WRL::ComPtr;
 using ars::graphics::Result;
 using ars::graphics::d3d11::CloseCoordinator;
 using ars::graphics::d3d11::QueryOps;
+using ars::graphics::d3d11::HostTeardownReceipt;
+using ars::graphics::d3d11::PrivateTeardownHost;
 
 namespace {
 struct Script final : QueryOps {
@@ -115,7 +117,9 @@ int main() {
     }
     {
         Script ops;
-        CloseCoordinator close(f.device.Get(),f.context.Get(),9,&ops);
+        PrivateTeardownHost host(f.device.Get(),f.context.Get(),f.target.Get(),9);
+        CloseCoordinator close(f.device.Get(),f.context.Get(),9,&ops,host.authority());
+        HostTeardownReceipt receipt;
         auto pin=std::make_shared<int>(2);
         std::weak_ptr<int> witness=pin;
         CHECK(close.submit(f.target.Get(),{9,16,16},pin)==Result::ok,14);
@@ -123,35 +127,57 @@ int main() {
         CHECK(close.poll_close(9)==Result::failed &&
               close.phase()==CloseCoordinator::Phase::lost_quarantined,15);
         CHECK(!witness.expired() && close.pending_count()==1,16);
-        CHECK(close.acknowledge_lost_teardown(9,false)==Result::invalid_argument,17);
+        CHECK(host.issue(receipt)==Result::invalid_argument &&
+              close.acknowledge_lost_teardown(9,receipt)==Result::invalid_argument,17);
         Result off_thread=Result::ok;
-        std::thread wrong([&] { off_thread=close.acknowledge_lost_teardown(9,true); });
+        std::thread wrong([&] { off_thread=close.acknowledge_lost_teardown(9,receipt); });
         wrong.join();
         CHECK(off_thread==Result::wrong_thread && !witness.expired(),18);
-        CHECK(close.acknowledge_lost_teardown(9,true)==Result::ok && witness.expired(),19);
+        CHECK(host.admit_user()==Result::ok && host.begin_close()==Result::ok &&
+              host.issue(receipt)==Result::invalid_argument && !witness.expired() &&
+              host.release_user()==Result::ok,41);
+        Result wrong_issue=Result::ok;
+        std::thread issuer([&] { wrong_issue=host.issue(receipt); });
+        issuer.join();
+        CHECK(wrong_issue==Result::wrong_thread && !witness.expired() &&
+              host.issue(receipt)==Result::ok,44);
+        CHECK(close.acknowledge_lost_teardown(8,receipt)==Result::invalid_argument &&
+              !witness.expired(),42);
+        PrivateTeardownHost other(f.device.Get(),f.context.Get(),f.target.Get(),9);
+        HostTeardownReceipt other_receipt;
+        CHECK(other.begin_close()==Result::ok && other.issue(other_receipt)==Result::ok &&
+              close.acknowledge_lost_teardown(9,other_receipt)==Result::invalid_argument &&
+              !witness.expired(),43);
+        CHECK(close.acknowledge_lost_teardown(9,receipt)==Result::ok && witness.expired(),19);
         CHECK(close.phase()==CloseCoordinator::Phase::detached_lost &&
-              close.acknowledge_lost_teardown(9,true)==Result::invalid_argument,20);
+              close.acknowledge_lost_teardown(9,receipt)==Result::invalid_argument,20);
     }
     for (const HRESULT reason : {DXGI_ERROR_DEVICE_REMOVED,DXGI_ERROR_DEVICE_RESET}) {
         Script ops;
-        CloseCoordinator close(f.device.Get(),f.context.Get(),10,&ops);
+        PrivateTeardownHost host(f.device.Get(),f.context.Get(),f.target.Get(),10);
+        CloseCoordinator close(f.device.Get(),f.context.Get(),10,&ops,host.authority());
+        HostTeardownReceipt receipt;
         auto pin=std::make_shared<int>(3);
         std::weak_ptr<int> witness=pin;
         CHECK(close.submit(f.target.Get(),{10,16,16},pin)==Result::ok,21);
         pin.reset(); close.begin_close(); ops.reason=reason;
         CHECK(close.poll_close(10)==Result::device_lost && !witness.expired(),22);
         CHECK(close.submit(f.target.Get(),{10,16,16},nullptr)==Result::device_lost,34);
-        CHECK(close.acknowledge_lost_teardown(10,true)==Result::ok && witness.expired(),23);
+        CHECK(host.begin_close()==Result::ok && host.issue(receipt)==Result::ok &&
+              close.acknowledge_lost_teardown(10,receipt)==Result::ok && witness.expired(),23);
     }
     {
         Script ops;
-        CloseCoordinator close(f.device.Get(),f.context.Get(),11,&ops);
+        PrivateTeardownHost host(f.device.Get(),f.context.Get(),f.target.Get(),11);
+        CloseCoordinator close(f.device.Get(),f.context.Get(),11,&ops,host.authority());
+        HostTeardownReceipt receipt;
         auto pin=std::make_shared<int>(4);
         std::weak_ptr<int> witness=pin;
         CHECK(close.submit(f.target.Get(),{11,16,16},pin)==Result::ok,24);
         pin.reset(); close.begin_close(); ops.status=S_OK; ops.done=FALSE;
         CHECK(close.poll_close(11)==Result::failed && !witness.expired(),25);
-        CHECK(close.acknowledge_lost_teardown(11,true)==Result::ok && witness.expired(),26);
+        CHECK(host.begin_close()==Result::ok && host.issue(receipt)==Result::ok &&
+              close.acknowledge_lost_teardown(11,receipt)==Result::ok && witness.expired(),26);
     }
     {
         Fixture replacement;
