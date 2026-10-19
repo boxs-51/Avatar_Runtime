@@ -65,6 +65,28 @@ struct Session::Impl {
 
 Session::~Session() = default;
 
+Result Session::parameter_info(std::vector<ParameterInfo>& out) const noexcept {
+    if(!impl_||!impl_->valid||!impl_->model)return Result::invalid_model;
+    if(std::this_thread::get_id()!=impl_->owner)return Result::wrong_thread;
+    try {
+        auto* model=impl_->model;const auto count=csmGetParameterCount(model);
+        if(count<0||count>4096)return Result::out_of_budget;
+        auto ids=csmGetParameterIds(model);auto low=csmGetParameterMinimumValues(model);
+        auto mid=csmGetParameterDefaultValues(model);auto high=csmGetParameterMaximumValues(model);
+        if(count&&(!ids||!low||!mid||!high))return Result::invalid_model;
+        std::vector<ParameterInfo> candidate;candidate.reserve(count);
+        std::unordered_set<std::string_view> seen;
+        for(int i=0;i<count;++i){
+            std::size_t size=0;
+            if(!bounded_id(ids[i],size)||!seen.insert(ids[i]).second||!std::isfinite(low[i])||
+               !std::isfinite(mid[i])||!std::isfinite(high[i])||low[i]>mid[i]||mid[i]>high[i])
+                return Result::invalid_model;
+            candidate.push_back({ids[i],low[i],mid[i],high[i]});
+        }
+        out.swap(candidate);return Result::ok;
+    }catch(const std::bad_alloc&){return Result::allocation_failed;}
+}
+
 Result Session::open(const std::filesystem::path& local_root,
                      const std::filesystem::path& relative_moc,
                      Budget budget, std::unique_ptr<Session>& out) noexcept {

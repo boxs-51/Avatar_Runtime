@@ -23,6 +23,9 @@ from urllib.parse import parse_qs, urlsplit
 from moc3_local_replay import eligible as local_replay_eligible
 from moc3_local_pixels import eligible as local_pixels_eligible
 from moc3_process_tree import ProcessTree
+from moc3_local_integration import eligible as local_integration_eligible
+from moc3_frame_packet import decode as decode_frame_packet, MAX_LINE as FRAME_MAX_LINE
+from moc3_core_session import validate_control
 from moc3_package_admission import AdmissionError, _read_contained
 
 
@@ -89,6 +92,11 @@ class Coordinator:
         self.closed = False
         self.private_fixture_ready = local_replay_eligible()
         self.pixel_fixture_ready = local_pixels_eligible()
+        self.physics_fixture_ready = self.pixel_fixture_ready and (ROOT/"scripts/moc3_local_physics.py").is_file()
+        self.core_fixture_ready = local_integration_eligible()
+        self.controls = queue.Queue(maxsize=1)
+        self.control_sequence = 0
+        self.control_pending = False
         self.frame_meta: dict | None = None
         self.frame_image: bytes | None = None
         self.frame_rgba: bytes | None = None
@@ -116,7 +124,7 @@ class Coordinator:
         with self.lock:
             return {
                 "schema_version": SCHEMA_VERSION,
-                "phase": "T0_F1_F2_LOCAL",
+                "phase": "T0_F1_F2_F3_F4_LOCAL",
                 "backend": self.frame_meta["backend"] if self.frame_meta else "SYNTHETIC",
                 "source_revision": self.source_revision,
                 "worktree_dirty": self.worktree_dirty,
@@ -125,14 +133,17 @@ class Coordinator:
                 "capabilities": {
                     "admission": ("TRUSTED_LOCAL_RUN_SUITE" if self.private_fixture_ready
                                   else "HOLD_NO_LOCAL_FIXTURE_OR_BRIDGE"),
-                    "persistent_model_session": "HOLD_PERSISTENT_MODEL_SESSION_NOT_CONNECTED",
+                    "persistent_model_session": ("AVAILABLE_TRUSTED_LOCAL_CORE_LIVE" if self.core_fixture_ready
+                                                 else "HOLD_NO_F4_PRIVATE_BUILD"),
                     "cpu_preflight_fixture": "AVAILABLE",
                     "private_fixture_replay": ("AVAILABLE_OPT_IN_PRIVATE" if self.private_fixture_ready
                                                else "HOLD_NO_LOCAL_FIXTURE_OR_BRIDGE"),
                     "host_pixels": ("AVAILABLE_F2_LOCAL_SUITE" if self.pixel_fixture_ready
                                     else "HOLD_NO_HOST_RENDERER"),
-                    "linked_physics": "HOLD_F3_NOT_CONNECTED",
+                    "linked_physics": ("AVAILABLE_F3_LOCAL_SUITE" if self.physics_fixture_ready else "HOLD_F3_NOT_CONNECTED"),
                     "physical_device_loss": "HOLD_NO_RESET_RUNNER",
+                    "core_host_integration": ("AVAILABLE_F4_PRIVATE_SUITE" if self.core_fixture_ready
+                                              else "HOLD_NO_F4_PRIVATE_BUILD"),
                 },
                 "event_seq": self.event_seq,
                 "ui_visible": self.ui_visible,
@@ -216,6 +227,9 @@ class Coordinator:
             self.frame_image = None
             self.frame_rgba = None
             self.ui_frame = None
+            self.controls = queue.Queue(maxsize=1)
+            self.control_sequence = 0
+            self.control_pending = False
             self.session.update(frame_generation=None, snapshot_generation=None)
             self.run = {"run_id": run_id, "session_id": session_id,
                         "suite_id": suite, "state": "QUEUED",
@@ -223,7 +237,8 @@ class Coordinator:
                         "proof_tier": ("synthetic_harness" if suite == "T0-SYNTHETIC" else
                                        "cpu_preflight_fixture" if suite == "F1-CPU-PREFLIGHT" else
                                        "trusted_local_cpu" if suite == "F1-LOCAL-REPLAY" else
-                                       "host_integrated_local" if suite == "PIXEL-2D" else None),
+                                       "host_integrated_local" if suite in ("PIXEL-2D","PHYS-LINK") else
+                                       "private_real_core_host" if suite in ("CORE-INTEGRATION","CORE-LIVE","CORE-SOAK") else None),
                         "completed_steps": 0,
                         "frame_generation": None, "target_epoch": None}
             if len(self.runs) >= 32:
@@ -242,12 +257,22 @@ class Coordinator:
             elif suite == "PIXEL-2D" and self.pixel_fixture_ready:
                 self.stop_run.clear()
                 threading.Thread(target=self._local_replay_run, args=(run_id,"F2"), daemon=True).start()
+            elif suite == "PHYS-LINK" and self.physics_fixture_ready:
+                self.stop_run.clear()
+                threading.Thread(target=self._local_replay_run, args=(run_id,"F3"), daemon=True).start()
+            elif suite == "CORE-INTEGRATION" and self.core_fixture_ready:
+                self.stop_run.clear()
+                threading.Thread(target=self._local_replay_run, args=(run_id,"F4"), daemon=True).start()
+            elif suite in ("CORE-LIVE","CORE-SOAK") and self.core_fixture_ready:
+                self.stop_run.clear()
+                threading.Thread(target=self._local_replay_run, args=(run_id,"F4B"), daemon=True).start()
             elif suite != "T0-SYNTHETIC":
                 reasons = {"ADMIT": "HOLD_PERSISTENT_MODEL_SESSION_NOT_CONNECTED",
                            "POSE-REPLAY": "HOLD_PERSISTENT_MODEL_SESSION_NOT_CONNECTED",
                            "F1-LOCAL-REPLAY": "HOLD_NO_LOCAL_FIXTURE_OR_BRIDGE",
                            "PIXEL-2D": "HOLD_NO_HOST_RENDERER",
                            "PHYS-LINK": "HOLD_F3_NOT_CONNECTED",
+                           "CORE-INTEGRATION": "HOLD_NO_F4_PRIVATE_BUILD",
                            "LIVE-CONTINUITY": "HOLD_NO_HOST_RENDERER",
                            "FAULT-LIFECYCLE": "HOLD_NO_HOST_RENDERER"}
                 self.run.update(state="COMPLETE", verdict="HOLD",
@@ -285,12 +310,14 @@ class Coordinator:
                             reason=reason)
 
     def _publish_frame(self, run_id: str, number: int) -> None:
-        root = ROOT / "build" / "moc3-f2-local" / run_id
+        with self.lock:
+            phase = "f3" if self.run and self.run["run_id"]==run_id and self.run.get("suite_id")=="PHYS-LINK" else "f2"
+        root = ROOT / "build" / f"moc3-{phase}-local" / run_id
         attrs = getattr(root.lstat(), "st_file_attributes", 0)
         if root.is_symlink() or attrs & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0):
             raise ValueError("reparse frame directory")
         root = root.resolve(strict=True)
-        if not root.is_relative_to((ROOT / "build" / "moc3-f2-local").resolve()):
+        if not root.is_relative_to((ROOT / "build" / f"moc3-{phase}-local").resolve()):
             raise ValueError("frame directory escape")
         info = json.loads(_read_contained(root, PurePosixPath(f"frame-{number}.json"), 16384),
                           object_pairs_hook=_unique_object, parse_constant=_reject_constant)
@@ -313,6 +340,10 @@ class Coordinator:
                             run_id=run_id, proof_tier="host_integrated_local",
                             clean_format="RGBA8_PREMULTIPLIED_UNORM_RAW_SAMPLES",
                             presenter="PPM_CHECKER_AFTER_READBACK")
+                if phase=="f3":
+                    if info.get("behavior") not in ("PHYSICS_ON","PHYSICS_OFF","RESET_REPLAY","RELOAD_REPLAY","DISABLED"):
+                        raise ValueError("invalid behavior frame")
+                    meta["behavior"]=info["behavior"]
                 self.frame_meta = meta
                 self.frame_image = image
                 self.frame_rgba = rgba
@@ -329,6 +360,38 @@ class Coordinator:
                                else "HOLD_NO_HOST_RENDERER")
             return dict(self.frame_meta), self.frame_rgba if clean else self.frame_image
 
+    def _publish_stream(self, run_id: str, line: str) -> None:
+        meta,rgba,ppm=decode_frame_packet(line)
+        with self.lock:
+            if not self.run or self.run["run_id"]!=run_id or self.closed:
+                return
+            if self.run["suite_id"] not in ("CORE-INTEGRATION","CORE-LIVE","CORE-SOAK"):raise ValueError("wrong frame suite")
+            previous=self.frame_meta["frame_generation"] if self.frame_meta else 0
+            if meta["frame_generation"]!=previous+1:raise ValueError("nonmonotonic core frame")
+            meta.update(schema_version=SCHEMA_VERSION,session_id=self.session["session_id"],run_id=run_id,
+                        proof_tier="private_real_core_host",clean_format="RGBA8_PREMULTIPLIED_UNORM_RAW_SAMPLES",
+                        presenter="PPM_CHECKER_AFTER_READBACK")
+            self.frame_meta=meta;self.frame_rgba=rgba;self.frame_image=ppm
+            self.session.update(frame_generation=meta["frame_generation"],snapshot_generation=meta["snapshot_generation"])
+            self.run.update(frame_generation=meta["frame_generation"],target_epoch=meta["target_epoch"],core_generation=meta["core_generation"])
+            self._event("HOST_FRAME_COMMITTED",run_id=run_id,frame_generation=meta["frame_generation"],
+                        target_epoch=meta["target_epoch"],core_generation=meta["core_generation"])
+
+    def control(self, run_id: str, body: dict) -> tuple[int,dict]:
+        value={k:v for k,v in body.items() if k!="request_id"}
+        try:value=validate_control(value)
+        except ValueError as error:raise ApiError(400,str(error)) from error
+        with self.lock:
+            if not self.run or self.run["run_id"]!=run_id:raise ApiError(404,"RUN_NOT_CURRENT")
+            if self.run["suite_id"]!="CORE-LIVE" or self.run["state"]!="RUNNING" or self.stop_run.is_set():
+                raise ApiError(409,"CONTROL_NOT_ACTIVE")
+            if value['sequence']<=self.control_sequence:raise ApiError(409,"CONTROL_REPLAY")
+            if self.control_pending:raise ApiError(409,"CONTROL_BUSY")
+            self.controls.put_nowait(value)
+            self.control_sequence=value['sequence'];self.control_pending=True
+            return 202,{'schema_version':SCHEMA_VERSION,'run_id':run_id,
+                        'control_sequence':value['sequence'],'state':'QUEUED'}
+
     def _local_replay_run(self, run_id: str, phase: str = "F1") -> None:
         with self.lock:
             if self.run is None or self.run["run_id"] != run_id:
@@ -337,16 +400,22 @@ class Coordinator:
             self._event("RUN_STARTED", run_id=run_id)
         process = None
         process_tree = None
-        verdict, reason = "FAIL", "PRIVATE_CPU_REPLAY_FAILED" if phase=="F1" else "LOCAL_F2_PIXELS_FAILED"
-        messages: queue.Queue[str] = queue.Queue(maxsize=16)
+        verdict, reason = "FAIL", "PRIVATE_CPU_REPLAY_FAILED" if phase=="F1" else f"LOCAL_{phase}_FAILED"
+        messages: queue.Queue[str] = queue.Queue(maxsize=2 if phase in ("F4","F4B") else 16)
         output_pass = False
         output_thread = None
+        collector_stop = threading.Event()
         def collect_output():
             while True:
-                line = process.stdout.readline(128)
+                line = process.stdout.readline(FRAME_MAX_LINE+1 if phase in ("F4","F4B") else 128)
                 if not line:
                     return
-                messages.put(line.strip())
+                invalid = phase in ("F4","F4B") and len(line)>FRAME_MAX_LINE
+                value = "F4_TRANSPORT_INVALID" if invalid else line.strip()
+                while not collector_stop.is_set():
+                    try:messages.put(value,timeout=.1);break
+                    except queue.Full:pass
+                if invalid or collector_stop.is_set():return
         def consume_output():
             nonlocal output_pass
             while True:
@@ -354,40 +423,64 @@ class Coordinator:
                     line = messages.get_nowait()
                 except queue.Empty:
                     return
-                if line == ("F1_PRIVATE_LOCAL_REPLAY_PASS" if phase=="F1" else "F2_LOCAL_HOST_PIXELS_PASS"):
+                if phase in ("F4","F4B") and line.startswith("F4_PACKET "):
+                    self._publish_stream(run_id,line)
+                elif line=="F4_TRANSPORT_INVALID":raise ValueError("frame transport budget")
+                elif phase=="F4B" and re.fullmatch(r"F4B_CONTROL [1-9][0-9]{0,4} [1-9][0-9]{0,4}",line):
+                    _,seq,frame=line.split()
+                    with self.lock:
+                        if int(seq)!=self.control_sequence or not self.control_pending or int(frame)!=self.run.get('frame_generation'):
+                            raise ValueError('invalid committed control identity')
+                        self.control_pending=False
+                        self.run['accepted_control_sequence']=int(seq)
+                        self._event('CONTROL_COMMITTED',run_id=run_id,control_sequence=int(seq),frame_generation=int(frame))
+                elif line == {"F1":"F1_PRIVATE_LOCAL_REPLAY_PASS","F2":"F2_LOCAL_HOST_PIXELS_PASS","F3":"F3_LOCAL_LINKED_PHYSICS_PASS","F4":"F4_LOCAL_CORE_HOST_PASS","F4B":"F4B_LOCAL_CONTINUITY_PASS"}[phase]:
                     output_pass = True
                 elif line in {"F1_STAGE PACKAGE", "F1_STAGE EVALUATOR", "F1_STAGE NEGATIVE",
                               "F1_STAGE MEMORY", "F1_STAGE COMPLETE", "F2_STAGE WARP",
-                              "F2_STAGE HARDWARE", "F2_STAGE PACKAGE", "F2_STAGE RENDER", "F2_STAGE COMPLETE"}:
+                              "F2_STAGE HARDWARE", "F2_STAGE PACKAGE", "F2_STAGE RENDER", "F2_STAGE COMPLETE",
+                              "F3_STAGE PACKAGE","F3_STAGE WARP","F3_STAGE HARDWARE","F3_STAGE ON_OFF",
+                              "F3_STAGE RESET_REPLAY","F3_STAGE RELOAD","F3_STAGE COMPLETE",
+                              "F4_STAGE PACKAGE","F4_STAGE WARP","F4_STAGE HARDWARE","F4_STAGE CORE_SOAK",
+                              "F4_STAGE RESET_REPLAY","F4_STAGE PHYSICS_TOGGLE","F4_STAGE NEGATIVE","F4_STAGE COMPLETE",
+                              "F4B_STAGE PACKAGE","F4B_STAGE ACTIVE"}:
                     with self.lock:
                         if self.run and self.run["run_id"] == run_id:
                             self.run["stage"] = line.split()[1]
                             self._event(f"{phase}_STAGE", run_id=run_id, stage=self.run["stage"])
-                elif phase=="F2" and re.fullmatch(r"F2_FRAME [1-9][0-9]?",line):
+                elif phase in ("F2","F3") and re.fullmatch(phase+r"_FRAME [1-9][0-9]?",line):
                     self._publish_frame(run_id,int(line.split()[1]))
         try:
             command = [sys.executable, str(ROOT / "scripts" /
-                                          ("moc3_local_replay.py" if phase=="F1" else "moc3_local_pixels.py"))]
-            if phase=="F2":
+                                          {"F1":"moc3_local_replay.py","F2":"moc3_local_pixels.py","F3":"moc3_local_physics.py","F4":"moc3_local_integration.py","F4B":"moc3_local_continuity.py"}[phase])]
+            if phase in ("F2","F3","F4","F4B"):
                 command += ["--run-id",run_id]
                 process_tree = ProcessTree()
+            if phase in ("F4","F4B"):command += ["--stream"]
+            if phase=="F4B" and self.run['suite_id']=='CORE-SOAK':command += ['--soak']
             process = subprocess.Popen(command,
                                        cwd=ROOT, stdout=subprocess.PIPE,
                                        stderr=subprocess.DEVNULL, text=True,
+                                       stdin=subprocess.PIPE if phase=="F4B" else None,
                                        env=process_tree.environment() if process_tree else None)
             if process_tree:
                 process_tree.attach_and_release(process.pid)
             output_thread = threading.Thread(target=collect_output, daemon=True)
             output_thread.start()
-            deadline = time.monotonic() + 180
+            deadline = time.monotonic() + (2200 if phase=="F4B" else 180)
             while True:
                 consume_output()
                 if self.stop_run.is_set() or self.closed:
                     verdict, reason = "CANCELLED", "CANCEL_REQUESTED"
                     process_tree.terminate() if process_tree else process.terminate()
                     break
+                if phase=="F4B" and self.run['suite_id']=='CORE-LIVE':
+                    try:control=self.controls.get_nowait()
+                    except queue.Empty:control=None
+                    if control:
+                        process.stdin.write(json.dumps(control,separators=(',',':'))+'\n');process.stdin.flush()
                 if time.monotonic() >= deadline:
-                    reason = "PRIVATE_CPU_REPLAY_TIMEOUT" if phase=="F1" else "LOCAL_F2_TIMEOUT"
+                    reason = "PRIVATE_CPU_REPLAY_TIMEOUT" if phase=="F1" else f"LOCAL_{phase}_TIMEOUT"
                     process_tree.terminate() if process_tree else process.terminate()
                     break
                 if process.poll() is not None:
@@ -395,7 +488,10 @@ class Coordinator:
                     consume_output()
                     if process.returncode == 0 and output_pass:
                         verdict, reason = "PASS", ("TRUSTED_LOCAL_F1_CPU_VERIFIED" if phase=="F1"
-                                                   else "TRUSTED_LOCAL_F2_HOST_PIXELS_VERIFIED")
+                                                   else "TRUSTED_LOCAL_F2_HOST_PIXELS_VERIFIED" if phase=="F2"
+                                                   else "TRUSTED_LOCAL_F3_LINKED_PHYSICS_VERIFIED" if phase=="F3"
+                                                   else "TRUSTED_LOCAL_F4_CORE_HOST_VERIFIED" if phase=="F4"
+                                                   else "TRUSTED_LOCAL_F4B_CONTINUITY_VERIFIED")
                     break
                 self.stop_run.wait(0.1)
             process.wait(timeout=5)
@@ -403,13 +499,14 @@ class Coordinator:
                 verdict, reason = "FAIL", "PROCESS_TREE_NOT_EMPTY_AFTER_RUN"
                 process_tree.terminate()
         except (AdmissionError, OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError):
-            reason = "PRIVATE_CPU_REPLAY_RUNNER_ERROR" if phase=="F1" else "LOCAL_F2_RUNNER_ERROR"
+            reason = "PRIVATE_CPU_REPLAY_RUNNER_ERROR" if phase=="F1" else f"LOCAL_{phase}_RUNNER_ERROR"
             if process is not None and process.poll() is None:
                 if process_tree:
                     process_tree.terminate()
                 process.kill()
                 process.wait(timeout=5)
         finally:
+            collector_stop.set()
             if process_tree is not None:
                 if not process_tree.wait_empty():
                     process_tree.terminate()
@@ -420,10 +517,11 @@ class Coordinator:
                 output_thread.join(timeout=1)
             if process is not None:
                 process.stdout.close()
+                if process.stdin:process.stdin.close()
         with self.lock:
             if self.run and self.run["run_id"] == run_id:
                 self.run.update(state="COMPLETE", verdict=verdict, reason=reason)
-                if phase=="F2":
+                if phase in ("F2","F3","F4","F4B"):
                     self.run["process_tree_empty"] = reason != "PROCESS_TREE_CLEANUP_FAILED"
                 self._event("RUN_COMPLETE", run_id=run_id, verdict=verdict,
                             reason=reason)
@@ -535,6 +633,7 @@ class HarnessHandler(BaseHTTPRequestHandler):
         self.send_header("X-Session-Id", meta["session_id"])
         self.send_header("X-Snapshot-Generation", str(meta["snapshot_generation"]))
         self.send_header("X-Device-Generation", str(meta["device_generation"]))
+        if "core_generation" in meta:self.send_header("X-Core-Generation",str(meta["core_generation"]))
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
@@ -567,7 +666,7 @@ class HarnessHandler(BaseHTTPRequestHandler):
         try:
             path = urlsplit(self.path)
             if path.path == "/healthz":
-                self._send(200, {"ready": True, "phase": "T0_F1_F2_LOCAL"})
+                self._send(200, {"ready": True, "phase": "T0_F1_F2_F3_F4_LOCAL"})
                 return
             self._auth()
             coordinator = self.server.coordinator
@@ -637,6 +736,8 @@ class HarnessHandler(BaseHTTPRequestHandler):
                         if set(body) != {"request_id"}:
                             raise ApiError(400, "INVALID_REQUEST")
                         status, value = coordinator.cancel(parts[2])
+                    elif len(parts) == 4 and parts[:2] == ["v1", "runs"] and parts[3] == "controls":
+                        status,value=coordinator.control(parts[2],body)
                     elif len(parts) == 4 and parts[:2] == ["v1", "sessions"] and parts[3] == "actions":
                         coordinator._session(parts[2], "live")
                         raise ApiError(409, "HOLD_NO_LIVE_INPUT_BACKEND")
@@ -657,12 +758,12 @@ def show_window(coordinator: Coordinator, shutdown: Callable[[], None],
     from tkinter import ttk
 
     window = tk.Tk()
-    window.title("MOC3 Test Harness - F1 CPU + F2 Host Pixels")
-    window.geometry("950x760")
-    heading = ttk.Label(window, text="MOC3 TEST HARNESS - F1 CPU + F2 HOST PIXELS",
+    window.title("MOC3 Test Harness - F1 CPU / F2 Pixels / F3 Physics / F4 Core")
+    window.geometry("1100x760")
+    heading = ttk.Label(window, text="MOC3 TEST HARNESS - F1 CPU / F2 PIXELS / F3 PHYSICS / F4 CORE",
                         font=("Segoe UI", 16, "bold"))
     heading.pack(padx=16, pady=(18, 8), anchor="w")
-    ttk.Label(window, text="Run F2 pixels: actual host target   |   Linked Physics3: HOLD",
+    ttk.Label(window, text="F2 pixels / F3 linked physics: actual host target; reference equivalence HOLD",
               font=("Segoe UI", 10)).pack(padx=16, anchor="w")
     controls = ttk.Frame(window)
     controls.pack(padx=16, pady=(10, 0), anchor="w")
@@ -698,8 +799,26 @@ def show_window(coordinator: Coordinator, shutdown: Callable[[], None],
                         raise ApiError(409, "CREATE_SESSION_FIRST")
                     coordinator.start_run(coordinator.session["session_id"],
                                           {"request_id": "ui-f2", "suite_id": "PIXEL-2D"})
+                elif action == "f3":
+                    if coordinator.session is None:
+                        raise ApiError(409, "CREATE_SESSION_FIRST")
+                    coordinator.start_run(coordinator.session["session_id"],
+                                          {"request_id":"ui-f3", "suite_id":"PHYS-LINK"})
+                elif action == "f4":
+                    if coordinator.session is None:raise ApiError(409,"CREATE_SESSION_FIRST")
+                    coordinator.start_run(coordinator.session["session_id"],
+                                          {"request_id":"ui-f4", "suite_id":"CORE-INTEGRATION"})
                 elif action == "cancel" and coordinator.run is not None:
                     coordinator.cancel(coordinator.run["run_id"])
+                elif action in ('f4live','f4soak'):
+                    if coordinator.session is None:raise ApiError(409,'CREATE_SESSION_FIRST')
+                    coordinator.start_run(coordinator.session['session_id'],
+                                          {'request_id':'ui-'+action,'suite_id':'CORE-LIVE' if action=='f4live' else 'CORE-SOAK'})
+                elif action in ('drive','release','physics_off','physics_reset'):
+                    if coordinator.run is None:raise ApiError(409,'START_CORE_LIVE_FIRST')
+                    coordinator.control(coordinator.run['run_id'],
+                        {'sequence':coordinator.control_sequence+1,'drive':.5 if action=='drive' else None,
+                         'physics':action!='physics_off','reset':action=='physics_reset','lease_ms':2000})
                 else:
                     raise ApiError(409, "NO_RUN_TO_CANCEL")
             operator_message.set(f"{action.upper()} accepted")
@@ -708,10 +827,14 @@ def show_window(coordinator: Coordinator, shutdown: Callable[[], None],
 
     for label, action in (("Create session", "create"), ("Step", "step"),
                           ("Run synthetic", "run"), ("Run F1 local", "f1"),
-                          ("Run F2 pixels", "f2"),
+                          ("Run F2 pixels", "f2"), ("Run F3 physics", "f3"), ("Run F4 core", "f4"),
                           ("Cancel", "cancel")):
         ttk.Button(controls, text=label, command=lambda a=action: operate(a)).pack(
             side="left", padx=(0, 8))
+    live_controls=ttk.Frame(window);live_controls.pack(padx=16,pady=(4,0),anchor='w')
+    for label,action in (('Start core live','f4live'),('35-minute continuity','f4soak'),
+                         ('Drive (2s)','drive'),('Release','release'),('Physics off (2s)','physics_off'),('Reset physics','physics_reset')):
+        ttk.Button(live_controls,text=label,command=lambda a=action:operate(a)).pack(side='left',padx=(0,8))
     ttk.Label(window, textvariable=operator_message).pack(padx=16, pady=(4, 0), anchor="w")
     state = tk.StringVar(value="Waiting for agent/API session")
     ttk.Label(window, textvariable=state, font=("Consolas", 11)).pack(padx=16, pady=12, anchor="w")
@@ -754,12 +877,15 @@ def show_window(coordinator: Coordinator, shutdown: Callable[[], None],
                 preview.create_image(16, 38, image=photo, anchor="nw", tags="host-frame")
                 preview.itemconfigure(marker, state="hidden")
                 preview.itemconfigure(preview_label, text=f"{meta['backend']} HOST FRAME "
-                                      f"{meta['frame_generation']} | target epoch {meta['target_epoch']}")
+                                      f"{meta['frame_generation']} | target epoch {meta['target_epoch']} "
+                                      f"| {meta.get('behavior','POSE_REPLAY')} "
+                                      f"| core {meta.get('core_generation','--')}")
                 frame_key = key
                 with coordinator.lock:
                     if coordinator.frame_meta and (coordinator.frame_meta["run_id"],
                             coordinator.frame_meta["frame_generation"]) == frame_key:
                         coordinator.ui_frame = {key: meta[key] for key in ("run_id", "frame_generation", "target_epoch")}
+                        if "core_generation" in meta:coordinator.ui_frame["core_generation"]=meta["core_generation"]
         elif frame_key is not None:
             preview.delete("host-frame")
             frame_key = None
@@ -827,7 +953,7 @@ def main() -> int:
         raise SystemExit("HARNESS_DESCRIPTOR_ACL_HOLD")
     worker = threading.Thread(target=server.serve_forever, daemon=True)
     worker.start()
-    print("MOC3_T0_F1_F2_LOCAL", flush=True)
+    print("MOC3_T0_F1_F2_F3_F4_LOCAL", flush=True)
     print("Session descriptor: build/moc3-harness/session.json", flush=True)
 
     shutdown_lock = threading.Lock()

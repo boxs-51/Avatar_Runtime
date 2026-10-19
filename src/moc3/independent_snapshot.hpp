@@ -71,6 +71,10 @@ struct Parameter {
     std::string id;
     float value = 0;
 };
+struct ParameterInfo {
+    std::string id;
+    float minimum=0, default_value=0, maximum=0;
+};
 
 class Session {
 public:
@@ -91,6 +95,7 @@ public:
     // Complete pose: reset unspecified parameters to model defaults in the
     // same transactional update as the supplied finite overrides.
     Result update_complete(const std::vector<Parameter>& overrides) noexcept;
+    Result parameter_info(std::vector<ParameterInfo>& out) const noexcept;
     std::shared_ptr<const Snapshot> current() const noexcept { return current_.load(); }
 
     // Deterministic private fault injection; -1 disables it.

@@ -23,6 +23,8 @@ class HarnessApiTests(unittest.TestCase):
         # Unit tests exercise the synthetic control contract independently of
         # optional local GPU builds. Actual F2 pixels have a separate live run.
         self.server.coordinator.pixel_fixture_ready = False
+        self.server.coordinator.physics_fixture_ready = False
+        self.server.coordinator.core_fixture_ready = False
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
 
@@ -53,6 +55,16 @@ class HarnessApiTests(unittest.TestCase):
             "request_id": "create-1", "fixture_alias": "synthetic_t0", "mode": mode})
         self.assertEqual(status, 201)
         return value["session_id"]
+
+    def test_huge_integer_control_returns_typed_error(self):
+        coordinator=self.server.coordinator
+        coordinator.run={'run_id':'generated','state':'RUNNING','suite_id':'CORE-LIVE'}
+        code,value=self.call('POST','/v1/runs/generated/controls',{
+            'request_id':'huge-control','sequence':1,'drive':10**1000,
+            'physics':True,'reset':False,'lease_ms':1000})
+        self.assertEqual((code,value['error']),(400,'INVALID_DRIVE'))
+        self.assertEqual(coordinator.control_sequence,0)
+        self.assertTrue(coordinator.controls.empty())
 
     def test_token_and_no_private_backend_claim(self):
         self.assertEqual(self.call("GET", "/healthz", token=False)[0], 200)
@@ -243,6 +255,25 @@ class HarnessApiTests(unittest.TestCase):
         self.assertNotEqual(response.getheader("X-Run-Id"),observed["run_id"])
         self.assertEqual(response.read(),rgba)
         connection.close()
+
+    def test_core_stream_atomic_identity_and_binary_header_wire_only(self):
+        from moc3_frame_packet import encode
+        session=self.session();coordinator=self.server.coordinator;rid=secrets.token_hex(12)
+        with coordinator.lock:coordinator.run={"run_id":rid,"suite_id":"CORE-INTEGRATION","state":"RUNNING"}
+        meta={"width":512,"height":512,"frame_generation":1,"snapshot_generation":2,
+              "target_epoch":1,"device_generation":101,"core_generation":1,
+              "backend":"D3D11_WARP","behavior":"CORE_RELEASE"}
+        rgba=bytes(512*512*4);ppm=b"P6\n512 512\n255\n"+bytes(512*512*3)
+        packet=encode(meta,rgba,ppm);coordinator._publish_stream(rid,packet)
+        before=coordinator.latest_frame(session,clean=True)
+        with self.assertRaises(ValueError):coordinator._publish_stream(rid,packet)
+        with self.assertRaises(ValueError):coordinator._publish_stream(rid,"F4_PACKET invalid")
+        self.assertEqual(coordinator.latest_frame(session,clean=True),before)
+        connection=http.client.HTTPConnection("127.0.0.1",self.server.server_port,timeout=3)
+        connection.request("GET",f"/v1/sessions/{session}/frames/latest/rgba",headers={"X-Moc3-Test-Token":self.server.token})
+        response=connection.getresponse()
+        self.assertEqual(response.status,200);self.assertEqual(response.getheader("X-Core-Generation"),"1")
+        self.assertEqual(response.getheader("X-Run-Id"),rid);self.assertEqual(response.read(),rgba);connection.close()
 
     def test_malformed_json_and_unknown_fixture(self):
         status, value = self.call("POST", "/v1/sessions",

@@ -98,6 +98,10 @@ public:
     ars_status dequeue_frame(ars_runtime_h,ars_source_admin_h,FrameLease *);
     ars_status prepare_cpu(ars_runtime_h,ars_character_h,std::span<const ars_source_admin_h>,const motion::Program &,StageLease *);
     ars_status publish_cpu(StageLease *);
+    // Private consumer read: caller serializes access to its StageLease.
+    // Copies scalars without exposing mutable candidate storage; final publish
+    // still performs the existing source/epoch/clock validation fence.
+    ars_status copy_cpu_candidate(const StageLease &,std::span<float>,std::uint64_t *) const;
     ars_status read_cpu(ars_runtime_h,ars_character_h,SnapshotLease *);
     std::uint32_t occupied() const;
 };

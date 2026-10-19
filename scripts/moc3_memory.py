@@ -38,6 +38,7 @@ def process_memory(pid: int | None = None) -> dict[str, int]:
             raise ctypes.WinError(ctypes.get_last_error())
         return {"peak_commit_bytes": value.PeakPagefileUsage,
                 "commit_bytes": value.PrivateUsage,
+                "working_set_bytes": value.WorkingSetSize,
                 "peak_working_set_bytes": value.PeakWorkingSetSize}
     finally:
         kernel.CloseHandle(handle)

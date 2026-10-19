@@ -1,0 +1,290 @@
+{
+  "schema_version": 1,
+  "kind": "F4_COMPLETION_PROGRESS_SOURCE_CLOSURE",
+  "parent_head": "69eac34c11050799f59e9e339b3ac016d8f093f7",
+  "worktree_uncommitted": true,
+  "task_verdict": "REVISE",
+  "goal_verdict": "REVISE",
+  "product_release_decision": "HOLD",
+  "selected_target": "ARBITRARY_PUBLIC_USER_MOC3_INPUT",
+  "public_activation": false,
+  "public_abi_changed": false,
+  "environment": {
+    "platform": "Windows-10-10.0.19045-SP0",
+    "compiler": "MSVC 19.51.36252.0",
+    "configuration": "Release",
+    "gpu": "NVIDIA GeForce GTX 1060 3GB",
+    "driver": "581.57",
+    "python": "3.12.10"
+  },
+  "source_sha256": {
+    "CMakeLists.txt": "e3d823199f202f28fc78893b6e65f1d6800b0520e28500dcb989260c0197c96c",
+    "cmake/ars_asset_dependencies.cmake": "267bd3c7efbf8b6bcc2a3d10c9b2610b4920d2cc5e02f6455bf883e617bb4078",
+    "cmake/ars_compiler_options.cmake": "29d457825d67a4df4f3f83c8d08d56e4b5b30b9ab1a21085b7f33334a7928fcf",
+    "docs/M2_MOC3_F3_LINKED_PHYSICS_DESIGN.md": "9e3eecd05f7b8757826030eeeddf7927d9e7a01f65c2d5e3d7926a7b6b5cd91e",
+    "docs/M2_MOC3_F4_CONTINUITY_DESIGN.md": "cfee40e60b2edd0e6cfe786304722296d02c90829156c047b599f5b5bae70dc6",
+    "docs/M2_MOC3_F4_INTEGRATION_DESIGN.md": "d788a40e5cf56a0a355e45494e6038798e31750f672fcfd4d3657f592e63765f",
+    "docs/M2_MOC3_F4_PUBLIC_IMPORT_DESIGN.md": "c73096ed11230b4eef2669fd2a8ade59e80abebe9d30a5935f81f527723e6b19",
+    "docs/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md": "736bbbe9a484e714907c91ecb33f105f6a45c13d78423988e0ea59cf3e90244d",
+    "docs/M2_MOC3_F4_RELEASE_LEDGER.md": "4ef970130a999a27cb2c1e7fedef0b798f746f6d3346cf6b11f2e5515ed2bcf8",
+    "docs/M2_MOC3_FRAMEWORK_TARGET_DESIGN.md": "485ac55e60b29c4b978878708817f4855093e8622ecaa1865fababb7ac07724f",
+    "docs/M2_MOC3_OBSERVABLE_TEST_HARNESS_DESIGN.md": "9a1a7ba45b26f026a2b165d369aafb88cec0ea92c8abdb683f31de37c5620763",
+    "docs/audits/M2_MOC3_F4_COMPLETION_PROGRESS.md": "20537312723eb0236ab0c7a0cc19f71dd3ff1567c0542edd1eafd2983cd930f4",
+    "include/ars/ars.h": "c61dc77ab5250c058c8e28d376ecc5c7df2b7a764980e1cf40b861fc0491d204",
+    "launch_moc3_test_harness.bat": "d232f60da93225b9c99ae7c112df4bfdc1bc372b581138e4f4ace23154243182",
+    "scripts/moc3_compare_snapshots.py": "13ccb3f7665720802ad1d53cbfc7ef8eacf1bfde64cddcac6c3e52ce0a3a7361",
+    "scripts/moc3_core_session.py": "66f5ea1cd668fea170bd8726634587c20f31482490115ec1d796ef1c52be594b",
+    "scripts/moc3_frame_packet.py": "ca6eb442faca30178950eda007b4ffe4cfe4a6a3af5b0749adf4cd8ff9b034f5",
+    "scripts/moc3_harness_client.py": "2e75010cf1b89fb6c27de3454921dc5f17e626dfd4588f3cdf526d28ec833a5f",
+    "scripts/moc3_local_continuity.py": "d34a8bd3c62775504e48d5613a14e6378f1d5cba78c766957b1d51f74d7326c8",
+    "scripts/moc3_local_integration.py": "504c3d40b90b3f60aeb538cf2111bd633bf8c17ea3b68b429e3ca92a3c61b59c",
+    "scripts/moc3_local_physics.py": "e67cd54382daa39787a4a8a2510ac14c1ac1abcd3a1b260aa7ef8a88365f4eec",
+    "scripts/moc3_local_pixels.py": "f0af998610efe892e41c364bd3305000854ec3ab214d6ae6f5a9f8162a7b9c03",
+    "scripts/moc3_local_replay.py": "3fee080638af353916757226a4febe9b0f70b4b2b77bd1bca50c5724aade7707",
+    "scripts/moc3_memory.py": "f5fbf0315255c0f27facaba0106f9bc3e83765a2f9d25d8eb92f793b267a4747",
+    "scripts/moc3_package_admission.py": "71b1fb3b000931c7853ba122061748f13f2ac3a190d7e378dfc17d503fbe0173",
+    "scripts/moc3_physics.py": "200717a2bf074d8a5e389e2c360955299ff08c923662cf5b7b791ccddf9ebf67",
+    "scripts/moc3_private_bundle.py": "73eeaa1e8020f10927f8de94009e1287d51a6390b8bc917deb7f85ef11d81f53",
+    "scripts/moc3_private_consumer.py": "b7c367a33302d083e80c0d0e36e5e96a7a83108f662827b9a3c1f00114d619c9",
+    "scripts/moc3_process_tree.py": "cfbe4ecbb4676350c142df0b9e72df86604fc002e593eabf9f777be41f6b64d5",
+    "scripts/moc3_public_preflight.py": "7653d10ef97992b1e449b9efab1a9b927d243a31ac48887c3331d291df4d9ef9",
+    "scripts/moc3_session.py": "351cbec767cbde4af691fc7d04c85b7fa221c3320cc0e097c96a2e38de2208e3",
+    "scripts/moc3_test_harness.py": "5fb91e3423d047d599d4ceb785e355d7b7f737e910a2eeea84bd3935f387115f",
+    "scripts/moc3_verify_public_preflight.py": "011b5765187b8ac852faeaf3d96dcef1c00f528616fcedb2e74ca02d9f7e8196",
+    "scripts/moc3_verify_visible_f2.py": "6f66c865c0258f61631bf7821d0fc704f53a430f87a7e69d34b1f96646325922",
+    "scripts/moc3_verify_visible_f3.py": "179a1e4ab77cf53c441f2c858f389c50ec832ee9251ea308a2a9a5e597c27cf5",
+    "scripts/moc3_verify_visible_f4.py": "5f6b74afb494022d752c6a557c56c4aad3a2f8ce949653bd23f9147d7a5b0607",
+    "scripts/moc3_verify_visible_f4b.py": "5abedf1ac480965659ea7454d4d58d3033f94b38d92a9f63c1bf647c912c6c61",
+    "scripts/moc3_viewer_diagnostics.py": "d01cea90eda9190e122096d0f3a2984cd89c5400ebe4bf53f82d31f87282ce40",
+    "src/core/character_authority.cpp": "bffb737dab3df8ff78f65b6afcb57cb7e69071d0cad2760e45289f224274bf13",
+    "src/core/character_authority.hpp": "bc51750a5300bc4e4ad9694723fd4a14564ef0a4bb54098eee369486425a7c7b",
+    "src/core/handle_registry.cpp": "4eb6b910fc7b6115b5bd66f13f4c994fcd33167aa2e7c16bab39d5efb1aab584",
+    "src/core/handle_registry.hpp": "114e1de853516e73da44291028a870e27f365ee17a476b2a4a256a03f8a8b362",
+    "src/core/runtime_budget.hpp": "c33604f79d7fcc2a9d9f40c84c6b64c53dd117a4958d72d5cb4760392557d837",
+    "src/core/runtime_lifecycle.cpp": "b5879d458cd36110c9463a3bfde006a1eec6e0d185112b342259c474747e572c",
+    "src/core/runtime_lifecycle.hpp": "ae22c353668d93d704d1b728cf5214fdfab6b59b8114d497b74167284b4b283d",
+    "src/graphics/d3d11/host_device.cpp": "4f3db6cc932dda2ffb1b74011ebf3e2819482c89365b1430354b27bd585e489d",
+    "src/graphics/d3d11/query_retirement.cpp": "26d749dafc8a72497f6ba606d7dbeb88d1090b426ee5273273ff65ed84e6b8ab",
+    "src/graphics/d3d11/state_scope.cpp": "034530f5663a68768f3d777c342527db4329d6b1cfadd0d7cdbbcb290bb2921d",
+    "src/moc3/core_consumer.cpp": "d5556477b5429b8051a8d03865b715ebbcfa7ae4335f590bc23e5dc0f8fb6ead",
+    "src/moc3/core_consumer.hpp": "c2f009fb45715864dd9e3980d000be0fe0a674708448e8e5bc9c172b9839f7ed",
+    "src/moc3/d3d11_renderer.cpp": "4dd69ec14da869c1efdeadef5d3300878e6647555b2e2ac72503cc35852dffb6",
+    "src/moc3/d3d11_renderer.hpp": "53e1492f26183e4f182b53cf519cd5c9215b5f15310452ee3c8a2f9ce4ee54cd",
+    "src/moc3/import_sandbox.cpp": "b18445230a7b6d4383ef75ccf26eaf026b8445aa3e9022441cabf27181023b3f",
+    "src/moc3/import_worker.cpp": "1d8983418dc8a40b99d44690d222e9e95e57281fa0b06e7b3606b2d1ac95e986",
+    "src/moc3/independent_snapshot.cpp": "287eaf832c7de23a2707d8af9dadffaefde21aecb87d1c86bab6b138807f4094",
+    "src/moc3/independent_snapshot.hpp": "9b2eb0b4b742674cae1c700b61242e187981c6160bbd74913eb8b7ca7f6df661",
+    "src/moc3/pixel_bridge.cpp": "14f25b2a77fa92e6ebc1450fd0efc96fee74eb14c06407fef80b182255917c78",
+    "src/motion/cpu_snapshot.cpp": "d25d34fc229a3500cd6d2cd8892da3349cc160e6ae8ffdee21fc258ab823fe2f",
+    "src/motion/cpu_snapshot.hpp": "2ad08e0881aefd7d918e5725cb0c09e4e53d5ae1f179f981db95f9ad6fc35d6e",
+    "src/motion/provenance.cpp": "145fab2e837af04ec2c58c37767280eafc5222167785c0de40654687928b1882",
+    "src/motion/provenance.hpp": "b79230f8460cd98502a35695ac0b00ab271586212e4025c4b9b4854730c21fb5",
+    "src/motion/publish_gate.cpp": "41c6db240d5031cc0830c6b44648413a89a1fcbf8a8a3179d1211c35e72fddaa",
+    "src/motion/publish_gate.hpp": "f159044d8a2964171a2efcffcd5a7bab27ae32da032e76a8f710218f22d61db9",
+    "src/motion/semantic_candidate.cpp": "79c06e9c35a0e9cef07ab51123803bff461e28d4d46dbaeb650f8dd0f16b65f4",
+    "src/motion/semantic_candidate.hpp": "16f28591654ad87c87b5f0041659fb5be472830167d650f270f59bfa0989f841",
+    "src/motion/staged_state.cpp": "004c4a72da4d19597c66445db3063b88bb018a8947c9da4c071a378d28cdef4b",
+    "src/motion/staged_state.hpp": "925f02ed0dd49a1885926871df9c974202cb4cf385841ab1363e1ddd2ba48537",
+    "src/rendering/d3d11_dual_mode_host.cpp": "c9f5ac8687548306d1390ab30592bb6cd8f366a69ee96bda3606e83b9424569e",
+    "src/rendering/d3d11_dual_mode_host.hpp": "3ed68b50021ba35c463fa23768d81d0bc0e8fb794402d367cbeeac6afb457978",
+    "src/security/admission_gate.cpp": "1765fb4ead145c579dbd3d9526193b66e05bf2ae797779ef9c23b68fa909a633",
+    "src/security/admission_gate.hpp": "12071353c9a8a0bf76de14cda0b7000abfbbb77e3a07d403a183195f70a13ffb",
+    "src/security/authority_types.hpp": "97032965e18f87b4b90611fd62bd732ec1856819ec262684b6e0988c6d1cea88",
+    "src/security/clock_linux.cpp": "be0a8ada18a9c4f7ff945ae6cf3ab8632fab266b6e9c1d678853b80fdb6a7a6f",
+    "src/security/clock_windows.cpp": "3ba76879e8ba89b69775647793f321254ad2b4de9c6857eca81dc2a5fd24083c",
+    "src/security/ingress_queue.cpp": "c454672a8a5b38913ca57f1377d80d2251f590f8abaa3253eaf0afbce55d9e55",
+    "src/security/ingress_queue.hpp": "87fb088ef9032c8f11a1746f2fc95b10b574ff0c9cda7d514b5fabb02bf71a1e",
+    "src/security/os_entropy.hpp": "f6302fa8144877c7c498dca93b55d1df73f5a64954ad1f33a6ddff9b973af096",
+    "src/security/os_entropy_linux.cpp": "be6812bc6f5e38021bcb2e47cbcd452d963d0245096c05e55a75cb234a59cd84",
+    "src/security/os_entropy_windows.cpp": "958586f3b1cd76714597195113979c1d1a619269fc8492db4358584fb21f6da4",
+    "src/security/security_clock.cpp": "34a76b6ef823724aec911cf31e853206a09110fb39df5a78511d7ae1d8ca1c9f",
+    "src/security/security_clock.hpp": "4d7b3549395f345404eee52db4ab44a838f2109c23d2aa77900c34bfc28e12cd",
+    "src/security/source_authority.cpp": "5d58586f5858456d5b56e1c7c31dd9ef0870bef2164e98bdf0ab4ff3343561b4",
+    "src/security/source_authority.hpp": "b537ac25a70c2de380fb1470ab1adfcea1ba5ae9328f1c597a0145e8254e8319",
+    "src/security/token_ledger.cpp": "6224b37483439a9e615223508c8649801d5a8193fc35a932b0ba2610ada5443a",
+    "src/security/token_ledger.hpp": "483a5c3d2eb88394729a47a1b530595059e81dbcf998d27ddc6efa757d40cfc6",
+    "tests/moc3/core_consumer_tests.cpp": "8be52c7532365c1046178660e3ac3c18357f5480dcb998e213dbef65d07a36ca",
+    "tests/moc3/d3d11_pixels.cpp": "c05336a55e796e4184f43a9c280cce022c0e549d97d76f1b74e20fad33d2c1dc",
+    "tests/moc3/test_compare_snapshots.py": "0fbe92a2cb8975bb01ad08dd7fe8eb24f84e6acb71fc423897e7134b9427a41c",
+    "tests/moc3/test_core_controls.py": "2a3e6ce6e9b91959ede30b315a92c5615b2b7d942809fb11540d7141e35dea2f",
+    "tests/moc3/test_facial_expressions.py": "140e51dde395a92fea57a7f1a90846e100231f2a5da11220b2a133acad1fd40b",
+    "tests/moc3/test_frame_packet.py": "d95b66d7e99b73215d597b3806566d811f7d98a57a1c642ef8d39781c892e0a4",
+    "tests/moc3/test_harness_api.py": "62d1d19e209c9918bd65ede00704d969bbf06bc899ce1ef77450f7e7dd995b05",
+    "tests/moc3/test_i0_probe.py": "1a1850d286be9bae85d80bf935c3b0cbe5ca8a90fca2b7009af08f279227fec6",
+    "tests/moc3/test_linked_physics.py": "580558e925571694a75c285edf4598e5d404a6ee259dc8a19ecc9c28fc7a6243",
+    "tests/moc3/test_mouse_interactive_physics.py": "c3d24e7e51ad9b91e9aa40204ff90dfa3eca5724ca0936553655f412b1de8037",
+    "tests/moc3/test_package_admission.py": "de23fdb95bed15811f89cd6aa8a3bc61baf6cc206eb96c4e5bc58db50360c305",
+    "tests/moc3/test_private_bundle.py": "cf101999aafbfc42b7ae4bb7c85bb20d1e0fb813051726d8949e819ff43d986c",
+    "tests/moc3/test_process_tree.py": "5695ee69dea6ba57cd6b0fc7be094f98dfa355c7d06736837df4c473897d58a3",
+    "tests/moc3/test_public_preflight.py": "538a9794247b03fd2e658bc22f6e0d702a99cb61cc92bd67bc8af8cbb8345254",
+    "tests/moc3/test_realtime_physics_series.py": "1df33d6513d0aa44e7b9f7e6904184e89c77f45dfc5516493b61ca9359a69e6b",
+    "tests/moc3/test_viewer_diagnostic_guards.py": "6927a67de8c70a40477803bc5737935b923039c9a5fc45c50ed38d62d88bf156",
+    "docs/audits/M2_MOC3_F4_GOAL_ASSESSMENT.json": "9b9d110ac7b363d9dc1f4665641dda8184203bb46fb8e6eb4d4c6db8b67a3551"
+  },
+  "observations": {
+    "f4a_visible": {
+      "result": "PASS",
+      "evidence": "build/moc3-f4-local/6e59780019c8f285cabf0fa4/evidence.json",
+      "tested_source_sha256": {
+        "CMakeLists.txt": "e3d823199f202f28fc78893b6e65f1d6800b0520e28500dcb989260c0197c96c",
+        "src/core/runtime_lifecycle.cpp": "b5879d458cd36110c9463a3bfde006a1eec6e0d185112b342259c474747e572c",
+        "src/core/runtime_lifecycle.hpp": "ae22c353668d93d704d1b728cf5214fdfab6b59b8114d497b74167284b4b283d",
+        "src/moc3/core_consumer.cpp": "d5556477b5429b8051a8d03865b715ebbcfa7ae4335f590bc23e5dc0f8fb6ead",
+        "src/moc3/core_consumer.hpp": "c2f009fb45715864dd9e3980d000be0fe0a674708448e8e5bc9c172b9839f7ed",
+        "src/moc3/pixel_bridge.cpp": "14f25b2a77fa92e6ebc1450fd0efc96fee74eb14c06407fef80b182255917c78",
+        "scripts/moc3_local_integration.py": "504c3d40b90b3f60aeb538cf2111bd633bf8c17ea3b68b429e3ca92a3c61b59c",
+        "scripts/moc3_local_physics.py": "e67cd54382daa39787a4a8a2510ac14c1ac1abcd3a1b260aa7ef8a88365f4eec",
+        "scripts/moc3_frame_packet.py": "ca6eb442faca30178950eda007b4ffe4cfe4a6a3af5b0749adf4cd8ff9b034f5",
+        "scripts/moc3_physics.py": "200717a2bf074d8a5e389e2c360955299ff08c923662cf5b7b791ccddf9ebf67",
+        "scripts/moc3_test_harness.py": "5fb91e3423d047d599d4ceb785e355d7b7f737e910a2eeea84bd3935f387115f",
+        "tests/moc3/core_consumer_tests.cpp": "8be52c7532365c1046178660e3ac3c18357f5480dcb998e213dbef65d07a36ca"
+      }
+    },
+    "continuity_warp": {
+      "result": "PASS",
+      "evidence": "build/moc3-f4b-local/5e68bbc67708aaff688da5cc/evidence.json",
+      "tested_source_sha256": {
+        "scripts/moc3_core_session.py": "66f5ea1cd668fea170bd8726634587c20f31482490115ec1d796ef1c52be594b",
+        "scripts/moc3_local_continuity.py": "d34a8bd3c62775504e48d5613a14e6378f1d5cba78c766957b1d51f74d7326c8",
+        "scripts/moc3_test_harness.py": "5fb91e3423d047d599d4ceb785e355d7b7f737e910a2eeea84bd3935f387115f",
+        "scripts/moc3_local_integration.py": "504c3d40b90b3f60aeb538cf2111bd633bf8c17ea3b68b429e3ca92a3c61b59c",
+        "scripts/moc3_local_physics.py": "e67cd54382daa39787a4a8a2510ac14c1ac1abcd3a1b260aa7ef8a88365f4eec",
+        "scripts/moc3_physics.py": "200717a2bf074d8a5e389e2c360955299ff08c923662cf5b7b791ccddf9ebf67",
+        "scripts/moc3_frame_packet.py": "ca6eb442faca30178950eda007b4ffe4cfe4a6a3af5b0749adf4cd8ff9b034f5",
+        "scripts/moc3_memory.py": "f5fbf0315255c0f27facaba0106f9bc3e83765a2f9d25d8eb92f793b267a4747",
+        "scripts/moc3_process_tree.py": "cfbe4ecbb4676350c142df0b9e72df86604fc002e593eabf9f777be41f6b64d5"
+      }
+    },
+    "continuity_hardware": {
+      "result": "PASS",
+      "evidence": "build/moc3-f4b-local/e82ef7c245584b7497d1b3ea/evidence.json",
+      "tested_source_sha256": {
+        "scripts/moc3_core_session.py": "66f5ea1cd668fea170bd8726634587c20f31482490115ec1d796ef1c52be594b",
+        "scripts/moc3_local_continuity.py": "d34a8bd3c62775504e48d5613a14e6378f1d5cba78c766957b1d51f74d7326c8",
+        "scripts/moc3_test_harness.py": "5fb91e3423d047d599d4ceb785e355d7b7f737e910a2eeea84bd3935f387115f",
+        "scripts/moc3_local_integration.py": "504c3d40b90b3f60aeb538cf2111bd633bf8c17ea3b68b429e3ca92a3c61b59c",
+        "scripts/moc3_local_physics.py": "e67cd54382daa39787a4a8a2510ac14c1ac1abcd3a1b260aa7ef8a88365f4eec",
+        "scripts/moc3_physics.py": "200717a2bf074d8a5e389e2c360955299ff08c923662cf5b7b791ccddf9ebf67",
+        "scripts/moc3_frame_packet.py": "ca6eb442faca30178950eda007b4ffe4cfe4a6a3af5b0749adf4cd8ff9b034f5",
+        "scripts/moc3_memory.py": "f5fbf0315255c0f27facaba0106f9bc3e83765a2f9d25d8eb92f793b267a4747",
+        "scripts/moc3_process_tree.py": "cfbe4ecbb4676350c142df0b9e72df86604fc002e593eabf9f777be41f6b64d5"
+      }
+    },
+    "public_parser_preflight": {
+      "result": "PASS",
+      "evidence": "build/f4-public-preflight-evidence/81c70bc988b14a3794c6d4bd/evidence.json",
+      "tested_source_sha256": {
+        "CMakeLists.txt": "e3d823199f202f28fc78893b6e65f1d6800b0520e28500dcb989260c0197c96c",
+        "src/moc3/import_worker.cpp": "1d8983418dc8a40b99d44690d222e9e95e57281fa0b06e7b3606b2d1ac95e986",
+        "src/moc3/import_sandbox.cpp": "b18445230a7b6d4383ef75ccf26eaf026b8445aa3e9022441cabf27181023b3f",
+        "scripts/moc3_public_preflight.py": "7653d10ef97992b1e449b9efab1a9b927d243a31ac48887c3331d291df4d9ef9",
+        "scripts/moc3_verify_public_preflight.py": "011b5765187b8ac852faeaf3d96dcef1c00f528616fcedb2e74ca02d9f7e8196"
+      }
+    },
+    "f4a_api": {
+      "result": "PASS",
+      "evidence": "build/moc3-f4-local/6e59780019c8f285cabf0fa4/api-evidence.json",
+      "verifier_sha256": "5f6b74afb494022d752c6a557c56c4aad3a2f8ce949653bd23f9147d7a5b0607"
+    },
+    "f4b_api": {
+      "result": "PASS",
+      "evidence": "build/moc3-f4b-local/0d7214b29e742c72c8471309/api-evidence.json",
+      "verifier_sha256": "5abedf1ac480965659ea7454d4d58d3033f94b38d92a9f63c1bf647c912c6c61"
+    }
+  },
+  "binaries_sha256": {
+    "normal_product_bridge": {
+      "path": "build/m2-d-private/bin/Release/ars_moc3_product_bridge.exe",
+      "sha256": "582d9efb4eebe65432faf86cf57d1870f8be3cfa0531706e752bf9c289fa97ab"
+    },
+    "normal_core_consumer_test": {
+      "path": "build/m2-d-private/bin/Release/ars_moc3_core_consumer_tests.exe",
+      "sha256": "acccbcd6d92ed052e73e28c1826c586410687c11e1c51ae1dce857aa8f56418d"
+    },
+    "public_import_worker": {
+      "path": "build/moc3-public-isolation/bin/Release/ars_moc3_import_worker.exe",
+      "sha256": "8378c81ffaab894196506a4c81f31063e1f41ac11ae36b3e1bed99e0260e2550"
+    },
+    "public_import_launcher": {
+      "path": "build/moc3-public-isolation/bin/Release/ars_moc3_import_sandbox.exe",
+      "sha256": "4aa4d313b2da03f832ee55a5541c6fa35628f2cfa47933f162cbbf0615ee3713"
+    },
+    "asan_product_bridge": {
+      "path": "build/moc3-f4-asan/bin/Release/ars_moc3_product_bridge.exe",
+      "sha256": "67e43c11be24dc86548b4d2e36affb7823aa3bde9c50059c759e95f69ab2066f"
+    },
+    "asan_core_consumer_test": {
+      "path": "build/moc3-f4-asan/bin/Release/ars_moc3_core_consumer_tests.exe",
+      "sha256": "3ddbf6129f4f016e0656b7821129398d3a78008831fa137dff118341d63cdc5e"
+    }
+  },
+  "private_bundle_manifest_sha256": "eb4051158cd1dab5409f1e7323499103fd354998bfe874b767b3db226f0bcdf1",
+  "dependency": {
+    "name": "PurismCore",
+    "revision": "1069334965522df5d0b791e97f01e26b19c45456",
+    "license": "MIT",
+    "excluded_sample_modifications": [
+      "src/samples/viewer/viewer.c",
+      "src/samples/viewer/viewer.h"
+    ],
+    "compiled_scope_source_sha256": {
+      "CMakeLists.txt": "45648487b83ead9c4c945095cc35ae1b0aa3e9501ebbbb715f72c2d039ab8525",
+      "LICENSE": "3cc3427047c43364b6c8c57f3a86f3783d57b3e64b9db62bbde1a9d4729476f2",
+      "cmake/GitHash.cmake": "e60defffc20eea95e7a966e0984179bba3de95f37654ab1145acc65b9155cddb",
+      "include/Live2DCubismCore.h": "e2f910be42cc6f66981826b48a86da235d12d40cb047913b398b086b0590e4ad",
+      "include/PurismCore.h": "6f0c3a32cfa91f25fbb569f054b4ca91cc29348953d84e3e2e6aca85a92a83db",
+      "src/arena.c": "48720fd42da52d9a95e3b21ea70cc2f2f13d2225e32603f9532d5c09f2557bd8",
+      "src/arena.h": "7992725424e7b70159d7247467ccd40d0fe41f534f7dae7c9e23337a3bbf2839",
+      "src/array.h": "5f8416d18f3965ec3e265bd10ae64f69a84165fe58fae7fa3d41f554cae4c38b",
+      "src/artmesh.c": "a877a1a274d93121199317783cb042d942ecaa7a990b89ffda3abd7ccc34dab0",
+      "src/artmesh.h": "56194353814feb949178b10f9223874dbd2bb31aa9df46920c9982af0cc0c959",
+      "src/blendshape.c": "b977d7f17984cda5635ce92af7ad611d9d614336f3012da3feb94f0c6c8955fd",
+      "src/blendshape.h": "f902f43ababbfbed0a4b7a43f110404aa1cfaeb94d92ef313a0635dfcb6ea1f8",
+      "src/core.c": "c76f46f576fe0cffde5d1b1ff77c06bd668368c035ea2fb45c60ddb49f3d1731",
+      "src/core_js.c": "24adb49ad08109df5624d9826f90dedc5d9d0324ddffb12d025fae04e803db31",
+      "src/debug.c": "c000c82f902cc518ec9cf3b40bea7ec50e80db3d5df9b9df0aa60b7327bfcd2b",
+      "src/debug.h": "130a154057e7016e502ec8ace5b3f8fa39cbc78b2d7183ad744019aaf0916b66",
+      "src/deformer.c": "cc39a0f7c46b87ef7a20280301cb603e3da3d0b1e4678cdb2d13073b3c96b295",
+      "src/deformer.h": "e5ce4d4442e1f98f8dcb17bb00a37a41a75468558207760d5ce937b3e02cfc44",
+      "src/error.h": "b3dc8f549ffc4000c092dec53d4c5de37be3ebf5b6da6aa78fcfe2a3eaed20a6",
+      "src/gather.h": "cdfd9b101614428162a8231ea888a4414651bd4ecced9f88e93fee5424cdc6c7",
+      "src/glue.c": "bb766775d12910ca921984dccc374fa8ef785c85bd158fbb9b87eb2f44ae8747",
+      "src/glue.h": "ece11649babdcab9f5af490e37677870791a962c592659ff77e1b12f4e5718a1",
+      "src/interpolate.c": "9dc2ba8d354e263ffb9550cf033f531331f86ff17360eaf07bc887eda2335af8",
+      "src/interpolate.h": "ade470be21ba600cad01aa2259d7e4b39ba1ae4132b15ec072697f36d9144f01",
+      "src/math2.c": "c3705261903ac7c89094a18e63913402b0f9f2c74c9d892bc276927ea23df362",
+      "src/math2.h": "b0066c75bf548d7a461429ed6f4cfb889de1ca22d74373b92f5fa57ced6bbb1a",
+      "src/moc3.c": "aa22a073ef164bca7149797d3a87fd2901ded0de6c9cff88f59e5a1f8dee7479",
+      "src/moc3.h": "dd1284fcf304ab54832bb2696a854cea2b2c758db9ce4e2d9522b4e9e145a183",
+      "src/model.c": "65194187d9cb18eeaff53a73698cfb35b4ca82efbc8913a5613c8c8e0b8e1232",
+      "src/model.h": "f402d54fcfb0b841e2cc286e49cfc2876cc0c018cd4696d4131a0b3140ae10dc",
+      "src/offscreen.c": "a1dd1178d4ecc4017e834fc9cfaefb6b073c5624f9bdca0b4b08a692d128a07a",
+      "src/offscreen.h": "ab083cbd599bc00a90f78fd6fcf2d1aa762130dd0263116482b09ebe22a0ba12",
+      "src/param.c": "06fc76ee1add4b33f691fbeeab99d95934c8302c53b2445c11bc883a3b131e4d",
+      "src/param.h": "93d9255912ca74e0899185215331f21a26e8a76512d7e0204367be59a65af8d4",
+      "src/part.c": "4efa2f715f6e8bfee415cd27397ca30d02e16e82f7785a9b5980806d33174f26",
+      "src/part.h": "501a641e856147fcf4d0b2b0c15439afe9d0c748ac2c20334858129c9d626dce",
+      "src/private.h": "19a642ecaa02f9656e56133797c86d5c6d4ecfe12e3994917e21dde3f65c1eb3",
+      "src/render.c": "4944b05e896c85acc6922fe57b1abffa8c2b91284ab3a110ffb4d890237a3f99",
+      "src/render.h": "b62fc44fdbea6d41b469d0e16e6ea7c119f24527b8c3eb942f9155c47668cb6b",
+      "src/update.c": "6293cc0c479fdd031ac95569396f81bcfacb21b2aa0d7843a31a955050ebb382",
+      "src/update.h": "1560b2fe69ba053cce09bd989ec960b77c4ec2bde125b459860ebcb4c9355cd7",
+      "src/verify.c": "e71c552600555eb58db1184576c204ec392e595616e0cf1a46eeb4e426181748",
+      "src/verify.h": "c1c003b0d60467d33aa94a30934d5638a3214c259d732b2f66c94e1f575d7e56"
+    }
+  },
+  "failed_checks": [
+    {
+      "check": "INTEGRATED_ASAN_RENDER_MEMORY",
+      "result": "FAIL",
+      "evidence": "build/f4-asan-private/c95fc77bc39e4c81984a4f53/evidence.json"
+    }
+  ],
+  "not_run": [
+    {
+      "check": "TERMINAL_SOAK_API_UI_CAPTURE",
+      "result": "NOT_RUN",
+      "reason": "bounded window already closed at final capture attempt"
+    }
+  ]
+}

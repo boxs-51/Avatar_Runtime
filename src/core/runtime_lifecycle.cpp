@@ -363,6 +363,18 @@ ars_status RuntimeRouter::publish_cpu(StageLease *lease) {
     const auto status=mutation?lease->owner_->publish(*lease->stage_):ARS_E_BUSY;
     lease->reset(); return status;
 }
+ars_status RuntimeRouter::copy_cpu_candidate(const StageLease &lease,std::span<float> out,
+                                            std::uint64_t *generation) const {
+    if(generation)*generation=0;
+    if(!generation||lease.runtime_.owner_!=this||!lease.owner_||!lease.stage_)
+        return ARS_E_INVALID_ARGUMENT;
+    const auto* stage=lease.stage_;
+    if(out.size()!=stage->candidate.channel_count)return ARS_E_INVALID_ARGUMENT;
+    if(stage->expected_generation==std::numeric_limits<std::uint64_t>::max())return ARS_E_HANDLE_EXHAUSTED;
+    for(std::size_t i=0;i<out.size();++i)out[i]=stage->candidate.outputs[i].scalar;
+    *generation=stage->expected_generation+1;
+    return ARS_OK;
+}
 ars_status RuntimeRouter::read_cpu(ars_runtime_h handle,ars_character_h character,SnapshotLease *out) {
     if(!out) return ARS_E_INVALID_ARGUMENT;
     out->reset(); auto status=acquire(handle,LeaseKind::snapshot,&out->runtime_); if(status!=ARS_OK) return status;

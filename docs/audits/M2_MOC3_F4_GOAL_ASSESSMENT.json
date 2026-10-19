@@ -1,0 +1,89 @@
+{
+  "contract_version": "C1_F4_PUBLIC_INPUT_SELECTION",
+  "scoped_user_goal": "Complete remaining F4, with arbitrary public-user MOC3 input selected by owner",
+  "requested_deliverable_kind": "CODE_CHANGE",
+  "mandatory_requirements": [
+    {
+      "id": "F4-A-01..07",
+      "expected_observation": "Actual native authority/core/physics/GPU publication, negatives and local API/UI",
+      "actual_observation": "Final combined-source mapped verifier PASS with late-revoke and active cancellation",
+      "evidence_pointer": "build/moc3-f4-local/6e59780019c8f285cabf0fa4/api-evidence.json",
+      "evidence_relevance": "DIRECT",
+      "result": "VERIFIED"
+    },
+    {
+      "id": "F4-B01..06",
+      "expected_observation": "Persistent trusted-local controller, expiry/reset, bounded continuity and decision evidence",
+      "actual_observation": "Mapped controller PASS; concurrent WARP/hardware five-minute warm-up and thirty-minute measured fixed-clock continuity PASS; terminal soak UI capture explicitly missed",
+      "evidence_pointer": "docs/audits/M2_MOC3_F4_COMPLETION_PROGRESS.md",
+      "evidence_relevance": "DIRECT",
+      "result": "VERIFIED"
+    },
+    {
+      "id": "PRIVATE-INSTALLED-CONSUMER",
+      "expected_observation": "Allowlisted model-free local bundle runs outside source checkout, hashes checked before imports",
+      "actual_observation": "WARP/hardware installed smoke PASS; seven integrity/oracle regressions PASS",
+      "evidence_pointer": "build/f4-installed-smoke/49ecb1d3b1f04562bb504b3f",
+      "evidence_relevance": "DIRECT",
+      "result": "VERIFIED"
+    },
+    {
+      "id": "F4-P01..04-BOUNDED-PREFLIGHT",
+      "expected_observation": "Isolated MOC parser prototype and direct bounded OS/resource/transport negatives",
+      "actual_observation": "Recorded OS suite PASS, 23 generated/probe cases and separate private positive; network result is a bounded no-connection observation, not universal denial attribution",
+      "evidence_pointer": "build/f4-public-preflight-evidence/81c70bc988b14a3794c6d4bd/evidence.json",
+      "evidence_relevance": "DIRECT",
+      "result": "VERIFIED"
+    },
+    {
+      "id": "PUB-01..04",
+      "expected_observation": "Entire public package decoding/evaluation isolated and validated drawable/atlas output consumed by trusted host",
+      "actual_observation": "Not implemented end to end; current isolated worker returns preflight status only. Trusted-local path is intentionally not connected to public uploads",
+      "evidence_pointer": "docs/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md",
+      "evidence_relevance": "NONE",
+      "result": "FAILED"
+    },
+    {
+      "id": "PUB-05",
+      "expected_observation": "Implemented qualified public SDK model/character/render/capability lifecycle and installed consumers",
+      "actual_observation": "Public ABI unchanged, model/render operations remain unsupported; private CLI bundle is not public SDK evidence",
+      "evidence_pointer": "docs/M2_MOC3_F4_RELEASE_LEDGER.md",
+      "evidence_relevance": "PARTIAL",
+      "result": "FAILED"
+    },
+    {
+      "id": "PUB-06-ASAN-MEMORY",
+      "expected_observation": "Required sanitizer integration proof within its recorded acceptance",
+      "actual_observation": "ASAN core unit PASS; actual 12-frame render integration FAIL unchanged memory cap on both backends",
+      "evidence_pointer": "build/f4-asan-private/c95fc77bc39e4c81984a4f53/evidence.json",
+      "evidence_relevance": "DIRECT",
+      "result": "FAILED"
+    },
+    {
+      "id": "PUB-06-QUALIFICATION",
+      "expected_observation": "Coverage-guided native/protocol fuzz, tier/fallback/GPU memory, reference/rights and platform evidence where claimed",
+      "actual_observation": "Generated mutations, fixed512 continuity and private fixture are partial proofs. Full public qualification is not available",
+      "evidence_pointer": "docs/M2_MOC3_F4_RELEASE_LEDGER.md",
+      "evidence_relevance": "PARTIAL",
+      "result": "UNVERIFIED"
+    }
+  ],
+  "constraints_preserved": "YES",
+  "required_artifacts_delivered": "NO",
+  "necessary_checks_satisfied": "NO",
+  "review_requirement_satisfied": "YES",
+  "review_scope": "Separate read-only agent reviewed delivered controller/bundle/parser-prototype code and recorded evidence, not an unimplemented complete public pipeline",
+  "open_blockers": [
+    "PUB-01..05 implementation incomplete",
+    "PUB-06 integrated sanitizer memory acceptance failed",
+    "Quality-tier/GPU allocation/fuzz/network/platform/reference evidence incomplete"
+  ],
+  "owner_deferred": [
+    "Actual D06/D08 physical loss; no reset-capable disposable runner"
+  ],
+  "task_verdict": "REVISE",
+  "goal_verdict": "REVISE",
+  "product_release_decision": "HOLD",
+  "release_or_deploy_authorized": "NO",
+  "next_authorized_action": "Implement PUB-01 package isolation, then retained evaluator and independently validated output boundary before exposing user uploads"
+}

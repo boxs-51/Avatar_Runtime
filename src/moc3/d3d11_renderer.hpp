@@ -1,15 +1,11 @@
 #pragma once
 #ifdef _WIN32
 #include "independent_snapshot.hpp"
+#include "atlas.hpp"
 #include "../graphics/d3d11/host_device.hpp"
 #include "../graphics/d3d11/query_retirement.hpp"
 
 namespace ars::moc3 {
-struct Atlas {
-    std::uint32_t width=0, height=0;
-    std::vector<std::uint8_t> rgba;
-};
-struct AtlasSet { std::vector<Atlas> images; };
 struct View { float sx=1, sy=1, tx=0, ty=0; };
 // Render-owner cache for one immutable package/device generation. In-flight
 // frames keep their own references even when this cache is replaced/destroyed.

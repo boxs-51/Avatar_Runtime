@@ -1,0 +1,78 @@
+{
+  "contract_version": "static-PUB01-PUB03-v1",
+  "scoped_user_goal": "Complete PNG/Physics3 admission and drawable/atlas guard before GPU",
+  "requested_deliverable_kind": "CODE_CHANGE",
+  "task_verdict": "PASS",
+  "goal_verdict": "PASS",
+  "reviewed_subject_verdict": "PASS",
+  "parent_product_goal_verdict": "REVISE",
+  "requirements": [
+    {
+      "id": "PUB-01-PACKAGE",
+      "result": "PASS",
+      "outcome": "Opaque ZIP/manifest custody; all hostile decode inside AppContainer",
+      "evidence": "Native package and platform preflight",
+      "revision_manifest": "M2_MOC3_F4_PACKAGE_ADMISSION_SOURCE.json"
+    },
+    {
+      "id": "PUB-01-PNG",
+      "result": "PASS",
+      "outcome": "Bounded PNG decode and exact raw RGBA atlas admission",
+      "evidence": "Generated bad PNG/edge cases; private original budget rejection; explicit resized test derivative",
+      "revision_manifest": "M2_MOC3_F4_PACKAGE_ADMISSION_SOURCE.json"
+    },
+    {
+      "id": "PUB-01-PHYSICS",
+      "result": "PASS",
+      "outcome": "Strict Physics3 checked against actual native catalog",
+      "evidence": "18 generated native rejects; isolated linked-private mutations; positive validation label",
+      "revision_manifest": "M2_MOC3_F4_PACKAGE_ADMISSION_SOURCE.json"
+    },
+    {
+      "id": "PUB-03-WIRE",
+      "result": "PASS",
+      "outcome": "Independent complete two-pass validation before scene allocation and GPU",
+      "evidence": "379 generated native rejects; independent hostile wire corpus; zero actual device/resource creation on rejection",
+      "revision_manifest": "M2_MOC3_F4_PACKAGE_ADMISSION_SOURCE.json"
+    },
+    {
+      "id": "PUB-03-CANDIDATE",
+      "result": "PASS",
+      "outcome": "Immutable scenes, request/generation binding and rejection retention",
+      "evidence": "Native pointer-identity checks; stale/cancelled request rejection; old readback retention",
+      "revision_manifest": "M2_MOC3_F4_PACKAGE_ADMISSION_SOURCE.json"
+    },
+    {
+      "id": "LOCAL-INTEGRATION",
+      "result": "PASS",
+      "outcome": "Actual same-packet WARP/hardware readback and visible/API identity",
+      "evidence": "Generated numeric pixel oracle; explicit derivative exact same-backend parity; mapped Tk samples and separate authenticated API",
+      "revision_manifest": "M2_MOC3_F4_PACKAGE_ADMISSION_SOURCE.json"
+    },
+    {
+      "id": "PRESERVATION",
+      "result": "PASS",
+      "outcome": "Keep limits, ABI, private rights and physical HOLDs",
+      "evidence": "Final preflight PASS; 27 selected regressions; source before/after closure; no activation/reset/merge",
+      "revision_manifest": "M2_MOC3_F4_PACKAGE_ADMISSION_SOURCE.json"
+    }
+  ],
+  "prohibitions_preserved": [
+    "No model redistribution",
+    "No public ABI/capability activation",
+    "No trusted-host public MOC/PNG/physics parse",
+    "No frozen production memory/CPU/wall/packet limit loosening",
+    "No driver reset",
+    "No commit/push/merge"
+  ],
+  "remaining_outside_static_scope": [
+    "Persistent public evaluator and physics simulation",
+    "Final product authority/publication transaction",
+    "SDK/installed public consumers",
+    "Coverage-guided fuzz and integrated sanitizer acceptance",
+    "Quality-tier/network/platform/redistributable-fixture qualification",
+    "D06/D08 physical runner"
+  ],
+  "final_review": "M2_MOC3_F4_PACKAGE_ADMISSION_REVIEW.md",
+  "acceptance_report": "M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md"
+}
