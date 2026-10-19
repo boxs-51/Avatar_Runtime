@@ -1,9 +1,11 @@
 # Avatar Runtime SDK
 
-Embeddable real-time 2D/3D character-rendering SDK (design stage).
+Embeddable real-time 2D/3D character-rendering SDK under development.
 
-**Status:** Architecture specification in progress. No production rendering implementation or stability guarantees yet.
+**Status:** CPU runtime/validation components and optional private D3D11/MOC3 diagnostic paths are implemented. The production SDK and public model/character/render API are not released. Private test acceptance does not close the product gates.
 
 **Principles:** host-owned integration, logical character with optional 2D/3D representations, normalized motion input, secure user-model loading, capability-based renderer, C ABI, testable acceptance gates.
 
-The initial architecture is proposed in a separate design pull request. All features, platform claims, and quality targets are subject to implementation and verification.
+Start with the [documentation index and classification](docs/DOCUMENTATION_INDEX.md). It separates completed scopes, reference material, superseded plans and ongoing implementation, and identifies stale status text in historical documents.
+
+Current product work is tracked in the [F4 release ledger](docs/M2_MOC3_F4_RELEASE_LEDGER.md) and [public-input pipeline plan](docs/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md). The latest [static package admission acceptance](docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md) covers isolated PNG/Physics3 validation and drawable/atlas checks before GPU; physics is validated, not simulated in that public-input slice.

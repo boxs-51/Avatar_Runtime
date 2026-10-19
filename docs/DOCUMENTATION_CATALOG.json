@@ -1,0 +1,1323 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-10-19",
+  "timezone": "Asia/Bangkok",
+  "basis_head": "6fdec9b34fb9808f6d14b5c7a48695c8aac5a1ec",
+  "basis_branch": "m2/moc3-p1-snapshot",
+  "fetched_origin_main": "8723ef174a7db98b05fd031aa39dbd910e5ba2db",
+  "scope": "README.md + every file recursively under docs/; build/, local-assets/, source/tests excluded from document inventory",
+  "classification_is_gate_approval": false,
+  "counts": {
+    "completed": 27,
+    "in_progress": 15,
+    "obsolete": 4,
+    "reference": 78
+  },
+  "baseline_counts": {
+    "reference": 76,
+    "completed": 27,
+    "in_progress": 15,
+    "obsolete": 4
+  },
+  "baseline_documents_reviewed": 122,
+  "navigation_artifacts_added": 2,
+  "total_documents": 124,
+  "validation_scope": {
+    "original_relative_markdown_links_broken": 0,
+    "raw_log_hash_pairs_checked": 22,
+    "raw_log_hash_mismatches": 0,
+    "runtime_tests_rerun_for_classification": false,
+    "github_live_pr_or_protection_audit": false
+  },
+  "category_definitions": {
+    "completed": "Đã hoàn thành trong phạm vi đã nêu",
+    "reference": "Tham khảo / contract / chứng cứ lịch sử",
+    "obsolete": "Lỗi thời với vai trò kế hoạch hiện hành",
+    "in_progress": "Đang phát triển / triển khai / chờ kiểm chứng"
+  },
+  "documents": [
+    {
+      "path": "README.md",
+      "category": "reference",
+      "reason": "Điểm vào hiện hành, đã cập nhật trạng thái private components và link tới catalog/ledger.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "86863b067a3961232adb4b700f8e03a7dbc56d2cba91504d9011ec8238448bd7",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/ACCEPTANCE_GATES_V0.1.md",
+      "category": "reference",
+      "reason": "Định nghĩa G00–G11 và mức chứng cứ; đây là criteria, không phải bảng PASS hiện tại.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "69b8037fe282cd4cac634f7b90b534281a64a406cbbc7c137669a20ac9101ae0",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/ADR_0001_D3D11_G00_DESIGN_RC1.md",
+      "category": "reference",
+      "reason": "Host-owned D3D11/retirement design reference; trạng thái test đọc ở ledger/evidence mới hơn.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "dc463cce15c1cd3766bd98039088d90195e304ebb75533cccda53a8c28805709",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/ADR_P0_SECURITY_R2.md",
+      "category": "reference",
+      "reason": "ADR security R2–R5 và quan hệ amendment; không tự cấp phê duyệt hay đóng gate.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "38989c2c69cc7318d88ed7e68d409db70faf14626feec79a577aeab127737066",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/CUBISM_STATIC_PREVIEW_IMPORT.md",
+      "category": "reference",
+      "reason": "Luồng portrait/static preview riêng; vẫn có giá trị tham khảo, không chứng minh MOC drawable/physics.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "9e237c347a6cd781d48a9eb37ac1be436ae385ac58d7cc045dbe3e87955b613a",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/DEVELOPMENT.md",
+      "category": "reference",
+      "reason": "Hướng dẫn PREP còn hữu ích; số test và mô tả chỉ có stub là snapshot cũ, không phải toàn checkout.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "stale_status_note": "77 Python tests/five native tests chỉ là PREP snapshot; không phải tổng test hiện tại.",
+      "reviewed_sha256": "99aea2d83cff070e07031be199c8007499d03a5d8db7371b768612f5fd4166ed",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/DOCUMENTATION_CATALOG.json",
+      "category": "reference",
+      "reason": "Inventory máy đọc được cùng phạm vi với mục lục; không thay ledger nghiệm thu.",
+      "lifecycle": "navigation",
+      "related_paths": [],
+      "reviewed_sha256": null,
+      "hash_note": "Generated navigation artifacts omit self/cross hashes to avoid cyclic provenance.",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/DOCUMENTATION_INDEX.md",
+      "category": "reference",
+      "reason": "Mục lục/phân loại và review notes được tạo trong lần rà soát này.",
+      "lifecycle": "navigation",
+      "related_paths": [],
+      "reviewed_sha256": null,
+      "hash_note": "Generated navigation artifacts omit self/cross hashes to avoid cyclic provenance.",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/G00_SECURITY_87_CASE_INVENTORY.json",
+      "category": "reference",
+      "reason": "Inventory 87 design cases; không nhầm với 87 whole-case đã chạy PASS.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "f5595ac228413bd185681527bd62de97382affddcc3d8b30569eb9a975688161",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/GOVERNANCE_ARS_SOLO_OWNER_001.md",
+      "category": "reference",
+      "reason": "Ngoại lệ solo-owner và giới hạn authority; giữ nguyên yêu cầu source/evidence/owner decisions.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "eb62dc7b9f671dd0575e5111038ee3d3d8498562c8325e0ce9fad71d58fcaffd",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M0_CONTRACT_PARENT_PINS.json",
+      "category": "reference",
+      "reason": "Custody/pins lịch sử cho M0; không sửa hash để khớp code mới.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "229482f38e41c1b8f0ba7886a0c6ab26cfd82164052765be9f434e33333ca9b6",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/M0_V0_1_FREEZE_READINESS.md",
+      "category": "reference",
+      "reason": "Snapshot freeze-readiness M0; không dùng trạng thái PR/next-action lịch sử làm trạng thái live.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "023f49ce948efe46a691a67ec3ec6d44e2d67a2b0228c8893268ba74194a8471",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M1_A_SCOPE_V0.1.md",
+      "category": "completed",
+      "reason": "M1-A build/ABI foundation đã có triển khai và chứng cứ; không phải runtime SDK đầy đủ.",
+      "lifecycle": "scoped_completed",
+      "related_paths": [
+        "docs/audits/M1_A_BUILD_EVIDENCE.md"
+      ],
+      "stale_status_note": "IMPLEMENTATION_NOT_STARTED không còn đúng cho checkout; phạm vi foundation đã có evidence.",
+      "reviewed_sha256": "367735ea2a13b59db559f604df48716c72ef72d1177bf7e4ce4b36508794f779",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M1_C_DEPENDENCY_LOCK.json",
+      "category": "reference",
+      "reason": "Dependency/resource lock còn dùng; c1_ready/c2_ready và planned accounting là checkpoint lịch sử.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "stale_status_note": "Flags ready/planned phản ánh checkpoint C0/C1/C2; không phải verdict trạng thái repo hôm nay.",
+      "reviewed_sha256": "6cf74bacdf455ba238cc33ee094be82cbf3cfef269fac09ee6aa709ad1101478",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/M1_D_CLOSE_LOSS_NEXT_IMPLEMENTATION.md",
+      "category": "in_progress",
+      "reason": "Close/query private đã triển khai; host receipt/public qualification và D06/D08 còn thiếu.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "d84e703c87bb93525b10e517d867cbccddd00c6d4d7ec9efd967712664e659c7",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M1_D_GPU_CASE_EXECUTION.json",
+      "category": "in_progress",
+      "reason": "Ledger partial/private; D06/D08 thật tiếp tục HOLD, không có disposable runner.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "455fbdb4274a336ca1b6b7403ac2f2b30c24262f7bf7d5dcfdddafe1f3aa1db6",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/M1_SOURCE_BOOTSTRAP_PLAN.md",
+      "category": "obsolete",
+      "reason": "Bootstrap/next-action sequence trước M1 đã qua; dùng scope và evidence từng phân đoạn.",
+      "lifecycle": "superseded_work_plan",
+      "related_paths": [
+        "docs/M1_A_SCOPE_V0.1.md",
+        "docs/audits/M1_A_BUILD_EVIDENCE.md",
+        "docs/M1_D_CLOSE_LOSS_NEXT_IMPLEMENTATION.md"
+      ],
+      "reviewed_sha256": "fa622edc368b401d87d55e20f00b28119c6d9fafc1b385cc44431c7355353a6d",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_B_PIXEL_CONTRACT.md",
+      "category": "reference",
+      "reason": "UV/alpha/color/lifetime reference còn áp dụng cho private 2D; có evidence riêng đã thực thi.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "e0b5df59cd860d0ca493797398e1ea543ede3ee8481a3a5614c5137602dce435",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_C_GLB_RENDER_DESIGN.md",
+      "category": "completed",
+      "reason": "Private C0–C2 GLB projection/render đã có chứng cứ; G04/public integration còn HOLD.",
+      "lifecycle": "scoped_completed",
+      "related_paths": [
+        "docs/audits/M2_C_IMPLEMENTATION_EVIDENCE.md"
+      ],
+      "reviewed_sha256": "d65b4ddcd677519201656fa52e2d961dc7d2c27baf58fe5ece6fcdb4673b8a36",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_D06_D08_LOSS_VERIFICATION_DESIGN.md",
+      "category": "in_progress",
+      "reason": "Kế hoạch loss thật chờ runner; fault injection local không thay kiểm thử vật lý.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "e20a6d6bd8909508282791ec39ac4e05bca5e60f6e9c2d0340b86ec15c4403b4",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_D_HOLD_LEDGER_AND_SWITCH_DESIGN.md",
+      "category": "in_progress",
+      "reason": "Private switching có chứng cứ; host seam/receipt/public gate và D3 loss thật còn HOLD.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "6cc985df626fe25cb605464c47c5cf1889c9be29d1458ecfd6bd7c4fdfeba781",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_LIVE2D_DYNAMIC_ADAPTER_PLAN.md",
+      "category": "obsolete",
+      "reason": "Phương án phụ thuộc official SDK đã được hoãn/thay bằng independent MOC3; giữ quyền sử dụng và điều kiện an toàn.",
+      "lifecycle": "deferred_method",
+      "related_paths": [
+        "docs/M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md",
+        "docs/M2_MOC3_FRAMEWORK_TARGET_DESIGN.md"
+      ],
+      "reviewed_sha256": "b4dd2ba57c36a1094ee316a097fd845d64d985678fa1500c51bfa634b284302b",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_MOC3_F1_ADMISSION_DESIGN.md",
+      "category": "completed",
+      "reason": "F1 trusted-local CPU admission/pose đã PASS trong phạm vi đã chốt.",
+      "lifecycle": "scoped_completed",
+      "related_paths": [
+        "docs/audits/M2_MOC3_F1_LOCAL_ACCEPTANCE.md"
+      ],
+      "reviewed_sha256": "f2a8c4fa643b50401020cdaca8eb5a7afc40be202baa463692a5e1576c97570e",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_MOC3_F2_PIXEL_DESIGN.md",
+      "category": "completed",
+      "reason": "F2 bounded host pixels đã PASS; giữ làm contract cho renderer private.",
+      "lifecycle": "scoped_completed",
+      "related_paths": [
+        "docs/audits/M2_MOC3_F2_LOCAL_ACCEPTANCE.md"
+      ],
+      "reviewed_sha256": "dd650ffb1eab5c8ae95efc091e7f7d4d6f723064b8161c06bce096e0737f9df3",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_MOC3_F3_LINKED_PHYSICS_DESIGN.md",
+      "category": "completed",
+      "reason": "F3 linked physics private đã PASS; chưa chứng minh tương đương tác giả/Cubism.",
+      "lifecycle": "scoped_completed",
+      "related_paths": [
+        "docs/audits/M2_MOC3_F3_LOCAL_ACCEPTANCE.md"
+      ],
+      "reviewed_sha256": "9e3eecd05f7b8757826030eeeddf7927d9e7a01f65c2d5e3d7926a7b6b5cd91e",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_MOC3_F4_CONTINUITY_DESIGN.md",
+      "category": "completed",
+      "reason": "F4-B controller/continuity trusted-local đã có chứng cứ PASS trong checkpoint lịch sử.",
+      "lifecycle": "scoped_completed",
+      "related_paths": [
+        "docs/audits/M2_MOC3_F4_COMPLETION_PROGRESS.md"
+      ],
+      "reviewed_sha256": "cfee40e60b2edd0e6cfe786304722296d02c90829156c047b599f5b5bae70dc6",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_MOC3_F4_INTEGRATION_DESIGN.md",
+      "category": "completed",
+      "reason": "F4-A core → physics → host đã PASS; whole F4/public SDK còn thiếu.",
+      "lifecycle": "scoped_completed",
+      "related_paths": [
+        "docs/audits/M2_MOC3_F4_LOCAL_ACCEPTANCE.md"
+      ],
+      "stale_status_note": "F3 remains uncommitted là bối cảnh authoring, không phải trạng thái Git hiện tại.",
+      "reviewed_sha256": "d788a40e5cf56a0a355e45494e6038798e31750f672fcfd4d3657f592e63765f",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_MOC3_F4_PACKAGE_ADMISSION_DESIGN.md",
+      "category": "completed",
+      "reason": "Static PUB-01/PUB-03 đã PASS; physics chỉ validated, không simulated.",
+      "lifecycle": "scoped_completed",
+      "related_paths": [
+        "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md"
+      ],
+      "reviewed_sha256": "acb5e9aa4772686c407534038edcfb95833692fd2f45fb674f635f888cd923f9",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_MOC3_F4_PUBLIC_IMPORT_DESIGN.md",
+      "category": "in_progress",
+      "reason": "Public-input/isolation contract rộng hơn prototype và static admission đã hoàn tất.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "c73096ed11230b4eef2669fd2a8ade59e80abebe9d30a5935f81f527723e6b19",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md",
+      "category": "in_progress",
+      "reason": "Kế hoạch hiện hành: PUB-02 retained evaluator, PUB-04 publication, PUB-05 SDK, PUB-06 qualification.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "dddab94e90ac980045921f39983eb416e91c4dc94d3f4968790591bdaeaada15",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_MOC3_F4_RELEASE_LEDGER.md",
+      "category": "in_progress",
+      "reason": "Ledger hiện hành cho product gates, public F4/SDK/release và physical HOLD.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "e76a6faf8d1d10c92090b760a1b728d7136eeef0af59111aaf2e0cab8b7de12d",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_MOC3_FRAMEWORK_TARGET_DESIGN.md",
+      "category": "in_progress",
+      "reason": "Framework tổng thể: F1–F3/private F4 đã có; public F4/SDK/qualification chưa xong.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "485ac55e60b29c4b978878708817f4855093e8622ecaa1865fababb7ac07724f",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md",
+      "category": "reference",
+      "reason": "Rationale chọn independent evaluator và I0–I3 lịch sử; roadmap triển khai hiện tại là F*/PUB-*.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "stale_status_note": "Đoạn chỉ có header/preflight mô tả thời điểm trước F1–F4; giữ rationale, không dùng làm hiện trạng.",
+      "reviewed_sha256": "270b43ff859bdb34ba4555a66780a1fd5b8fa59716424fb6dd5cf832fb0b35a4",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_MOC3_NEXT_IMPLEMENTATION.md",
+      "category": "obsolete",
+      "reason": "Không còn là danh sách “việc tiếp theo”: snapshot/host pixels/private physics đã triển khai; fidelity/public/loss nghĩa vụ vẫn còn.",
+      "lifecycle": "superseded_work_plan",
+      "related_paths": [
+        "docs/M2_MOC3_FRAMEWORK_TARGET_DESIGN.md",
+        "docs/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md"
+      ],
+      "reviewed_sha256": "fb6f38aa4cbcdd7873f3c4c1c9c41631302141539a31be6c36686a61d47f6289",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_MOC3_OBSERVABLE_TEST_HARNESS_DESIGN.md",
+      "category": "in_progress",
+      "reason": "Harness tiếp tục phát triển; CORE-LIVE đã có, đầu tài liệu còn HOLD cũ cần đọc cùng F4-B.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "stale_status_note": "Đầu tài liệu còn HOLD persistent controls; phần cuối, CORE-LIVE và F4-B proof đã chứng minh phạm vi trusted-local.",
+      "reviewed_sha256": "9a1a7ba45b26f026a2b165d369aafb88cec0ea92c8abdb683f31de37c5620763",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/M2_RENDERING_EXECUTION_PLAN.md",
+      "category": "in_progress",
+      "reason": "Private A–D đã có source/evidence; G03/G04/G05 sản phẩm và loss thật chưa đóng.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "170b57c849d53a37c91e3755d7631c45b01f7bd2d0410d3a7923a6ecdd6cab32",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/P0_HANDLE_AND_SOURCE_AUTHORITY_CONTRACT_V0.1.md",
+      "category": "reference",
+      "reason": "Security contract nền, đọc cùng amendments R2–R5 và canonical RC1.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "1d61439bf0bae7de949ceaa513e0553978b4613b9c42b73703828b80dbf1701f",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/P0_OWNER_REMEDIATION_V0.2.md",
+      "category": "reference",
+      "reason": "Một phần bị R3–R5 thay thế; registry/provenance/ABI phần được kế thừa vẫn phải giữ.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "cdba3e4c05c1fac2bea8610707f8a54c4b251ff4d51f1938d0578361a1e8e746",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/P0_OWNER_REMEDIATION_V0.3.md",
+      "category": "reference",
+      "reason": "Rotation reservations/explicit revoke còn được kế thừa; clock/close phần xung đột theo R4/R5.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "8f77873de8280901886fd689f28e1c7781e5a9f11e99e308eb4495294c23ab3e",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/P0_OWNER_REMEDIATION_V0.4.md",
+      "category": "reference",
+      "reason": "Terminal expiry/clock poison còn được kế thừa; fairness/tombstone/overflow theo R5.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "c18563c41e4b6aa027207724d1e0011650312cc61ab6a9625856c99bf2f4e09a",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/P0_OWNER_REMEDIATION_V0.5.md",
+      "category": "reference",
+      "reason": "Amendment security R5 còn được viện dẫn; không nhầm contract-model với production qualification.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "8c810411a9c2b58165dc21d724ba125fb841146d4710eb8da3c0d2adf441134e",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "category": "reference",
+      "reason": "Các oracle/negative gates; kết quả thực thi phải đọc case ledger và evidence của đúng source.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "df129c1b1a21ea362d620c7d9f59996099202a4afee5cc23102675b1290d97e1",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/ROADMAP_AND_ADRS_V0.1.md",
+      "category": "in_progress",
+      "reason": "Roadmap M0–M4/ADR tổng thể; nhiều component đã có nhưng product/release chưa hoàn tất.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "4033578517ecdb8b393f60781c7918e8b0a0c5d72d0a29088646fa09de2437eb",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/SPECIFICATION_V0.1.md",
+      "category": "reference",
+      "reason": "Mục tiêu/constraints SDK và các amendment; draft specification không phải khả năng đang phát hành.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "c71e3b8f30c217c1be02c51e61a95c9f8842fad16a8b3cf425704239fb0818c0",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/V0_1_CANONICAL_CONTRACT_RC0.md",
+      "category": "obsolete",
+      "reason": "RC0 được chính tài liệu đánh dấu superseded cho freeze decisions.",
+      "lifecycle": "superseded_work_plan",
+      "related_paths": [
+        "docs/V0_1_CANONICAL_CONTRACT_RC1.md"
+      ],
+      "reviewed_sha256": "82110a05c26517b813af3c6202e7343105336594587e1b8247d9f2d806ffb563",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/V0_1_CANONICAL_CONTRACT_RC1.md",
+      "category": "reference",
+      "reason": "Canonical freeze-index candidate hiện hành thay RC0; không có nghĩa mọi gate đã frozen/PASS.",
+      "lifecycle": "reference",
+      "related_paths": [],
+      "reviewed_sha256": "128e295c848e7b530e3e065b1feb3025565fc2499f46518bb261691acaec3945",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md",
+      "category": "in_progress",
+      "reason": "Format/semantic freeze và public integration còn nghĩa vụ chưa được đóng.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "0a8f95bb6ad86271f6790759217de65c7ea7fc61156114acca202168d47cda43",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md",
+      "category": "in_progress",
+      "reason": "ABI20 declaration/compiler proof khác runtime/SDK consumer; public model/render còn unsupported.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "f365d9ee20f7a7808ad15e667331a2d093b7439ceed9a3a5431ef4caa77aea4c",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/ARS_G00_SOLO_OWNER_TECHNICAL_AUDIT_20261014.md",
+      "category": "reference",
+      "reason": "Technical-method audit lịch sử; không phải chứng nhận actor-distinct/current whole G00.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "cf507ba49aff52b3d6739104bfe498f5d0f906609d3a210038b3592c45ce6b90",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/HANDOFF_20261015.md",
+      "category": "reference",
+      "reason": "Snapshot PR/source ngày 15-10; không dùng số PR mở/merge state làm trạng thái hiện tại.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "1ffc60a471f37da309be9285e48b34fd01b08da88b85ff04c2010df3e948eed7",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M0_INTEGRATION_20261015.md",
+      "category": "reference",
+      "reason": "Custody/integration proposal tại thời điểm M0, giữ làm trace lịch sử.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "b0e36a83a88d16b18325922d21e1d714f0db78c48eb2ec865a981275015b394a",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M1_A_BUILD_EVIDENCE.md",
+      "category": "completed",
+      "reason": "Báo cáo build/ABI foundation, giới hạn rõ chưa phải SDK hoạt động.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "332eda5c9355ca5ef2907240ea6a2c5b434b4dab30e554a59c2c4fbd7356d38e",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M1_B1_BUILD_EVIDENCE.md",
+      "category": "completed",
+      "reason": "B1 registry/lifecycle CPU components; không đóng toàn bộ 87 case.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "bed6b6145401a21346529a01792bda36e297d2b9456612c71932a1ab901665fa",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M1_B2_BUILD_EVIDENCE.md",
+      "category": "completed",
+      "reason": "B2 source authority CPU components; không suy ra public source activation.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "8777cefaea2773798d2c05c125e7e131b345a7e41ae36ae8d1b9fdd190881027",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M1_B3_BUILD_EVIDENCE.md",
+      "category": "completed",
+      "reason": "B3 provenance/publication CPU và hai P2 đã xử lý trong phạm vi báo cáo.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "cb9b335047bcb4df4f03d78f60e596173925849298cbf3fb94a488fbb0d16b15",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M1_B_CASE_EXECUTION.json",
+      "category": "in_progress",
+      "reason": "CPU component evidence có; 87 whole-case PASS vẫn bằng 0 theo ledger này.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "d240e615d2f707ba45f75222cfc7b230b17ae7c241a19d569cfc167e12ca4cf6",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/audits/M1_C1_BUILD_EVIDENCE.md",
+      "category": "completed",
+      "reason": "C1 private CPU ingestion/schema helper; full G02/G08 vẫn riêng.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "b0c12dc9f1b4751de2371e948296b0ebf8d787301ef7d2b28d69d8636c19007e",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M1_C2_BUILD_EVIDENCE.md",
+      "category": "completed",
+      "reason": "C2 private GLB/dual CPU implementation; mô tả fuzz/CI không thay chứng cứ campaign đã chạy.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "33640386e2a010c259dd9e0614999e074fbf227136fc9d0f0d3d6db34dcac327",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M1_C_CASE_EXECUTION.json",
+      "category": "in_progress",
+      "reason": "Private C2 được triển khai; full G02 và whole-case G08 vẫn HOLD.",
+      "lifecycle": "active",
+      "related_paths": [],
+      "reviewed_sha256": "14fd17d24d12239084a8000a5e415da06bdf03e10994b2b5b9efb22e698b3c30",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/audits/M1_D_BUILD_EVIDENCE.md",
+      "category": "reference",
+      "reason": "Private GPU spike partial; source và raw logs lịch sử, không phải M1-D đầy đủ.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "73014f766b71a3e220278d9d76e7e27324317d34718b0d22376e8c10b7cdd684",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M1_D_BUILD_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "8a97077f8a2547fb6e4bbd1c94cb03432943bc55f4b2120980862de2e8ad5ac2",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M1_D_C2_LOCAL_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "9b152641988cbb7ec4b7fddbd7b973eeb7984f145f82f22aa93547d68c572e91",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M1_D_CTEST_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "36f40574ba553f967b7bcfff6b75b7c1d2794be57a474313056c3fef5a3745ec",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M1_D_D1_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "3e407679f45e1b91ee825ae544899ee023be0d97757758ea6550566584b89313",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M1_D_D2_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "16fae710236bccfc4c9544a12ba76046d8b34948de1b9db8a7269cc02a31971b",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M1_D_D4_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "5a702d3647189b657ccc9f16030a67a5f85d2f0324576dc0d64e0ac1176dfab8",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M1_D_D6_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "84adf906143d819b850cfeef1d20f9871fc7d7942a9ef3c890aba92de685a05c",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M1_D_D7_CLOSE_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "e684d44c2e9a92fe841dda89bb556f468654f1fe8d1cc95ebafcf15e31f4eb79",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M1_D_D8_INJECTED_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "bc9c6fac48046d6304e33f2e3fc33004f854f2241e22f7c7deadf223d09561ff",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M1_D_GATES_REASSESSMENT_20261017.md",
+      "category": "reference",
+      "reason": "Checkpoint gate reassessment/carry-forward; D06/D08 physical vẫn giữ HOLD.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "d2487822cd7b04829ecda156c12341cc2e5d767cf6c3151c746922f413e602e1",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M1_D_STATIC_BUILD_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "ecca8135797cdc17c2d7fc2a5e174b9dd78fd0f77913917951ce0f42ee17541a",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M1_D_STATIC_CTEST_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "fe85fe8a9952fadf0ddee3ba7dd829e5338316578803ffc66a1239a37cc02bd9",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_A_BUILD_EVIDENCE.md",
+      "category": "completed",
+      "reason": "Private 2D CPU preparation; không phải render/public gate PASS.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "f796ec6f14b46f3799301d83f7e52f4c2733fd8c4c9097ae96aa6879b1f21dac",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_A_BUILD_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "3fe8f7df893e81047c2c28fabd40aa187152159913e73ad4e86a1267e8da3fa5",
+      "encoding": "utf-16",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_A_CTEST_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "fc0442356c6aa04e28777a712f5295e6a44c825afbd0b814d6953d5e2ee17885",
+      "encoding": "utf-16",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_B_BUILD_EVIDENCE.md",
+      "category": "completed",
+      "reason": "Private 2D offscreen pixel proof; G03 sản phẩm chưa được đóng.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "07758b1948992e8b871b3730e334a8a59bc48da443904059a0a2556160a3b548",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_B_BUILD_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "939981a7ab6f8369c16f4a37a5e45337ea2ed15a8208f41bd03f236ce0d1691f",
+      "encoding": "utf-16",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_B_CTEST_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "eb20963f1637fe7a45c53a58da291907621d8d63703dfdb6e78e6d8d0e2c1b72",
+      "encoding": "utf-16",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_B_HARDWARE_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "c8f49bf510c83612b257daf3c658401df9a407db5937f3be3c944499298e1f5a",
+      "encoding": "utf-16",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_C_BUILD_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "4de3e849a4b55b006244770552295c0ed3dc8cd8c0fe61f4bf072043cb057f2d",
+      "encoding": "utf-16",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_C_CTEST_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "99edb468b9ba433b63035178ae740d45b6013fce74b53fd6c099ce570ce4f3b5",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_C_HARDWARE_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "f06934af64e0269f9fb59204e6b6208d9e9be9e0eb7e0ae0840e7620f6bfe5e9",
+      "encoding": "utf-16",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_C_IMPLEMENTATION_EVIDENCE.md",
+      "category": "completed",
+      "reason": "Private C0–C2 3D proof; các phần qualification còn thiếu được giữ riêng.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "416b3d42425dca390394bbfadf8aa253ff4bcc8f453398c7acd034fed4a224d9",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_C_WARP_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "cc109f9dab931ad1691048956bc7ad836015002a77e4ce8b279ef639487f61ac",
+      "encoding": "utf-16",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_D_BUILD_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "9efc096cd82a33a900f0abb26f294ae7e8fe503abd8214564dd65094efc21c9a",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_D_CTEST_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "526e450f67cf782ff981145b76b546b3041386cefae585439bdddecfb9d391b4",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_D_HARDWARE_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "921c6d77624359cb791571642b216710eeb9753ee607859843c9e6e8dcaa5b6e",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_D_IMPLEMENTATION_EVIDENCE.md",
+      "category": "completed",
+      "reason": "Private dual-mode transaction proof; public G00/G01/G02/G05 và loss thật còn HOLD.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "09ac871225cfb37c790a62f7a7432b23a9a9cb36e35c5147547e7702ac14ca5b",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_D_LIVE_HARDWARE_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "9b4270689b12a1937cbc687d5a18953cb5b95a794fc75832280def2fff9fc7c1",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_D_LIVE_WARP_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "0b2f73a111ac2bf23da3b067084179af63aced901fbf283420a2224c8da74694",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_D_WARP_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "c0cad5e9517f67d6d24b9d5103313bdcccf83d4e739dadeb025d326f53a02dd9",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_LIVE2D_L0_PREFLIGHT_20261018.md",
+      "category": "reference",
+      "reason": "Preflight header-only/SDK-path cũ; không dùng thay bằng native MOC evaluation/admission mới.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "a7f3b520248e2ea7079a7e53213ec26c12d0d9a652e9dddff852b9813254d0de",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F1_LOCAL_ACCEPTANCE.md",
+      "category": "completed",
+      "reason": "F1 trusted-local PASS trên source snapshot lịch sử.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "9ea75f8b63d740add1b906ecd6fc68b1cbb254941c7d68b4ee152c51253e49a5",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F1_LOCAL_SOURCE.json",
+      "category": "reference",
+      "reason": "Manifest source/binary/dependency của lần chạy đã ghi; khác hash hiện tại không tự làm mất giá trị lịch sử.",
+      "lifecycle": "historical_source_manifest",
+      "related_paths": [],
+      "reviewed_sha256": "145d6f672756f6064d89643d7652d2f8417ce8f05ef59f5fccf56ea9ed216a98",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F1_PARTIAL_EVIDENCE.md",
+      "category": "reference",
+      "reason": "Checkpoint partial đã được F1 local acceptance thay thế về trạng thái; vẫn là chứng cứ lịch sử.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "13015e8a4a8e6dc38729b098bbddc7af441d2fcb6a184831e462643493ecdf06",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F2_LOCAL_ACCEPTANCE.md",
+      "category": "completed",
+      "reason": "F2 bounded trusted-local pixel PASS trên source snapshot lịch sử.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "6855527a57b97a2a65aa5c897763788142614b8c6826da3ad92def90fb5293eb",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F2_LOCAL_SOURCE.json",
+      "category": "reference",
+      "reason": "Manifest source/binary/dependency của lần chạy đã ghi; khác hash hiện tại không tự làm mất giá trị lịch sử.",
+      "lifecycle": "historical_source_manifest",
+      "related_paths": [],
+      "reviewed_sha256": "8239f427197140aedf76f5379e1cc6c1a93dd511b28f9e018ab648cc4457467b",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F2_RECHECK_AND_OWNER_DIAGNOSTICS.md",
+      "category": "completed",
+      "reason": "F2 recheck/owner diagnostic tests đã chạy, snapshot lịch sử.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "c95a1934b9c492b93dd4be258fd425fc8624c005667082333c923cf70046e496",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F3_LOCAL_ACCEPTANCE.md",
+      "category": "completed",
+      "reason": "F3 bounded linked physics private PASS trên source snapshot lịch sử.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "ebfa16ff7284fc5542adc18b094a6130d26f05a0aec330d46a8c67c4a35e8d28",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F3_LOCAL_SOURCE.json",
+      "category": "reference",
+      "reason": "Manifest source/binary/dependency của lần chạy đã ghi; khác hash hiện tại không tự làm mất giá trị lịch sử.",
+      "lifecycle": "historical_source_manifest",
+      "related_paths": [],
+      "reviewed_sha256": "2807386492df6ed972547f10560fbb028efe455ce09a26ec8e74d79a5ad8f04d",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F4_COMPLETION_PROGRESS.md",
+      "category": "reference",
+      "reason": "Checkpoint controller/continuity/bundle/preflight trước static admission; đọc report mới cho PUB-01/PUB-03.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "8b91b3009b1af0de13c3d6db4fbd008d493a855a6320abc99616865e7f377c3a",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F4_COMPLETION_SOURCE.json",
+      "category": "reference",
+      "reason": "Manifest source/binary/dependency của lần chạy đã ghi; khác hash hiện tại không tự làm mất giá trị lịch sử.",
+      "lifecycle": "historical_source_manifest",
+      "related_paths": [],
+      "reviewed_sha256": "188335b6a94d59d2bdb6a1be295d307f05bd6a8da2e42c207bbfeb3ed6ba64a4",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F4_GOAL_ASSESSMENT.json",
+      "category": "reference",
+      "reason": "Whole F4 REVISE còn phù hợp, nhưng next_action PUB-01 là checkpoint trước static slice mới.",
+      "lifecycle": "historical_goal_snapshot",
+      "related_paths": [],
+      "reviewed_sha256": "9b9d110ac7b363d9dc1f4665641dda8184203bb46fb8e6eb4d4c6db8b67a3551",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F4_LOCAL_ACCEPTANCE.md",
+      "category": "completed",
+      "reason": "F4-A private core/host integration PASS; không phải whole F4.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "874c22aa58f3118eec1e3ef4c42b9a9556e697286ae387126bbec75361336edc",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F4_LOCAL_SOURCE.json",
+      "category": "reference",
+      "reason": "Manifest source/binary/dependency của lần chạy đã ghi; khác hash hiện tại không tự làm mất giá trị lịch sử.",
+      "lifecycle": "historical_source_manifest",
+      "related_paths": [],
+      "reviewed_sha256": "65f3a411936d4f9f54cd85d895d18326606bbf90ab15471f4d9693e77ba878ab",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md",
+      "category": "completed",
+      "reason": "Static package admission PASS, WARP/hardware/API/UI; giữ giới hạn atlas và physics.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "3c12b1915a5352575f324049b8df1214c0bd4379291203d5e689ad74c6c1627c",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_GOAL_ASSESSMENT.json",
+      "category": "completed",
+      "reason": "Goal PASS cho static admission; parent product goal vẫn REVISE.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [
+        "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md"
+      ],
+      "reviewed_sha256": "45a353575cdf9b7d67276688773775287729bb4da8c8dddc1440f894497644cf",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_REVIEW.md",
+      "category": "completed",
+      "reason": "Independent review PASS cho static PUB-01/PUB-03, không phải phê duyệt activation.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "39bdf3c22f55d30c2fe9a5c1a66eab541d237b7abd236d8b55a3ca1a1b700dfe",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_SOURCE.json",
+      "category": "reference",
+      "reason": "Manifest source/binary/dependency của lần chạy đã ghi; khác hash hiện tại không tự làm mất giá trị lịch sử.",
+      "lifecycle": "historical_source_manifest",
+      "related_paths": [],
+      "reviewed_sha256": "48fa83950ca2f782bf59b823a55e47a5166956623d0f748c63982e6acac0c7b2",
+      "encoding": "utf-8",
+      "document_kind": "structured_record"
+    },
+    {
+      "path": "docs/audits/M2_MOC3_T0_HARNESS_EVIDENCE.md",
+      "category": "completed",
+      "reason": "Synthetic T0 harness proof; không thay chứng cứ physics/render model thật.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "1ebd9482c9c50b943db0c41b31e4da703f2141054ae560d99f01c1cec5391509",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_PRE_D_BUILD_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "69756538b066aa3b6a0471a45040c420adbf3a24598db57afb57a82f6c1653e5",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_PRE_D_CTEST_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "8bd463187a6c8ad76d81093608228015ec24ea04ec79d7f506d27b7e606e251b",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_PRE_D_HARDWARE_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "22ac9dca8604f0c9ffbc571ba08414f1896a1dff5b8b8e94348cf4166917da9b",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_PRE_D_HOLD_REASSESSMENT_20261018.md",
+      "category": "reference",
+      "reason": "Checkpoint pre-D có raw witness; không phải ledger hiện tại cho toàn M2/F4.",
+      "lifecycle": "historical_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "e22d6a4d47ea5238acd224ae9aa066b549dbadb0a74de9c9a945d6c13c310d22",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/audits/M2_PRE_D_LIVE_HARDWARE_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "bddebc3b9dd684f2dd277e0782628e0330c33e03a2fc52ae00cc3eccb7f2b1d8",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_PRE_D_LIVE_WARP_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "5903d095c91c82fe2c3ecf61f9010a8d2b9e8940ef434e0d08e4c422b4e40245",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/audits/M2_PRE_D_WARP_RAW.txt",
+      "category": "reference",
+      "reason": "Raw log lịch sử gắn với report/source tương ứng; giữ nguyên byte/encoding/hash, không suy ra gate PASS mới.",
+      "lifecycle": "historical_raw_evidence",
+      "related_paths": [],
+      "reviewed_sha256": "6f8248bfae77c7cdabc8a685a4cdf09d94b83a24bf410fa90deb50c22528bd6b",
+      "encoding": "utf-8",
+      "document_kind": "raw_log"
+    },
+    {
+      "path": "docs/governance/ARS_M1_SOLO_OWNER_ACK.md",
+      "category": "reference",
+      "reason": "Quy tắc governance local; header PENDING_MAIN/CANONICAL_IN_MAIN=NO là snapshot cũ: file và approved head có trong fetched origin/main.",
+      "lifecycle": "reference_with_historical_status",
+      "related_paths": [],
+      "stale_status_note": "Trạng thái adoption/main ở đầu tài liệu cần reconcile riêng, không thay đổi các giới hạn authority.",
+      "reviewed_sha256": "d39701294b48adf4dd77545bdb8b71a496103549154897669d66ca86728c3b56",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/governance/ARS_M2_DEVELOPER.md",
+      "category": "reference",
+      "reason": "Quy tắc governance local; header PENDING_MAIN/CANONICAL_IN_MAIN=NO là snapshot cũ: file và approved head có trong fetched origin/main.",
+      "lifecycle": "reference_with_historical_status",
+      "related_paths": [],
+      "stale_status_note": "Trạng thái adoption/main ở đầu tài liệu cần reconcile riêng, không thay đổi các giới hạn authority.",
+      "reviewed_sha256": "f3bc7efc9a09465af6b6ff10a24ddfe119aa28837723f4b1959f05fb9e26ff87",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/governance/ARS_M3_FINAL_AUDIT.md",
+      "category": "reference",
+      "reason": "Quy tắc governance local; header PENDING_MAIN/CANONICAL_IN_MAIN=NO là snapshot cũ: file và approved head có trong fetched origin/main.",
+      "lifecycle": "reference_with_historical_status",
+      "related_paths": [],
+      "stale_status_note": "Trạng thái adoption/main ở đầu tài liệu cần reconcile riêng, không thay đổi các giới hạn authority.",
+      "reviewed_sha256": "953775fb22e00f28a9b9940cf5f912174699b8e51e730dc202a2fbad8a8c83bf",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/governance/ARS_M4_STACKED_PRS.md",
+      "category": "reference",
+      "reason": "Quy tắc governance local; header PENDING_MAIN/CANONICAL_IN_MAIN=NO là snapshot cũ: file và approved head có trong fetched origin/main.",
+      "lifecycle": "reference_with_historical_status",
+      "related_paths": [],
+      "stale_status_note": "Trạng thái adoption/main ở đầu tài liệu cần reconcile riêng, không thay đổi các giới hạn authority.",
+      "reviewed_sha256": "b9c6a9632cd436348c0f6910fbfc483598e20754a5a4796bd0c2074b3bd356c6",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/governance/ARS_M5_MERGE_HISTORY.md",
+      "category": "reference",
+      "reason": "Quy tắc governance local; header PENDING_MAIN/CANONICAL_IN_MAIN=NO là snapshot cũ: file và approved head có trong fetched origin/main.",
+      "lifecycle": "reference_with_historical_status",
+      "related_paths": [],
+      "stale_status_note": "Trạng thái adoption/main ở đầu tài liệu cần reconcile riêng, không thay đổi các giới hạn authority.",
+      "reviewed_sha256": "3b172f7aa117e405befb50fcde0da1ac06f21b79b2fac973b7405741d7378515",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/governance/ARS_M6_WAVE_STATE.md",
+      "category": "reference",
+      "reason": "Quy tắc governance local; header PENDING_MAIN/CANONICAL_IN_MAIN=NO là snapshot cũ: file và approved head có trong fetched origin/main.",
+      "lifecycle": "reference_with_historical_status",
+      "related_paths": [],
+      "stale_status_note": "Trạng thái adoption/main ở đầu tài liệu cần reconcile riêng, không thay đổi các giới hạn authority.",
+      "reviewed_sha256": "bc4ee8319d6fb6c73c2843b04affc6f725bfec79aea4944944374fb6ed8e1453",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    },
+    {
+      "path": "docs/governance/ARS_POLICY_V0_1_INDEX.md",
+      "category": "reference",
+      "reason": "Quy tắc governance local; header PENDING_MAIN/CANONICAL_IN_MAIN=NO là snapshot cũ: file và approved head có trong fetched origin/main.",
+      "lifecycle": "reference_with_historical_status",
+      "related_paths": [],
+      "stale_status_note": "Trạng thái adoption/main ở đầu tài liệu cần reconcile riêng, không thay đổi các giới hạn authority.",
+      "reviewed_sha256": "6598400ac6a2048d5f72df663af752e969124133835906eb3ea83c7259ab5377",
+      "encoding": "utf-8",
+      "document_kind": "markdown"
+    }
+  ]
+}
