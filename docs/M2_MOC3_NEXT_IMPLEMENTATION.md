@@ -1,0 +1,38 @@
+# M2 MOC3: next implementation contract
+
+**Status:** P0 generic comparison harness implemented; P1 is the next code slice. No gate promotion or public activation. **Parent:** I0 probe on `m2/moc3-i0-private-probe` (`1bbdbd1`). The official Live2D SDK remains deferred. Private model inputs and their derived outputs must remain local and gitignored. This plan refines [the I0-I3 roadmap](M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md); it does not replace the M2-D or D06/D08 acceptance requirements.
+
+## Problem ledger and decision points
+
+| ID | Open problem | Consequence | Closure evidence |
+| --- | --- | --- | --- |
+| MOC-N01 | Evaluator comparison and author-intended pixel fidelity need separate oracles. | A plausible screenshot or evaluator agreement alone cannot establish intended MOC3 appearance. | Compare full exports under explicitly declared coordinate, UV and winding conventions. Compare pixels with an authorized independent reference before claiming exact fidelity. |
+| MOC-N02 | The host has no owned MOC3 drawable snapshot and D3D11 rendering path. | External viewers cannot establish host pixels, state restoration or lifetime behavior. | Immutable bounded snapshot; host-owned offscreen rendering and numeric pixel readback for synthetic public fixtures and authorized private inputs. |
+| MOC-N03 | Physics3 evaluation is not integrated with the host clock and parameter transaction. | A changing pose in an external harness is only feasibility evidence. | Linked input/output map, deterministic fixed-step update, reset/reload behavior, and on/off/release comparisons through the chosen evaluator and host snapshot. |
+| MOC-N04 | Atlas residency, parser trust and optional packaging policy are unsettled. | A private tool's ability to load a model does not authorize public file admission. | Separate checked budgets, contained paths, rejection tests, dependency/license review and fail-closed public capability. |
+| MOC-N05 | Actual physical device loss and post-loss cleanup have no suitable runner. | D06/D08 cannot be closed by injected failures. | Execute the existing direct-loss protocol on a disposable reset-capable Windows GPU runner; retain HOLD until then. |
+
+The exact sample-specific measurements, reproductions and images are in an ignored local evidence packet. Do not place model-derived counts, hashes, screenshots, parameter dumps or source metadata in a public PR, CI artifact or issue.
+
+## Ordered implementation
+
+| Stage | Required work and intended interface/files | Minimum acceptance; stop rule | Reversal |
+| --- | --- | --- | --- |
+| P0: parity diagnosis | Add a **generic** two-evaluator comparison harness under `tests/moc3/` or `scripts/` with user-supplied local paths. Normalize coordinate origin/scale, parameter IDs and values, drawable IDs/order, deformer output, vertices, UVs and opacity before comparison. Keep evaluator revisions pinned. | Fabricated, non-model comparison records pass the harness assertions. Private runs record the first mismatching stage in ignored `build/`; a mismatch keeps fidelity HOLD. Limit initial investigation to two focused hypotheses and one independent cross-check, then record a narrow blocker if unresolved. | Remove the isolated harness; no runtime contract change. |
+| P1: snapshot and admission | Define a private backend-neutral `MocDrawableSnapshot` and owning evaluator session. Include checked vertices/indices/UVs, texture index, order, opacity, clipping and blend/offscreen features that are actually supported. Reject unsupported required features and budget excess before scene commit. Use a separately named default-OFF independent-backend option; do not reuse the SDK gate. | Deterministic repeated poses, typed reject paths, OOM/overflow/invalid-file tests, unchanged previous scene after failed admission. Never accept untrusted arbitrary model input in the first slice. | Disable the option and drop the private snapshot target. |
+| P2: renderer fidelity | Consume the immutable snapshot on the host render thread using the existing D3D11 offscreen target and generation rules. Freeze UV, premultiplication, color-space, blend and mask equations before judging images. | WARP numeric readbacks for public fixtures covering atlas selection, alpha edges, order, clipping/inversion and each enabled blend mode; private comparison only after P0 oracle resolves. Repeat on named hardware when available. Wrong-thread, stale target, resize and failed draw preserve host state. | Keep the renderer behind the default-OFF option. |
+| P3: physics and lifecycle | Integrate referenced Physics3 data with a fixed-step accumulator and explicit input, output and reset order. Use the selected evaluator's parameter semantics; transfer between evaluators only after P0 demonstrates equivalence for the relevant pose contract. Pin snapshots and GPU resources through exact query retirement. | Deterministic on/off and input-release tests, bounded long-run update and reload/close, injected device-failure quarantine. No toy viewer spring may count as Physics3 evidence. | Disable the optional behavior independently of static preview. |
+| P4: release decision | Record an ADR for dependency custody, model rights, parser isolation, public-input policy and optional capability semantics. Reassess G03/G05, G00/G01/G02 and D06/D08 from their own integrated evidence. | Each gate has a source-pinned direct packet; any missing oracle or physical-loss runner remains HOLD. Packaging/public activation requires a separate explicit decision. | Leave capability OFF and retain the static preview. |
+
+P0's comparison tool accepts two normalized UTF-8 JSON files with `parameters` (`id`, `value`) and `drawables` (`id`, full `vertices` with `pos`/`uv`, full triangle `indices`, `opacity`, `texture_index`, `render_order`, mask ID list). Explicit switches account for the right-hand UV V flip, reverse winding and triangle stream order. A truncated vertex/index export is rejected. Reports from private inputs belong under gitignored `build/`; the tool prints only a status token to stdout.
+
+P1 is the next code slice. P2's author-intended pixel verdict still requires an authorized independent image reference; P3 physics equivalence needs a complete host clock/pose path. Changes to public `ars/ars.h`, ARS2D limits or model schema are outside this plan.
+
+## Choice of evaluator
+
+| Choice | Fit | Cost and risk | Decision rule |
+| --- | --- | --- | --- |
+| Use one existing evaluator behind an owned snapshot boundary | Least new binary-format code; isolated rollback. | Upstream semantics and security still need proof; a single screenshot is not an oracle. | Preferred only after P0 feature/parity checks and dependency review. |
+| Build a bounded in-house evaluator/converter | Full control over ownership and admission. | High parser/deformer maintenance burden and no inherent fidelity reference. | Propose separately only if existing candidates fail a documented feature subset and an independent oracle is available. |
+
+No performance target is invented at this stage. Capture frame time, allocation peak and atlas residency on representative private poses after parity is established; set an owner-approved budget before optimization. The existing M2-D host path and physical D06/D08 HOLD remain independent of this optional track.
