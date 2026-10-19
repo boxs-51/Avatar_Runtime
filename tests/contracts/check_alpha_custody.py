@@ -56,6 +56,15 @@ PR_SCOPES = {
             "docs/completed/audits/ALPHA_54_PACKED_ACCESSORS_ACCEPTANCE.md",
             "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
             "docs/DOCUMENTATION_INDEX.md"))),
+    "fix/alpha-55-vertex-colors": (
+        "2c335e8120e3946e5ee931143d68359e0f8a6b4b",
+        frozenset(("src/rendering/scene3d.hpp", "src/rendering/scene3d.cpp",
+            "src/rendering/d3d11_scene3d.cpp", "tests/rendering/scene3d_tests.cpp",
+            "tests/rendering/d3d11_scene3d_pixels.cpp", "tests/assets/fixtures/generate_fixtures.py",
+            "tests/assets/fixtures/manifest.json", "tests/contracts/check_alpha_custody.py",
+            "docs/completed/audits/ALPHA_55_VERTEX_COLOR_ACCEPTANCE.md",
+            "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
+            "docs/DOCUMENTATION_INDEX.md"))),
 }
 
 def check_alpha(candidate="HEAD", base=MAIN):

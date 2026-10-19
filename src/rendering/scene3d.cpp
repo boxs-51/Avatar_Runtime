@@ -70,7 +70,7 @@ Vec read3(const assets::GlbAccessor &a, std::size_t i) {
 double normalized_component(const assets::GlbAccessor &a, std::size_t index) {
     const auto value=a.values.at(index);
     if (!a.normalized) return value;
-    // Validated WEIGHTS/TEXCOORD packed profiles use only these unsigned types.
+    // Validated WEIGHTS/TEXCOORD/COLOR packed profiles use these unsigned types.
     if (a.component==5121) return value/255.;
     if (a.component==5123) return value/65535.;
     assets::fail(ARS_E_UNSUPPORTED);
@@ -284,6 +284,11 @@ ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
                     if (primitive.uv!=assets::glb_none) {
                         const auto &uv=data.accessors.at(primitive.uv);
                         v.uv={checked(normalized_component(uv,vi*2)),checked(normalized_component(uv,vi*2+1))};
+                    }
+                    if (primitive.color!=assets::glb_none) {
+                        const auto &color=data.accessors.at(primitive.color);
+                        for (std::size_t c=0;c<color.components;++c)
+                            v.color[c]=checked(normalized_component(color,vi*color.components+c));
                     }
                     draw.vertices.push_back(v);
                 }

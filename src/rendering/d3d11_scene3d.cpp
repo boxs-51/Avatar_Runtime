@@ -112,6 +112,8 @@ Result preflight(const PreparedScene3D &scene,const Camera3D &camera,
         for (const auto &v:draw.vertices) {
             for (float n:v.normal) if (!std::isfinite(n)) return Result::invalid_argument;
             for (float n:v.uv) if (!std::isfinite(n)) return Result::invalid_argument;
+            for (float n:v.color)
+                if (!std::isfinite(n) || n<0 || n>1) return Result::invalid_argument;
         }
         for (float n:draw.material.base_color)
             if (!std::isfinite(n) || n<0 || n>1) return Result::invalid_argument;
@@ -200,7 +202,7 @@ Result build(ID3D11Device *device,const PreparedScene3D &scene,const Camera3D &c
             center_depth+=result.clip[2]/result.clip[3];
             std::copy(v.normal.begin(),v.normal.end(),result.normal);
             std::copy(v.uv.begin(),v.uv.end(),result.uv);
-            std::copy(draw.material.base_color.begin(),draw.material.base_color.end(),result.base);
+            for (std::size_t c=0;c<4;++c) result.base[c]=draw.material.base_color[c]*v.color[c];
             result.metallic=draw.material.metallic;
             result.roughness=draw.material.roughness;
             result.cutoff=draw.material.alpha_cutoff;

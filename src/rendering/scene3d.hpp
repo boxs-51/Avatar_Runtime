@@ -12,6 +12,7 @@ struct Vertex3D {
     std::array<float, 3> position{}, normal{};
     std::array<float, 4> tangent{};
     std::array<float, 2> uv{};
+    std::array<float, 4> color{1, 1, 1, 1}; // Linear COLOR_0; RGB implies alpha1.
 };
 struct Texture3D {
     std::uint32_t image = assets::glb_none;
