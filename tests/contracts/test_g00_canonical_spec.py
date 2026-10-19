@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-S = ROOT / "docs/SPECIFICATION_V0.1.md"
+S = ROOT / 'docs/reference/SPECIFICATION_V0.1.md'
 HEADER = ROOT / "include/ars/ars.h"
 LIST_START = "<!-- G00_CANONICAL_ABI20_START -->"
 LIST_END = "<!-- G00_CANONICAL_ABI20_END -->"

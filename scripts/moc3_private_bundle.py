@@ -18,7 +18,7 @@ def build_bundle(destination):
     destination=destination.resolve()
     if not destination.is_relative_to((ROOT/'build').resolve()):raise ValueError('private build output required')
     if destination.exists():raise ValueError('new destination required')
-    source=ROOT/'docs/audits/M2_MOC3_F4_LOCAL_SOURCE.json'
+    source=ROOT/'docs/reference/audits/M2_MOC3_F4_LOCAL_SOURCE.json'
     native=json.loads(source.read_text(encoding='utf-8'))
     binary=ROOT/'build/m2-d-private/bin/Release/ars_moc3_product_bridge.exe'
     if sha(binary)!=native['binary_sha256'][binary.name]:raise ValueError('unverified native binary')
@@ -31,7 +31,7 @@ def build_bundle(destination):
     if sha(purism)!=native['dependency']['compiled_scope_source_sha256']['LICENSE']:raise ValueError('dependency notice changed')
     files['notices/PurismCore-LICENSE.txt']=purism
     components=[{'name':'PurismCore','revision':native['dependency']['revision'],'license':'MIT'}]
-    lock=json.loads((ROOT/'docs/M1_C_DEPENDENCY_LOCK.json').read_text(encoding='utf-8'))
+    lock=json.loads((ROOT/'docs/reference/M1_C_DEPENDENCY_LOCK.json').read_text(encoding='utf-8'))
     for dep in lock['dependencies']:
         path=ROOT/'build/m2-d-private/asset-deps'/f"{dep['name']}-{dep['commit']}"/f"{dep['name']}-{dep['commit']}"/dep['license_path']
         # Upstream libpng source directory uses the repository basename, as the existing CMake lock does.

@@ -1,6 +1,6 @@
 # F4 remaining public-input implementation contract
 
-Subsequent static checkpoint: [PNG/Physics3 admission and independent drawable/atlas guard](audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md) PASS for the explicitly bounded default-pose slice. [Detailed subset contract](M2_MOC3_F4_PACKAGE_ADMISSION_DESIGN.md). Physics is validated, not simulated; persistent public evaluation, product publication, SDK and qualification below remain outstanding.
+Subsequent static checkpoint: [PNG/Physics3 admission and independent drawable/atlas guard](../completed/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md) PASS for the explicitly bounded default-pose slice. [Detailed subset contract](../completed/M2_MOC3_F4_PACKAGE_ADMISSION_DESIGN.md). Physics is validated, not simulated; persistent public evaluation, product publication, SDK and qualification below remain outstanding.
 
 The owner chose arbitrary public-user MOC3 input. The completed parser-preflight prototype is a boundary experiment, not the public importer. The next implementation must use the following order; none of these steps may turn a preflight success into permission to reparse hostile MOC bytes inside the trusted host.
 

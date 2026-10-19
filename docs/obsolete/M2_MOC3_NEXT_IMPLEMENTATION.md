@@ -1,6 +1,6 @@
 # M2 MOC3: next implementation contract
 
-**Status:** P0 generic comparison harness and a private P1 session/snapshot slice implemented; P1 admission coverage remains partial. No gate promotion or public activation. **Parent:** I0 probe on `m2/moc3-i0-private-probe` (`1bbdbd1`). The official Live2D SDK remains deferred. Private model inputs and their derived outputs must remain local and gitignored. This plan refines [the I0-I3 roadmap](M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md); it does not replace the M2-D or D06/D08 acceptance requirements.
+**Status:** P0 generic comparison harness and a private P1 session/snapshot slice implemented; P1 admission coverage remains partial. No gate promotion or public activation. **Parent:** I0 probe on `m2/moc3-i0-private-probe` (`1bbdbd1`). The official Live2D SDK remains deferred. Private model inputs and their derived outputs must remain local and gitignored. This plan refines [the I0-I3 roadmap](../reference/M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md); it does not replace the M2-D or D06/D08 acceptance requirements.
 
 ## Problem ledger and decision points
 

@@ -2,15 +2,15 @@ name: Avatar Governance v0.1 Proposal Contract (NON-AUTHORIZING)
 on:
   pull_request:
     paths:
-      - 'docs/GOVERNANCE_ARS_SOLO_OWNER_001.md'
-      - 'docs/governance/**'
+      - 'docs/reference/GOVERNANCE_ARS_SOLO_OWNER_001.md'
+      - 'docs/reference/governance/**'
       - 'tests/governance/**'
       - '.github/workflows/ars-governance-policy.yml'
   push:
     branches:
       - 'governance/ars-policy85-v3-selective-reference-20261015'
     paths:
-      - 'docs/governance/**'
+      - 'docs/reference/governance/**'
       - 'tests/governance/**'
       - '.github/workflows/ars-governance-policy.yml'
 permissions:

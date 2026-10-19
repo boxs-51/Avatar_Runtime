@@ -9,8 +9,9 @@ on:
       - 'cmake/**'
       - 'tests/**'
       - 'fuzz/**'
-      - 'docs/audits/M1_C*'
-      - 'docs/M1_C_DEPENDENCY_LOCK.json'
+      - 'docs/completed/audits/M1_C*'
+      - 'docs/in-progress/audits/M1_C*'
+      - 'docs/reference/M1_C_DEPENDENCY_LOCK.json'
       - '.github/workflows/m1-c-assets.yml'
 permissions:
   contents: read
@@ -81,7 +82,7 @@ jobs:
             build/c1/c1-frozen-corpus/schema-parity.json
             build/c1/asset-corpus/manifest.json
             build/c1/asset-corpus/schema-parity.json
-            docs/M1_C_DEPENDENCY_LOCK.json
+            docs/reference/M1_C_DEPENDENCY_LOCK.json
   windows:
     runs-on: windows-2022
     strategy:
@@ -151,7 +152,7 @@ jobs:
             build/c1/c1-frozen-corpus/schema-parity.json
             build/c1/asset-corpus/manifest.json
             build/c1/asset-corpus/schema-parity.json
-            docs/M1_C_DEPENDENCY_LOCK.json
+            docs/reference/M1_C_DEPENDENCY_LOCK.json
   fuzz:
     runs-on: ubuntu-24.04
     timeout-minutes: 90

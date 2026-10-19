@@ -1,0 +1,1037 @@
+{
+  "schema_version": 1,
+  "basis_head": "f2f13614ed0e1f643e5ddb702bf5033f4873768f",
+  "date": "2026-10-19",
+  "timezone": "Asia/Bangkok",
+  "paths": {
+    "docs/ACCEPTANCE_GATES_V0.1.md": "docs/reference/ACCEPTANCE_GATES_V0.1.md",
+    "docs/ADR_0001_D3D11_G00_DESIGN_RC1.md": "docs/reference/ADR_0001_D3D11_G00_DESIGN_RC1.md",
+    "docs/ADR_P0_SECURITY_R2.md": "docs/reference/ADR_P0_SECURITY_R2.md",
+    "docs/CUBISM_STATIC_PREVIEW_IMPORT.md": "docs/reference/CUBISM_STATIC_PREVIEW_IMPORT.md",
+    "docs/DEVELOPMENT.md": "docs/reference/DEVELOPMENT.md",
+    "docs/G00_SECURITY_87_CASE_INVENTORY.json": "docs/reference/G00_SECURITY_87_CASE_INVENTORY.json",
+    "docs/GOVERNANCE_ARS_SOLO_OWNER_001.md": "docs/reference/GOVERNANCE_ARS_SOLO_OWNER_001.md",
+    "docs/M0_CONTRACT_PARENT_PINS.json": "docs/reference/M0_CONTRACT_PARENT_PINS.json",
+    "docs/M0_V0_1_FREEZE_READINESS.md": "docs/reference/M0_V0_1_FREEZE_READINESS.md",
+    "docs/M1_A_SCOPE_V0.1.md": "docs/completed/M1_A_SCOPE_V0.1.md",
+    "docs/M1_C_DEPENDENCY_LOCK.json": "docs/reference/M1_C_DEPENDENCY_LOCK.json",
+    "docs/M1_D_CLOSE_LOSS_NEXT_IMPLEMENTATION.md": "docs/in-progress/M1_D_CLOSE_LOSS_NEXT_IMPLEMENTATION.md",
+    "docs/M1_D_GPU_CASE_EXECUTION.json": "docs/in-progress/M1_D_GPU_CASE_EXECUTION.json",
+    "docs/M1_SOURCE_BOOTSTRAP_PLAN.md": "docs/obsolete/M1_SOURCE_BOOTSTRAP_PLAN.md",
+    "docs/M2_B_PIXEL_CONTRACT.md": "docs/reference/M2_B_PIXEL_CONTRACT.md",
+    "docs/M2_C_GLB_RENDER_DESIGN.md": "docs/completed/M2_C_GLB_RENDER_DESIGN.md",
+    "docs/M2_D06_D08_LOSS_VERIFICATION_DESIGN.md": "docs/in-progress/M2_D06_D08_LOSS_VERIFICATION_DESIGN.md",
+    "docs/M2_D_HOLD_LEDGER_AND_SWITCH_DESIGN.md": "docs/in-progress/M2_D_HOLD_LEDGER_AND_SWITCH_DESIGN.md",
+    "docs/M2_LIVE2D_DYNAMIC_ADAPTER_PLAN.md": "docs/obsolete/M2_LIVE2D_DYNAMIC_ADAPTER_PLAN.md",
+    "docs/M2_MOC3_F1_ADMISSION_DESIGN.md": "docs/completed/M2_MOC3_F1_ADMISSION_DESIGN.md",
+    "docs/M2_MOC3_F2_PIXEL_DESIGN.md": "docs/completed/M2_MOC3_F2_PIXEL_DESIGN.md",
+    "docs/M2_MOC3_F3_LINKED_PHYSICS_DESIGN.md": "docs/completed/M2_MOC3_F3_LINKED_PHYSICS_DESIGN.md",
+    "docs/M2_MOC3_F4_CONTINUITY_DESIGN.md": "docs/completed/M2_MOC3_F4_CONTINUITY_DESIGN.md",
+    "docs/M2_MOC3_F4_INTEGRATION_DESIGN.md": "docs/completed/M2_MOC3_F4_INTEGRATION_DESIGN.md",
+    "docs/M2_MOC3_F4_PACKAGE_ADMISSION_DESIGN.md": "docs/completed/M2_MOC3_F4_PACKAGE_ADMISSION_DESIGN.md",
+    "docs/M2_MOC3_F4_PUBLIC_IMPORT_DESIGN.md": "docs/in-progress/M2_MOC3_F4_PUBLIC_IMPORT_DESIGN.md",
+    "docs/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md": "docs/in-progress/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md",
+    "docs/M2_MOC3_F4_RELEASE_LEDGER.md": "docs/in-progress/M2_MOC3_F4_RELEASE_LEDGER.md",
+    "docs/M2_MOC3_FRAMEWORK_TARGET_DESIGN.md": "docs/in-progress/M2_MOC3_FRAMEWORK_TARGET_DESIGN.md",
+    "docs/M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md": "docs/reference/M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md",
+    "docs/M2_MOC3_NEXT_IMPLEMENTATION.md": "docs/obsolete/M2_MOC3_NEXT_IMPLEMENTATION.md",
+    "docs/M2_MOC3_OBSERVABLE_TEST_HARNESS_DESIGN.md": "docs/in-progress/M2_MOC3_OBSERVABLE_TEST_HARNESS_DESIGN.md",
+    "docs/M2_RENDERING_EXECUTION_PLAN.md": "docs/in-progress/M2_RENDERING_EXECUTION_PLAN.md",
+    "docs/P0_HANDLE_AND_SOURCE_AUTHORITY_CONTRACT_V0.1.md": "docs/reference/P0_HANDLE_AND_SOURCE_AUTHORITY_CONTRACT_V0.1.md",
+    "docs/P0_OWNER_REMEDIATION_V0.2.md": "docs/reference/P0_OWNER_REMEDIATION_V0.2.md",
+    "docs/P0_OWNER_REMEDIATION_V0.3.md": "docs/reference/P0_OWNER_REMEDIATION_V0.3.md",
+    "docs/P0_OWNER_REMEDIATION_V0.4.md": "docs/reference/P0_OWNER_REMEDIATION_V0.4.md",
+    "docs/P0_OWNER_REMEDIATION_V0.5.md": "docs/reference/P0_OWNER_REMEDIATION_V0.5.md",
+    "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md": "docs/reference/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+    "docs/ROADMAP_AND_ADRS_V0.1.md": "docs/in-progress/ROADMAP_AND_ADRS_V0.1.md",
+    "docs/SPECIFICATION_V0.1.md": "docs/reference/SPECIFICATION_V0.1.md",
+    "docs/V0_1_CANONICAL_CONTRACT_RC0.md": "docs/obsolete/V0_1_CANONICAL_CONTRACT_RC0.md",
+    "docs/V0_1_CANONICAL_CONTRACT_RC1.md": "docs/reference/V0_1_CANONICAL_CONTRACT_RC1.md",
+    "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md": "docs/in-progress/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md",
+    "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md": "docs/in-progress/V0_1_PUBLIC_ABI_FREEZE_MAP.md",
+    "docs/audits/ARS_G00_SOLO_OWNER_TECHNICAL_AUDIT_20261014.md": "docs/reference/audits/ARS_G00_SOLO_OWNER_TECHNICAL_AUDIT_20261014.md",
+    "docs/audits/HANDOFF_20261015.md": "docs/reference/audits/HANDOFF_20261015.md",
+    "docs/audits/M0_INTEGRATION_20261015.md": "docs/reference/audits/M0_INTEGRATION_20261015.md",
+    "docs/audits/M1_A_BUILD_EVIDENCE.md": "docs/completed/audits/M1_A_BUILD_EVIDENCE.md",
+    "docs/audits/M1_B1_BUILD_EVIDENCE.md": "docs/completed/audits/M1_B1_BUILD_EVIDENCE.md",
+    "docs/audits/M1_B2_BUILD_EVIDENCE.md": "docs/completed/audits/M1_B2_BUILD_EVIDENCE.md",
+    "docs/audits/M1_B3_BUILD_EVIDENCE.md": "docs/completed/audits/M1_B3_BUILD_EVIDENCE.md",
+    "docs/audits/M1_B_CASE_EXECUTION.json": "docs/in-progress/audits/M1_B_CASE_EXECUTION.json",
+    "docs/audits/M1_C1_BUILD_EVIDENCE.md": "docs/completed/audits/M1_C1_BUILD_EVIDENCE.md",
+    "docs/audits/M1_C2_BUILD_EVIDENCE.md": "docs/completed/audits/M1_C2_BUILD_EVIDENCE.md",
+    "docs/audits/M1_C_CASE_EXECUTION.json": "docs/in-progress/audits/M1_C_CASE_EXECUTION.json",
+    "docs/audits/M1_D_BUILD_EVIDENCE.md": "docs/reference/audits/M1_D_BUILD_EVIDENCE.md",
+    "docs/audits/M1_D_BUILD_RAW.txt": "docs/reference/audits/M1_D_BUILD_RAW.txt",
+    "docs/audits/M1_D_C2_LOCAL_RAW.txt": "docs/reference/audits/M1_D_C2_LOCAL_RAW.txt",
+    "docs/audits/M1_D_CTEST_RAW.txt": "docs/reference/audits/M1_D_CTEST_RAW.txt",
+    "docs/audits/M1_D_D1_RAW.txt": "docs/reference/audits/M1_D_D1_RAW.txt",
+    "docs/audits/M1_D_D2_RAW.txt": "docs/reference/audits/M1_D_D2_RAW.txt",
+    "docs/audits/M1_D_D4_RAW.txt": "docs/reference/audits/M1_D_D4_RAW.txt",
+    "docs/audits/M1_D_D6_RAW.txt": "docs/reference/audits/M1_D_D6_RAW.txt",
+    "docs/audits/M1_D_D7_CLOSE_RAW.txt": "docs/reference/audits/M1_D_D7_CLOSE_RAW.txt",
+    "docs/audits/M1_D_D8_INJECTED_RAW.txt": "docs/reference/audits/M1_D_D8_INJECTED_RAW.txt",
+    "docs/audits/M1_D_GATES_REASSESSMENT_20261017.md": "docs/reference/audits/M1_D_GATES_REASSESSMENT_20261017.md",
+    "docs/audits/M1_D_STATIC_BUILD_RAW.txt": "docs/reference/audits/M1_D_STATIC_BUILD_RAW.txt",
+    "docs/audits/M1_D_STATIC_CTEST_RAW.txt": "docs/reference/audits/M1_D_STATIC_CTEST_RAW.txt",
+    "docs/audits/M2_A_BUILD_EVIDENCE.md": "docs/completed/audits/M2_A_BUILD_EVIDENCE.md",
+    "docs/audits/M2_A_BUILD_RAW.txt": "docs/reference/audits/M2_A_BUILD_RAW.txt",
+    "docs/audits/M2_A_CTEST_RAW.txt": "docs/reference/audits/M2_A_CTEST_RAW.txt",
+    "docs/audits/M2_B_BUILD_EVIDENCE.md": "docs/completed/audits/M2_B_BUILD_EVIDENCE.md",
+    "docs/audits/M2_B_BUILD_RAW.txt": "docs/reference/audits/M2_B_BUILD_RAW.txt",
+    "docs/audits/M2_B_CTEST_RAW.txt": "docs/reference/audits/M2_B_CTEST_RAW.txt",
+    "docs/audits/M2_B_HARDWARE_RAW.txt": "docs/reference/audits/M2_B_HARDWARE_RAW.txt",
+    "docs/audits/M2_C_BUILD_RAW.txt": "docs/reference/audits/M2_C_BUILD_RAW.txt",
+    "docs/audits/M2_C_CTEST_RAW.txt": "docs/reference/audits/M2_C_CTEST_RAW.txt",
+    "docs/audits/M2_C_HARDWARE_RAW.txt": "docs/reference/audits/M2_C_HARDWARE_RAW.txt",
+    "docs/audits/M2_C_IMPLEMENTATION_EVIDENCE.md": "docs/completed/audits/M2_C_IMPLEMENTATION_EVIDENCE.md",
+    "docs/audits/M2_C_WARP_RAW.txt": "docs/reference/audits/M2_C_WARP_RAW.txt",
+    "docs/audits/M2_D_BUILD_RAW.txt": "docs/reference/audits/M2_D_BUILD_RAW.txt",
+    "docs/audits/M2_D_CTEST_RAW.txt": "docs/reference/audits/M2_D_CTEST_RAW.txt",
+    "docs/audits/M2_D_HARDWARE_RAW.txt": "docs/reference/audits/M2_D_HARDWARE_RAW.txt",
+    "docs/audits/M2_D_IMPLEMENTATION_EVIDENCE.md": "docs/completed/audits/M2_D_IMPLEMENTATION_EVIDENCE.md",
+    "docs/audits/M2_D_LIVE_HARDWARE_RAW.txt": "docs/reference/audits/M2_D_LIVE_HARDWARE_RAW.txt",
+    "docs/audits/M2_D_LIVE_WARP_RAW.txt": "docs/reference/audits/M2_D_LIVE_WARP_RAW.txt",
+    "docs/audits/M2_D_WARP_RAW.txt": "docs/reference/audits/M2_D_WARP_RAW.txt",
+    "docs/audits/M2_LIVE2D_L0_PREFLIGHT_20261018.md": "docs/reference/audits/M2_LIVE2D_L0_PREFLIGHT_20261018.md",
+    "docs/audits/M2_MOC3_F1_LOCAL_ACCEPTANCE.md": "docs/completed/audits/M2_MOC3_F1_LOCAL_ACCEPTANCE.md",
+    "docs/audits/M2_MOC3_F1_LOCAL_SOURCE.json": "docs/reference/audits/M2_MOC3_F1_LOCAL_SOURCE.json",
+    "docs/audits/M2_MOC3_F1_PARTIAL_EVIDENCE.md": "docs/reference/audits/M2_MOC3_F1_PARTIAL_EVIDENCE.md",
+    "docs/audits/M2_MOC3_F2_LOCAL_ACCEPTANCE.md": "docs/completed/audits/M2_MOC3_F2_LOCAL_ACCEPTANCE.md",
+    "docs/audits/M2_MOC3_F2_LOCAL_SOURCE.json": "docs/reference/audits/M2_MOC3_F2_LOCAL_SOURCE.json",
+    "docs/audits/M2_MOC3_F2_RECHECK_AND_OWNER_DIAGNOSTICS.md": "docs/completed/audits/M2_MOC3_F2_RECHECK_AND_OWNER_DIAGNOSTICS.md",
+    "docs/audits/M2_MOC3_F3_LOCAL_ACCEPTANCE.md": "docs/completed/audits/M2_MOC3_F3_LOCAL_ACCEPTANCE.md",
+    "docs/audits/M2_MOC3_F3_LOCAL_SOURCE.json": "docs/reference/audits/M2_MOC3_F3_LOCAL_SOURCE.json",
+    "docs/audits/M2_MOC3_F4_COMPLETION_PROGRESS.md": "docs/reference/audits/M2_MOC3_F4_COMPLETION_PROGRESS.md",
+    "docs/audits/M2_MOC3_F4_COMPLETION_SOURCE.json": "docs/reference/audits/M2_MOC3_F4_COMPLETION_SOURCE.json",
+    "docs/audits/M2_MOC3_F4_GOAL_ASSESSMENT.json": "docs/reference/audits/M2_MOC3_F4_GOAL_ASSESSMENT.json",
+    "docs/audits/M2_MOC3_F4_LOCAL_ACCEPTANCE.md": "docs/completed/audits/M2_MOC3_F4_LOCAL_ACCEPTANCE.md",
+    "docs/audits/M2_MOC3_F4_LOCAL_SOURCE.json": "docs/reference/audits/M2_MOC3_F4_LOCAL_SOURCE.json",
+    "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md": "docs/completed/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md",
+    "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_GOAL_ASSESSMENT.json": "docs/completed/audits/M2_MOC3_F4_PACKAGE_ADMISSION_GOAL_ASSESSMENT.json",
+    "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_REVIEW.md": "docs/completed/audits/M2_MOC3_F4_PACKAGE_ADMISSION_REVIEW.md",
+    "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_SOURCE.json": "docs/reference/audits/M2_MOC3_F4_PACKAGE_ADMISSION_SOURCE.json",
+    "docs/audits/M2_MOC3_T0_HARNESS_EVIDENCE.md": "docs/completed/audits/M2_MOC3_T0_HARNESS_EVIDENCE.md",
+    "docs/audits/M2_PRE_D_BUILD_RAW.txt": "docs/reference/audits/M2_PRE_D_BUILD_RAW.txt",
+    "docs/audits/M2_PRE_D_CTEST_RAW.txt": "docs/reference/audits/M2_PRE_D_CTEST_RAW.txt",
+    "docs/audits/M2_PRE_D_HARDWARE_RAW.txt": "docs/reference/audits/M2_PRE_D_HARDWARE_RAW.txt",
+    "docs/audits/M2_PRE_D_HOLD_REASSESSMENT_20261018.md": "docs/reference/audits/M2_PRE_D_HOLD_REASSESSMENT_20261018.md",
+    "docs/audits/M2_PRE_D_LIVE_HARDWARE_RAW.txt": "docs/reference/audits/M2_PRE_D_LIVE_HARDWARE_RAW.txt",
+    "docs/audits/M2_PRE_D_LIVE_WARP_RAW.txt": "docs/reference/audits/M2_PRE_D_LIVE_WARP_RAW.txt",
+    "docs/audits/M2_PRE_D_WARP_RAW.txt": "docs/reference/audits/M2_PRE_D_WARP_RAW.txt",
+    "docs/governance/ARS_M1_SOLO_OWNER_ACK.md": "docs/reference/governance/ARS_M1_SOLO_OWNER_ACK.md",
+    "docs/governance/ARS_M2_DEVELOPER.md": "docs/reference/governance/ARS_M2_DEVELOPER.md",
+    "docs/governance/ARS_M3_FINAL_AUDIT.md": "docs/reference/governance/ARS_M3_FINAL_AUDIT.md",
+    "docs/governance/ARS_M4_STACKED_PRS.md": "docs/reference/governance/ARS_M4_STACKED_PRS.md",
+    "docs/governance/ARS_M5_MERGE_HISTORY.md": "docs/reference/governance/ARS_M5_MERGE_HISTORY.md",
+    "docs/governance/ARS_M6_WAVE_STATE.md": "docs/reference/governance/ARS_M6_WAVE_STATE.md",
+    "docs/governance/ARS_POLICY_V0_1_INDEX.md": "docs/reference/governance/ARS_POLICY_V0_1_INDEX.md"
+  },
+  "live_readers_updated": [
+    "scripts/moc3_admission_provenance.py",
+    "scripts/moc3_private_bundle.py",
+    "tests/contracts/check_m0_rc1_pins.py",
+    "tests/contracts/g00_stage_gate_contract.py",
+    "tests/contracts/test_g00_canonical_spec.py",
+    "tests/contracts/test_g00_final_guards.py",
+    "tests/contracts/test_g00_security_inventory.py",
+    "tests/contracts/test_m0_rc1_schema.py",
+    "tests/contracts/test_m1_d_custody.py",
+    "tests/governance/test_ars_policy_reference.py"
+  ],
+  "historical_paths_in_git_and_pinned_json": "UNCHANGED",
+  "files": [
+    {
+      "legacy_path": "docs/ACCEPTANCE_GATES_V0.1.md",
+      "path": "docs/reference/ACCEPTANCE_GATES_V0.1.md",
+      "original_sha256": "69b8037fe282cd4cac634f7b90b534281a64a406cbbc7c137669a20ac9101ae0",
+      "current_sha256": "69b8037fe282cd4cac634f7b90b534281a64a406cbbc7c137669a20ac9101ae0",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/ADR_0001_D3D11_G00_DESIGN_RC1.md",
+      "path": "docs/reference/ADR_0001_D3D11_G00_DESIGN_RC1.md",
+      "original_sha256": "dc463cce15c1cd3766bd98039088d90195e304ebb75533cccda53a8c28805709",
+      "current_sha256": "dc463cce15c1cd3766bd98039088d90195e304ebb75533cccda53a8c28805709",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/ADR_P0_SECURITY_R2.md",
+      "path": "docs/reference/ADR_P0_SECURITY_R2.md",
+      "original_sha256": "38989c2c69cc7318d88ed7e68d409db70faf14626feec79a577aeab127737066",
+      "current_sha256": "38989c2c69cc7318d88ed7e68d409db70faf14626feec79a577aeab127737066",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/CUBISM_STATIC_PREVIEW_IMPORT.md",
+      "path": "docs/reference/CUBISM_STATIC_PREVIEW_IMPORT.md",
+      "original_sha256": "9e237c347a6cd781d48a9eb37ac1be436ae385ac58d7cc045dbe3e87955b613a",
+      "current_sha256": "8d2220054f414d84f7fe8a942e7217a45049d13733027b78b47dd2e4e0550290",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/DEVELOPMENT.md",
+      "path": "docs/reference/DEVELOPMENT.md",
+      "original_sha256": "99aea2d83cff070e07031be199c8007499d03a5d8db7371b768612f5fd4166ed",
+      "current_sha256": "99aea2d83cff070e07031be199c8007499d03a5d8db7371b768612f5fd4166ed",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/G00_SECURITY_87_CASE_INVENTORY.json",
+      "path": "docs/reference/G00_SECURITY_87_CASE_INVENTORY.json",
+      "original_sha256": "f5595ac228413bd185681527bd62de97382affddcc3d8b30569eb9a975688161",
+      "current_sha256": "f5595ac228413bd185681527bd62de97382affddcc3d8b30569eb9a975688161",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/GOVERNANCE_ARS_SOLO_OWNER_001.md",
+      "path": "docs/reference/GOVERNANCE_ARS_SOLO_OWNER_001.md",
+      "original_sha256": "eb62dc7b9f671dd0575e5111038ee3d3d8498562c8325e0ce9fad71d58fcaffd",
+      "current_sha256": "eb62dc7b9f671dd0575e5111038ee3d3d8498562c8325e0ce9fad71d58fcaffd",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M0_CONTRACT_PARENT_PINS.json",
+      "path": "docs/reference/M0_CONTRACT_PARENT_PINS.json",
+      "original_sha256": "229482f38e41c1b8f0ba7886a0c6ab26cfd82164052765be9f434e33333ca9b6",
+      "current_sha256": "229482f38e41c1b8f0ba7886a0c6ab26cfd82164052765be9f434e33333ca9b6",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M0_V0_1_FREEZE_READINESS.md",
+      "path": "docs/reference/M0_V0_1_FREEZE_READINESS.md",
+      "original_sha256": "023f49ce948efe46a691a67ec3ec6d44e2d67a2b0228c8893268ba74194a8471",
+      "current_sha256": "023f49ce948efe46a691a67ec3ec6d44e2d67a2b0228c8893268ba74194a8471",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M1_A_SCOPE_V0.1.md",
+      "path": "docs/completed/M1_A_SCOPE_V0.1.md",
+      "original_sha256": "367735ea2a13b59db559f604df48716c72ef72d1177bf7e4ce4b36508794f779",
+      "current_sha256": "367735ea2a13b59db559f604df48716c72ef72d1177bf7e4ce4b36508794f779",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M1_C_DEPENDENCY_LOCK.json",
+      "path": "docs/reference/M1_C_DEPENDENCY_LOCK.json",
+      "original_sha256": "6cf74bacdf455ba238cc33ee094be82cbf3cfef269fac09ee6aa709ad1101478",
+      "current_sha256": "6cf74bacdf455ba238cc33ee094be82cbf3cfef269fac09ee6aa709ad1101478",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M1_D_CLOSE_LOSS_NEXT_IMPLEMENTATION.md",
+      "path": "docs/in-progress/M1_D_CLOSE_LOSS_NEXT_IMPLEMENTATION.md",
+      "original_sha256": "d84e703c87bb93525b10e517d867cbccddd00c6d4d7ec9efd967712664e659c7",
+      "current_sha256": "d84e703c87bb93525b10e517d867cbccddd00c6d4d7ec9efd967712664e659c7",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M1_D_GPU_CASE_EXECUTION.json",
+      "path": "docs/in-progress/M1_D_GPU_CASE_EXECUTION.json",
+      "original_sha256": "455fbdb4274a336ca1b6b7403ac2f2b30c24262f7bf7d5dcfdddafe1f3aa1db6",
+      "current_sha256": "455fbdb4274a336ca1b6b7403ac2f2b30c24262f7bf7d5dcfdddafe1f3aa1db6",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M1_SOURCE_BOOTSTRAP_PLAN.md",
+      "path": "docs/obsolete/M1_SOURCE_BOOTSTRAP_PLAN.md",
+      "original_sha256": "fa622edc368b401d87d55e20f00b28119c6d9fafc1b385cc44431c7355353a6d",
+      "current_sha256": "fa622edc368b401d87d55e20f00b28119c6d9fafc1b385cc44431c7355353a6d",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M2_B_PIXEL_CONTRACT.md",
+      "path": "docs/reference/M2_B_PIXEL_CONTRACT.md",
+      "original_sha256": "e0b5df59cd860d0ca493797398e1ea543ede3ee8481a3a5614c5137602dce435",
+      "current_sha256": "e0b5df59cd860d0ca493797398e1ea543ede3ee8481a3a5614c5137602dce435",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M2_C_GLB_RENDER_DESIGN.md",
+      "path": "docs/completed/M2_C_GLB_RENDER_DESIGN.md",
+      "original_sha256": "d65b4ddcd677519201656fa52e2d961dc7d2c27baf58fe5ece6fcdb4673b8a36",
+      "current_sha256": "d65b4ddcd677519201656fa52e2d961dc7d2c27baf58fe5ece6fcdb4673b8a36",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M2_D06_D08_LOSS_VERIFICATION_DESIGN.md",
+      "path": "docs/in-progress/M2_D06_D08_LOSS_VERIFICATION_DESIGN.md",
+      "original_sha256": "e20a6d6bd8909508282791ec39ac4e05bca5e60f6e9c2d0340b86ec15c4403b4",
+      "current_sha256": "e20a6d6bd8909508282791ec39ac4e05bca5e60f6e9c2d0340b86ec15c4403b4",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M2_D_HOLD_LEDGER_AND_SWITCH_DESIGN.md",
+      "path": "docs/in-progress/M2_D_HOLD_LEDGER_AND_SWITCH_DESIGN.md",
+      "original_sha256": "6cc985df626fe25cb605464c47c5cf1889c9be29d1458ecfd6bd7c4fdfeba781",
+      "current_sha256": "db1b7c7d21e37d3c2f47b41e82c6c8e1f27d90c2a6fd25b8f276eddc4cc4881c",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/M2_LIVE2D_DYNAMIC_ADAPTER_PLAN.md",
+      "path": "docs/obsolete/M2_LIVE2D_DYNAMIC_ADAPTER_PLAN.md",
+      "original_sha256": "b4dd2ba57c36a1094ee316a097fd845d64d985678fa1500c51bfa634b284302b",
+      "current_sha256": "70b8b68dcdd5a3a7280a56a1777b931c3cf8cb0b54290ec5332f195befc7844d",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/M2_MOC3_F1_ADMISSION_DESIGN.md",
+      "path": "docs/completed/M2_MOC3_F1_ADMISSION_DESIGN.md",
+      "original_sha256": "f2a8c4fa643b50401020cdaca8eb5a7afc40be202baa463692a5e1576c97570e",
+      "current_sha256": "6273d8bf35e7be1ba25ea8537a520b6bbab24e496619bb40a0229b9ee5de2ff7",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/M2_MOC3_F2_PIXEL_DESIGN.md",
+      "path": "docs/completed/M2_MOC3_F2_PIXEL_DESIGN.md",
+      "original_sha256": "dd650ffb1eab5c8ae95efc091e7f7d4d6f723064b8161c06bce096e0737f9df3",
+      "current_sha256": "dd650ffb1eab5c8ae95efc091e7f7d4d6f723064b8161c06bce096e0737f9df3",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M2_MOC3_F3_LINKED_PHYSICS_DESIGN.md",
+      "path": "docs/completed/M2_MOC3_F3_LINKED_PHYSICS_DESIGN.md",
+      "original_sha256": "9e3eecd05f7b8757826030eeeddf7927d9e7a01f65c2d5e3d7926a7b6b5cd91e",
+      "current_sha256": "9e3eecd05f7b8757826030eeeddf7927d9e7a01f65c2d5e3d7926a7b6b5cd91e",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M2_MOC3_F4_CONTINUITY_DESIGN.md",
+      "path": "docs/completed/M2_MOC3_F4_CONTINUITY_DESIGN.md",
+      "original_sha256": "cfee40e60b2edd0e6cfe786304722296d02c90829156c047b599f5b5bae70dc6",
+      "current_sha256": "cfee40e60b2edd0e6cfe786304722296d02c90829156c047b599f5b5bae70dc6",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M2_MOC3_F4_INTEGRATION_DESIGN.md",
+      "path": "docs/completed/M2_MOC3_F4_INTEGRATION_DESIGN.md",
+      "original_sha256": "d788a40e5cf56a0a355e45494e6038798e31750f672fcfd4d3657f592e63765f",
+      "current_sha256": "d788a40e5cf56a0a355e45494e6038798e31750f672fcfd4d3657f592e63765f",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M2_MOC3_F4_PACKAGE_ADMISSION_DESIGN.md",
+      "path": "docs/completed/M2_MOC3_F4_PACKAGE_ADMISSION_DESIGN.md",
+      "original_sha256": "acb5e9aa4772686c407534038edcfb95833692fd2f45fb674f635f888cd923f9",
+      "current_sha256": "acb5e9aa4772686c407534038edcfb95833692fd2f45fb674f635f888cd923f9",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M2_MOC3_F4_PUBLIC_IMPORT_DESIGN.md",
+      "path": "docs/in-progress/M2_MOC3_F4_PUBLIC_IMPORT_DESIGN.md",
+      "original_sha256": "c73096ed11230b4eef2669fd2a8ade59e80abebe9d30a5935f81f527723e6b19",
+      "current_sha256": "c73096ed11230b4eef2669fd2a8ade59e80abebe9d30a5935f81f527723e6b19",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md",
+      "path": "docs/in-progress/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md",
+      "original_sha256": "dddab94e90ac980045921f39983eb416e91c4dc94d3f4968790591bdaeaada15",
+      "current_sha256": "5b5588fb0b84e08ce4174423e8a5601ad73cca5e326adf920ae41189dcd5f0aa",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/M2_MOC3_F4_RELEASE_LEDGER.md",
+      "path": "docs/in-progress/M2_MOC3_F4_RELEASE_LEDGER.md",
+      "original_sha256": "e76a6faf8d1d10c92090b760a1b728d7136eeef0af59111aaf2e0cab8b7de12d",
+      "current_sha256": "a03d8fc57a2e772e46f86b24ebafe92d5fe0c541b9bf1b5076d467d440346049",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/M2_MOC3_FRAMEWORK_TARGET_DESIGN.md",
+      "path": "docs/in-progress/M2_MOC3_FRAMEWORK_TARGET_DESIGN.md",
+      "original_sha256": "485ac55e60b29c4b978878708817f4855093e8622ecaa1865fababb7ac07724f",
+      "current_sha256": "67ce346ce4470268044f0e7048383f31d46de2c7fa6c98d7e5a0d57ec12c88a5",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md",
+      "path": "docs/reference/M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md",
+      "original_sha256": "270b43ff859bdb34ba4555a66780a1fd5b8fa59716424fb6dd5cf832fb0b35a4",
+      "current_sha256": "270b43ff859bdb34ba4555a66780a1fd5b8fa59716424fb6dd5cf832fb0b35a4",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/M2_MOC3_NEXT_IMPLEMENTATION.md",
+      "path": "docs/obsolete/M2_MOC3_NEXT_IMPLEMENTATION.md",
+      "original_sha256": "fb6f38aa4cbcdd7873f3c4c1c9c41631302141539a31be6c36686a61d47f6289",
+      "current_sha256": "1ea2d44a5f2831a9a178c05b7a45cbac662d5532045769ff343ee804a989fad3",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/M2_MOC3_OBSERVABLE_TEST_HARNESS_DESIGN.md",
+      "path": "docs/in-progress/M2_MOC3_OBSERVABLE_TEST_HARNESS_DESIGN.md",
+      "original_sha256": "9a1a7ba45b26f026a2b165d369aafb88cec0ea92c8abdb683f31de37c5620763",
+      "current_sha256": "64b9a160cb8a1aaf7ea21329997de4c41873915b8284bd77cbfa411b732e3bff",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/M2_RENDERING_EXECUTION_PLAN.md",
+      "path": "docs/in-progress/M2_RENDERING_EXECUTION_PLAN.md",
+      "original_sha256": "170b57c849d53a37c91e3755d7631c45b01f7bd2d0410d3a7923a6ecdd6cab32",
+      "current_sha256": "170b57c849d53a37c91e3755d7631c45b01f7bd2d0410d3a7923a6ecdd6cab32",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/P0_HANDLE_AND_SOURCE_AUTHORITY_CONTRACT_V0.1.md",
+      "path": "docs/reference/P0_HANDLE_AND_SOURCE_AUTHORITY_CONTRACT_V0.1.md",
+      "original_sha256": "1d61439bf0bae7de949ceaa513e0553978b4613b9c42b73703828b80dbf1701f",
+      "current_sha256": "1d61439bf0bae7de949ceaa513e0553978b4613b9c42b73703828b80dbf1701f",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/P0_OWNER_REMEDIATION_V0.2.md",
+      "path": "docs/reference/P0_OWNER_REMEDIATION_V0.2.md",
+      "original_sha256": "cdba3e4c05c1fac2bea8610707f8a54c4b251ff4d51f1938d0578361a1e8e746",
+      "current_sha256": "cdba3e4c05c1fac2bea8610707f8a54c4b251ff4d51f1938d0578361a1e8e746",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/P0_OWNER_REMEDIATION_V0.3.md",
+      "path": "docs/reference/P0_OWNER_REMEDIATION_V0.3.md",
+      "original_sha256": "8f77873de8280901886fd689f28e1c7781e5a9f11e99e308eb4495294c23ab3e",
+      "current_sha256": "8f77873de8280901886fd689f28e1c7781e5a9f11e99e308eb4495294c23ab3e",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/P0_OWNER_REMEDIATION_V0.4.md",
+      "path": "docs/reference/P0_OWNER_REMEDIATION_V0.4.md",
+      "original_sha256": "c18563c41e4b6aa027207724d1e0011650312cc61ab6a9625856c99bf2f4e09a",
+      "current_sha256": "c18563c41e4b6aa027207724d1e0011650312cc61ab6a9625856c99bf2f4e09a",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/P0_OWNER_REMEDIATION_V0.5.md",
+      "path": "docs/reference/P0_OWNER_REMEDIATION_V0.5.md",
+      "original_sha256": "8c810411a9c2b58165dc21d724ba125fb841146d4710eb8da3c0d2adf441134e",
+      "current_sha256": "8c810411a9c2b58165dc21d724ba125fb841146d4710eb8da3c0d2adf441134e",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "path": "docs/reference/P0_SECURITY_REGRESSION_GATES_V0.1.md",
+      "original_sha256": "df129c1b1a21ea362d620c7d9f59996099202a4afee5cc23102675b1290d97e1",
+      "current_sha256": "df129c1b1a21ea362d620c7d9f59996099202a4afee5cc23102675b1290d97e1",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/ROADMAP_AND_ADRS_V0.1.md",
+      "path": "docs/in-progress/ROADMAP_AND_ADRS_V0.1.md",
+      "original_sha256": "4033578517ecdb8b393f60781c7918e8b0a0c5d72d0a29088646fa09de2437eb",
+      "current_sha256": "4033578517ecdb8b393f60781c7918e8b0a0c5d72d0a29088646fa09de2437eb",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/SPECIFICATION_V0.1.md",
+      "path": "docs/reference/SPECIFICATION_V0.1.md",
+      "original_sha256": "c71e3b8f30c217c1be02c51e61a95c9f8842fad16a8b3cf425704239fb0818c0",
+      "current_sha256": "c71e3b8f30c217c1be02c51e61a95c9f8842fad16a8b3cf425704239fb0818c0",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/V0_1_CANONICAL_CONTRACT_RC0.md",
+      "path": "docs/obsolete/V0_1_CANONICAL_CONTRACT_RC0.md",
+      "original_sha256": "82110a05c26517b813af3c6202e7343105336594587e1b8247d9f2d806ffb563",
+      "current_sha256": "82110a05c26517b813af3c6202e7343105336594587e1b8247d9f2d806ffb563",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/V0_1_CANONICAL_CONTRACT_RC1.md",
+      "path": "docs/reference/V0_1_CANONICAL_CONTRACT_RC1.md",
+      "original_sha256": "128e295c848e7b530e3e065b1feb3025565fc2499f46518bb261691acaec3945",
+      "current_sha256": "128e295c848e7b530e3e065b1feb3025565fc2499f46518bb261691acaec3945",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md",
+      "path": "docs/in-progress/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md",
+      "original_sha256": "0a8f95bb6ad86271f6790759217de65c7ea7fc61156114acca202168d47cda43",
+      "current_sha256": "0a8f95bb6ad86271f6790759217de65c7ea7fc61156114acca202168d47cda43",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/V0_1_PUBLIC_ABI_FREEZE_MAP.md",
+      "path": "docs/in-progress/V0_1_PUBLIC_ABI_FREEZE_MAP.md",
+      "original_sha256": "f365d9ee20f7a7808ad15e667331a2d093b7439ceed9a3a5431ef4caa77aea4c",
+      "current_sha256": "f365d9ee20f7a7808ad15e667331a2d093b7439ceed9a3a5431ef4caa77aea4c",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/ARS_G00_SOLO_OWNER_TECHNICAL_AUDIT_20261014.md",
+      "path": "docs/reference/audits/ARS_G00_SOLO_OWNER_TECHNICAL_AUDIT_20261014.md",
+      "original_sha256": "cf507ba49aff52b3d6739104bfe498f5d0f906609d3a210038b3592c45ce6b90",
+      "current_sha256": "cf507ba49aff52b3d6739104bfe498f5d0f906609d3a210038b3592c45ce6b90",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/HANDOFF_20261015.md",
+      "path": "docs/reference/audits/HANDOFF_20261015.md",
+      "original_sha256": "1ffc60a471f37da309be9285e48b34fd01b08da88b85ff04c2010df3e948eed7",
+      "current_sha256": "1ffc60a471f37da309be9285e48b34fd01b08da88b85ff04c2010df3e948eed7",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M0_INTEGRATION_20261015.md",
+      "path": "docs/reference/audits/M0_INTEGRATION_20261015.md",
+      "original_sha256": "b0e36a83a88d16b18325922d21e1d714f0db78c48eb2ec865a981275015b394a",
+      "current_sha256": "b0e36a83a88d16b18325922d21e1d714f0db78c48eb2ec865a981275015b394a",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_A_BUILD_EVIDENCE.md",
+      "path": "docs/completed/audits/M1_A_BUILD_EVIDENCE.md",
+      "original_sha256": "332eda5c9355ca5ef2907240ea6a2c5b434b4dab30e554a59c2c4fbd7356d38e",
+      "current_sha256": "332eda5c9355ca5ef2907240ea6a2c5b434b4dab30e554a59c2c4fbd7356d38e",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_B1_BUILD_EVIDENCE.md",
+      "path": "docs/completed/audits/M1_B1_BUILD_EVIDENCE.md",
+      "original_sha256": "bed6b6145401a21346529a01792bda36e297d2b9456612c71932a1ab901665fa",
+      "current_sha256": "bed6b6145401a21346529a01792bda36e297d2b9456612c71932a1ab901665fa",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_B2_BUILD_EVIDENCE.md",
+      "path": "docs/completed/audits/M1_B2_BUILD_EVIDENCE.md",
+      "original_sha256": "8777cefaea2773798d2c05c125e7e131b345a7e41ae36ae8d1b9fdd190881027",
+      "current_sha256": "8777cefaea2773798d2c05c125e7e131b345a7e41ae36ae8d1b9fdd190881027",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_B3_BUILD_EVIDENCE.md",
+      "path": "docs/completed/audits/M1_B3_BUILD_EVIDENCE.md",
+      "original_sha256": "cb9b335047bcb4df4f03d78f60e596173925849298cbf3fb94a488fbb0d16b15",
+      "current_sha256": "cb9b335047bcb4df4f03d78f60e596173925849298cbf3fb94a488fbb0d16b15",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_B_CASE_EXECUTION.json",
+      "path": "docs/in-progress/audits/M1_B_CASE_EXECUTION.json",
+      "original_sha256": "d240e615d2f707ba45f75222cfc7b230b17ae7c241a19d569cfc167e12ca4cf6",
+      "current_sha256": "d240e615d2f707ba45f75222cfc7b230b17ae7c241a19d569cfc167e12ca4cf6",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_C1_BUILD_EVIDENCE.md",
+      "path": "docs/completed/audits/M1_C1_BUILD_EVIDENCE.md",
+      "original_sha256": "b0c12dc9f1b4751de2371e948296b0ebf8d787301ef7d2b28d69d8636c19007e",
+      "current_sha256": "b0c12dc9f1b4751de2371e948296b0ebf8d787301ef7d2b28d69d8636c19007e",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_C2_BUILD_EVIDENCE.md",
+      "path": "docs/completed/audits/M1_C2_BUILD_EVIDENCE.md",
+      "original_sha256": "33640386e2a010c259dd9e0614999e074fbf227136fc9d0f0d3d6db34dcac327",
+      "current_sha256": "33640386e2a010c259dd9e0614999e074fbf227136fc9d0f0d3d6db34dcac327",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_C_CASE_EXECUTION.json",
+      "path": "docs/in-progress/audits/M1_C_CASE_EXECUTION.json",
+      "original_sha256": "14fd17d24d12239084a8000a5e415da06bdf03e10994b2b5b9efb22e698b3c30",
+      "current_sha256": "14fd17d24d12239084a8000a5e415da06bdf03e10994b2b5b9efb22e698b3c30",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_D_BUILD_EVIDENCE.md",
+      "path": "docs/reference/audits/M1_D_BUILD_EVIDENCE.md",
+      "original_sha256": "73014f766b71a3e220278d9d76e7e27324317d34718b0d22376e8c10b7cdd684",
+      "current_sha256": "73014f766b71a3e220278d9d76e7e27324317d34718b0d22376e8c10b7cdd684",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_D_BUILD_RAW.txt",
+      "path": "docs/reference/audits/M1_D_BUILD_RAW.txt",
+      "original_sha256": "8a97077f8a2547fb6e4bbd1c94cb03432943bc55f4b2120980862de2e8ad5ac2",
+      "current_sha256": "8a97077f8a2547fb6e4bbd1c94cb03432943bc55f4b2120980862de2e8ad5ac2",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_D_C2_LOCAL_RAW.txt",
+      "path": "docs/reference/audits/M1_D_C2_LOCAL_RAW.txt",
+      "original_sha256": "9b152641988cbb7ec4b7fddbd7b973eeb7984f145f82f22aa93547d68c572e91",
+      "current_sha256": "9b152641988cbb7ec4b7fddbd7b973eeb7984f145f82f22aa93547d68c572e91",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_D_CTEST_RAW.txt",
+      "path": "docs/reference/audits/M1_D_CTEST_RAW.txt",
+      "original_sha256": "36f40574ba553f967b7bcfff6b75b7c1d2794be57a474313056c3fef5a3745ec",
+      "current_sha256": "36f40574ba553f967b7bcfff6b75b7c1d2794be57a474313056c3fef5a3745ec",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_D_D1_RAW.txt",
+      "path": "docs/reference/audits/M1_D_D1_RAW.txt",
+      "original_sha256": "3e407679f45e1b91ee825ae544899ee023be0d97757758ea6550566584b89313",
+      "current_sha256": "3e407679f45e1b91ee825ae544899ee023be0d97757758ea6550566584b89313",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_D_D2_RAW.txt",
+      "path": "docs/reference/audits/M1_D_D2_RAW.txt",
+      "original_sha256": "16fae710236bccfc4c9544a12ba76046d8b34948de1b9db8a7269cc02a31971b",
+      "current_sha256": "16fae710236bccfc4c9544a12ba76046d8b34948de1b9db8a7269cc02a31971b",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_D_D4_RAW.txt",
+      "path": "docs/reference/audits/M1_D_D4_RAW.txt",
+      "original_sha256": "5a702d3647189b657ccc9f16030a67a5f85d2f0324576dc0d64e0ac1176dfab8",
+      "current_sha256": "5a702d3647189b657ccc9f16030a67a5f85d2f0324576dc0d64e0ac1176dfab8",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_D_D6_RAW.txt",
+      "path": "docs/reference/audits/M1_D_D6_RAW.txt",
+      "original_sha256": "84adf906143d819b850cfeef1d20f9871fc7d7942a9ef3c890aba92de685a05c",
+      "current_sha256": "84adf906143d819b850cfeef1d20f9871fc7d7942a9ef3c890aba92de685a05c",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_D_D7_CLOSE_RAW.txt",
+      "path": "docs/reference/audits/M1_D_D7_CLOSE_RAW.txt",
+      "original_sha256": "e684d44c2e9a92fe841dda89bb556f468654f1fe8d1cc95ebafcf15e31f4eb79",
+      "current_sha256": "e684d44c2e9a92fe841dda89bb556f468654f1fe8d1cc95ebafcf15e31f4eb79",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_D_D8_INJECTED_RAW.txt",
+      "path": "docs/reference/audits/M1_D_D8_INJECTED_RAW.txt",
+      "original_sha256": "bc9c6fac48046d6304e33f2e3fc33004f854f2241e22f7c7deadf223d09561ff",
+      "current_sha256": "bc9c6fac48046d6304e33f2e3fc33004f854f2241e22f7c7deadf223d09561ff",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_D_GATES_REASSESSMENT_20261017.md",
+      "path": "docs/reference/audits/M1_D_GATES_REASSESSMENT_20261017.md",
+      "original_sha256": "d2487822cd7b04829ecda156c12341cc2e5d767cf6c3151c746922f413e602e1",
+      "current_sha256": "d2487822cd7b04829ecda156c12341cc2e5d767cf6c3151c746922f413e602e1",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_D_STATIC_BUILD_RAW.txt",
+      "path": "docs/reference/audits/M1_D_STATIC_BUILD_RAW.txt",
+      "original_sha256": "ecca8135797cdc17c2d7fc2a5e174b9dd78fd0f77913917951ce0f42ee17541a",
+      "current_sha256": "ecca8135797cdc17c2d7fc2a5e174b9dd78fd0f77913917951ce0f42ee17541a",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M1_D_STATIC_CTEST_RAW.txt",
+      "path": "docs/reference/audits/M1_D_STATIC_CTEST_RAW.txt",
+      "original_sha256": "fe85fe8a9952fadf0ddee3ba7dd829e5338316578803ffc66a1239a37cc02bd9",
+      "current_sha256": "fe85fe8a9952fadf0ddee3ba7dd829e5338316578803ffc66a1239a37cc02bd9",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_A_BUILD_EVIDENCE.md",
+      "path": "docs/completed/audits/M2_A_BUILD_EVIDENCE.md",
+      "original_sha256": "f796ec6f14b46f3799301d83f7e52f4c2733fd8c4c9097ae96aa6879b1f21dac",
+      "current_sha256": "f796ec6f14b46f3799301d83f7e52f4c2733fd8c4c9097ae96aa6879b1f21dac",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_A_BUILD_RAW.txt",
+      "path": "docs/reference/audits/M2_A_BUILD_RAW.txt",
+      "original_sha256": "3fe8f7df893e81047c2c28fabd40aa187152159913e73ad4e86a1267e8da3fa5",
+      "current_sha256": "3fe8f7df893e81047c2c28fabd40aa187152159913e73ad4e86a1267e8da3fa5",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_A_CTEST_RAW.txt",
+      "path": "docs/reference/audits/M2_A_CTEST_RAW.txt",
+      "original_sha256": "fc0442356c6aa04e28777a712f5295e6a44c825afbd0b814d6953d5e2ee17885",
+      "current_sha256": "fc0442356c6aa04e28777a712f5295e6a44c825afbd0b814d6953d5e2ee17885",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_B_BUILD_EVIDENCE.md",
+      "path": "docs/completed/audits/M2_B_BUILD_EVIDENCE.md",
+      "original_sha256": "07758b1948992e8b871b3730e334a8a59bc48da443904059a0a2556160a3b548",
+      "current_sha256": "07758b1948992e8b871b3730e334a8a59bc48da443904059a0a2556160a3b548",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_B_BUILD_RAW.txt",
+      "path": "docs/reference/audits/M2_B_BUILD_RAW.txt",
+      "original_sha256": "939981a7ab6f8369c16f4a37a5e45337ea2ed15a8208f41bd03f236ce0d1691f",
+      "current_sha256": "939981a7ab6f8369c16f4a37a5e45337ea2ed15a8208f41bd03f236ce0d1691f",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_B_CTEST_RAW.txt",
+      "path": "docs/reference/audits/M2_B_CTEST_RAW.txt",
+      "original_sha256": "eb20963f1637fe7a45c53a58da291907621d8d63703dfdb6e78e6d8d0e2c1b72",
+      "current_sha256": "eb20963f1637fe7a45c53a58da291907621d8d63703dfdb6e78e6d8d0e2c1b72",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_B_HARDWARE_RAW.txt",
+      "path": "docs/reference/audits/M2_B_HARDWARE_RAW.txt",
+      "original_sha256": "c8f49bf510c83612b257daf3c658401df9a407db5937f3be3c944499298e1f5a",
+      "current_sha256": "c8f49bf510c83612b257daf3c658401df9a407db5937f3be3c944499298e1f5a",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_C_BUILD_RAW.txt",
+      "path": "docs/reference/audits/M2_C_BUILD_RAW.txt",
+      "original_sha256": "4de3e849a4b55b006244770552295c0ed3dc8cd8c0fe61f4bf072043cb057f2d",
+      "current_sha256": "4de3e849a4b55b006244770552295c0ed3dc8cd8c0fe61f4bf072043cb057f2d",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_C_CTEST_RAW.txt",
+      "path": "docs/reference/audits/M2_C_CTEST_RAW.txt",
+      "original_sha256": "99edb468b9ba433b63035178ae740d45b6013fce74b53fd6c099ce570ce4f3b5",
+      "current_sha256": "99edb468b9ba433b63035178ae740d45b6013fce74b53fd6c099ce570ce4f3b5",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_C_HARDWARE_RAW.txt",
+      "path": "docs/reference/audits/M2_C_HARDWARE_RAW.txt",
+      "original_sha256": "f06934af64e0269f9fb59204e6b6208d9e9be9e0eb7e0ae0840e7620f6bfe5e9",
+      "current_sha256": "f06934af64e0269f9fb59204e6b6208d9e9be9e0eb7e0ae0840e7620f6bfe5e9",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_C_IMPLEMENTATION_EVIDENCE.md",
+      "path": "docs/completed/audits/M2_C_IMPLEMENTATION_EVIDENCE.md",
+      "original_sha256": "416b3d42425dca390394bbfadf8aa253ff4bcc8f453398c7acd034fed4a224d9",
+      "current_sha256": "fa961a3623b3164e3a9732bc13c24443e1a841cf6ee46f698acb8f854c23fba5",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/audits/M2_C_WARP_RAW.txt",
+      "path": "docs/reference/audits/M2_C_WARP_RAW.txt",
+      "original_sha256": "cc109f9dab931ad1691048956bc7ad836015002a77e4ce8b279ef639487f61ac",
+      "current_sha256": "cc109f9dab931ad1691048956bc7ad836015002a77e4ce8b279ef639487f61ac",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_D_BUILD_RAW.txt",
+      "path": "docs/reference/audits/M2_D_BUILD_RAW.txt",
+      "original_sha256": "9efc096cd82a33a900f0abb26f294ae7e8fe503abd8214564dd65094efc21c9a",
+      "current_sha256": "9efc096cd82a33a900f0abb26f294ae7e8fe503abd8214564dd65094efc21c9a",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_D_CTEST_RAW.txt",
+      "path": "docs/reference/audits/M2_D_CTEST_RAW.txt",
+      "original_sha256": "526e450f67cf782ff981145b76b546b3041386cefae585439bdddecfb9d391b4",
+      "current_sha256": "526e450f67cf782ff981145b76b546b3041386cefae585439bdddecfb9d391b4",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_D_HARDWARE_RAW.txt",
+      "path": "docs/reference/audits/M2_D_HARDWARE_RAW.txt",
+      "original_sha256": "921c6d77624359cb791571642b216710eeb9753ee607859843c9e6e8dcaa5b6e",
+      "current_sha256": "921c6d77624359cb791571642b216710eeb9753ee607859843c9e6e8dcaa5b6e",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_D_IMPLEMENTATION_EVIDENCE.md",
+      "path": "docs/completed/audits/M2_D_IMPLEMENTATION_EVIDENCE.md",
+      "original_sha256": "09ac871225cfb37c790a62f7a7432b23a9a9cb36e35c5147547e7702ac14ca5b",
+      "current_sha256": "3c323e874fd70f4b1d745c748b795c661e8007a9a01cc87de69be3c5346727b5",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/audits/M2_D_LIVE_HARDWARE_RAW.txt",
+      "path": "docs/reference/audits/M2_D_LIVE_HARDWARE_RAW.txt",
+      "original_sha256": "9b4270689b12a1937cbc687d5a18953cb5b95a794fc75832280def2fff9fc7c1",
+      "current_sha256": "9b4270689b12a1937cbc687d5a18953cb5b95a794fc75832280def2fff9fc7c1",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_D_LIVE_WARP_RAW.txt",
+      "path": "docs/reference/audits/M2_D_LIVE_WARP_RAW.txt",
+      "original_sha256": "0b2f73a111ac2bf23da3b067084179af63aced901fbf283420a2224c8da74694",
+      "current_sha256": "0b2f73a111ac2bf23da3b067084179af63aced901fbf283420a2224c8da74694",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_D_WARP_RAW.txt",
+      "path": "docs/reference/audits/M2_D_WARP_RAW.txt",
+      "original_sha256": "c0cad5e9517f67d6d24b9d5103313bdcccf83d4e739dadeb025d326f53a02dd9",
+      "current_sha256": "c0cad5e9517f67d6d24b9d5103313bdcccf83d4e739dadeb025d326f53a02dd9",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_LIVE2D_L0_PREFLIGHT_20261018.md",
+      "path": "docs/reference/audits/M2_LIVE2D_L0_PREFLIGHT_20261018.md",
+      "original_sha256": "a7f3b520248e2ea7079a7e53213ec26c12d0d9a652e9dddff852b9813254d0de",
+      "current_sha256": "a7f3b520248e2ea7079a7e53213ec26c12d0d9a652e9dddff852b9813254d0de",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F1_LOCAL_ACCEPTANCE.md",
+      "path": "docs/completed/audits/M2_MOC3_F1_LOCAL_ACCEPTANCE.md",
+      "original_sha256": "9ea75f8b63d740add1b906ecd6fc68b1cbb254941c7d68b4ee152c51253e49a5",
+      "current_sha256": "f045fffa8788b36a51ccdc84582f364e9dcda03ce17d7861c1dae766ab8fbcd8",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F1_LOCAL_SOURCE.json",
+      "path": "docs/reference/audits/M2_MOC3_F1_LOCAL_SOURCE.json",
+      "original_sha256": "145d6f672756f6064d89643d7652d2f8417ce8f05ef59f5fccf56ea9ed216a98",
+      "current_sha256": "145d6f672756f6064d89643d7652d2f8417ce8f05ef59f5fccf56ea9ed216a98",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F1_PARTIAL_EVIDENCE.md",
+      "path": "docs/reference/audits/M2_MOC3_F1_PARTIAL_EVIDENCE.md",
+      "original_sha256": "13015e8a4a8e6dc38729b098bbddc7af441d2fcb6a184831e462643493ecdf06",
+      "current_sha256": "3d56bf375e6c7a4af51fb7ffe8191baecdd013949e29ff7227749b7ecc919a5d",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F2_LOCAL_ACCEPTANCE.md",
+      "path": "docs/completed/audits/M2_MOC3_F2_LOCAL_ACCEPTANCE.md",
+      "original_sha256": "6855527a57b97a2a65aa5c897763788142614b8c6826da3ad92def90fb5293eb",
+      "current_sha256": "ee98f9c0ddeb641ef8df67f6f40bc5622f51cbe2b6cb43b39aecd733d8ed307b",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F2_LOCAL_SOURCE.json",
+      "path": "docs/reference/audits/M2_MOC3_F2_LOCAL_SOURCE.json",
+      "original_sha256": "8239f427197140aedf76f5379e1cc6c1a93dd511b28f9e018ab648cc4457467b",
+      "current_sha256": "8239f427197140aedf76f5379e1cc6c1a93dd511b28f9e018ab648cc4457467b",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F2_RECHECK_AND_OWNER_DIAGNOSTICS.md",
+      "path": "docs/completed/audits/M2_MOC3_F2_RECHECK_AND_OWNER_DIAGNOSTICS.md",
+      "original_sha256": "c95a1934b9c492b93dd4be258fd425fc8624c005667082333c923cf70046e496",
+      "current_sha256": "c95a1934b9c492b93dd4be258fd425fc8624c005667082333c923cf70046e496",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F3_LOCAL_ACCEPTANCE.md",
+      "path": "docs/completed/audits/M2_MOC3_F3_LOCAL_ACCEPTANCE.md",
+      "original_sha256": "ebfa16ff7284fc5542adc18b094a6130d26f05a0aec330d46a8c67c4a35e8d28",
+      "current_sha256": "9b33724d191da75a7ba94fd7b8c377e96b652497fe151ae9fb2a5d19f3aeb4d2",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F3_LOCAL_SOURCE.json",
+      "path": "docs/reference/audits/M2_MOC3_F3_LOCAL_SOURCE.json",
+      "original_sha256": "2807386492df6ed972547f10560fbb028efe455ce09a26ec8e74d79a5ad8f04d",
+      "current_sha256": "2807386492df6ed972547f10560fbb028efe455ce09a26ec8e74d79a5ad8f04d",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F4_COMPLETION_PROGRESS.md",
+      "path": "docs/reference/audits/M2_MOC3_F4_COMPLETION_PROGRESS.md",
+      "original_sha256": "8b91b3009b1af0de13c3d6db4fbd008d493a855a6320abc99616865e7f377c3a",
+      "current_sha256": "079d525030bcd84884771c50e6289e9cf00980f8a12fc524f4d74c91caa88a81",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F4_COMPLETION_SOURCE.json",
+      "path": "docs/reference/audits/M2_MOC3_F4_COMPLETION_SOURCE.json",
+      "original_sha256": "188335b6a94d59d2bdb6a1be295d307f05bd6a8da2e42c207bbfeb3ed6ba64a4",
+      "current_sha256": "188335b6a94d59d2bdb6a1be295d307f05bd6a8da2e42c207bbfeb3ed6ba64a4",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F4_GOAL_ASSESSMENT.json",
+      "path": "docs/reference/audits/M2_MOC3_F4_GOAL_ASSESSMENT.json",
+      "original_sha256": "9b9d110ac7b363d9dc1f4665641dda8184203bb46fb8e6eb4d4c6db8b67a3551",
+      "current_sha256": "9b9d110ac7b363d9dc1f4665641dda8184203bb46fb8e6eb4d4c6db8b67a3551",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F4_LOCAL_ACCEPTANCE.md",
+      "path": "docs/completed/audits/M2_MOC3_F4_LOCAL_ACCEPTANCE.md",
+      "original_sha256": "874c22aa58f3118eec1e3ef4c42b9a9556e697286ae387126bbec75361336edc",
+      "current_sha256": "9b310a90a93d2591eb3e62a01027f227ce5c89cad52e1c0dad76d4ddc45a532b",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F4_LOCAL_SOURCE.json",
+      "path": "docs/reference/audits/M2_MOC3_F4_LOCAL_SOURCE.json",
+      "original_sha256": "65f3a411936d4f9f54cd85d895d18326606bbf90ab15471f4d9693e77ba878ab",
+      "current_sha256": "65f3a411936d4f9f54cd85d895d18326606bbf90ab15471f4d9693e77ba878ab",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md",
+      "path": "docs/completed/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md",
+      "original_sha256": "3c12b1915a5352575f324049b8df1214c0bd4379291203d5e689ad74c6c1627c",
+      "current_sha256": "fab31aea0641896e6e852fefa2a78b9a32c1cdb5b136a7c8d5ae356dcec391d2",
+      "change": "relative Markdown links only"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_GOAL_ASSESSMENT.json",
+      "path": "docs/completed/audits/M2_MOC3_F4_PACKAGE_ADMISSION_GOAL_ASSESSMENT.json",
+      "original_sha256": "45a353575cdf9b7d67276688773775287729bb4da8c8dddc1440f894497644cf",
+      "current_sha256": "45a353575cdf9b7d67276688773775287729bb4da8c8dddc1440f894497644cf",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_REVIEW.md",
+      "path": "docs/completed/audits/M2_MOC3_F4_PACKAGE_ADMISSION_REVIEW.md",
+      "original_sha256": "39bdf3c22f55d30c2fe9a5c1a66eab541d237b7abd236d8b55a3ca1a1b700dfe",
+      "current_sha256": "39bdf3c22f55d30c2fe9a5c1a66eab541d237b7abd236d8b55a3ca1a1b700dfe",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_F4_PACKAGE_ADMISSION_SOURCE.json",
+      "path": "docs/reference/audits/M2_MOC3_F4_PACKAGE_ADMISSION_SOURCE.json",
+      "original_sha256": "48fa83950ca2f782bf59b823a55e47a5166956623d0f748c63982e6acac0c7b2",
+      "current_sha256": "48fa83950ca2f782bf59b823a55e47a5166956623d0f748c63982e6acac0c7b2",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_MOC3_T0_HARNESS_EVIDENCE.md",
+      "path": "docs/completed/audits/M2_MOC3_T0_HARNESS_EVIDENCE.md",
+      "original_sha256": "1ebd9482c9c50b943db0c41b31e4da703f2141054ae560d99f01c1cec5391509",
+      "current_sha256": "1ebd9482c9c50b943db0c41b31e4da703f2141054ae560d99f01c1cec5391509",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_PRE_D_BUILD_RAW.txt",
+      "path": "docs/reference/audits/M2_PRE_D_BUILD_RAW.txt",
+      "original_sha256": "69756538b066aa3b6a0471a45040c420adbf3a24598db57afb57a82f6c1653e5",
+      "current_sha256": "69756538b066aa3b6a0471a45040c420adbf3a24598db57afb57a82f6c1653e5",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_PRE_D_CTEST_RAW.txt",
+      "path": "docs/reference/audits/M2_PRE_D_CTEST_RAW.txt",
+      "original_sha256": "8bd463187a6c8ad76d81093608228015ec24ea04ec79d7f506d27b7e606e251b",
+      "current_sha256": "8bd463187a6c8ad76d81093608228015ec24ea04ec79d7f506d27b7e606e251b",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_PRE_D_HARDWARE_RAW.txt",
+      "path": "docs/reference/audits/M2_PRE_D_HARDWARE_RAW.txt",
+      "original_sha256": "22ac9dca8604f0c9ffbc571ba08414f1896a1dff5b8b8e94348cf4166917da9b",
+      "current_sha256": "22ac9dca8604f0c9ffbc571ba08414f1896a1dff5b8b8e94348cf4166917da9b",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_PRE_D_HOLD_REASSESSMENT_20261018.md",
+      "path": "docs/reference/audits/M2_PRE_D_HOLD_REASSESSMENT_20261018.md",
+      "original_sha256": "e22d6a4d47ea5238acd224ae9aa066b549dbadb0a74de9c9a945d6c13c310d22",
+      "current_sha256": "e22d6a4d47ea5238acd224ae9aa066b549dbadb0a74de9c9a945d6c13c310d22",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_PRE_D_LIVE_HARDWARE_RAW.txt",
+      "path": "docs/reference/audits/M2_PRE_D_LIVE_HARDWARE_RAW.txt",
+      "original_sha256": "bddebc3b9dd684f2dd277e0782628e0330c33e03a2fc52ae00cc3eccb7f2b1d8",
+      "current_sha256": "bddebc3b9dd684f2dd277e0782628e0330c33e03a2fc52ae00cc3eccb7f2b1d8",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_PRE_D_LIVE_WARP_RAW.txt",
+      "path": "docs/reference/audits/M2_PRE_D_LIVE_WARP_RAW.txt",
+      "original_sha256": "5903d095c91c82fe2c3ecf61f9010a8d2b9e8940ef434e0d08e4c422b4e40245",
+      "current_sha256": "5903d095c91c82fe2c3ecf61f9010a8d2b9e8940ef434e0d08e4c422b4e40245",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/audits/M2_PRE_D_WARP_RAW.txt",
+      "path": "docs/reference/audits/M2_PRE_D_WARP_RAW.txt",
+      "original_sha256": "6f8248bfae77c7cdabc8a685a4cdf09d94b83a24bf410fa90deb50c22528bd6b",
+      "current_sha256": "6f8248bfae77c7cdabc8a685a4cdf09d94b83a24bf410fa90deb50c22528bd6b",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/governance/ARS_M1_SOLO_OWNER_ACK.md",
+      "path": "docs/reference/governance/ARS_M1_SOLO_OWNER_ACK.md",
+      "original_sha256": "d39701294b48adf4dd77545bdb8b71a496103549154897669d66ca86728c3b56",
+      "current_sha256": "d39701294b48adf4dd77545bdb8b71a496103549154897669d66ca86728c3b56",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/governance/ARS_M2_DEVELOPER.md",
+      "path": "docs/reference/governance/ARS_M2_DEVELOPER.md",
+      "original_sha256": "f3bc7efc9a09465af6b6ff10a24ddfe119aa28837723f4b1959f05fb9e26ff87",
+      "current_sha256": "f3bc7efc9a09465af6b6ff10a24ddfe119aa28837723f4b1959f05fb9e26ff87",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/governance/ARS_M3_FINAL_AUDIT.md",
+      "path": "docs/reference/governance/ARS_M3_FINAL_AUDIT.md",
+      "original_sha256": "953775fb22e00f28a9b9940cf5f912174699b8e51e730dc202a2fbad8a8c83bf",
+      "current_sha256": "953775fb22e00f28a9b9940cf5f912174699b8e51e730dc202a2fbad8a8c83bf",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/governance/ARS_M4_STACKED_PRS.md",
+      "path": "docs/reference/governance/ARS_M4_STACKED_PRS.md",
+      "original_sha256": "b9c6a9632cd436348c0f6910fbfc483598e20754a5a4796bd0c2074b3bd356c6",
+      "current_sha256": "b9c6a9632cd436348c0f6910fbfc483598e20754a5a4796bd0c2074b3bd356c6",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/governance/ARS_M5_MERGE_HISTORY.md",
+      "path": "docs/reference/governance/ARS_M5_MERGE_HISTORY.md",
+      "original_sha256": "3b172f7aa117e405befb50fcde0da1ac06f21b79b2fac973b7405741d7378515",
+      "current_sha256": "3b172f7aa117e405befb50fcde0da1ac06f21b79b2fac973b7405741d7378515",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/governance/ARS_M6_WAVE_STATE.md",
+      "path": "docs/reference/governance/ARS_M6_WAVE_STATE.md",
+      "original_sha256": "bc4ee8319d6fb6c73c2843b04affc6f725bfec79aea4944944374fb6ed8e1453",
+      "current_sha256": "bc4ee8319d6fb6c73c2843b04affc6f725bfec79aea4944944374fb6ed8e1453",
+      "change": "byte-identical"
+    },
+    {
+      "legacy_path": "docs/governance/ARS_POLICY_V0_1_INDEX.md",
+      "path": "docs/reference/governance/ARS_POLICY_V0_1_INDEX.md",
+      "original_sha256": "6598400ac6a2048d5f72df663af752e969124133835906eb3ea83c7259ab5377",
+      "current_sha256": "6598400ac6a2048d5f72df663af752e969124133835906eb3ea83c7259ab5377",
+      "change": "byte-identical"
+    }
+  ],
+  "live_workflows_updated": [
+    ".github/workflows/ars-governance-policy.yml",
+    ".github/workflows/m0-f03-focused.yml",
+    ".github/workflows/m0-freeze-prep.yml",
+    ".github/workflows/m0-profile-b-design.yml",
+    ".github/workflows/m1-b-security.yml",
+    ".github/workflows/m1-build.yml",
+    ".github/workflows/m1-c-assets.yml",
+    ".github/workflows/m1-d-gpu.yml",
+    ".github/workflows/m2-2d-pixels.yml",
+    ".github/workflows/m2-2d-reference.yml",
+    ".github/workflows/m2-3d-pixels.yml",
+    ".github/workflows/m2-dual-mode.yml",
+    ".github/workflows/p0-contract-smoke.yml"
+  ],
+  "verification": {
+    "canonical_documents": 121,
+    "relative_links": 245,
+    "moved_json_and_raw_byte_identical": true,
+    "contract_suite": {
+      "total": 157,
+      "passed": 155,
+      "preexisting_failures": [
+        "test_complete_stack_against_merged_m2_b",
+        "test_exact_scope (test_m2_d_impl_custody)"
+      ],
+      "baseline_log": "build/docs-layout-before-tests.log",
+      "after_log": "build/docs-layout-final-tests.log",
+      "temp_permission_issue_resolved_by_escalated_run": true
+    }
+  },
+  "independent_review": {
+    "agent": "/root/f2_independent_review",
+    "scope": "DOC-MOVE",
+    "verdict": "PASS",
+    "fixed_findings": [
+      "governance live locator",
+      "workflow trigger and artifact paths"
+    ],
+    "workflow_document_matches_preserved": 81,
+    "relative_links_verified": 245,
+    "contract_results": "155/157 PASS; same two pre-existing M2-D drift failures",
+    "governance_tests": "9/9 PASS",
+    "rc1_provenance": "PASS",
+    "g00_stage_contract": "PASS"
+  }
+}

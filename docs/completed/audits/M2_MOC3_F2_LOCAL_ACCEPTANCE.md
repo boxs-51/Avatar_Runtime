@@ -1,6 +1,6 @@
 # F2 trusted-local host pixel acceptance
 
-**Verdict: PASS for the bounded F2 contract**, on the [exact source and binaries](M2_MOC3_F2_LOCAL_SOURCE.json), parent HEAD `472aa1624a70710b8f2498dcd6d2e20fa7fe64b4`, with an uncommitted worktree. Actual Windows local execution is primary evidence; GitHub Actions was not used to award this result. Optional MOC3 support remains default OFF. This report contains no private model images, identifiers, hashes, counts or measurements.
+**Verdict: PASS for the bounded F2 contract**, on the [exact source and binaries](../../reference/audits/M2_MOC3_F2_LOCAL_SOURCE.json), parent HEAD `472aa1624a70710b8f2498dcd6d2e20fa7fe64b4`, with an uncommitted worktree. Actual Windows local execution is primary evidence; GitHub Actions was not used to award this result. Optional MOC3 support remains default OFF. This report contains no private model images, identifiers, hashes, counts or measurements.
 
 ## Direct evidence
 

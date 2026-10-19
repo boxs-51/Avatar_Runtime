@@ -1,6 +1,6 @@
 # F4-A real core to host: local acceptance
 
-**PASS for the private integration slice; whole F4 product/activation remains HOLD.** Date: 2026-10-19 (Asia/Bangkok). Parent `69eac34`, combined F3/F4 worktree remains uncommitted. [Source/binary/dependency manifest](M2_MOC3_F4_LOCAL_SOURCE.json), [frozen design](../M2_MOC3_F4_INTEGRATION_DESIGN.md), [gate and custody ledger](../M2_MOC3_F4_RELEASE_LEDGER.md). Local evidence is primary; no CI workflow is used to award this result.
+**PASS for the private integration slice; whole F4 product/activation remains HOLD.** Date: 2026-10-19 (Asia/Bangkok). Parent `69eac34`, combined F3/F4 worktree remains uncommitted. [Source/binary/dependency manifest](../../reference/audits/M2_MOC3_F4_LOCAL_SOURCE.json), [frozen design](../M2_MOC3_F4_INTEGRATION_DESIGN.md), [gate and custody ledger](../../in-progress/M2_MOC3_F4_RELEASE_LEDGER.md). Local evidence is primary; no CI workflow is used to award this result.
 
 ## Direct observations
 

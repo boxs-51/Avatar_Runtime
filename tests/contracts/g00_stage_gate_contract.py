@@ -1,8 +1,8 @@
 """G00-P0-C staged-boundary regression; design contract only."""
 from pathlib import Path
 root = Path(__file__).resolve().parents[2]
-g = (root / "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md").read_text("utf-8")
-a = (root / "docs/ACCEPTANCE_GATES_V0.1.md").read_text("utf-8")
+g = (root / 'docs/reference/P0_SECURITY_REGRESSION_GATES_V0.1.md').read_text("utf-8")
+a = (root / 'docs/reference/ACCEPTANCE_GATES_V0.1.md').read_text("utf-8")
 assert "before production M1, minimal registry/mixer implementation passes" not in g
 assert "G00-P0-C (DESIGN ONLY)" in g
 assert "19 HDL + 45 SRC + 23 RACE = 87-case" in g

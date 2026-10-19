@@ -5,8 +5,9 @@ on:
       - 'CMakeLists.txt'
       - 'src/rendering/**'
       - 'tests/rendering/**'
-      - 'docs/M2_RENDERING_EXECUTION_PLAN.md'
-      - 'docs/audits/M2_A*'
+      - 'docs/in-progress/M2_RENDERING_EXECUTION_PLAN.md'
+      - 'docs/completed/audits/M2_A*'
+      - 'docs/reference/audits/M2_A*'
       - '.github/workflows/m2-2d-reference.yml'
 permissions:
   contents: read

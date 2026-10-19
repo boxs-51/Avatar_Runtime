@@ -1,6 +1,6 @@
 # M2 MOC3 F1 partial implementation evidence
 
-**Historical checkpoint:** superseded by [F1 local acceptance](M2_MOC3_F1_LOCAL_ACCEPTANCE.md). The HOLDs below describe the earlier partial implementation, not the current trusted-local F1 verdict.
+**Historical checkpoint:** superseded by [F1 local acceptance](../../completed/audits/M2_MOC3_F1_LOCAL_ACCEPTANCE.md). The HOLDs below describe the earlier partial implementation, not the current trusted-local F1 verdict.
 
 **Date:** 2026-10-18. **Branch:** `m2/moc3-p1-snapshot`. **Parent HEAD:** `472aa1624a70710b8f2498dcd6d2e20fa7fe64b4`; this packet describes an uncommitted working-tree diff. **Disposition:** F1 PARTIAL / full F1 HOLD. F2 host pixels, F3 linked Physics3, F4 activation and D06/D08 physical loss evidence remain HOLD.
 

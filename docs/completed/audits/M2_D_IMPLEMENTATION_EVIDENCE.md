@@ -6,12 +6,12 @@ All six commands below exited **0** on the tested source. The raw files are reta
 
 | Evidence | Command / observation | SHA-256 |
 | --- | --- | --- |
-| [Build](M2_D_BUILD_RAW.txt) | `cmake --build build/m2-d-private --config Release --target ars_m2_dual_pixels ars_m2_2d_pixels ars_m2_3d_pixels ars_d3d11_live_capture` | `9EFC096CD82A33A900F0ABB26F294AE7E8FE503ABD8214564DD65094EFC21C9A` |
-| [CTest](M2_D_CTEST_RAW.txt) | `ctest --test-dir build/m2-d-private -C Release -R '^(c2_.*\|m2_.*\|d7_warp_close_protocol)$' --output-on-failure`: 9/9 | `526E450F67CF782FF981145B76B546B3041386CEFAE585439BDDDECFB9D391B4` |
-| [WARP](M2_D_WARP_RAW.txt) | `ars_m2_dual_pixels.exe <schema-worker> <asset-corpus>` | `C0CAD5E9517F67D6D24B9D5103313BDCCCF83D4E739DADEB025D326F53A02DD9` |
-| [Hardware](M2_D_HARDWARE_RAW.txt) | Same executable and inputs with `--hardware` | `921C6D77624359CB791571642B216710EEB9753EE607859843C9E6E8DCAA5B6E` |
-| [WARP live objects](M2_D_LIVE_WARP_RAW.txt) | `ars_d3d11_live_capture.exe --m2d <schema-worker> <asset-corpus>`: 7 identities before and after | `0B2F73A111AC2BF23DA3B067084179AF63ACED901FBF283420A2224C8DA74694` |
-| [Hardware live objects](M2_D_LIVE_HARDWARE_RAW.txt) | Same debugger capture with `--m2d-hardware`: 7 identities before and after | `9B4270689B12A1937CBC687D5A18953CB5B95A794FC75832280DEF2FFF9FC7C1` |
+| [Build](../../reference/audits/M2_D_BUILD_RAW.txt) | `cmake --build build/m2-d-private --config Release --target ars_m2_dual_pixels ars_m2_2d_pixels ars_m2_3d_pixels ars_d3d11_live_capture` | `9EFC096CD82A33A900F0ABB26F294AE7E8FE503ABD8214564DD65094EFC21C9A` |
+| [CTest](../../reference/audits/M2_D_CTEST_RAW.txt) | `ctest --test-dir build/m2-d-private -C Release -R '^(c2_.*\|m2_.*\|d7_warp_close_protocol)$' --output-on-failure`: 9/9 | `526E450F67CF782FF981145B76B546B3041386CEFAE585439BDDDECFB9D391B4` |
+| [WARP](../../reference/audits/M2_D_WARP_RAW.txt) | `ars_m2_dual_pixels.exe <schema-worker> <asset-corpus>` | `C0CAD5E9517F67D6D24B9D5103313BDCCCF83D4E739DADEB025D326F53A02DD9` |
+| [Hardware](../../reference/audits/M2_D_HARDWARE_RAW.txt) | Same executable and inputs with `--hardware` | `921C6D77624359CB791571642B216710EEB9753EE607859843C9E6E8DCAA5B6E` |
+| [WARP live objects](../../reference/audits/M2_D_LIVE_WARP_RAW.txt) | `ars_d3d11_live_capture.exe --m2d <schema-worker> <asset-corpus>`: 7 identities before and after | `0B2F73A111AC2BF23DA3B067084179AF63ACED901FBF283420A2224C8DA74694` |
+| [Hardware live objects](../../reference/audits/M2_D_LIVE_HARDWARE_RAW.txt) | Same debugger capture with `--m2d-hardware`: 7 identities before and after | `9B4270689B12A1937CBC687D5A18953CB5B95A794FC75832280DEF2FFF9FC7C1` |
 
 The direct tests ingest the generated `positive-dual-full.arschar` through the schema worker, prepare owned 2D and PMR-backed 3D snapshots, and read back `(255,0,0,255)` for 2D and `(75,0,0,255)` for 3D at pixel `(2,2)` on both adapters. A candidate is drawn into a separate target and its mode, pose generation, and target epoch publish together only after its exact event query completes. Both adapters pass 100 switches, 100 resizes with stale RTV/epoch refusal, 100 deterministic off-thread close-intent races, dynamic 2D opacity and hide, missing-mode and invalid-camera rejection, target and 3D GPU-create OOM rollback with the previous frame/pose unchanged, wrong-thread refusal, and injected query removal with retained CPU pin until the isolated host detaches. The debug queue has no error or corruption messages. The live-object comparison covers healthy lifecycle only; the debugger's baseline warnings are present on both sides.
 

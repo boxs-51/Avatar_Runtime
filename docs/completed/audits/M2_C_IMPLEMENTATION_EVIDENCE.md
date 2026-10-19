@@ -4,7 +4,7 @@
 
 ## Direct local execution
 
-Windows 10 x64; Visual Studio 18 2026, MSVC 19.51.36252.0; Windows SDK 10.0.26100.0; CMake `Release`; D3D feature level `0xb000`; D3D11 debug layer available. Configuration enabled `ARS_BUILD_D3D11_SPIKE`, `ARS_BUILD_ASSET_VALIDATOR`, `ARS_BUILD_M2_3D_REFERENCE` and `ARS_BUILD_M2_D3D11_3D`, with the verified local asset dependency cache. All commands below returned exit code 0. Raw command outputs are [build](M2_C_BUILD_RAW.txt), [CTest](M2_C_CTEST_RAW.txt), [WARP](M2_C_WARP_RAW.txt) and [hardware](M2_C_HARDWARE_RAW.txt).
+Windows 10 x64; Visual Studio 18 2026, MSVC 19.51.36252.0; Windows SDK 10.0.26100.0; CMake `Release`; D3D feature level `0xb000`; D3D11 debug layer available. Configuration enabled `ARS_BUILD_D3D11_SPIKE`, `ARS_BUILD_ASSET_VALIDATOR`, `ARS_BUILD_M2_3D_REFERENCE` and `ARS_BUILD_M2_D3D11_3D`, with the verified local asset dependency cache. All commands below returned exit code 0. Raw command outputs are [build](../../reference/audits/M2_C_BUILD_RAW.txt), [CTest](../../reference/audits/M2_C_CTEST_RAW.txt), [WARP](../../reference/audits/M2_C_WARP_RAW.txt) and [hardware](../../reference/audits/M2_C_HARDWARE_RAW.txt).
 
 | Probe | Direct observation |
 | --- | --- |

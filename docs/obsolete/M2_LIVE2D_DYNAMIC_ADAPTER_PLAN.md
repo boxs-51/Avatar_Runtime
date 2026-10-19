@@ -1,6 +1,6 @@
 # Optional dynamic Cubism adapter — implementation plan (2026-10-18)
 
-> **Implementation-method update (2026-10-18):** the owner has deferred the official Live2D SDK. The independent MOC3 candidate and its new evidence gates are specified in [M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md](M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md). This earlier SDK path remains historical design context; its sample/privacy facts and renderer/lifecycle HOLDs still apply.
+> **Implementation-method update (2026-10-18):** the owner has deferred the official Live2D SDK. The independent MOC3 candidate and its new evidence gates are specified in [M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md](../reference/M2_MOC3_INDEPENDENT_RUNTIME_PLAN.md). This earlier SDK path remains historical design context; its sample/privacy facts and renderer/lifecycle HOLDs still apply.
 
 **Status:** proposed design; `HOLD_DYNAMIC_LIVE2D`. **Stack parent:** draft PR #45 at `58425b2ff1684f2610fc7da146f2877760520cb7`, itself based on the open PR #37. This document authorizes no SDK download, public activation, binary redistribution, ABI change, or gate promotion. The v0.1 specification explicitly excludes proprietary Live2D integration; this is a candidate post-v0.1 optional adapter. Its eventual release needs a scope/ADR decision and applicable license review. Existing D06/D08 physical-loss and G00–G05 HOLD verdicts are independent.
 

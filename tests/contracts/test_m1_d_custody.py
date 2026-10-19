@@ -48,7 +48,10 @@ class Custody(unittest.TestCase):
                     ["git", "show", f"{BASE}:{name}"], cwd=ROOT,
                     capture_output=True, check=True,
                 ).stdout
-                checked_out = (ROOT / name).read_bytes().replace(b"\r\n", b"\n")
+                # Relocation changes only the checkout locator; the historical path,
+                # BASE revision and exact byte comparison remain unchanged.
+                current = ROOT / "docs/reference" / name.removeprefix("docs/") if name.startswith("docs/") else ROOT / name
+                checked_out = current.read_bytes().replace(b"\r\n", b"\n")
                 self.assertEqual(checked_out, historical)
 
     def test_public_render_stays_unsupported(self):

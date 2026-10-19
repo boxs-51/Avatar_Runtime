@@ -1,6 +1,6 @@
 # F4 completion progress and public-input decision
 
-This is the historical checkpoint preceding the [static PNG/Physics3 package admission result](M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md). The subsequent PUB-01/PUB-03 subset passes; persistent public evaluation, SDK and qualification remain unfinished. Historical evidence and source hashes below are preserved.
+This is the historical checkpoint preceding the [static PNG/Physics3 package admission result](../../completed/audits/M2_MOC3_F4_PACKAGE_ADMISSION_ACCEPTANCE.md). The subsequent PUB-01/PUB-03 subset passes; persistent public evaluation, SDK and qualification remain unfinished. Historical evidence and source hashes below are preserved.
 
 **2026-10-19, Asia/Bangkok. Private continuity/installed-consumer slices PASS. Windows parser-preflight prototype PASS within its bounded claims. Whole F4 public importer and release remain HOLD.** The owner selected arbitrary public-user MOC3 input during this work. No public capability, ABI or activation was added; nothing was committed, pushed or merged. Overall task/goal verdict: **REVISE**, because public end-to-end import/SDK implementation and mandatory qualification remain unfinished. [Structured goal assessment](M2_MOC3_F4_GOAL_ASSESSMENT.json).
 
@@ -42,7 +42,7 @@ Earlier diagnostic failures remain ignored evidence: malformed huge integers, pr
 
 | Item | Disposition / exit condition |
 | --- | --- |
-| Public end-to-end import | **IMPLEMENTATION HOLD / not complete.** Isolate manifest/PNG/physics admission and retained evaluator; independently validate a typed drawable/atlas stream before trusted GPU allocation. Do not reparse public MOC in the host. [Next implementation contract](../M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md). |
+| Public end-to-end import | **IMPLEMENTATION HOLD / not complete.** Isolate manifest/PNG/physics admission and retained evaluator; independently validate a typed drawable/atlas stream before trusted GPU allocation. Do not reparse public MOC in the host. [Next implementation contract](../../in-progress/M2_MOC3_F4_PUBLIC_PIPELINE_DESIGN.md). |
 | Public SDK/capability/lifecycle | HOLD separate material ABI/packaging and installed static/shared/platform qualification; current public model/character/render entries remain unsupported. |
 | Sanitizer/fuzz | HOLD integrated sanitizer memory profile and coverage-guided hostile corpus/protocol qualification. Generated mutations are not coverage-guided fuzz evidence. No Clang/libFuzzer toolchain is configured on this machine. |
 | G09 tiers | HOLD representative 720p/30-FPS quality/fallback and retained GPU allocation evidence. Duration-only continuity does not close G09. |

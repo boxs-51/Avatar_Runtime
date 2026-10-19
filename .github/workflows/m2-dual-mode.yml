@@ -8,7 +8,8 @@ on:
       - 'src/rendering/d3d11_scene3d.*'
       - 'tests/rendering/d3d11_dual_mode_pixels.cpp'
       - 'tests/gpu/d3d11_live_capture.cpp'
-      - 'docs/audits/M2_D*'
+      - 'docs/completed/audits/M2_D*'
+      - 'docs/reference/audits/M2_D*'
       - '.github/workflows/m2-dual-mode.yml'
 permissions:
   contents: read

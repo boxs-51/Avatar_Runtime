@@ -2,7 +2,7 @@
 
 **Verdict: PASS for F1 trusted-local CPU scope.** Actual execution on this Windows x64 machine with the authorized local model is the primary acceptance evidence, as instructed by the owner. GitHub Actions is corroborating only; no Actions run or public MOC3 fixture is claimed by this packet. F2 host pixels, F3 linked Physics3, F4 activation and real physical D06/D08 remain separate HOLDs.
 
-The tested worktree is above parent HEAD `472aa1624a70710b8f2498dcd6d2e20fa7fe64b4` on `m2/moc3-p1-snapshot`. Changes are uncommitted. The [source-content manifest](M2_MOC3_F1_LOCAL_SOURCE.json) pins every relevant code/test file, the actual native binaries and the Purism dependency revision. A parent HEAD alone is insufficient to identify this run. The prior [partial checkpoint](M2_MOC3_F1_PARTIAL_EVIDENCE.md) is historical.
+The tested worktree is above parent HEAD `472aa1624a70710b8f2498dcd6d2e20fa7fe64b4` on `m2/moc3-p1-snapshot`. Changes are uncommitted. The [source-content manifest](../../reference/audits/M2_MOC3_F1_LOCAL_SOURCE.json) pins every relevant code/test file, the actual native binaries and the Purism dependency revision. A parent HEAD alone is insufficient to identify this run. The prior [partial checkpoint](../../reference/audits/M2_MOC3_F1_PARTIAL_EVIDENCE.md) is historical.
 
 ## Implemented result
 

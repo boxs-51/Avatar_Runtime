@@ -1,6 +1,6 @@
 # F3 bounded manifest-linked physics: local acceptance
 
-2026-10-19 (Asia/Bangkok). **PASS for the first private F3 slice** on the [source/binary manifest](M2_MOC3_F3_LOCAL_SOURCE.json), parent commit `69eac34`. F3 changes remain uncommitted for review. User authorized F2 recheck/commit followed by F3 implementation. Local Windows execution is primary; no GitHub Actions result is used to award this verdict.
+2026-10-19 (Asia/Bangkok). **PASS for the first private F3 slice** on the [source/binary manifest](../../reference/audits/M2_MOC3_F3_LOCAL_SOURCE.json), parent commit `69eac34`. F3 changes remain uncommitted for review. User authorized F2 recheck/commit followed by F3 implementation. Local Windows execution is primary; no GitHub Actions result is used to award this verdict.
 
 The independently implemented adapter consumes the actual manifest-linked immutable Physics3 bytes, validates bindings against the native evaluator's actual parameter catalog, and feeds complete poses into the same evaluator and D3D11 host used by F2. It implements the [frozen bounded policy](../M2_MOC3_F3_LINKED_PHYSICS_DESIGN.md), not a claim of Cubism algorithm or author-intended animation equivalence. External viewer/synthetic spring tests are excluded from this acceptance.
 
