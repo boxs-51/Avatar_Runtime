@@ -5,6 +5,7 @@
 #include <array>
 #include <cmath>
 #include <cstdio>
+#include <limits>
 #include <string_view>
 #include <thread>
 
@@ -252,6 +253,46 @@ int main(int argc,char **argv) {
             packed_pixels_equivalent=same && packed_pixels_equivalent;
         }
         check(packed_pixels_equivalent,"whole packed/float frames agree within1byte rounding");
+        bool colors_equivalent=true;
+        for (const auto label:{"float","8","16"}) for (const auto channels:{"3","4"})
+            for (const auto mode:{"OPAQUE","MASK","BLEND"}) {
+                const auto prefix=std::string("positive-alpha55-")+label+"-"+channels+"-"+mode;
+                auto colored=load((prefix+"-color.glb").c_str());
+                auto baked=load((prefix+"-baked.glb").c_str());
+                submit(baked);const auto expected=frame(context.Get(),t);
+                bool visible=false;for (const auto &p:expected) visible=visible || p[3]>0;
+                check(visible,"material-baked color control has visible pixels");
+                submit(colored);const auto actual=frame(context.Get(),t);bool same=true;
+                for (std::size_t i=0;i<actual.size();++i) for (std::size_t c=0;c<4;++c)
+                    same=std::abs(int(actual[i][c])-int(expected[i][c]))<=1 && same;
+                std::printf("ALPHA55_PIXELS_%s_%s_%s=%s\n",label,channels,mode,same?"PASS":"FAIL");
+                colors_equivalent=same && colors_equivalent;
+            }
+        check(colors_equivalent,"vertex colors match independently baked material factors");
+        for (const auto label:{"float","8","16"}) for (const auto channels:{"3","4"}) {
+            auto colored=load((std::string("positive-alpha55-")+label+"-"+channels+"-gradient-color.glb").c_str());
+            auto expected=load("positive-alpha55-float-3-OPAQUE-baked.glb");
+            expected.draws[0].material=colored.draws[0].material;
+            expected.draws[0].vertices[0].color={0,1,0,1};
+            expected.draws[0].vertices[1].color={1,0,1,channels[0]=='3'?1.f:0.f};
+            expected.draws[0].vertices[2].color={1,1,1,1};
+            submit(expected);const auto reference=frame(context.Get(),t);
+            bool varied=false;for (const auto &p:reference) varied=varied || (p[3] && p!=reference[4*8+4]);
+            check(varied,"varying vertex-color control produces distinct visible samples");
+            submit(colored);const auto actual=frame(context.Get(),t);
+            for (std::size_t i=0;i<actual.size();++i) for (std::size_t c=0;c<4;++c)
+                check(std::abs(int(actual[i][c])-int(reference[i][c]))<=1,"varying colors interpolate as known linear values");
+        }
+        auto alpha_color=load("positive-alpha55-8-4-MASK-color.glb");
+        alpha_color.draws[0].material.alpha_cutoff=0.6f;submit(alpha_color);
+        for (const auto &p:frame(context.Get(),t)) check(p==std::array<unsigned char,4>{0,0,0,0},"vertex alpha participates in MASK cutoff");
+        for (const float invalid:{-0.1f,1.1f,std::numeric_limits<float>::infinity(),std::numeric_limits<float>::quiet_NaN()}) {
+            auto invalid_color=alpha_color;invalid_color.draws[0].vertices[0].color[1]=invalid;
+            const auto old=frame(context.Get(),t);ars::graphics::d3d11::QueryRetirement q;
+            ars::rendering::GpuCreateProbe probe;
+            check(ars::rendering::render_offscreen_3d(backend,t.view.Get(),info,invalid_color,camera,q,nullptr,&probe)==Result::invalid_argument &&
+                  probe.attempts==0 && frame(context.Get(),t)==old,"invalid private color rejected before GPU and preserves target");
+        }
         auto textured=load("positive-m2-3d-texture.glb");
         check(textured.draws[0].material.base_texture.wrap_t==33071 &&
               textured.draws[0].material.metallic_roughness_texture.image==0,

@@ -376,6 +376,27 @@ for bits,component,maximum,quarter,half in [(8,5121,255,64,128),(16,5123,65535,1
      fixture.doc['accessors'].append({'bufferView':view,'componentType':component,'count':3,'type':'VEC2','normalized':True})
     else:attributes['TEXCOORD_0']=fixture.accessor(values,component if packed else 5126,'VEC2',normalized=packed)
    save(f'positive-alpha54-{bits}-{mode}-'+('packed' if packed else 'float')+'.glb',fixture.bytes(),'OK','Alpha54 packed accessor / float equivalence','M2')
+# Alpha55: independent material-baked references and varying vertex colors.
+for label,component,maximum in [('float',5126,1),('8',5121,255),('16',5123,65535)]:
+ for channels in (3,4):
+  color=[0,maximum,maximum//2 if maximum>1 else 0.5,maximum//2 if maximum>1 else 0.5][:channels]
+  for mode in ('OPAQUE','MASK','BLEND','gradient'):
+   rows=[color]*3 if mode!='gradient' else [[0,maximum,0,maximum],[maximum,0,maximum,0],[maximum,maximum,maximum,maximum]][:]
+   rows=[row[:channels] for row in rows]
+   for baked in ((False,True) if mode!='gradient' else (False,)):
+    fixture=copy.deepcopy(render_flat);p=fixture.doc['meshes'][0]['primitives'][0]
+    material=fixture.doc['materials'][0];material['alphaMode']='OPAQUE' if mode=='gradient' else mode;material['alphaCutoff']=0.2
+    factor=[0.5,0.75,0.25,0.8]
+    if baked:factor=[factor[i]*(color[i]/maximum if i<channels else 1) for i in range(4)]
+    material['pbrMetallicRoughness'].update(baseColorFactor=factor,metallicFactor=0,roughnessFactor=1)
+    if not baked:
+     if component!=5126 and channels==3:
+      stride=4 if component==5121 else 8
+      raw=b''.join(struct.pack('<'+('B' if component==5121 else 'H')*3,*row)+b'\0'*(stride-3*(1 if component==5121 else 2)) for row in rows)
+      view=fixture.view(raw,byteStride=stride);p['attributes']['COLOR_0']=len(fixture.doc['accessors'])
+      fixture.doc['accessors'].append({'bufferView':view,'componentType':component,'count':3,'type':'VEC3','normalized':True})
+     else:p['attributes']['COLOR_0']=fixture.accessor(rows,component,'VEC'+str(channels),normalized=component!=5126)
+    save(f'positive-alpha55-{label}-{channels}-{mode}-'+('baked' if baked else 'color')+'.glb',fixture.bytes(),'OK','Alpha55 vertex color / independent material factor control','M2')
 (root/'atlas.png').write_bytes(png());(root/'manifest.json').write_bytes((json.dumps(records,indent=2,ensure_ascii=False)+'\n').encode())
 if args.reference_manifest:
  reference=json.loads(pathlib.Path(args.reference_manifest).read_text(encoding='utf-8'))

@@ -1825,5 +1825,383 @@
     "expected": "OK",
     "family": "Alpha54 packed accessor / float equivalence",
     "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-OPAQUE-color.glb",
+    "file": "positive-alpha55-float-3-OPAQUE-color.glb",
+    "sha256": "947b726609d8b1d0591c41c3334201af7cb6608b71d7e8d3d47605f75d8bd7bf",
+    "bytes": 3120,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-OPAQUE-baked.glb",
+    "file": "positive-alpha55-float-3-OPAQUE-baked.glb",
+    "sha256": "b42e32414daf04bbf868136c7f6e391e2fed0faa82d49d6e42ee8cf2f01f12b5",
+    "bytes": 2944,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-MASK-color.glb",
+    "file": "positive-alpha55-float-3-MASK-color.glb",
+    "sha256": "1b06fbdf3ee90fd7973a39dab9c8f6aae56e595c6e7104f20bf347f8cb4594bd",
+    "bytes": 3120,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-MASK-baked.glb",
+    "file": "positive-alpha55-float-3-MASK-baked.glb",
+    "sha256": "d20dddced24620641f3618e23a257efb8d0a53d08e4eca841e2410f17b0b7567",
+    "bytes": 2944,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-BLEND-color.glb",
+    "file": "positive-alpha55-float-3-BLEND-color.glb",
+    "sha256": "54c47c0c0242e2ae3347b900268c23eae6bae7877b81c060124a16219cced739",
+    "bytes": 3120,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-BLEND-baked.glb",
+    "file": "positive-alpha55-float-3-BLEND-baked.glb",
+    "sha256": "8b49efeafc23ffcd2bac12365a3019639912d5806913521fc0d671c67c814d90",
+    "bytes": 2944,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-gradient-color.glb",
+    "file": "positive-alpha55-float-3-gradient-color.glb",
+    "sha256": "200ab3de14e4dce8616ca407d428014fafe47d792e2bb2b97f5fdd8329cc0ba9",
+    "bytes": 3120,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-OPAQUE-color.glb",
+    "file": "positive-alpha55-float-4-OPAQUE-color.glb",
+    "sha256": "58dfd74cab4e43bfa5feb6f6bd6536d2656dd09fa82ba7e5a202f4ed233f1267",
+    "bytes": 3132,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-OPAQUE-baked.glb",
+    "file": "positive-alpha55-float-4-OPAQUE-baked.glb",
+    "sha256": "fda128ed630af4d66b706b57be0a7dc197863a03f52312ff56c4de367f18f4bf",
+    "bytes": 2944,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-MASK-color.glb",
+    "file": "positive-alpha55-float-4-MASK-color.glb",
+    "sha256": "df88f5a083cbe99edf875328fe41652ea0bd1271bf27bc6865a46b48401e9b5e",
+    "bytes": 3132,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-MASK-baked.glb",
+    "file": "positive-alpha55-float-4-MASK-baked.glb",
+    "sha256": "a3a0f9859bf826b516e1da57df68433d94464663fdd4e3288941bd05058a65b7",
+    "bytes": 2944,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-BLEND-color.glb",
+    "file": "positive-alpha55-float-4-BLEND-color.glb",
+    "sha256": "4e670285c571fe881f327d32042d5a8b1e110bcf99dac669295014583112662a",
+    "bytes": 3132,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-BLEND-baked.glb",
+    "file": "positive-alpha55-float-4-BLEND-baked.glb",
+    "sha256": "1105b7997c76a4b346a630aea2cf489c2a2db47c349a68fc42b9ed060ad6940c",
+    "bytes": 2944,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-gradient-color.glb",
+    "file": "positive-alpha55-float-4-gradient-color.glb",
+    "sha256": "a94c585fd7623317b401e45045f2e71fdca16a9387c78489aa7856bb586f28dc",
+    "bytes": 3132,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-OPAQUE-color.glb",
+    "file": "positive-alpha55-8-3-OPAQUE-color.glb",
+    "sha256": "89f4670e75f8d920124a2c037bfdae6a78dfeed48d9513d10a93746dbb1f4feb",
+    "bytes": 3112,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-OPAQUE-baked.glb",
+    "file": "positive-alpha55-8-3-OPAQUE-baked.glb",
+    "sha256": "2af4c103f579dacb3fa42f5ed6251f9f34c3de8d1c97c510adbda8a3a6b3e7b4",
+    "bytes": 2960,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-MASK-color.glb",
+    "file": "positive-alpha55-8-3-MASK-color.glb",
+    "sha256": "7695fd8a324471442660d3b9387f63df7adbf1f9588cb8426b62975d50eb127d",
+    "bytes": 3108,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-MASK-baked.glb",
+    "file": "positive-alpha55-8-3-MASK-baked.glb",
+    "sha256": "3ed2ea84f9132077912d99c7ab8e2c27a291d1a6e84fa1377e2748a66554b00b",
+    "bytes": 2956,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-BLEND-color.glb",
+    "file": "positive-alpha55-8-3-BLEND-color.glb",
+    "sha256": "8afb4a2612c62d305f83beb34eead8b96d35a1f2003a2a405e5adab95c42bdbb",
+    "bytes": 3108,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-BLEND-baked.glb",
+    "file": "positive-alpha55-8-3-BLEND-baked.glb",
+    "sha256": "71c4f9856576f8c19dea30be76827df46a8c0891d9598733c4dcf61c5dddccf9",
+    "bytes": 2956,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-gradient-color.glb",
+    "file": "positive-alpha55-8-3-gradient-color.glb",
+    "sha256": "9c403cabd4c1de42b0d26d7f433fd2bbb5cf8f8206fe37b9c2b48bc6175b6f55",
+    "bytes": 3112,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-OPAQUE-color.glb",
+    "file": "positive-alpha55-8-4-OPAQUE-color.glb",
+    "sha256": "47f019b51d611cc26ddfdb8d6f86e795efe57497977a8f1554a2c74da5a444e9",
+    "bytes": 3096,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-OPAQUE-baked.glb",
+    "file": "positive-alpha55-8-4-OPAQUE-baked.glb",
+    "sha256": "fd880e7e67f1058cd7bfbd9e7bd91998dc1340536754c8e7c6d76ee3e8b50e49",
+    "bytes": 2972,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-MASK-color.glb",
+    "file": "positive-alpha55-8-4-MASK-color.glb",
+    "sha256": "50f2d41b95057db6ee1cf2be15235cb1fe932dcfd5b257f8715fe7dcac6c42de",
+    "bytes": 3092,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-MASK-baked.glb",
+    "file": "positive-alpha55-8-4-MASK-baked.glb",
+    "sha256": "e75a5d2eeab23d466c323198f0fd605976a89032fb4601d10492786a7c35c177",
+    "bytes": 2972,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-BLEND-color.glb",
+    "file": "positive-alpha55-8-4-BLEND-color.glb",
+    "sha256": "c470bdd537efeace1f1af507d2e4b4c80376afbf27f2cf68bd7d8d131a08e78a",
+    "bytes": 3096,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-BLEND-baked.glb",
+    "file": "positive-alpha55-8-4-BLEND-baked.glb",
+    "sha256": "26d785d21e0ed8b306ecabf76a138f2c2bf5813472237c7a421241e524c4ef02",
+    "bytes": 2972,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-gradient-color.glb",
+    "file": "positive-alpha55-8-4-gradient-color.glb",
+    "sha256": "a9dc3e5d2a9da20981c59d9467026fe5d8e68fa3fbd0571cce8b43b063dc5a87",
+    "bytes": 3096,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-OPAQUE-color.glb",
+    "file": "positive-alpha55-16-3-OPAQUE-color.glb",
+    "sha256": "bd3e7c243dd6e0ab6305b58ca68263d6ddeb54f02a3f393fe10de8d589c1fce3",
+    "bytes": 3124,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-OPAQUE-baked.glb",
+    "file": "positive-alpha55-16-3-OPAQUE-baked.glb",
+    "sha256": "1c55a5087624694c8b46220fc4d0017f5fea91ee077fef690c00b85898fa326c",
+    "bytes": 2960,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-MASK-color.glb",
+    "file": "positive-alpha55-16-3-MASK-color.glb",
+    "sha256": "a12961583eb0bdd3b50b28c7a9d9f90977b4f85e1c542167930261b45b75c583",
+    "bytes": 3120,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-MASK-baked.glb",
+    "file": "positive-alpha55-16-3-MASK-baked.glb",
+    "sha256": "5fcfc0c4c267cc918585934f3827e81bd306657c73abf52871041e049533ebe2",
+    "bytes": 2956,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-BLEND-color.glb",
+    "file": "positive-alpha55-16-3-BLEND-color.glb",
+    "sha256": "d0b28ece6ef80c1164edf229a6461e78f8024aaf877b339718eec7b8a5e2b429",
+    "bytes": 3120,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-BLEND-baked.glb",
+    "file": "positive-alpha55-16-3-BLEND-baked.glb",
+    "sha256": "6391c2dc584c12d409679e46d784bcc8234e315e04bbee32192d02d285c569a8",
+    "bytes": 2956,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-gradient-color.glb",
+    "file": "positive-alpha55-16-3-gradient-color.glb",
+    "sha256": "6479b0ab839eae3acc596c737c99702685ab586c6de6719d12dde4bb788a5123",
+    "bytes": 3124,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-OPAQUE-color.glb",
+    "file": "positive-alpha55-16-4-OPAQUE-color.glb",
+    "sha256": "10ca272c1b11ae1fc9c3c99adb72cbde35a9c7b9fcb43e198f265d868f754b25",
+    "bytes": 3108,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-OPAQUE-baked.glb",
+    "file": "positive-alpha55-16-4-OPAQUE-baked.glb",
+    "sha256": "38210596011e78af926cf0cd7254628a248ca5850c2542813c12b98a24193028",
+    "bytes": 2976,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-MASK-color.glb",
+    "file": "positive-alpha55-16-4-MASK-color.glb",
+    "sha256": "6bc7598d7a11917ca2cd2230817cff0fa220a52959d17a295555ba219d292894",
+    "bytes": 3104,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-MASK-baked.glb",
+    "file": "positive-alpha55-16-4-MASK-baked.glb",
+    "sha256": "14dd6d83ae824e83423ff4497702995211c694e8d2caba2519cc4d4865d15de3",
+    "bytes": 2972,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-BLEND-color.glb",
+    "file": "positive-alpha55-16-4-BLEND-color.glb",
+    "sha256": "fd3d088b59718be99d689f22267629958d41d502e15ed5f641f8fe18ba5a98da",
+    "bytes": 3108,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-BLEND-baked.glb",
+    "file": "positive-alpha55-16-4-BLEND-baked.glb",
+    "sha256": "ffaddc998375ad6558e9e33a46f2f248bc2bfbdd5b300df5c0b568c636cc7b9c",
+    "bytes": 2972,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-gradient-color.glb",
+    "file": "positive-alpha55-16-4-gradient-color.glb",
+    "sha256": "9a1ba89cadae0873f7def6cbefe241346817a8865e2ad149ac9ac0f33de0968f",
+    "bytes": 3108,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
   }
 ]

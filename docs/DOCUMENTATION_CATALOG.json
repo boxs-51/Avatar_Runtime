@@ -9,7 +9,7 @@
   "classification_is_gate_approval": false,
   "counts": {
     "reference": 83,
-    "completed": 39,
+    "completed": 40,
     "in_progress": 21,
     "obsolete": 4
   },
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 147,
+  "total_documents": 148,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "91138daf73a8e1101db707667f8fc3cd70884a351a3ff8e5c2543b6eb9547695"
+      "reviewed_sha256": "3944a5f83458909b55599eff0504615af7a15737612f1a797420402314575550"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -1791,7 +1791,17 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "28d2978c7f7008b0d8f2da9f6175c74cff5e9b0b2afa1aaaa66230eaac97d3c0"
+      "reviewed_sha256": "9f66d54cdb7778ecc8cc64d685adff96fbab859adc38c963e55686b282425420"
+    },
+    {
+      "path": "docs/completed/audits/ALPHA_55_VERTEX_COLOR_ACCEPTANCE.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Issue55 linear FLOAT/packed RGB/RGBA colors with independent material-baked offscreen controls and preflight rejection; independent review.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "a95c07e8cbdddf3255c4320b333dcd9b84a78444491690aaf67d1a5fb8fbd39f"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1803,9 +1813,9 @@
     "classification_is_gate_approval": false
   },
   "latest_checkpoint": {
-    "basis_head": "579a04cab90f73d021d88996f0af1d6571d86f94",
+    "basis_head": "2c335e8120e3946e5ee931143d68359e0f8a6b4b",
     "date": "2026-10-20",
-    "scope": "Alpha issue54 packed GLB weight/UV normalization",
+    "scope": "Alpha issue55 linear RGB/RGBA vertex colors",
     "new_documents": 1,
     "classification_is_gate_approval": false
   },

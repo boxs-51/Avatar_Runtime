@@ -49,6 +49,22 @@ int main(int argc, char **argv) {
             packed_equivalent=same && packed_equivalent;
         }
         test::check(packed_equivalent,"normalized packed weights/UV match float equivalents");
+        for (const auto &vertex:scene.draws[0].vertices)
+            test::check(vertex.color==std::array<float,4>{1,1,1,1},"absent color defaults white");
+        for (const auto label:{"float","8","16"}) for (const auto channels:{"3","4"}) {
+            const auto name=std::string("positive-alpha55-")+label+"-"+channels+"-gradient-color.glb";
+            std::shared_ptr<const ars::assets::GlbModel> colored;
+            test::check(ars::assets::ingest_glb(test::file(root/name),resource,colored)==ARS_OK,"color fixture admits");
+            ars::rendering::PreparedScene3D projected;
+            test::check(ars::rendering::prepare_static_3d(colored,projected)==ARS_OK,"color projects");
+            const std::array<std::array<float,4>,3> expected{{{0,1,0,1},{1,0,1,channels[0]=='3'?1.f:0.f},{1,1,1,1}}};
+            for (std::size_t i=0;i<3;++i) {
+                const auto &vertex=projected.draws[0].vertices[i];
+                for (std::size_t c=0;c<4;++c) test::check(near(vertex.color[c],expected[i][c]),"RGB/RGBA linear decode");
+                test::check(vertex.position==scene.draws[0].vertices[i].position,"color preserves pose");
+            }
+            std::printf("ALPHA55_CPU_%s_%s=PASS\n",label,channels);
+        }
         auto override_bytes=test::file(root/"positive-m2-3d-node-weight.glb");
         std::shared_ptr<const ars::assets::GlbModel> override_model;
         test::check(ars::assets::ingest_glb(override_bytes,resource,override_model)==ARS_OK,
