@@ -15,3 +15,5 @@ build/cubism-preview/bin/Release/ars_m2_2d_pixels.exe --sample build/cubism-prev
 ```
 
 The native validator command checks the generated archive with the schema/PNG/profile-B pipeline and prepares one static 2D draw when `ARS_BUILD_M2_2D_REFERENCE=ON`. The last command reads three actual pixels from a WARP offscreen render and compares them with the decoded portrait; it requires `ARS_BUILD_M2_D3D11_2D=ON`. The converter tests use synthetic, redistributable inputs so CI can run without the owner's model. Successful local validation is evidence for this static portrait path only. Full Cubism support remains a separate adapter/runtime project requiring the official Cubism Core and its license, a drawable/parameter/physics mapping, and direct pixel and animation tests.
+
+The proposed private-to-public sequence and HOLD exit criteria for dynamic Cubism are in [the dynamic adapter plan](M2_LIVE2D_DYNAMIC_ADAPTER_PLAN.md).
