@@ -9,7 +9,7 @@
   "classification_is_gate_approval": false,
   "counts": {
     "reference": 83,
-    "completed": 41,
+    "completed": 42,
     "in_progress": 21,
     "obsolete": 4
   },
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 149,
+  "total_documents": 150,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "29e8033a8cc570929a5cb0badc1f0a54f868598d0bcd43725f94f6f2651991b1"
+      "reviewed_sha256": "40e449b8b35166740a610ad0279e0cc1c4969d3646173521813a63b89c8f2369"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -1812,6 +1812,16 @@
       "encoding": "utf-8",
       "document_kind": "markdown",
       "reviewed_sha256": "65850248c714a64c627a67ebb86242e4e00fdf75910feaf006377976558b218c"
+    },
+    {
+      "path": "docs/completed/audits/ALPHA_57_REFLECTED_TRANSFORM_ACCEPTANCE.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Issue57 reflected static winding/tangent correction and typed reflected-skin rejection; CPU and numeric WARP/hardware equivalence with independent review.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "128242c20d81163e84bf82664672d0f64563a13c35f2577029bb0f75acdbb147"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1823,9 +1833,9 @@
     "classification_is_gate_approval": false
   },
   "latest_checkpoint": {
-    "basis_head": "76dc6282b2b52b015bd38bfdccb8400539a710f6",
+    "basis_head": "da805b4a361fca11dda766d3943c4b8369c34691",
     "date": "2026-10-20",
-    "scope": "Alpha issue56 typed D3D creation errors and lost-backend quarantine",
+    "scope": "Alpha issue57 reflected static transforms and safe skin rejection",
     "new_documents": 1,
     "classification_is_gate_approval": false
   },

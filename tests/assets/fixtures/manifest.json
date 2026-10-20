@@ -2203,5 +2203,176 @@
     "expected": "OK",
     "family": "Alpha55 vertex color / independent material factor control",
     "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-direct-single-transform.glb",
+    "file": "positive-alpha57-direct-single-transform.glb",
+    "sha256": "729984ec04566d6f84132b1853cde5a8f016d0a25ca3276679b7e549bbe82440",
+    "bytes": 1168,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-direct-single-baked.glb",
+    "file": "positive-alpha57-direct-single-baked.glb",
+    "sha256": "f3934c6096e44ffeedad33f8c6196daf88ac16135cdba67daedc132f4cd1ff55",
+    "bytes": 1252,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-direct-double-transform.glb",
+    "file": "positive-alpha57-direct-double-transform.glb",
+    "sha256": "b07ae375cb386ecb53bb2201f90f32408ce880523aec952dc8c8390cf8694a98",
+    "bytes": 1168,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-direct-double-baked.glb",
+    "file": "positive-alpha57-direct-double-baked.glb",
+    "sha256": "4daae0857c9a079d1f37d38c5ac6e12d1691d4124448e71b5f48557e6ad4e93b",
+    "bytes": 1252,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-nested-single-transform.glb",
+    "file": "positive-alpha57-nested-single-transform.glb",
+    "sha256": "f187e0787d3326037d909e4be14893dacedd743b9c2a6fe90fc737024fb01bfc",
+    "bytes": 1228,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-nested-single-baked.glb",
+    "file": "positive-alpha57-nested-single-baked.glb",
+    "sha256": "f3934c6096e44ffeedad33f8c6196daf88ac16135cdba67daedc132f4cd1ff55",
+    "bytes": 1252,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-nested-double-transform.glb",
+    "file": "positive-alpha57-nested-double-transform.glb",
+    "sha256": "afadd2b6c261bca7399e5ad972a34216cba97b46d710581411f295b9584e83a5",
+    "bytes": 1224,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-nested-double-baked.glb",
+    "file": "positive-alpha57-nested-double-baked.glb",
+    "sha256": "4daae0857c9a079d1f37d38c5ac6e12d1691d4124448e71b5f48557e6ad4e93b",
+    "bytes": 1252,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-matrix-single-transform.glb",
+    "file": "positive-alpha57-matrix-single-transform.glb",
+    "sha256": "b8b34a7569b62b9341dc2a4007574b591053feb46d0c469c1280aaa5402e3f82",
+    "bytes": 1176,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-matrix-single-baked.glb",
+    "file": "positive-alpha57-matrix-single-baked.glb",
+    "sha256": "f3934c6096e44ffeedad33f8c6196daf88ac16135cdba67daedc132f4cd1ff55",
+    "bytes": 1252,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-matrix-double-transform.glb",
+    "file": "positive-alpha57-matrix-double-transform.glb",
+    "sha256": "fee5afa7e97c0c33973b3a97796b09119cf7bacba645ede9e1c5bfeffa2e91fb",
+    "bytes": 1172,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-matrix-double-baked.glb",
+    "file": "positive-alpha57-matrix-double-baked.glb",
+    "sha256": "4daae0857c9a079d1f37d38c5ac6e12d1691d4124448e71b5f48557e6ad4e93b",
+    "bytes": 1252,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-even-single-transform.glb",
+    "file": "positive-alpha57-even-single-transform.glb",
+    "sha256": "d13ecb9580d954f4aa3535a8b776ad99a792afdb92ee15d8d136e53e5d2d0d6a",
+    "bytes": 1224,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-even-single-baked.glb",
+    "file": "positive-alpha57-even-single-baked.glb",
+    "sha256": "7e87d1092fb81c69b14516cd245d3d5e2f6430ed6876d0372f260618fd285e1c",
+    "bytes": 1136,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-even-double-transform.glb",
+    "file": "positive-alpha57-even-double-transform.glb",
+    "sha256": "fd8f3c60149b82a4d911042ad195c13e4796ac1da2b667e19ef9a5a64dc041c8",
+    "bytes": 1224,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-even-double-baked.glb",
+    "file": "positive-alpha57-even-double-baked.glb",
+    "sha256": "5ab1aa41c71666cead19b1d71bb722615704beee788426b71a349d9b05a73b1a",
+    "bytes": 1136,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-skin-joint.glb",
+    "file": "positive-alpha57-skin-joint.glb",
+    "sha256": "359452fab3f896502dc598042b5f58f3314486b8db11b079f9bef82e128e5bfa",
+    "bytes": 2856,
+    "expected": "OK",
+    "family": "Alpha57 valid GLB, reflected effective skin unsupported beforeGPU",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-skin-inherited.glb",
+    "file": "positive-alpha57-skin-inherited.glb",
+    "sha256": "022e5d8bc3a34e617eda2c01cfe894557cefd4c474be0e1e2458ca16da986f30",
+    "bytes": 2872,
+    "expected": "OK",
+    "family": "Alpha57 valid GLB, reflected effective skin unsupported beforeGPU",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-skin-blended.glb",
+    "file": "positive-alpha57-skin-blended.glb",
+    "sha256": "b61f85174cd695fb823291233d23dd0be52c83fa8b9b89e0b435171b8a1c2143",
+    "bytes": 3072,
+    "expected": "OK",
+    "family": "Alpha57 valid GLB, reflected effective skin unsupported beforeGPU",
+    "stage": "M2"
   }
 ]

@@ -238,6 +238,29 @@ int main(int argc,char **argv) {
             }
             check(result==Result::ok && q.complete(),"material exact query");
         };
+        bool reflected_pixels=true;
+        const auto original_camera=camera;
+        for (int mirrored_camera=0;mirrored_camera<2;++mirrored_camera) {
+            camera=original_camera;
+            if (mirrored_camera) {
+                camera.clip_from_world[0]*=-1;camera.clip_from_world[12]*=-1;
+                camera.front_counter_clockwise=!camera.front_counter_clockwise;
+            }
+            for (const auto mode:{"direct","nested","matrix","even"}) for (const auto sided:{"single","double"}) {
+                const auto prefix=std::string("positive-alpha57-")+mode+"-"+sided;
+                auto actual=load((prefix+"-transform.glb").c_str()),expected=load((prefix+"-baked.glb").c_str());
+                submit(expected);const auto reference=frame(context.Get(),t);bool visible=false;
+                for (const auto &p:reference) if (p[3]) { visible=true;check(near_pixel(p,{0,75,0,255}),"independent front-normal PBR numeric reference"); }
+                check(visible,"baked reflected reference is visible");
+                submit(actual);const auto rendered=frame(context.Get(),t);bool same=true;
+                for (std::size_t i=0;i<rendered.size();++i) for (std::size_t c=0;c<4;++c)
+                    same=std::abs(int(rendered[i][c])-int(reference[i][c]))<=1 && same;
+                std::printf("ALPHA57_PIXELS_%s_%s_%d=%s\n",mode,sided,mirrored_camera,same?"PASS":"FAIL");
+                reflected_pixels=same && reflected_pixels;
+            }
+        }
+        camera=original_camera;std::fflush(stdout);
+        check(reflected_pixels,"inherited reflection preserves front classification and normal lighting");
         bool packed_pixels_equivalent=true;
         for (const auto bits:{"8","16"}) for (const auto mode:{"weights","uv","both"}) {
             const auto prefix=std::string("positive-alpha54-")+bits+"-"+mode;
