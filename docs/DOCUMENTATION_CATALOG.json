@@ -10,7 +10,7 @@
   "counts": {
     "reference": 83,
     "completed": 42,
-    "in_progress": 21,
+    "in_progress": 22,
     "obsolete": 4
   },
   "baseline_counts": {
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 150,
+  "total_documents": 151,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "40e449b8b35166740a610ad0279e0cc1c4969d3646173521813a63b89c8f2369"
+      "reviewed_sha256": "82fc953a24f8fdce85373bb722effa843d041d3acc577742d9a2af6f2b4a24f7"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -1822,6 +1822,16 @@
       "encoding": "utf-8",
       "document_kind": "markdown",
       "reviewed_sha256": "128242c20d81163e84bf82664672d0f64563a13c35f2577029bb0f75acdbb147"
+    },
+    {
+      "path": "docs/in-progress/ALPHA_58_SESSION_LIFECYCLE_DESIGN.md",
+      "category": "in_progress",
+      "lifecycle": "maintained_contract",
+      "reason": "Issue58 R0 source-grounded context ownership inventory and bounded logical-session policy/implementation plan; persistent runtime remains unimplemented.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "015ad6218c99f35871d77478c1cd0c477c415c4a49ce01e5cf4387b30f82387e"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1833,9 +1843,9 @@
     "classification_is_gate_approval": false
   },
   "latest_checkpoint": {
-    "basis_head": "da805b4a361fca11dda766d3943c4b8369c34691",
+    "basis_head": "37ba1355f987a1d9fe14c97ab5654700e6c93b32",
     "date": "2026-10-20",
-    "scope": "Alpha issue57 reflected static transforms and safe skin rejection",
+    "scope": "Alpha issue58 R0 context ownership and bounded logical-session design",
     "new_documents": 1,
     "classification_is_gate_approval": false
   },
