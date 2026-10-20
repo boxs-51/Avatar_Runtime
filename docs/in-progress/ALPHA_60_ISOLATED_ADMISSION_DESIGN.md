@@ -1,18 +1,18 @@
 # Alpha A09 / issue60 isolated native admission design
 
-Status: implementation contract for A60-0 and A60-1a only; issue60 remains open.
+Status: original A60-0/A60-1a contract plus current continuation. The [typed 2D transfer](ALPHA_60_TYPED_2D_TRANSFER_DESIGN.md) now implements A60-1b-2D privately; complete GLB/dual transfer and public lifecycle remain open.
 Base: `49eb54a88cfc30e1104bf12750852827be36aa87` (reviewed ABI20 development SDK).
 
 ## Target and sequence
 
 1. **A60-0** freeze native CPU admission boundary and staged evidence below.
 2. **A60-1a** run complete native bundle validation inside a zero-capability Windows AppContainer, including ZIP, pinned JSON schemas, PNG, GLB and immutable private CPU model construction. Return only a diagnostic verdict. This is the current implementation slice.
-3. **A60-1b** design and independently validate a complete typed immutable model packet, including 2D/GLB graphs, catalog, atlas and bounds. A verdict never substitutes for model validation; it cannot create a registry handle.
+3. **A60-1b** independently validate a complete typed immutable model packet. The current 2D transfer covers geometry/catalog/atlas/bounds; GLB/dual graphs remain pending. A verdict never substitutes for model validation; it cannot create a registry handle.
 4. **A60-2** runtime-owned resource and bounded model records; character/model pin and close/OOM semantics.
 5. **A60-3** reviewed semantic bindings into existing source/ingress/publication authority; revoke, replay, expiry, clock and close fences.
 6. **A60-4** relocated installed C11/C++20 static/shared enabled-profile consumers plus unchanged feature-off consumers.
 
-The last four steps are unimplemented. No change to ABI20, capability bits, public activation, MOC3/Physics support, GPU rendering, main or physical D06/D08 HOLD follows from this probe.
+Full GLB/dual transfer and the last three steps are unimplemented. No change to ABI20, capability bits, public activation, MOC3/Physics support, GPU rendering, main or physical D06/D08 HOLD follows from this probe.
 
 ## Choice and deployment
 

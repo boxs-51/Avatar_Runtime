@@ -1,6 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "validated_cpu_model.hpp"
+#include "cpu_model_packet.hpp"
 #include "../validation/schema_worker_protocol.hpp"
 #include "schema_literals.hpp"
 #include <jsoncons/json.hpp>
@@ -88,7 +89,8 @@ int wmain(int argc, wchar_t **argv) {
         }
     }
 #endif
-    if (argc != 2 || std::wcscmp(argv[1], L"--cpu-admit") != 0)
+    const bool transfer = argc == 2 && std::wcscmp(argv[1], L"--cpu-model-2d") == 0;
+    if (argc != 2 || (!transfer && std::wcscmp(argv[1], L"--cpu-admit") != 0))
         return 22;
     _setmode(_fileno(stdin), _O_BINARY);
     _setmode(_fileno(stdout), _O_BINARY);
@@ -109,14 +111,23 @@ int wmain(int argc, wchar_t **argv) {
                 validation::get(request, 12))
             return 23;
         assets::Resource resource(allocate, release, nullptr, 256 * assets::MiB);
-        // Destroy every model/parse arena before its allocator context.
+        // Destroy packet and every model/parse arena before its allocator context.
         {
+            std::pmr::vector<std::uint8_t> encoded(&resource);
             std::shared_ptr<const assets::ValidatedCpuModel> model;
             assets::Limits limits;
             limits.compressed = input_cap;
             status = assets::validate_bundle_checked(bytes, schema_check, nullptr, resource, model, limits);
             if (bool(model) != (status == ARS_OK))
                 return 24;
+            if (transfer) {
+                assets::packet::Identity identity;
+                identity.nonce = std::uint64_t(validation::get(request, 16)) | (std::uint64_t(validation::get(request, 20)) << 32);
+                if (assets::packet::digest(bytes, identity.request) != ARS_OK) return 24;
+                if (status == ARS_OK) status = assets::packet::encode(*model, identity, resource, encoded);
+                if (status != ARS_OK && assets::packet::rejection(status, identity, resource, encoded) != ARS_OK) return 24;
+                if (std::fwrite(encoded.data(), 1, encoded.size(), stdout) != encoded.size() || std::fflush(stdout) != 0) return 25;
+            }
         }
         if (resource.live())
             return 24;
@@ -125,6 +136,7 @@ int wmain(int argc, wchar_t **argv) {
     } catch (...) {
         status = ARS_E_INTERNAL;
     }
+    if (transfer) return 0;
     validation::Message reply{};
     validation::put(reply, 0, magic);
     validation::put(reply, 4, 1);
