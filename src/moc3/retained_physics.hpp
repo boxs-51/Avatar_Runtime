@@ -32,5 +32,7 @@ public:
     void commit(const Candidate&);
     PhysicsCheckpoint checkpoint(const Candidate&,const Digest&) const;
     void restore(const PhysicsCheckpoint&);
+    // Isolated evaluator only: explicit accepted-origin epoch rebase.
+    void restore_epoch(const PhysicsCheckpoint&);
 };
 }

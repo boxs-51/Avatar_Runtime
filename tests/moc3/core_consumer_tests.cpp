@@ -31,6 +31,13 @@ int main(){
     check(consumer.revoke()==ARS_OK&&consumer.publish()==ARS_E_REVOKED,"actual final authorization fence");
     check(consumer.read(out,generation)==ARS_OK&&generation==2&&out[0].value==0,"revoked candidate cannot publish");
     check(consumer.close()==ARS_OK,"close drains all core leases");
+    CoreConsumer retry;check(retry.open(mapping,true)==ARS_OK,"opt-in recoverable consumer");
+    check(retry.prepare(1,{},out,generation)==ARS_OK&&retry.publish()==ARS_OK,"recoverable initial accepted");
+    check(retry.prepare(2,std::vector<Parameter>{{"generated",9}},out,generation)==ARS_OK,"recoverable candidate");retry.discard();
+    check(retry.read(out,generation)==ARS_OK&&generation==1&&out[0].value==0,"discard preserves actual accepted core");
+    check(retry.prepare(3,std::vector<Parameter>{{"generated",8}},out,generation)==ARS_OK&&generation==2&&retry.publish()==ARS_OK,"fresh ingress after discarded candidate, no authority rotation");
+    check(retry.prepare(4,{},out,generation)==ARS_OK&&retry.revoke()==ARS_OK&&retry.publish()==ARS_E_REVOKED,"recoverable still rejects actual revoke");
+    retry.discard();check(retry.prepare(5,{},out,generation)!=ARS_OK,"revoked source never auto-renewed");check(retry.close()==ARS_OK,"recoverable close");
     ars::core::RuntimeRouter router;ars::core::StageLease empty;float sentinel=7;g=55;
     check(router.copy_cpu_candidate(empty,std::span(&sentinel,1),&g)==ARS_E_INVALID_ARGUMENT&&sentinel==7&&g==0,"empty candidate copy fails closed");
     ars::core::RuntimeRouter foreign;ars_runtime_h runtime{};ars_character_h character{};

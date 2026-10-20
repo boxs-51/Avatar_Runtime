@@ -115,4 +115,10 @@ void RetainedPhysics::restore(const PhysicsCheckpoint& checkpoint){
         for(auto& p:chain){for(auto value:p)checked(value);points.push_back({{p[0],p[1]},{p[2],p[3]}});}state->particles.push_back(std::move(points));}
     state_=std::move(state);generation_=checkpoint.generation;
 }
+void RetainedPhysics::restore_epoch(const PhysicsCheckpoint& origin){
+    require(owner_==std::this_thread::get_id()&&generation_==0&&origin.generation>0&&origin.generation<=8&&origin.clock<=1000000000ull);
+    auto rebased=origin;rebased.generation=1;rebased.clock=0;
+    restore(rebased);generation_=0;
+}
+
 }

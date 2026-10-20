@@ -14,11 +14,11 @@ class CoreConsumer {
     core::StageLease candidate_;
     std::vector<ParameterInfo> mapping_;
     std::thread::id owner_=std::this_thread::get_id();
-    bool opened_=false,pending_=false,closed_=false,faulted_=false;
+    bool opened_=false,pending_=false,closed_=false,faulted_=false,recoverable_=false;
 public:
     CoreConsumer()=default;
     ~CoreConsumer();
-    ars_status open(std::span<const ParameterInfo>);
+    ars_status open(std::span<const ParameterInfo>,bool recoverable=false);
     ars_status prepare(std::uint64_t sequence,std::span<const Parameter>,std::vector<Parameter>&,
                        std::uint64_t &generation);
     ars_status publish();

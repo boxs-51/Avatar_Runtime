@@ -32,9 +32,13 @@ SOURCE_FILES=(
  'tests/moc3/checkpoint_tests.cpp','tests/moc3/test_step_frontend.py','tests/moc3/test_step_publication.py',
  'scripts/moc3_verify_checkpoint.py','docs/in-progress/M2_MOC3_PUB04_B_CHECKPOINT_DESIGN.md',
  'scripts/moc3_native_test_target.py','tests/moc3/test_native_test_targets.py')
+SOURCE_FILES+=('docs/in-progress/ALPHA_58_LEASE_PROTOCOL.md','docs/in-progress/ALPHA_58_SESSION_LIFECYCLE_DESIGN.md','scripts/moc3_isolated_session.py','scripts/moc3_lease.py','scripts/moc3_lease_publication.py','scripts/moc3_private_lease_fixture.py','scripts/moc3_session_viewer.py','scripts/moc3_verify_lease_caps.py','scripts/moc3_verify_session_acceptance.py','scripts/moc3_verify_session_lifecycle.py','scripts/moc3_verify_session_viewer.py','src/moc3/lease_protocol.cpp','src/moc3/lease_protocol.hpp','src/moc3/lease_publication.cpp','src/moc3/lease_publication.hpp','src/moc3/lease_worker.cpp','src/moc3/lease_worker.hpp','tests/moc3/lease_fault_worker.cpp','tests/moc3/lease_protocol_tests.cpp','tests/moc3/test_lease_frontend.py',)
+
 BINARY_FILES=tuple('build/moc3-public-isolation/bin/Release/'+name for name in (
  'ars_moc3_import_worker.exe','ars_moc3_import_sandbox.exe','ars_moc3_packet_guard.exe','ars_moc3_packet_tests.exe','ars_moc3_physics_admission_tests.exe','ars_moc3_sequence_tests.exe','ars_moc3_retained_physics_tests.exe','ars_moc3_checkpoint_tests.exe'))+tuple(
  'build/m2-d-private/bin/Release/'+name for name in ('ars_moc3_packet_render_host.exe','ars_moc3_pixel_bridge.exe','ars_moc3_packet_publication_host.exe','ars_moc3_publication_fence_tests.exe','ars_moc3_core_consumer_tests.exe','ars_m2_dual_pixels.exe','ars_moc3_pixel_tests.exe'))
+BINARY_FILES+=('build/moc3-public-isolation/bin/Release/ars_moc3_lease_fault_worker.exe','build/moc3-public-isolation/bin/Release/ars_moc3_lease_tests.exe')
+
 
 def capture():
     dependency=list((ROOT/'build/c-deps').glob('*.zip'))
