@@ -9,8 +9,8 @@
   "classification_is_gate_approval": false,
   "counts": {
     "reference": 84,
-    "completed": 45,
-    "in_progress": 25,
+    "completed": 46,
+    "in_progress": 26,
     "obsolete": 4
   },
   "baseline_counts": {
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 158,
+  "total_documents": 160,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -125,7 +125,7 @@
       "reason": "Mục lục/phân loại và review notes được tạo trong lần rà soát này.",
       "lifecycle": "navigation",
       "related_paths": [],
-      "reviewed_sha256": "4ad13ec7887b2b79f0226e2b1096b7d42b23ff9b1ab0971955db996958081fb4",
+      "reviewed_sha256": "052a1f401cb73c06fd164aaa32e7102bd95be4c2b69c39e709d8fc3e6c88b285",
       "hash_note": "Generated navigation artifacts omit self/cross hashes to avoid cyclic provenance.",
       "document_kind": "markdown",
       "legacy_path": "docs/DOCUMENTATION_INDEX.md"
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "1c15a9411a95009ec4e73c6a1a7904eb944cb813e7e14bef52963cc518060ad0"
+      "reviewed_sha256": "45c9db9b6fc9fcbbfd3351dd5867273fe5b547669b7de0741f138b934c770793"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -1891,7 +1891,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "5a28f9fdff07220e27c987a96c80d42db577b207db7ee6793b5ffdc2165c7ee5"
+      "reviewed_sha256": "c6d68a7c8e7d219476eb86e3879a9493fb0709c1cd8d02a72c2e8ea1e675aa91"
     },
     {
       "path": "docs/completed/audits/ALPHA_60_ISOLATED_ADMISSION_ACCEPTANCE.md",
@@ -1902,6 +1902,26 @@
       "encoding": "utf-8",
       "document_kind": "markdown",
       "reviewed_sha256": "27f7fbddd4cdb15e2bda3f1ca2f1320c613e90395511c0be71aba784af84b899"
+    },
+    {
+      "path": "docs/in-progress/ALPHA_60_TYPED_2D_TRANSFER_DESIGN.md",
+      "category": "in_progress",
+      "lifecycle": "in_progress",
+      "reason": "Scoped private typed native2D transfer contract; complete GLB/dual packet and public runtime lifecycle remain open.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "5797ea701bbf92e895c64a4c51316729a736ce477cb6fce1f5c8f9a6a070bb3a"
+    },
+    {
+      "path": "docs/completed/audits/ALPHA_60_TYPED_2D_TRANSFER_ACCEPTANCE.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Windows local150-case complete typed native2D/CPU field and geometry transfer acceptance; full issue60 remains OPEN.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "f91790755aeceae44c46f2d6f3922fa7093c602b0e7ac42f4f107c1374eb1232"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1913,9 +1933,9 @@
     "classification_is_gate_approval": false
   },
   "latest_checkpoint": {
-    "basis_head": "49eb54a88cfc30e1104bf12750852827be36aa87",
-    "date": "2026-10-20",
-    "scope": "Alpha issue60 A60-1a isolated native diagnostic probe only; full CPU lifecycle remains OPEN",
+    "basis_head": "fa9a1a02afc8cf75c1867f58aff9f6e70fd0bdbb",
+    "date": "2026-10-21",
+    "scope": "Alpha issue60 A60-1b-2D typed model transfer; GLB/dual and full CPU lifecycle OPEN",
     "new_documents": 2,
     "classification_is_gate_approval": false
   },

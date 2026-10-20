@@ -57,6 +57,10 @@ int wmain(int argc,wchar_t** argv){
 #else
     const bool package=false,lease=false;
 #endif
+#ifdef ARS_CPU_MODEL_PACKET
+    if(std::wstring(argv[3])!=L"--cpu-model-2d")return 2;
+    output_cap=16ull*1024*1024;
+#endif
     // The trusted broker chooses the worker copy and fresh profile name. Public bytes are stdin only.
     const auto worker=std::filesystem::absolute(argv[1]);
     if(!std::filesystem::is_regular_file(worker)||std::wstring(argv[2]).rfind(L"AvatarMocImport-",0)!=0)return 2;
@@ -189,6 +193,12 @@ int wmain(int argc,wchar_t** argv){
     if(cpu_rejected){std::cout<<"CPU_REJECTED"<<std::endl;return 0;}
     if(wait!=WAIT_OBJECT_0){std::cout<<"TIMEOUT_REJECTED"<<std::endl;return 0;}
     if(code!=0){std::cout<<"WORKER_REJECTED"<<std::endl;return 0;}
+#ifdef ARS_CPU_MODEL_PACKET
+    // Transport custody only. The separate host must validate every field.
+    if(output.size()<96||output.compare(0,8,"ARSCPU2D")!=0){std::cout<<"OUTPUT_REJECTED"<<std::endl;return 0;}
+    _setmode(_fileno(stdout),_O_BINARY);
+    std::cout.write(output.data(),output.size());return std::cout?0:15;
+#endif
 #ifdef ARS_CPU_ADMISSION_PROBE
     // Separate diagnostic build only. Legacy MOC3 allowlists stay unchanged.
     // Host independently checks this fixed verdict; it contains no model data.

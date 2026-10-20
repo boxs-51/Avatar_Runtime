@@ -46,6 +46,7 @@ struct Semantic {
 class ModelBuilder;
 class ValidatedCpuModel {
     friend class ModelBuilder;
+    friend class CpuPacketBuilder;
     std::pmr::vector<Part> parts_;
     std::pmr::vector<Parameter> parameters_;
     std::pmr::vector<Layer> layers_;

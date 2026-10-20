@@ -31,6 +31,26 @@ HELD_PATHS = (
 
 # Reviewed issue scopes only. This is not an alpha/* wildcard or approval source.
 PR_SCOPES = {
+    "dev/alpha-60-typed-2d-transfer": (
+        "fa9a1a02afc8cf75c1867f58aff9f6e70fd0bdbb",
+        frozenset((
+            'CMakeLists.txt',
+            'docs/DOCUMENTATION_CATALOG.json',
+            'docs/DOCUMENTATION_INDEX.md',
+            'docs/completed/audits/ALPHA_60_TYPED_2D_TRANSFER_ACCEPTANCE.md',
+            'docs/in-progress/ALPHA_60_ISOLATED_ADMISSION_DESIGN.md',
+            'docs/in-progress/ALPHA_60_TYPED_2D_TRANSFER_DESIGN.md',
+            'docs/in-progress/ALPHA_LINEAR_BACKLOG.md',
+            'scripts/verify_cpu_model_transfer.py',
+            'src/assets/cpu_admission_worker.cpp',
+            'src/assets/cpu_model_packet.cpp',
+            'src/assets/cpu_model_packet.hpp',
+            'src/assets/validated_cpu_model.hpp',
+            'src/moc3/import_sandbox.cpp',
+            'tests/assets/cpu_model_packet_guard.cpp',
+            'tests/assets/cpu_model_packet_reference.cpp',
+            'tests/contracts/check_alpha_custody.py',
+        ))),
     "dev/alpha-60-isolated-admission": (
         "49eb54a88cfc30e1104bf12750852827be36aa87",
         frozenset((
