@@ -51,10 +51,11 @@ int wmain(int argc,wchar_t** argv){
     if(argc<4)return 2;
     std::size_t output_cap=64;
 #ifdef ARS_MOC3_PACKAGE_ADMISSION
-    const bool package=std::wstring(argv[3])==L"--package"||std::wstring(argv[3])==L"--evaluate"||std::wstring(argv[3])==L"--simulate"||std::wstring(argv[3])==L"--step";
+    const bool lease=std::wstring(argv[3])==L"--lease";
+    const bool package=lease||std::wstring(argv[3])==L"--package"||std::wstring(argv[3])==L"--evaluate"||std::wstring(argv[3])==L"--simulate"||std::wstring(argv[3])==L"--step";
     if(package)output_cap=192ull*1024*1024;
 #else
-    const bool package=false;
+    const bool package=false,lease=false;
 #endif
     // The trusted broker chooses the worker copy and fresh profile name. Public bytes are stdin only.
     const auto worker=std::filesystem::absolute(argv[1]);
@@ -110,14 +111,25 @@ int wmain(int argc,wchar_t** argv){
     Handle child,thread;child.value=process.hProcess;thread.value=process.hThread;
     if(!AssignProcessToJobObject(job.value,child.value)){TerminateProcess(child.value,1);WaitForSingleObject(child.value,5000);return 12;}
     CloseHandle(output_write.value);output_write.value=nullptr;
-    std::string output;std::atomic<bool> overflow=false;
+    if(lease){_setmode(_fileno(stdout),_O_BINARY);std::ios::sync_with_stdio(false);}
+    std::string output;std::size_t output_bytes=0;std::atomic<bool> overflow=false,forward_stop=false,forward_failed=false,output_done=false;
     std::thread reader([&]{
+        struct Done{std::atomic<bool>& value;~Done(){value.store(true,std::memory_order_release);}} done{output_done};
         char chunk[16384];DWORD count=0;
         while(ReadFile(output_read.value,chunk,sizeof(chunk),&count,nullptr)&&count){
-            if(count>output_cap-output.size()){overflow=true;TerminateJobObject(job.value,1);break;}
-            output.append(chunk,count);
+            if(count>output_cap-output_bytes){overflow=true;TerminateJobObject(job.value,1);break;}
+            output_bytes+=count;
+            if(lease){
+                DWORD offset=0;bool forwarded=true;
+                while(offset<count){DWORD wrote=0;
+                    if(forward_stop.load(std::memory_order_acquire)||!WriteFile(GetStdHandle(STD_OUTPUT_HANDLE),chunk+offset,count-offset,&wrote,nullptr)||!wrote){forwarded=false;break;}
+                    offset+=wrote;
+                }
+                if(!forwarded){forward_failed=true;TerminateJobObject(job.value,1);break;}
+            }else output.append(chunk,count);
         }
     });
+    if(lease){std::ofstream started(worker.parent_path()/"worker-start.json");started<<"{\"worker_pid\":"<<process.dwProcessId<<"}";}
     if(ResumeThread(thread.value)==static_cast<DWORD>(-1)){TerminateJobObject(job.value,1);}
     const auto began=GetTickCount64();DWORD wait=WAIT_TIMEOUT;bool cpu_rejected=false;
     while((wait=WaitForSingleObject(child.value,10))==WAIT_TIMEOUT){
@@ -128,20 +140,36 @@ int wmain(int argc,wchar_t** argv){
         if(GetTickCount64()-began>=5000){TerminateJobObject(job.value,1);break;}
     }
     if(wait!=WAIT_OBJECT_0)TerminateJobObject(job.value,1);
-    WaitForSingleObject(child.value,5000);reader.join();
+    WaitForSingleObject(child.value,5000);
+    bool forwarding_stuck=false;
+    if(lease){
+        const auto drain_deadline=GetTickCount64()+500;
+        while(!output_done.load(std::memory_order_acquire)&&GetTickCount64()<drain_deadline)Sleep(1);
+        if(!output_done.load(std::memory_order_acquire)){
+            forward_stop.store(true,std::memory_order_release);forward_failed=true;
+            const auto cancel_deadline=GetTickCount64()+500;
+            while(!output_done.load(std::memory_order_acquire)&&GetTickCount64()<cancel_deadline){CancelSynchronousIo(reader.native_handle());Sleep(1);}
+            forwarding_stuck=!output_done.load(std::memory_order_acquire);
+        }
+    }
+    if(!forwarding_stuck)reader.join();
     DWORD code=1;GetExitCodeProcess(child.value,&code);
     FILETIME creation{},exit{},kernel_time{},user_time{};ULARGE_INTEGER cpu{};
     GetProcessTimes(child.value,&creation,&exit,&kernel_time,&user_time);
     cpu.LowPart=user_time.dwLowDateTime;cpu.HighPart=user_time.dwHighDateTime;
     std::ofstream diagnostic(worker.parent_path()/"launcher-state.json");
     diagnostic<<"{\"worker_exit\":"<<code<<",\"wait_result\":"<<wait<<",\"output_overflow\":"<<(overflow?"true":"false")
-              <<",\"worker_user_cpu_100ns\":"<<cpu.QuadPart<<"}";
+              <<",\"worker_user_cpu_100ns\":"<<cpu.QuadPart<<",\"forwarding_failed\":"<<(forward_failed?"true":"false")<<"}";
     diagnostic.close();
     JOBOBJECT_BASIC_ACCOUNTING_INFORMATION accounting{};
-    if(!QueryInformationJobObject(job.value,JobObjectBasicAccountingInformation,&accounting,sizeof(accounting),nullptr)||accounting.ActiveProcesses!=0)return 13;
+    if(!QueryInformationJobObject(job.value,JobObjectBasicAccountingInformation,&accounting,sizeof(accounting),nullptr)||accounting.ActiveProcesses!=0){if(forwarding_stuck)ExitProcess(13);return 13;}
     // Clean up the profile explicitly and report cleanup failures; destructor covers earlier failures.
-    if(FAILED(DeleteAppContainerProfile(profile.name.c_str())))return 14;
+    if(FAILED(DeleteAppContainerProfile(profile.name.c_str()))){if(forwarding_stuck)ExitProcess(14);return 14;}
     profile.created=false;
+    // A pathological failed I/O cancellation must not unwind a live reader.
+    // Worker/job/profile cleanup above still completes before process exit.
+    if(forwarding_stuck)ExitProcess(18);
+    if(lease)return overflow||cpu_rejected||forward_failed||wait!=WAIT_OBJECT_0||code!=0?16:0;
     if(overflow){std::cout<<"OUTPUT_REJECTED"<<std::endl;return 0;}
     if(cpu_rejected){std::cout<<"CPU_REJECTED"<<std::endl;return 0;}
     if(wait!=WAIT_OBJECT_0){std::cout<<"TIMEOUT_REJECTED"<<std::endl;return 0;}

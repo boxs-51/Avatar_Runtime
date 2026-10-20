@@ -4,7 +4,9 @@
 [issue58](https://github.com/boxs-51/Avatar_Runtime/issues/58), after
 [issue57](https://github.com/boxs-51/Avatar_Runtime/issues/57).
 Inspected source: `37ba1355f987a1d9fe14c97ab5654700e6c93b32`.
-**Design contract; persistent runtime NOT IMPLEMENTED by this document.**
+**R0 design contract. Runtime implementation is recorded separately in the
+[R1-R5 acceptance](../completed/audits/ALPHA_58_SESSION_ACCEPTANCE.md); this
+document and its original R0 receipt do not themselves prove execution.**
 Owner instruction is to continue remaining issues under the
 [alpha contract](ALPHA_LINEAR_BACKLOG.md). That authorizes staged implementation;
 this file supplies no separate permission, public activation or release approval.
@@ -152,7 +154,7 @@ clock mismatch, stale control revision and replay are rejected before GPU work.
 | R4 | Package replacement and catalog/owner generation lifetime | Two packages, failed/late replacement, stale controls/ACK, release/reset/default and no cross-package state leak; child/process/COM cleanup |
 | R5 | Agent observation API and mapped interactive viewer through the same isolated path | Agent calls update/status/readback while owner can observe window; stale/revoked/closed requests rejected; direct pixels/physics/current generations agree; source/binary provenance |
 
-R1..R5 are **NOT IMPLEMENTED by R0**. Begin with a failing executable scenario
+R1..R5 were **NOT IMPLEMENTED by R0**; see the separate current acceptance above. Begin with a failing executable scenario
 where applicable; never substitute a model-authored receipt, static source pin
 or CI green for an actual worker/query/window observation. Public generated
 controls run in CI/local; the permitted private local model may be used only in
@@ -180,4 +182,4 @@ NO_RECOMMENDATION. No runtime execution was claimed for this design phase.
 Alpha custody regressions:15/15 PASS, exit0 (`build/alpha58-r0-custody-tests.log`);
 catalog151 entries and341 relative links resolve. Actual committed five-file
 scope and integration receipts are recorded in the R0 PR/parent issue. G1-G7
-apply to this design dependency only; full #58 runtime remains NOT IMPLEMENTED.
+apply to this design dependency only; full #58 runtime was NOT IMPLEMENTED at that R0 checkpoint.

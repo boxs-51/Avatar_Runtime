@@ -15,7 +15,7 @@ std::array<char,129> semantic(std::size_t i){
 }
 }
 CoreConsumer::~CoreConsumer(){if(opened_&&!closed_&&close()!=ARS_OK)std::terminate();}
-ars_status CoreConsumer::open(std::span<const ParameterInfo> mapping){
+ars_status CoreConsumer::open(std::span<const ParameterInfo> mapping,bool recoverable){
     if(std::this_thread::get_id()!=owner_)return ARS_E_WRONG_THREAD;
     if(opened_||closed_||mapping.empty()||mapping.size()>32)return ARS_E_INVALID_ARGUMENT;
     for(std::size_t i=0;i<mapping.size();++i){
@@ -24,6 +24,7 @@ ars_status CoreConsumer::open(std::span<const ParameterInfo> mapping){
            !std::isfinite(p.maximum)||p.minimum>p.default_value||p.default_value>p.maximum)return ARS_E_INVALID_ARGUMENT;
         for(std::size_t j=0;j<i;++j)if(mapping[j].id==p.id)return ARS_E_INVALID_ARGUMENT;
     }
+    recoverable_=recoverable;
     try{mapping_.assign(mapping.begin(),mapping.end());}catch(const std::bad_alloc&){return ARS_E_OUT_OF_BUDGET;}
     ars_runtime_desc desc{};desc.struct_size=sizeof(desc);desc.abi_version=ARS_ABI_VERSION;
     auto status=router_.create(desc,&runtime_);if(status!=ARS_OK)return status;
@@ -81,7 +82,7 @@ ars_status CoreConsumer::prepare(std::uint64_t sequence,std::span<const Paramete
 ars_status CoreConsumer::publish(){
     if(std::this_thread::get_id()!=owner_)return ARS_E_WRONG_THREAD;
     if(!pending_)return ARS_E_INVALID_ARGUMENT;
-    const auto status=router_.publish_cpu(&candidate_);pending_=false;if(status!=ARS_OK)faulted_=true;return status;
+    const auto status=router_.publish_cpu(&candidate_);pending_=false;if(status!=ARS_OK&&!recoverable_)faulted_=true;return status;
 }
 ars_status CoreConsumer::revoke(){
     if(std::this_thread::get_id()!=owner_)return ARS_E_WRONG_THREAD;
@@ -90,7 +91,7 @@ ars_status CoreConsumer::revoke(){
 }
 void CoreConsumer::discard() noexcept{
     if(std::this_thread::get_id()!=owner_)std::terminate();
-    if(pending_)faulted_=true;
+    if(pending_&&!recoverable_)faulted_=true;
     candidate_.reset();pending_=false;
 }
 ars_status CoreConsumer::read(std::vector<Parameter>& out,std::uint64_t &generation){

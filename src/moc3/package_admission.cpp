@@ -1,5 +1,6 @@
 #include "package_admission.hpp"
 #include "retained_physics.hpp"
+#include "lease_worker.hpp"
 #include "step_packet.hpp"
 #include "drawable_packet.hpp"
 #include "../assets/zip_reader.hpp"
@@ -25,7 +26,7 @@ void keys(const validation::Document& doc,validation::Value v,std::initializer_l
 struct Binding {std::uint32_t slot;float value;};
 struct CompleteFrame {std::uint64_t sequence,clock;std::uint32_t control=0;std::vector<Binding> bindings;std::vector<Parameter> parameters;};
 void emit(std::uint64_t value,unsigned bytes){for(unsigned i=0;i<bytes;++i)std::cout.put(static_cast<char>(value>>(i*8)));}
-int package_worker(bool retained,bool simulate,bool step){
+int package_worker(bool retained,bool simulate,bool step,bool lease){
     const char* rejection="PACKAGE_ENVELOPE_REJECTED";
     bool output_started=false;
     try{
@@ -38,7 +39,7 @@ int package_worker(bool retained,bool simulate,bool step){
         assets::OwnedBundle bundle(resource);std::vector<CompleteFrame> frames;std::vector<std::uint8_t> checkpoint;Digest model{},predecessor{};
         {std::pmr::vector<std::uint8_t> bytes(&resource);bytes.resize(static_cast<std::size_t>(size));
          require(bool(std::cin.read(reinterpret_cast<char*>(bytes.data()),bytes.size())));
-         if(step)model=package_identity(bytes,{reinterpret_cast<const std::uint8_t*>(name.data()),name.size()});
+         if(step||lease)model=package_identity(bytes,{reinterpret_cast<const std::uint8_t*>(name.data()),name.size()});
          if(retained){
              rejection="PACKAGE_COMMAND_REJECTED";auto count=step?1:read(4);require(count&&count<=8);frames.reserve(static_cast<std::size_t>(count));
              std::uint64_t last=0;
@@ -52,7 +53,7 @@ int package_worker(bool retained,bool simulate,bool step){
              }
              if(step){auto n=read(4);require(n<=checkpoint_cap);checkpoint.resize(static_cast<std::size_t>(n));require(bool(std::cin.read(reinterpret_cast<char*>(checkpoint.data()),checkpoint.size())));predecessor=sha256(checkpoint);}
          }
-         require(std::cin.peek()==EOF&&std::cin.eof()&&!std::cin.bad());
+         if(!lease)require(std::cin.peek()==EOF&&std::cin.eof()&&!std::cin.bad());
          rejection="PACKAGE_ZIP_REJECTED";assets::Work zip_work{limits.compressed+limits.work};assets::read_zip(bytes,bundle,resource,limits,zip_work);}
         rejection="PACKAGE_MANIFEST_REJECTED";auto& manifest=bundle.find(name);validation::Document doc(&resource);
         validation::parse_json({reinterpret_cast<const char*>(manifest.bytes.data()),manifest.bytes.size()},doc,limits,work);
@@ -91,6 +92,7 @@ int package_worker(bool retained,bool simulate,bool step){
         }
         if(simulate){rejection="PACKAGE_PHYSICS_REJECTED";require(bool(retained_physics));}
         unsigned bit=2;for(auto key:{"Motions","Expressions","Pose","UserData","DisplayInfo"}){if(refs.has(key))flags|=1u<<bit;++bit;}
+        if(lease){require(bool(retained_physics));return lease_worker(*session,*retained_physics,atlases,model,nonce,flags);}
         // Worker output is deliberately not a trust verdict. Host repeats complete validation.
         if(retained){
             rejection="PACKAGE_COMMAND_REJECTED";std::vector<ParameterInfo> catalog;require(session->parameter_info(catalog)==Result::ok&&catalog.size()<=4096);

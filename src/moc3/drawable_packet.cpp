@@ -23,7 +23,7 @@ struct Meta {std::uint32_t indices=0,masks=0;std::size_t mask_offset=0;};
 // Pass one deliberately has fixed scratch, no attacker-count-based allocations.
 void walk(Reader& r,std::uint64_t nonce,std::uint64_t generation,std::uint32_t version,Snapshot* scene,AtlasSet* images,std::uint32_t& flags){
     auto magic=r.take(8);need(std::memcmp(magic.data(),"ARSDRAW1",8)==0);
-    need((version==1&&generation==1)||((version==2||version==3||version==4)&&generation>=2&&generation<=9));
+    need((version==1&&generation==1)||((version==2||version==3||version==4)&&generation>=2&&generation<=9)||(version==5&&generation>=2));
     need(r.u32()==version);need(r.integer(8)==r.bytes.size());need(r.integer(8)==generation);
     need(nonce&&r.integer(8)==nonce);flags=r.u32();need((flags&~255u)==0&&((flags&3)==0||(flags&3)==3));
     need(version>=3?(flags&131u)==131u:(flags&128u)==0);
