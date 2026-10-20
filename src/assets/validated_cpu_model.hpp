@@ -65,6 +65,12 @@ class ValidatedCpuModel {
     const auto &canvas() const { return canvas_; }
     const auto &glb() const { return glb_; }
 };
+// Private algorithm injection for a contained worker. This is not an isolation
+// guarantee: callers remain responsible for their process boundary.
+using SchemaCheck = ars_status (*)(void *, validation::Schema, std::string_view, Resource &) noexcept;
+ars_status validate_bundle_checked(std::span<const std::uint8_t>, SchemaCheck, void *, Resource &,
+                                   std::shared_ptr<const ValidatedCpuModel> &,
+                                   const Limits &limits = {}) noexcept;
 // Private CPU ingestion only. No registry handle, authority grant or GPU effect.
 ars_status validate_bundle(std::span<const std::uint8_t>, validation::SchemaClient &, Resource &,
                            std::shared_ptr<const ValidatedCpuModel> &, const Limits &limits = {}) noexcept;

@@ -162,7 +162,22 @@ int wmain(int argc,wchar_t** argv){
               <<",\"worker_user_cpu_100ns\":"<<cpu.QuadPart<<",\"forwarding_failed\":"<<(forward_failed?"true":"false")<<"}";
     diagnostic.close();
     JOBOBJECT_BASIC_ACCOUNTING_INFORMATION accounting{};
-    if(!QueryInformationJobObject(job.value,JobObjectBasicAccountingInformation,&accounting,sizeof(accounting),nullptr)||accounting.ActiveProcesses!=0){if(forwarding_stuck)ExitProcess(13);return 13;}
+    const auto cleanup_deadline=GetTickCount64()+500;
+    DWORD accounting_error=0,initial_active=0,polls=0;
+    bool queried=false;
+    // A signaled process does not promise that Job accounting has already
+    // published its departure. Require observed zero, with a bounded drain.
+    do{
+        queried=QueryInformationJobObject(job.value,JobObjectBasicAccountingInformation,&accounting,sizeof(accounting),nullptr)!=FALSE;
+        accounting_error=queried?0:GetLastError();
+        if(polls++==0)initial_active=accounting.ActiveProcesses;
+        if(!queried||accounting.ActiveProcesses==0)break;
+        Sleep(1);
+    }while(GetTickCount64()<cleanup_deadline);
+    std::ofstream cleanup(worker.parent_path()/"job-cleanup.json");
+    cleanup<<"{\"query_error\":"<<accounting_error<<",\"initial_active\":"<<initial_active
+           <<",\"active_processes\":"<<accounting.ActiveProcesses<<",\"polls\":"<<polls<<"}";cleanup.close();
+    if(!queried||accounting.ActiveProcesses!=0){if(forwarding_stuck)ExitProcess(13);return 13;}
     // Clean up the profile explicitly and report cleanup failures; destructor covers earlier failures.
     if(FAILED(DeleteAppContainerProfile(profile.name.c_str()))){if(forwarding_stuck)ExitProcess(14);return 14;}
     profile.created=false;
@@ -174,6 +189,13 @@ int wmain(int argc,wchar_t** argv){
     if(cpu_rejected){std::cout<<"CPU_REJECTED"<<std::endl;return 0;}
     if(wait!=WAIT_OBJECT_0){std::cout<<"TIMEOUT_REJECTED"<<std::endl;return 0;}
     if(code!=0){std::cout<<"WORKER_REJECTED"<<std::endl;return 0;}
+#ifdef ARS_CPU_ADMISSION_PROBE
+    // Separate diagnostic build only. Legacy MOC3 allowlists stay unchanged.
+    // Host independently checks this fixed verdict; it contains no model data.
+    if(output.size()!=32){std::cout<<"OUTPUT_REJECTED"<<std::endl;return 0;}
+    _setmode(_fileno(stdout),_O_BINARY);
+    std::cout.write(output.data(),output.size());return std::cout?0:15;
+#endif
     if(package){
         if(output.size()>=48&&(output.compare(0,8,"ARSDRAW1")==0||output.compare(0,8,"ARSEVAL1")==0||output.compare(0,8,"ARSCAND1")==0)){
             _setmode(_fileno(stdout),_O_BINARY);std::cout.write(output.data(),output.size());return std::cout?0:15;
