@@ -8,9 +8,9 @@
   "scope": "README.md + every file recursively under docs/; build/, local-assets/, source/tests excluded from document inventory",
   "classification_is_gate_approval": false,
   "counts": {
-    "reference": 83,
-    "completed": 43,
-    "in_progress": 23,
+    "reference": 84,
+    "completed": 44,
+    "in_progress": 24,
     "obsolete": 4
   },
   "baseline_counts": {
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 153,
+  "total_documents": 156,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "515dffef8c6f29859dc24e8d82c6d58ccd7be3d6702772f2b99dd71301a26455"
+      "reviewed_sha256": "2dbb1bcca58f2fa81d3fc754cc1fa281290923f85723348b084f416e20e02201"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -1852,6 +1852,36 @@
       "encoding": "utf-8",
       "document_kind": "markdown",
       "reviewed_sha256": "512c8f99c5f148ae48061373b50ec854ace97fb3967f3fbff86a1abb6a289757"
+    },
+    {
+      "path": "docs/in-progress/ALPHA_59_PUBLIC_ABI_CONTRACT.md",
+      "category": "in_progress",
+      "lifecycle": "maintained_contract",
+      "reason": "Maintained ABI20 feature-off profile and ownership/status/installed SDK contract; future enabled CPU/graphics remain separate.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "8f0fb4d77a9ec37b0252f88070da641c8e34df9dbd79365d7951957bc29fae4d"
+    },
+    {
+      "path": "docs/reference/SDK_DEVELOPMENT_PACKAGE.md",
+      "category": "reference",
+      "lifecycle": "maintained_contract",
+      "reason": "Usage contract for opt-in source-built feature-off CPU development package; no shipping or capability qualification.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "82144ebcee33eecfbaee13618e72bb0f7e96159ab1a64d2b99be83ab79d86835"
+    },
+    {
+      "path": "docs/completed/audits/ALPHA_59_INSTALLED_ABI_ACCEPTANCE.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Scoped ABI20 development SDK installed static/shared local consumer and review acceptance; separate public-feature/platform/release gates retained.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "2ed74d0be0a9fa90d35d2b7ff92166e5c2d62e0f0f018b01db164230f1028069"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1863,10 +1893,10 @@
     "classification_is_gate_approval": false
   },
   "latest_checkpoint": {
-    "basis_head": "3846f1f7ae19e7d163b316c2d192252b199c6be7",
+    "basis_head": "52f3c7366021988d6d035d70c43bf13d22f4e337",
     "date": "2026-10-20",
-    "scope": "Alpha issue58 R1-R5 bounded isolated logical-session implementation and direct local acceptance",
-    "new_documents": 2,
+    "scope": "Alpha issue59 ABI20 profile contract and installed feature-off development package",
+    "new_documents": 3,
     "classification_is_gate_approval": false
   },
   "date": "2026-10-20"

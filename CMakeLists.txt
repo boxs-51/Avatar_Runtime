@@ -290,6 +290,10 @@ endif()
 
 # B1 is independent of the pre-runtime foundation and never enables sources/GPU.
 option(ARS_BUILD_RUNTIME_CORE "Build CPU runtime and private B2 authority components" OFF)
+option(ARS_INSTALL_RUNTIME_CORE_SDK "Install opt-in feature-off CPU development SDK (not release qualification)" OFF)
+if(ARS_INSTALL_RUNTIME_CORE_SDK AND NOT ARS_BUILD_RUNTIME_CORE)
+    message(FATAL_ERROR "Installed development SDK requires ARS_BUILD_RUNTIME_CORE=ON")
+endif()
 set(ARS_RUNTIME_SANITIZER "NONE" CACHE STRING "B1 sanitizer: NONE, ADDRESS or THREAD")
 set_property(CACHE ARS_RUNTIME_SANITIZER PROPERTY STRINGS NONE ADDRESS THREAD)
 if(ARS_BUILD_RUNTIME_CORE)
@@ -326,7 +330,9 @@ if(ARS_BUILD_RUNTIME_CORE)
     add_library(ars_runtime_core src/abi/abi_version.cpp src/abi/unsupported.cpp src/abi/runtime_api.cpp
         $<TARGET_OBJECTS:ars_runtime_components>)
     add_library(ARS::RuntimeCore ALIAS ars_runtime_core)
-    target_include_directories(ars_runtime_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+    target_include_directories(ars_runtime_core PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include>")
     target_link_libraries(ars_runtime_core PRIVATE Threads::Threads)
     if(WIN32)
         target_link_libraries(ars_runtime_core PRIVATE bcrypt)
@@ -412,6 +418,9 @@ set(ARS_FOUNDATION_SHARED ${BUILD_SHARED_LIBS})
 set(ARS_CONSUMER_RUNTIME_CORE ON)
 set(ARS_RUNTIME_SANITIZER ${ARS_RUNTIME_SANITIZER})
 ")
+    if(ARS_INSTALL_RUNTIME_CORE_SDK)
+        include(cmake/ars_runtime_sdk.cmake)
+    endif()
     message(STATUS "B2 private CPU authority: public source/model/character/update/render and GPU remain unsupported")
 endif()
 

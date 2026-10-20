@@ -31,6 +31,25 @@ HELD_PATHS = (
 
 # Reviewed issue scopes only. This is not an alpha/* wildcard or approval source.
 PR_SCOPES = {
+    "dev/alpha-59-installed-abi-contract": (
+        "52f3c7366021988d6d035d70c43bf13d22f4e337",
+        frozenset((
+            '.github/workflows/sdk-development-package.yml',
+            'CMakeLists.txt',
+            'cmake/AvatarRuntimeConfig.cmake.in',
+            'cmake/ars_runtime_sdk.cmake',
+            'docs/DOCUMENTATION_CATALOG.json',
+            'docs/DOCUMENTATION_INDEX.md',
+            'docs/completed/audits/ALPHA_59_INSTALLED_ABI_ACCEPTANCE.md',
+            'docs/in-progress/ALPHA_59_PUBLIC_ABI_CONTRACT.md',
+            'docs/in-progress/ALPHA_LINEAR_BACKLOG.md',
+            'docs/reference/SDK_DEVELOPMENT_PACKAGE.md',
+            'scripts/verify_installed_sdk.py',
+            'tests/contracts/check_alpha_custody.py',
+            'tests/sdk/CMakeLists.txt',
+            'tests/sdk/consumer.c',
+            'tests/sdk/consumer.cpp',
+        ))),
     "dev/alpha-58-r1-lease-codec": (
         "3846f1f7ae19e7d163b316c2d192252b199c6be7",
         frozenset((
