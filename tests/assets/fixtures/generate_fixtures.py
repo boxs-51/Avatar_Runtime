@@ -397,6 +397,37 @@ for label,component,maximum in [('float',5126,1),('8',5121,255),('16',5123,65535
       fixture.doc['accessors'].append({'bufferView':view,'componentType':component,'count':3,'type':'VEC3','normalized':True})
      else:p['attributes']['COLOR_0']=fixture.accessor(rows,component,'VEC'+str(channels),normalized=component!=5126)
     save(f'positive-alpha55-{label}-{channels}-{mode}-'+('baked' if baked else 'color')+'.glb',fixture.bytes(),'OK','Alpha55 vertex color / independent material factor control','M2')
+# Alpha57: transform cases paired with independently baked geometry/orientation.
+for mode in ('direct','nested','matrix','even'):
+ for sided in ('single','double'):
+  sx,sy,tx,ty,shear=-1,(-1 if mode=='even' else 1),1.25,(1.25 if mode=='even' else 0.25),0
+  for baked in (False,True):
+   fixture=GlbFixture();p=fixture.doc['meshes'][0]['primitives'][0]
+   positions=[[0,0,0],[1,0,0],[0,1,0]]
+   if baked:positions=[[sx*x+shear*y+tx,sy*y+ty,z] for x,y,z in positions]
+   p['attributes']['POSITION']=fixture.accessor(positions,min=[min(row[i] for row in positions) for i in range(3)],max=[max(row[i] for row in positions) for i in range(3)])
+   p['attributes']['NORMAL']=fixture.accessor([[0,0,1]]*3)
+   p['attributes']['TANGENT']=fixture.accessor([[(-1 if baked else 1),0,0,(-1 if baked and mode!='even' else 1)]]*3,shape='VEC4')
+   if baked and mode!='even':p['indices']=fixture.accessor([0,2,1],5123,'SCALAR')
+   fixture.doc['materials']=[{'doubleSided':sided=='double','pbrMetallicRoughness':{'baseColorFactor':[0,1,0,1]}}];p['material']=0
+   if not baked:
+    if mode=='matrix':fixture.doc['nodes'][0]['matrix']=[sx,0,0,0,shear,sy,0,0,0,0,1,0,tx,ty,0,1]
+    elif mode in ('nested','even'):
+     fixture.doc['nodes'][0].update(translation=[0.25 if mode=='nested' else 0,ty,0],scale=[1,sy,1])
+     fixture.doc['nodes'].append({'children':[0],'scale':[-1,1,1],'translation':[1.5 if mode=='nested' else tx,0,0]});fixture.doc['scenes'][0]['nodes']=[1]
+    else:fixture.doc['nodes'][0].update(scale=[sx,sy,1],translation=[tx,ty,0])
+   save(f'positive-alpha57-{mode}-{sided}-'+('baked' if baked else 'transform')+'.glb',fixture.bytes(),'OK','Alpha57 authored transform vs baked orientation','M2')
+for mode in ('joint','inherited','blended'):
+ fixture=copy.deepcopy(render_flat)
+ if mode=='joint':fixture.doc['nodes'][1]['scale']=[-2,1,1]
+ elif mode=='inherited':fixture.doc['nodes'][0]['scale']=[-1,1,1]
+ else:
+  fixture.doc['nodes']=[{'mesh':0,'skin':0,'children':[1,2,3]},{'rotation':[1,0,0,0]},{'rotation':[0,1,0,0]},{'rotation':[0,0,1,0]}]
+  fixture.doc['skins']=[{'joints':[1,2,3],'skeleton':0}]
+  attributes=fixture.doc['meshes'][0]['primitives'][0]['attributes']
+  attributes['JOINTS_0']=fixture.accessor([[0,1,2,0]]*3,5121,'VEC4')
+  attributes['WEIGHTS_0']=fixture.accessor([[1/3,1/3,1/3,0]]*3,shape='VEC4')
+ save(f'positive-alpha57-skin-{mode}.glb',fixture.bytes(),'OK','Alpha57 valid GLB, reflected effective skin unsupported beforeGPU','M2')
 (root/'atlas.png').write_bytes(png());(root/'manifest.json').write_bytes((json.dumps(records,indent=2,ensure_ascii=False)+'\n').encode())
 if args.reference_manifest:
  reference=json.loads(pathlib.Path(args.reference_manifest).read_text(encoding='utf-8'))

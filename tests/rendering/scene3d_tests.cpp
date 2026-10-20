@@ -65,6 +65,32 @@ int main(int argc, char **argv) {
             }
             std::printf("ALPHA55_CPU_%s_%s=PASS\n",label,channels);
         }
+        auto alpha57_load=[&](const std::string &name) {
+            std::shared_ptr<const ars::assets::GlbModel> loaded;
+            test::check(ars::assets::ingest_glb(test::file(root/name),resource,loaded)==ARS_OK,"reflection controls admit unchanged validator");
+            return loaded;
+        };
+        bool reflection_ok=true;
+        for (const auto mode:{"direct","nested","matrix","even"}) for (const auto sided:{"single","double"}) {
+            const auto prefix=std::string("positive-alpha57-")+mode+"-"+sided;
+            ars::rendering::PreparedScene3D actual,expected;
+            test::check(ars::rendering::prepare_static_3d(alpha57_load(prefix+"-transform.glb"),actual)==ARS_OK &&
+                ars::rendering::prepare_static_3d(alpha57_load(prefix+"-baked.glb"),expected)==ARS_OK,"static reflected controls project");
+            bool same=actual.draws[0].indices==expected.draws[0].indices;
+            for (std::size_t i=0;i<3;++i) {
+                const auto &a=actual.draws[0].vertices[i],&b=expected.draws[0].vertices[i];
+                for (std::size_t c=0;c<3;++c) same=near(a.position[c],b.position[c]) && near(a.normal[c],b.normal[c]) && same;
+                for (std::size_t c=0;c<4;++c) same=near(a.tangent[c],b.tangent[c]) && same;
+            }
+            std::printf("ALPHA57_CPU_%s_%s=%s\n",mode,sided,same?"PASS":"FAIL");reflection_ok=same && reflection_ok;
+        }
+        for (const auto mode:{"joint","inherited","blended"}) {
+            auto retained=scene.source;const auto previous=scene.draws[0].vertices[0].position;
+            const bool rejected=ars::rendering::prepare_static_3d(alpha57_load(std::string("positive-alpha57-skin-")+mode+".glb"),scene)==ARS_E_UNSUPPORTED &&
+                scene.source==retained && scene.draws[0].vertices[0].position==previous;
+            std::printf("ALPHA57_SKIN_%s=%s\n",mode,rejected?"PASS":"FAIL");reflection_ok=rejected && reflection_ok;
+        }
+        std::fflush(stdout);test::check(reflection_ok,"reflected orientation or typed rejection with rollback");
         auto override_bytes=test::file(root/"positive-m2-3d-node-weight.glb");
         std::shared_ptr<const ars::assets::GlbModel> override_model;
         test::check(ars::assets::ingest_glb(override_bytes,resource,override_model)==ARS_OK,

@@ -74,6 +74,14 @@ PR_SCOPES = {
             "tests/contracts/check_alpha_custody.py", "docs/completed/audits/ALPHA_56_D3D_FAILURE_ACCEPTANCE.md",
             "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
             "docs/DOCUMENTATION_INDEX.md"))),
+    "fix/alpha-57-reflected-orientation": (
+        "da805b4a361fca11dda766d3943c4b8369c34691",
+        frozenset(("src/rendering/scene3d.cpp", "tests/rendering/scene3d_tests.cpp",
+            "tests/rendering/d3d11_scene3d_pixels.cpp", "tests/assets/fixtures/generate_fixtures.py",
+            "tests/assets/fixtures/manifest.json", "tests/contracts/check_alpha_custody.py",
+            "docs/completed/audits/ALPHA_57_REFLECTED_TRANSFORM_ACCEPTANCE.md",
+            "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
+            "docs/DOCUMENTATION_INDEX.md"))),
 }
 
 def check_alpha(candidate="HEAD", base=MAIN):

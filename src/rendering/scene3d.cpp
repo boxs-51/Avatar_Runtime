@@ -52,6 +52,13 @@ Vec direction(const Mat &m, Vec v) {
             (bc[1]*v[0]+ca[1]*v[1]+ab[1]*v[2])/det,
             (bc[2]*v[0]+ca[2]*v[1]+ab[2]*v[2])/det};
 }
+bool reflected(const Mat &m) {
+    const double determinant=m[0]*(m[5]*m[10]-m[6]*m[9])-
+        m[4]*(m[1]*m[10]-m[2]*m[9])+m[8]*(m[1]*m[6]-m[2]*m[5]);
+    if (!std::isfinite(determinant) || std::abs(determinant)<1e-12)
+        assets::fail(ARS_E_UNSUPPORTED);
+    return determinant<0;
+}
 Vec unit(Vec v) {
     const double length=std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
     if (!std::isfinite(length) || length<1e-12) assets::fail(ARS_E_UNSUPPORTED);
@@ -224,7 +231,11 @@ ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
                         add_budget(next.estimated_gpu_bytes,
                                    std::size_t(image.width)*image.height,6,limits.gpu_bytes);
                     }
+                const bool reverse_winding=palette.empty() && reflected(instance.world);
                 draw.indices.assign(primitive.indices.begin(),primitive.indices.end());
+                if (reverse_winding)
+                    for (std::size_t i=0;i<draw.indices.size();i+=3)
+                        std::swap(draw.indices[i+1],draw.indices[i+2]);
                 draw.vertices.reserve(positions.count);
                 const auto &weights=node.weights.empty()?mesh.weights:node.weights;
                 for (std::size_t vi=0;vi<positions.count;++vi) {
@@ -256,17 +267,24 @@ ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
                             assets::fail(ARS_E_UNSUPPORTED);
                         const auto &j=data.accessors.at(primitive.joints), &w=data.accessors.at(primitive.weights);
                         Vec sp{},sn{},st{};
+                        Mat effective{};
                         for (std::size_t k=0;k<4;++k) {
                             const auto weight=normalized_component(w,vi*4+k);
                             if (weight==0) continue;
                             const auto joint=static_cast<std::size_t>(j.values[vi*4+k]);
                             if (joint>=palette.size()) assets::fail(ARS_E_BAD_ASSET);
+                            for (int column=0;column<3;++column) for (int row=0;row<3;++row)
+                                effective[column*4+row]+=weight*palette[joint][column*4+row];
                             auto tp=point(palette[joint],p),tn=direction(palette[joint],n);
                             auto tt=has_tangent?vector(palette[joint],tangent):Vec{};
                             for (int c=0;c<3;++c) {
                                 sp[c]+=weight*tp[c];sn[c]+=weight*tn[c];st[c]+=weight*tt[c];
                             }
                         }
+                        // A skin can mix different effective orientations across
+                        // one primitive. Reject reflected/singular blends rather
+                        // than applying an incorrect draw-wide winding change.
+                        if (reflected(effective)) assets::fail(ARS_E_UNSUPPORTED);
                         p=sp;n=unit(sn);if (has_tangent) tangent=st;
                     } else {
                         p=point(instance.world,p);n=unit(direction(instance.world,n));
@@ -280,7 +298,7 @@ ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
                     Vertex3D v;
                     for (int c=0;c<3;++c) { v.position[c]=checked(p[c]); v.normal[c]=checked(n[c]); }
                     for (int c=0;c<3;++c) v.tangent[c]=checked(tangent[c]);
-                    v.tangent[3]=checked(handedness);
+                    v.tangent[3]=checked(reverse_winding?-handedness:handedness);
                     if (primitive.uv!=assets::glb_none) {
                         const auto &uv=data.accessors.at(primitive.uv);
                         v.uv={checked(normalized_component(uv,vi*2)),checked(normalized_component(uv,vi*2+1))};
