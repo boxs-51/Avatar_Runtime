@@ -82,6 +82,11 @@ PR_SCOPES = {
             "docs/completed/audits/ALPHA_57_REFLECTED_TRANSFORM_ACCEPTANCE.md",
             "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
             "docs/DOCUMENTATION_INDEX.md"))),
+    "dev/alpha-58-session-policy": (
+        "37ba1355f987a1d9fe14c97ab5654700e6c93b32",
+        frozenset(("docs/in-progress/ALPHA_58_SESSION_LIFECYCLE_DESIGN.md",
+            "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
+            "docs/DOCUMENTATION_INDEX.md", "tests/contracts/check_alpha_custody.py"))),
 }
 
 def check_alpha(candidate="HEAD", base=MAIN):
