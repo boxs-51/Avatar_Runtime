@@ -1,0 +1,13 @@
+@PACKAGE_INIT@
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "@CMAKE_SYSTEM_NAME@")
+    set(AvatarRuntime_FOUND FALSE)
+    set(AvatarRuntime_NOT_FOUND_MESSAGE "This SDK binary targets @CMAKE_SYSTEM_NAME@ only")
+    return()
+endif()
+include(CMakeFindDependencyMacro)
+find_dependency(Threads)
+include("${CMAKE_CURRENT_LIST_DIR}/AvatarRuntimeTargets.cmake")
+set(AvatarRuntime_RuntimeCore_FOUND TRUE)
+set(AvatarRuntime_PROFILE "CPU_LIFECYCLE_FEATURES_OFF")
+set(AvatarRuntime_ABI_VERSION 65536)
+check_required_components(AvatarRuntime)
