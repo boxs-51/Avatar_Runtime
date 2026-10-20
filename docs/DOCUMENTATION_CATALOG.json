@@ -9,8 +9,8 @@
   "classification_is_gate_approval": false,
   "counts": {
     "reference": 84,
-    "completed": 44,
-    "in_progress": 24,
+    "completed": 45,
+    "in_progress": 25,
     "obsolete": 4
   },
   "baseline_counts": {
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 156,
+  "total_documents": 158,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -125,7 +125,7 @@
       "reason": "Mục lục/phân loại và review notes được tạo trong lần rà soát này.",
       "lifecycle": "navigation",
       "related_paths": [],
-      "reviewed_sha256": null,
+      "reviewed_sha256": "4ad13ec7887b2b79f0226e2b1096b7d42b23ff9b1ab0971955db996958081fb4",
       "hash_note": "Generated navigation artifacts omit self/cross hashes to avoid cyclic provenance.",
       "document_kind": "markdown",
       "legacy_path": "docs/DOCUMENTATION_INDEX.md"
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "2dbb1bcca58f2fa81d3fc754cc1fa281290923f85723348b084f416e20e02201"
+      "reviewed_sha256": "1c15a9411a95009ec4e73c6a1a7904eb944cb813e7e14bef52963cc518060ad0"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -1882,6 +1882,26 @@
       "encoding": "utf-8",
       "document_kind": "markdown",
       "reviewed_sha256": "2ed74d0be0a9fa90d35d2b7ff92166e5c2d62e0f0f018b01db164230f1028069"
+    },
+    {
+      "path": "docs/in-progress/ALPHA_60_ISOLATED_ADMISSION_DESIGN.md",
+      "category": "in_progress",
+      "lifecycle": "in_progress",
+      "reason": "Scoped isolated diagnostic probe design and explicit remaining full typed CPU model transfer, ownership, authority and installed-consumer work.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "5a28f9fdff07220e27c987a96c80d42db577b207db7ee6793b5ffdc2165c7ee5"
+    },
+    {
+      "path": "docs/completed/audits/ALPHA_60_ISOLATED_ADMISSION_ACCEPTANCE.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Windows local verdict-only isolated native validation probe acceptance; full issue60 and public CPU integration remain OPEN.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "27f7fbddd4cdb15e2bda3f1ca2f1320c613e90395511c0be71aba784af84b899"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1893,10 +1913,10 @@
     "classification_is_gate_approval": false
   },
   "latest_checkpoint": {
-    "basis_head": "52f3c7366021988d6d035d70c43bf13d22f4e337",
+    "basis_head": "49eb54a88cfc30e1104bf12750852827be36aa87",
     "date": "2026-10-20",
-    "scope": "Alpha issue59 ABI20 profile contract and installed feature-off development package",
-    "new_documents": 3,
+    "scope": "Alpha issue60 A60-1a isolated native diagnostic probe only; full CPU lifecycle remains OPEN",
+    "new_documents": 2,
     "classification_is_gate_approval": false
   },
   "date": "2026-10-20"

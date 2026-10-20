@@ -31,6 +31,22 @@ HELD_PATHS = (
 
 # Reviewed issue scopes only. This is not an alpha/* wildcard or approval source.
 PR_SCOPES = {
+    "dev/alpha-60-isolated-admission": (
+        "49eb54a88cfc30e1104bf12750852827be36aa87",
+        frozenset((
+            'CMakeLists.txt',
+            'docs/DOCUMENTATION_CATALOG.json',
+            'docs/DOCUMENTATION_INDEX.md',
+            'docs/completed/audits/ALPHA_60_ISOLATED_ADMISSION_ACCEPTANCE.md',
+            'docs/in-progress/ALPHA_60_ISOLATED_ADMISSION_DESIGN.md',
+            'docs/in-progress/ALPHA_LINEAR_BACKLOG.md',
+            'scripts/verify_cpu_admission_probe.py',
+            'src/assets/cpu_admission_worker.cpp',
+            'src/assets/validated_cpu_model.cpp',
+            'src/assets/validated_cpu_model.hpp',
+            'src/moc3/import_sandbox.cpp',
+            'tests/contracts/check_alpha_custody.py',
+        ))),
     "dev/alpha-59-installed-abi-contract": (
         "52f3c7366021988d6d035d70c43bf13d22f4e337",
         frozenset((
