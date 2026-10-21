@@ -74,6 +74,29 @@ void hierarchy(const std::filesystem::path &path){
     near(scene.draws[1].opacity,.5,"parent retains local opacity");
     std::puts("PASS actual committed hierarchy/visibility/opacity/Z");
 }
+void morph_scenes(const std::filesystem::path &root){
+    struct Case {const char *name;bool multiple;};
+    for(const Case c: {Case{"committed-multiscene.arschar",false},Case{"committed-multiinstance.arschar",true},
+                      Case{"committed-multiscene-second.arschar",false}}){
+        Fixture f(root/c.name);const bool multiple=c.multiple;
+        auto neutral=f.capture();rendering::PreparedScene3D static_scene;
+        check(ARS_OK,rendering::prepare_static_3d(*neutral->model(),static_scene),"valid selected scene static control");
+        test::check(static_scene.draws.size()==(multiple?2u:1u),"only selected scene instances render");
+        auto baseline=three(*neutral);
+        test::check(baseline.draws.size()==static_scene.draws.size(),"neutral committed multiscene control");
+        f.submit({channel("mouth.open",{.75f,0,0,0})});auto frame=f.capture();auto moved=three(*frame);
+        near(moved.draws[0].vertices[0].position[0],1+std::cos(.3)*.15,"selected skinned instance receives actual morph");
+        if(multiple)near(moved.draws[1].vertices[0].position[0],2.075,"second selected instance receives same actual morph");
+    }
+    Fixture control(root/"committed-euler.arschar");auto original=control.capture();auto scene=three(*original);
+    const auto source=scene.source;const auto count=scene.draws.size();const auto x=scene.draws[0].vertices[0].position[0];
+    Fixture absent(root/"committed-morph-outside-only.arschar");auto frame=absent.capture();
+    check(ARS_E_UNSUPPORTED,rendering::prepare_committed_3d(*frame->model(),
+        std::span(frame->pose()->outputs.data(),frame->pose()->channel_count),scene),"morph outside selected scene remains unsupported");
+    test::check(scene.source==source&&scene.draws.size()==count&&scene.draws[0].vertices[0].position[0]==x,
+        "unreachable-only morph failure preserves prior prepared output");
+    std::puts("PASS selected-scene morph expansion/all reachable instances/outside-only rejection");
+}
 }
 int main(int argc,char **argv){if(argc!=2)return 2;const std::filesystem::path root=argv[1];
-    euler(root/"committed-euler.arschar");quaternion(root/"committed-quaternion.arschar");hierarchy(root/"committed-hierarchy.arschar");}
+    euler(root/"committed-euler.arschar");quaternion(root/"committed-quaternion.arschar");hierarchy(root/"committed-hierarchy.arschar");morph_scenes(root);}

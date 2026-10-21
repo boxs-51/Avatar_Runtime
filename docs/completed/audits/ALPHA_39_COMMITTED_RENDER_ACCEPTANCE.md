@@ -44,13 +44,14 @@ unknown-query CPU/runtime pins can be released by the owning receipt.
 
 | Check | Observation |
 | --- | --- |
-| Configured public-profile native suite | 51/51 PASS, exit0, zero skipped/disabled; final production and sentinel oracle, before the last test-only100-close loop; build/alpha39-final-native.log and JUnit/full stdout pinned in the receipt |
+| Final configured public-profile native suite | 53/53 PASS, exit0, zero skipped/disabled, after the selected-scene morph fix; includes100-close/live, Debug consumer correction and two new public multiscene pixel cases; build/alpha39-morph-final53.log and full stdout/JUnit pinned in the receipt |
 | Final affected owned/live suite | 4/4 PASS, exit0, after adding100 actual-runtime H-close/R-publication races per backend; WARP/hardware ordinary and debug-captured runs, exact CLOSED result, R drain and unchanged live-object identities |
 | Affected private/feature-off regression suite | 38/38 PASS, exit0, zero skipped/disabled; original C2/M2/MOC3/ownership pixel and failure oracles retained |
 | CPU-only compatibility | Freshly rebuilt profile37/37 PASS, exit0, zero skipped/disabled, including original UNSUPPORTED render/drain assertions |
 | Debug direct C++ smoke consumer | CI exposed a static Debug iterator-ABI mismatch; the same local build failed before a three-line test-target CMake fix. The unchanged1000-finalizer race then passed. Runtime/export flags and feature-off targets are unchanged; installed4-config qualification was repeated on the corrected CMake, all4 PASS. Full51/private38/CPU37 precede this test-build-only delta. |
 | Frozen contracts | 178/178 PASS, exit0, native filesystem execution with dedicated workspace TEMP/TMP |
 | Numeric producer/projection | Actual semantic ingress/update/capture; neutral/static parity, independent Euler/quaternion calculations, hierarchy, skin/morph/camera and retained historical snapshots |
+| Selected-scene morph regression | Observed local RED: valid static scene succeeds but committed projection returns UNSUPPORTED with a mapped mesh instance in another scene. GREEN3: actual-runtime numeric controls for scene0/1, selected descendant/multiple instances and outside-only rejection preserving prior output; public C ABI dynamic pixels on WARP/hardware. Full53 and installed4 are repeated after the source fix. |
 | Public pixels | Visibility and half-opacity controls, independently expected colored-quad displacement/Z, committed skin/morph/camera changes; WARP and NVIDIA GTX1060 3GB, driver32.0.15.8157 |
 | Fractional LOD and mips | LOD0.25/0.75/1.25/1.75, mip0/1/2 and three sampler filters; independent expected pixel values on both backends |
 | Publication and resize | 100 mode switches/resizes per backend; live drain, pending-target replacement refusal, stale configuration, wrong R, invalid device generation and mixed-character census |
@@ -72,7 +73,13 @@ retry, aggregate budgeting, accepted metadata, typed 2D HRESULT, host shader/
 predication isolation, C11 coverage, race observation and pixel rollback were
 corrected. Both final bounded reviews report PASS, with no open supported P0-P2.
 Typed HRESULT and hostile geometry shader each have observed RED-to-GREEN
-receipts. No pre-fix execution is invented for the other findings.
+receipts. The later GitHub P2 for inactive-scene morph expansion also has a
+source-pinned RED-to-GREEN receipt and independent bounded source/oracle review.
+No pre-fix execution is invented for the other findings. Historical native51,
+affected4 and CPU-only37 receipts retain their original source boundaries;
+final53 supersedes the earlier public-profile runs. The installed design
+snapshot precedes the final selected-scene wording clarification; runtime and
+consumer source hashes are stable throughout the refreshed installed matrix.
 
 ## Separate gate decisions
 

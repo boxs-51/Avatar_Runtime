@@ -62,6 +62,10 @@ Quaternion rotation uses current * inverse(neutral) as the local rotation delta.
 Translation and scale apply current-neutral offsets to the authored base TRS.
 Morph semantics provide the validated absolute target weight; validated defaults
 already match mesh/node weights. Defaults therefore reproduce static geometry.
+Mesh-name morph mappings expand to every instance reachable through the selected
+scene's roots and children. Instances exclusive to other scenes are ignored;
+if no selected instance matches, return UNSUPPORTED. Explicit named bone
+mappings and low-level node overlays retain strict reachability validation.
 An overlapping full-quaternion/Euler rotation mapping, conflicting property or
 matrix-authored TRS target is typed UNSUPPORTED before GPU work. No binding is
 silently dropped. Existing singular/reflected skin policies remain unchanged.

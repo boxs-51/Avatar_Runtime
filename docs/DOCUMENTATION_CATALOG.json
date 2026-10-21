@@ -125,7 +125,7 @@
       "reason": "Mục lục/phân loại và review notes được tạo trong lần rà soát này.",
       "lifecycle": "navigation",
       "related_paths": [],
-      "reviewed_sha256": "d4a329ca30d9d709550a9d3cd52b784f6750979827efa0d66520890ecc6c10ce",
+      "reviewed_sha256": "7aaaee1f7c2cebc1f2bbc97a5e6514cbb78175965d232c7882edd5e16a719066",
       "hash_note": "Generated navigation artifacts omit self/cross hashes to avoid cyclic provenance.",
       "document_kind": "markdown",
       "legacy_path": "docs/DOCUMENTATION_INDEX.md"
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "143036d9da10fdc2176943e8521567aa3e56a9cbb560581dcbc93db0697bef0b"
+      "reviewed_sha256": "fdd30977b6e5699c9d2475a7b3d6fe7685957bd6b3978dd61136d372c7557ced"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -1991,7 +1991,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "99a098bd21033229651883a3d55c730f502a16e67c6383ac4293c828cf518349"
+      "reviewed_sha256": "d1045e0c0a174bc0a94ed1ddbf16d49c43950fed04b13a5fedfb97d26afc650a"
     },
     {
       "path": "docs/completed/audits/ALPHA_39_COMMITTED_RENDER_ACCEPTANCE.md",
@@ -2001,7 +2001,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "d55d58950ba005de6afe9def8225c19363f2a043057fe9fbe7b228c0226a44ac"
+      "reviewed_sha256": "eb4788161373ee0c49770569ccaeb862d9c4b97b9ffb0a6845f395f8f437ae59"
     },
     {
       "path": "docs/reference/audits/ALPHA_39_COMMITTED_RENDER_SOURCE.json",
@@ -2011,7 +2011,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "json",
-      "reviewed_sha256": "623b97786528f1b2cca33262f2bdd4993570cd39a2b4631e5c794cb32f9102e4"
+      "reviewed_sha256": "44c2c1fe42d1557ed5a5587e0cbc782725a8922b6bbd29e63cbb23f67dd86042"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",

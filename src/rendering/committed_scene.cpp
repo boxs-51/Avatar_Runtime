@@ -82,6 +82,16 @@ ars_status prepare_committed_3d(const assets::ValidatedCpuModel &model,
     if(!model.glb())return ARS_E_UNSUPPORTED;
     try {
         const auto &data=model.glb()->data();assets::Work work{8'000'000};
+        if(data.scene==assets::glb_none||data.scene>=data.scenes.size())return ARS_E_UNSUPPORTED;
+        std::vector<bool> reachable(data.nodes.size(),false);
+        std::vector<std::uint32_t> pending;
+        for(const auto root:data.scenes[data.scene].roots){work.take();pending.push_back(root);}
+        while(!pending.empty()){
+            work.take();const auto node=pending.back();pending.pop_back();
+            if(node>=data.nodes.size())return ARS_E_BAD_ASSET;
+            if(reachable[node])continue;reachable[node]=true;
+            for(const auto child:data.nodes[node].children){work.take();pending.push_back(child);}
+        }
         std::vector<NodePose3D> overlays;
         struct Mapping {unsigned properties=0;std::array<double,3> angles{};std::vector<bool> morphs;};
         std::vector<Mapping> mappings;
@@ -117,6 +127,9 @@ ars_status prepare_committed_3d(const assets::ValidatedCpuModel &model,
             }else if(target.starts_with("morph:")){
                 const auto name=target.substr(6);
                 for(std::uint32_t n=0;n<data.nodes.size();++n){
+                    // Mesh-name mappings expand only within the selected scene.
+                    // Explicit bone mappings keep their strict reachability check.
+                    work.take();if(!reachable[n])continue;
                     const auto &base=data.nodes[n];if(base.mesh==assets::glb_none)continue;
                     const auto &mesh=data.meshes[base.mesh];
                     for(std::size_t t=0;t<mesh.target_names.size();++t){

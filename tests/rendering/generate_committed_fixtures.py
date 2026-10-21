@@ -92,6 +92,27 @@ def generate(corpus, output):
         (output / name).write_bytes(data.getvalue())
 
     save('committed-euler.arschar', manifest)
+    # The same mapped mesh may have instances outside the default scene.
+    # Those instances must not generate overlays for the selected scene.
+    multiscene = copy.deepcopy(document)
+    outside = len(multiscene['nodes'])
+    multiscene['nodes'].append({'name': 'OtherSceneMesh', 'mesh': 0, 'translation': [100, 0, 0]})
+    multiscene['scenes'].append({'nodes': [outside]})
+    save('committed-multiscene.arschar', manifest, multiscene)
+    second_scene = copy.deepcopy(multiscene)
+    second_scene['scenes'].reverse()
+    second_scene['scene'] = 1
+    save('committed-multiscene-second.arschar', manifest, second_scene)
+    instances = copy.deepcopy(multiscene)
+    inside = len(instances['nodes'])
+    instances['nodes'].append({'name': 'SelectedGroup', 'children': [inside + 1]})
+    instances['nodes'].append({'name': 'SelectedMesh', 'mesh': 0, 'translation': [2, 0, 0]})
+    instances['scenes'][0]['nodes'].append(inside)
+    save('committed-multiinstance.arschar', manifest, instances)
+    absent = copy.deepcopy(multiscene)
+    del absent['nodes'][0]['mesh']
+    absent['nodes'][0].pop('skin', None)
+    save('committed-morph-outside-only.arschar', manifest, absent)
     quaternion = copy.deepcopy(manifest)
     euler_ids = {'head.yaw_rad', 'head.pitch', 'head.roll'}
     quaternion['rig_semantics'] = [s for s in quaternion['rig_semantics'] if s['id'] not in euler_ids]

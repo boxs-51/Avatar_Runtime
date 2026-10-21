@@ -110,6 +110,7 @@ endforeach()
                 run([deployed / 'gpu.exe', fixture, '--hardware'], cwd=hostile)
                 for suffix in ([], ['--hardware']):
                     run([deployed / 'gpu.exe', committed / 'committed-euler.arschar', '--dynamic', *suffix], cwd=hostile)
+                    run([deployed / 'gpu.exe', committed / 'committed-multiscene.arschar', '--dynamic', *suffix], cwd=hostile)
                     run([deployed / 'gpu.exe', committed, '--mip', *suffix], cwd=hostile)
                 receipt['cases'].append({'case': case.name, 'result': 'PASS',
                     'installed_sha256': {p.relative_to(installed).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
