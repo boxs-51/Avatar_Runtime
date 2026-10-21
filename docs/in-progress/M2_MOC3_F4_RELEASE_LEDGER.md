@@ -71,3 +71,16 @@ whole-package replacement/lifecycle under an explicit session resource policy
 before public interactive publication. The five-second job cap is unchanged.
 
 Before public SDK implementation, freeze the intended supported subset, installed consumer/capability behavior and trust boundary. Then implement/qualify public model lifecycle and persistent input ownership, followed by cross-platform/package/ABI tests, parser isolation/fuzz and the required performance workload. Obtain a redistributable test fixture without changing the private model's rights. Track physical loss on a separate runner. Existing source approval or this F4-A result does not authorize advertising a feature or waiving the missing observations.
+
+## #38 owned native lifetime checkpoint - 2026-10-21
+
+[Direct ownership acceptance](../completed/audits/ALPHA_38_PRODUCTION_OWNERSHIP_ACCEPTANCE.md)
+supersedes the earlier private-host-only lifetime limitation for the enumerated
+current native packet/lease/2D/GLB3D/MOC3 graph. Registered admission, actual core
+pins, readback/restore/cache ownership and two-phase teardown are implemented and
+verified on WARP and GTX1060 with bounded injected loss and equal before/after
+live-object identities. G00 technical-method is accepted only for this graph;
+whole G00, installed public graphics, G01/G02 full qualification, integrated
+sanitizer/platform/security/performance/release gates remain HOLD. Actual D06/D08
+loss/recovery remains #40 HOLD; no driver reset was performed. #39 is the next
+ordered committed pose/camera and full render-acceptance task.

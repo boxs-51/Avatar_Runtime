@@ -104,6 +104,15 @@ ars_status CoreConsumer::read(std::vector<Parameter>& out,std::uint64_t &generat
         generation=lease.get()->generation;out.swap(result);return ARS_OK;
     }catch(const std::bad_alloc&){return ARS_E_OUT_OF_BUDGET;}
 }
+ars_status CoreConsumer::retain_graphics(std::shared_ptr<const void>& out){
+    if(std::this_thread::get_id()!=owner_)return ARS_E_WRONG_THREAD;
+    if(!opened_||closed_)return ARS_E_CLOSED;
+    if(out)return ARS_E_INVALID_ARGUMENT;
+    try{auto pin=std::make_shared<core::RuntimeLease>();
+        const auto status=router_.acquire(runtime_,core::LeaseKind::work,pin.get());
+        if(status==ARS_OK)out=std::move(pin);return status;
+    }catch(const std::bad_alloc&){return ARS_E_OUT_OF_BUDGET;}
+}
 ars_status CoreConsumer::close(){
     if(std::this_thread::get_id()!=owner_)return ARS_E_WRONG_THREAD;
     if(!opened_||closed_)return ARS_E_CLOSED;

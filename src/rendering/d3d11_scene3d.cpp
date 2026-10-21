@@ -27,6 +27,7 @@ struct Range {
     ComPtr<ID3D11SamplerState> base_sampler,mr_sampler;
 };
 struct Frame {
+    graphics::d3d11::ContextOwnership::Participant gpu_owner;
     std::shared_ptr<const PreparedScene3D> snapshot;
     std::shared_ptr<const assets::GlbModel> source;
     ComPtr<ID3D11Buffer> vertices,indices;
@@ -38,6 +39,7 @@ struct Frame {
     ComPtr<ID3D11DepthStencilState> depth_write,depth_read;
     ComPtr<ID3D11Texture2D> depth;
     ComPtr<ID3D11DepthStencilView> dsv;
+    ComPtr<ID3D11SamplerState> fallback_sampler;
     std::vector<Range> ranges;
 };
 template<class Create>
@@ -314,6 +316,15 @@ Result build(ID3D11Device *device,const PreparedScene3D &scene,const Camera3D &c
         created!=Result::ok) return created;
     if (const auto created=create_resource(device,probe,[&] { return device->CreateDepthStencilView(frame.depth.Get(),nullptr,&frame.dsv); });
         created!=Result::ok) return created;
+    // Both shader sampler slots must be bound even when a material has no
+    // texture. Keep the fallback owned by this exact frame/query generation.
+    D3D11_SAMPLER_DESC fallback{};
+    fallback.Filter=D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    fallback.AddressU=fallback.AddressV=fallback.AddressW=D3D11_TEXTURE_ADDRESS_CLAMP;
+    fallback.MaxAnisotropy=1;fallback.ComparisonFunc=D3D11_COMPARISON_NEVER;
+    fallback.MaxLOD=D3D11_FLOAT32_MAX;
+    if(const auto created=create_resource(device,probe,[&]{return device->CreateSamplerState(&fallback,&frame.fallback_sampler);});
+       created!=Result::ok)return created;
     return Result::ok;
 }
 } // namespace
@@ -324,27 +335,31 @@ graphics::Result render_offscreen_3d(graphics::d3d11::HostDevice &backend,
     graphics::d3d11::QueryRetirement &retirement,
     ComPtr<ID3D11Texture2D> *depth_capture,GpuCreateProbe *probe) {
     if (!backend.on_owner_thread()) return Result::wrong_thread;
+    auto operation=backend.enter_context();
+    if(operation.result()!=Result::ok)return operation.result();
     const auto valid=backend.validate(target,info);
     if (valid!=Result::ok) return valid;
-    if (!scene) return Result::invalid_argument;
+    if (!scene || (backend.ownership()&&depth_capture)) return Result::invalid_argument;
     const auto admission=preflight(*scene,camera,info);
     if (admission!=Result::ok) return admission;
     try {
         auto frame=std::make_shared<Frame>();
+        if(backend.ownership()){const auto r=backend.ownership()->retain(frame->gpu_owner);if(r!=Result::ok)return r;}
         frame->snapshot=scene;
         const auto ready=build(backend.device(),*scene,camera,info,backend.context(),*frame,probe);
         if (ready!=Result::ok) {
             if (ready==Result::device_lost) backend.mark_lost();
             return ready;
         }
-        const auto prepared=retirement.prepare(backend.device(),backend.context(),target,
-                                                backend.generation(),frame);
+        const auto prepared=retirement.prepare_split(backend.device(),backend.context(),target,
+                                                backend.generation(),frame->snapshot,frame);
         if (prepared!=Result::ok) {
             if (prepared==Result::device_lost) backend.mark_lost();
             return prepared;
         }
         {
-            graphics::d3d11::StateScope restore(backend.context());
+            graphics::d3d11::StateScope restore(backend.context(),backend.ownership());
+            if(restore.result()!=Result::ok){retirement.cancel_unsubmitted();return restore.result();}
             auto *context=backend.context();
             constexpr FLOAT clear[4]{0,0,0,0};
             context->ClearRenderTargetView(target,clear);
@@ -369,7 +384,8 @@ graphics::Result render_offscreen_3d(graphics::d3d11::HostDevice &backend,
                                          factor,0xffffffffu);
                 context->OMSetDepthStencilState(transparent?frame->depth_read.Get():frame->depth_write.Get(),0);
                 ID3D11ShaderResourceView *shader_views[]{range.base_view.Get(),range.mr_view.Get()};
-                ID3D11SamplerState *samplers[]{range.base_sampler.Get(),range.mr_sampler.Get()};
+                ID3D11SamplerState *samplers[]{range.base_sampler?range.base_sampler.Get():frame->fallback_sampler.Get(),
+                    range.mr_sampler?range.mr_sampler.Get():frame->fallback_sampler.Get()};
                 context->PSSetShaderResources(0,2,shader_views);
                 context->PSSetSamplers(0,2,samplers);
                 if (range.count) context->DrawIndexed(range.count,range.start,0);

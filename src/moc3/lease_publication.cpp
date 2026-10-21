@@ -22,7 +22,7 @@ struct LeasePublication::Fence final:rendering::D3D11DualModeHost::PublicationFe
     std::shared_ptr<const std::vector<std::uint8_t>> bytes;
     Fence(LeasePublication* p,admission::LeaseCommand c,std::uint32_t ms):owner(p),command(std::move(c)),deadline(std::chrono::steady_clock::now()+std::chrono::milliseconds(ms)){}
     GResult commit() noexcept override {
-        if(cancelled||std::chrono::steady_clock::now()>deadline){owner->core_.discard();return GResult::failed;}
+        if(cancelled||owner->closing_||std::chrono::steady_clock::now()>deadline){owner->core_.discard();return GResult::failed;}
         if(owner->core_.publish()!=ARS_OK){owner->core_.discard();return GResult::failed;}
         // All allocations/validation preceded the actual core publish.
         owner->accepted_=state;owner->bytes_=bytes;owner->generation_=command.key.generation;owner->view_=view;
@@ -75,7 +75,15 @@ GResult LeasePublication::stage(std::span<const std::uint8_t> packet,bool fail_t
             if(FAILED(hr))return reject();
             if(hardware_){Microsoft::WRL::ComPtr<IDXGIDevice> dxgi;Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;DXGI_ADAPTER_DESC desc{};
                 if(FAILED(device_.As(&dxgi))||FAILED(dxgi->GetAdapter(&adapter))||FAILED(adapter->GetDesc(&desc))||desc.VendorId==0x1414)return reject();}
-            host_=std::make_unique<rendering::D3D11DualModeHost>(device_.Get(),context_.Get(),101,ops_);}
+            std::shared_ptr<const void> runtime_pin;
+            std::shared_ptr<graphics::d3d11::ContextOwnership> domain;
+            graphics::d3d11::ContextOwnership::Participant participant;
+            std::unique_ptr<rendering::D3D11DualModeHost> candidate_host;
+            if(core_.retain_graphics(runtime_pin)!=ARS_OK)return reject();
+            if(graphics::d3d11::ContextOwnership::create(device_.Get(),context_.Get(),101,std::move(runtime_pin),domain)!=GResult::ok)return reject();
+            if(domain->retain(participant)!=GResult::ok)return reject();
+            if(rendering::D3D11DualModeHost::create_owned(domain,ops_,candidate_host)!=GResult::ok)return reject();
+            ownership_=std::move(domain);gpu_owner_=std::move(participant);host_=std::move(candidate_host);}
         auto pass=[&](graphics::d3d11::HostDevice& backend,ID3D11RenderTargetView* target,graphics::TargetInfo info,graphics::d3d11::QueryRetirement& query){return render_offscreen_moc3(backend,target,info,candidate.scene().snapshot(),candidate.scene().atlases(),fence_->view,query,&probe_);};
         auto result=host_->request_moc(pass,fence_->command.key.generation,512,512,fail_target,fence_);
         if(result!=GResult::ok){if(host_->pending()){terminal_=true;return result;}return reject();}return result;
@@ -97,6 +105,8 @@ LeasePublication::State LeasePublication::state(){
 }
 const std::vector<std::uint8_t>& LeasePublication::checkpoint() const {need(std::this_thread::get_id()==owner_&&!closing_&&!closed_);static const std::vector<std::uint8_t> empty;return bytes_?*bytes_:empty;}
 std::vector<std::uint8_t> LeasePublication::read_pixels(){
+    need(owner_==std::this_thread::get_id()&&!closing_&&!closed_&&ownership_);
+    auto operation=ownership_->enter();need(operation.result()==GResult::ok);
     need(std::this_thread::get_id()==owner_&&!closing_&&!closed_&&host_&&accepted_&&host_->pose_generation()==generation_);
     D3D11_TEXTURE2D_DESC desc{};host_->texture()->GetDesc(&desc);desc.Usage=D3D11_USAGE_STAGING;desc.BindFlags=0;desc.CPUAccessFlags=D3D11_CPU_ACCESS_READ;
     Microsoft::WRL::ComPtr<ID3D11Texture2D> staging;need(SUCCEEDED(device_->CreateTexture2D(&desc,nullptr,&staging)));context_->CopyResource(staging.Get(),host_->texture());
@@ -109,12 +119,31 @@ std::vector<std::uint8_t> LeasePublication::core_bytes(){
     for(const auto& value:values){auto bits=std::bit_cast<std::uint32_t>(value.value);for(unsigned i=0;i<4;++i)bytes.push_back(static_cast<std::uint8_t>(bits>>(8*i)));}return bytes;
 }
 GResult LeasePublication::close(){
-    if(std::this_thread::get_id()!=owner_)return GResult::wrong_thread;if(closed_)return GResult::ok;
-    closing_=true;cancel();if(host_){if(host_->pending()){auto r=poll();if(r==GResult::busy||host_->pending())return r;}host_->begin_close();auto r=host_->poll_close();if(r!=GResult::ok)return r;host_.reset();}
+    if(owner_!=std::this_thread::get_id())return GResult::wrong_thread;
+    if(closed_)return GResult::ok;
+    closing_=true;if(ownership_)ownership_->begin_close();cancel();
+    if(host_){
+        host_->begin_close();auto status=host_->poll_close();
+        if(status==GResult::busy)return status;
+        if(host_->lost()){status=host_->prepare_lost_teardown();if(status!=GResult::ok)return status;}
+        else if(status!=GResult::ok)return status;
+    }
+    // Inspect messages while the device is still alive; release this reference
+    // before requesting the opaque receipt.
+    bool diagnostic_failure=false;
     if(device_){Microsoft::WRL::ComPtr<ID3D11InfoQueue> messages;device_.As(&messages);
         for(UINT64 i=0;messages&&i<messages->GetNumStoredMessages();++i){SIZE_T n=0;messages->GetMessage(i,nullptr,&n);std::vector<unsigned char> data(n);auto* message=reinterpret_cast<D3D11_MESSAGE*>(data.data());
-            if(FAILED(messages->GetMessage(i,message,&n))||message->Severity<=D3D11_MESSAGE_SEVERITY_WARNING)return GResult::failed;}}
-    fence_.reset();context_.Reset();device_.Reset();if(opened_&&core_.close()!=ARS_OK)return GResult::failed;closed_=true;return GResult::ok;
+            if(FAILED(messages->GetMessage(i,message,&n))||message->Severity<=D3D11_MESSAGE_SEVERITY_WARNING)diagnostic_failure=true;}}
+    pending_=false;
+    context_.Reset();device_.Reset();gpu_owner_.reset();
+    if(ownership_){
+        graphics::d3d11::HostTeardownReceipt receipt;
+        const auto status=ownership_->issue(receipt);if(status!=GResult::ok)return status;
+        if(!host_ || host_->acknowledge_teardown(receipt)!=GResult::ok)return GResult::failed;
+    }
+    host_.reset();fence_.reset();ownership_.reset();core_.discard();
+    if(opened_&&core_.close()!=ARS_OK)return GResult::failed;
+    closed_=true;return diagnostic_failure?GResult::failed:GResult::ok;
 }
 }
 #endif

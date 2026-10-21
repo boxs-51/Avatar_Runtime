@@ -12,6 +12,8 @@ namespace ars::moc3 {
 using Microsoft::WRL::ComPtr;
 struct ImageGpu { ComPtr<ID3D11Texture2D> texture; ComPtr<ID3D11ShaderResourceView> srv; };
 struct AtlasResidency::State {
+    std::shared_ptr<graphics::d3d11::ContextOwnership> ownership;
+    graphics::d3d11::ContextOwnership::Participant gpu_owner;
     ComPtr<ID3D11Device> device;
     std::uint64_t generation=0;
     std::shared_ptr<const AtlasSet> atlases;
@@ -22,7 +24,9 @@ using GfxResult = graphics::Result;
 constexpr std::size_t MiB=1024*1024;
 struct PackedVertex { float x,y,u,v; Color multiply,screen; float opacity,clip; };
 struct Range { UINT count=0,start=0; };
+struct CpuPins {std::shared_ptr<const Snapshot> snapshot;std::shared_ptr<const AtlasSet> atlases;};
 struct Frame {
+    graphics::d3d11::ContextOwnership::Participant gpu_owner;
     std::shared_ptr<const Snapshot> snapshot;
     std::shared_ptr<const AtlasSet> atlases;
     std::vector<ImageGpu> images;
@@ -231,27 +235,35 @@ graphics::Result render_offscreen_moc3(graphics::d3d11::HostDevice& host,
     std::shared_ptr<const Snapshot> snapshot,std::shared_ptr<const AtlasSet> atlases,
     View view,graphics::d3d11::QueryRetirement& query,GpuProbe* probe,AtlasResidency* residency){
     if(!host.on_owner_thread())return GfxResult::wrong_thread;
+    auto operation=host.enter_context();if(operation.result()!=GfxResult::ok)return operation.result();
     auto valid=host.validate(target,info);if(valid!=GfxResult::ok)return valid;
     if(!snapshot||!atlases)return GfxResult::invalid_argument;
     valid=validate(*snapshot,*atlases,view,info);if(valid!=GfxResult::ok)return valid;
     try{
-        auto f=std::make_shared<Frame>();f->snapshot=std::move(snapshot);f->atlases=std::move(atlases);
+        auto f=std::make_shared<Frame>();
+        if(host.ownership()){const auto r=host.ownership()->retain(f->gpu_owner);if(r!=GfxResult::ok)return r;}
+        f->snapshot=std::move(snapshot);f->atlases=std::move(atlases);
         GpuProbe local;auto& p=probe?*probe:local;
         const auto cached=residency?residency->state:nullptr;
         // A different package/device must use a separate cache so old+candidate
         // atlas residency cannot silently double the per-pass budget.
-        if(cached&&(cached->device.Get()!=host.device()||cached->generation!=host.generation()||
+        if(cached&&(cached->ownership!=host.ownership()||cached->device.Get()!=host.device()||cached->generation!=host.generation()||
                     cached->atlases!=f->atlases))return GfxResult::invalid_argument;
         auto ready=build(host.device(),info,view,*f,p,cached.get());if(ready!=GfxResult::ok)return ready;
         if(residency&&!cached){
-            auto state=std::make_shared<AtlasResidency::State>();state->device=host.device();
+            auto state=std::make_shared<AtlasResidency::State>();
+            if(host.ownership()){const auto r=host.ownership()->retain(state->gpu_owner);if(r!=GfxResult::ok)return r;}
+            state->ownership=host.ownership();state->device=host.device();
             state->generation=host.generation();state->atlases=f->atlases;state->images=f->images;
             residency->state=std::move(state);
         }
-        ready=query.prepare(host.device(),host.context(),target,host.generation(),f);
+        auto cpu=std::make_shared<CpuPins>(CpuPins{f->snapshot,f->atlases});
+        ready=query.prepare_split(host.device(),host.context(),target,host.generation(),cpu,f);
         if(ready!=GfxResult::ok)return ready;
         {
-            graphics::d3d11::StateScope restore(host.context());ExtraScope extra(host.context());
+            graphics::d3d11::StateScope restore(host.context(),host.ownership());
+            if(restore.result()!=GfxResult::ok){query.cancel_unsubmitted();return restore.result();}
+            ExtraScope extra(host.context());
             auto* c=host.context();constexpr FLOAT zero[4]{};constexpr FLOAT factor[4]{1,1,1,1};
             c->ClearRenderTargetView(target,zero);
             c->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);c->IASetInputLayout(f->layout.Get());

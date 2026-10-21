@@ -25,6 +25,7 @@ public:
     ars_status revoke();
     void discard() noexcept;
     ars_status read(std::vector<Parameter>&,std::uint64_t &generation);
+    ars_status retain_graphics(std::shared_ptr<const void>&);
     ars_status close();
 };
 }

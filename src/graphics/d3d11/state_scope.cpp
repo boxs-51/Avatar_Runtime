@@ -1,7 +1,12 @@
 #include "state_scope.hpp"
 #ifdef _WIN32
 namespace ars::graphics::d3d11 {
-StateScope::StateScope(ID3D11DeviceContext *context) : context_(context) {
+StateScope::StateScope(ID3D11DeviceContext *context,std::shared_ptr<ContextOwnership> ownership)
+    : operation_(ownership?ownership->nested():ContextOwnership::Operation{}),context_(context) {
+    if(operation_.result()!=Result::ok) {context_=nullptr;return;}
+    if(!context_ || (ownership && context_!=operation_.context())) {
+        result_=Result::invalid_argument;context_=nullptr;return;
+    }
     context_->IAGetPrimitiveTopology(&topology_);
     context_->IAGetInputLayout(input_layout_.GetAddressOf());
     context_->IAGetVertexBuffers(0,1,vertex_buffer_.GetAddressOf(),&vertex_stride_,&vertex_offset_);
@@ -23,6 +28,7 @@ StateScope::StateScope(ID3D11DeviceContext *context) : context_(context) {
     context_->OMGetDepthStencilState(depth_.GetAddressOf(), &stencil_ref_);
 }
 StateScope::~StateScope() {
+    if(!context_)return;
     context_->IASetPrimitiveTopology(topology_);
     context_->IASetInputLayout(input_layout_.Get());
     ID3D11Buffer *vertex=vertex_buffer_.Get();
