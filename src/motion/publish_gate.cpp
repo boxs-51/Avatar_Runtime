@@ -1,4 +1,5 @@
 #include "publish_gate.hpp"
+#include "public_resolution.hpp"
 #include "../security/source_authority.hpp"
 #include <algorithm>
 #include <limits>
@@ -19,7 +20,7 @@ void PublishGate::discard(Stage *stage) noexcept {
     if(!stage) return;
     for(auto &input:stage->inputs) input.reset();
     Snapshot::release(stage->base); Snapshot::release(stage->reserved);
-    stage->base=stage->reserved=nullptr;
+    stage->base=stage->reserved=nullptr; stage->commit_extension=nullptr; stage->commit_user=nullptr;
     stage->used.store(false,std::memory_order_release);
 }
 ars_status PublishGate::sanitize(StagedState &state) {
@@ -53,7 +54,7 @@ ars_status PublishGate::prepare(ars_character_h character_id,std::span<const ars
         if(stages_[i].used.compare_exchange_strong(free,true,std::memory_order_acq_rel)) { stage=&stages_[i]; break; }
     }
     if(!stage) return ARS_E_BUSY;
-    stage->candidate={}; stage->base=nullptr; stage->lock_count=0; stage->reserved=reserve();
+    stage->candidate={}; stage->commit_extension=nullptr; stage->commit_user=nullptr; stage->base=nullptr; stage->lock_count=0; stage->reserved=reserve();
     if(!stage->reserved) { discard(stage); return ARS_E_OUT_OF_BUDGET; }
     auto fail=[&](ars_status status) { discard(stage); return status; };
     auto status=authority_.pin_character(character_id,&stage->reserved->character);
@@ -90,6 +91,7 @@ ars_status PublishGate::prepare(ars_character_h character_id,std::span<const ars
     }
     status=stage->candidate.evaluate(program,std::span(character->catalog.data(),character->count));
     if(status!=ARS_OK) return fail(status);
+    if(program.public_resolution) { stage->commit_extension=PublicResolution::commit; stage->commit_user=program.public_resolution; }
     auto &snapshot=*stage->reserved;
     snapshot.state=stage->candidate.state; snapshot.outputs=stage->candidate.outputs; snapshot.channel_count=character->count;
     const auto count=snapshot.state.provenance.count;
@@ -155,11 +157,97 @@ ars_status PublishGate::publish(Stage &stage) {
             (void)queue.pop(&stage.candidate.inputs[i]);
             source->front_ordinal=queue.size()?stage.candidate.inputs[i].ordinal+1:0;
         }
+        if(stage.commit_extension) stage.commit_extension(stage.commit_user);
         snapshot.generation=character->pose_generation+1;
         old=character->snapshot; character->snapshot=&snapshot; character->pose_generation=snapshot.generation;
         stage.reserved=nullptr;
     }
     Snapshot::release(old); return ARS_OK;
+}
+void PublicBatch::reset() noexcept {
+    for(auto &input:inputs)input.pin.reset();
+    for(auto &entry:entries){Snapshot::release(entry.snapshot);entry={};}
+    count=input_count=0;owner=nullptr;
+}
+ars_status PublishGate::append(Stage &stage,PublicBatch &batch) {
+    if(!stage.reserved || (batch.owner && batch.owner!=this))return ARS_E_INVALID_ARGUMENT;
+    if(batch.count==batch.entries.size())return ARS_E_OUT_OF_BUDGET;
+    const auto *character=stage.reserved->character.payload();
+    for(std::uint32_t i=0;i<batch.count;++i)if(batch.entries[i].snapshot->character.payload()==character)return ARS_E_INVALID_ARGUMENT;
+    std::uint32_t fresh=0;for(std::uint32_t i=0;i<stage.candidate.input_count;++i)fresh+=stage.candidate.present[i]?1:0;
+    if(fresh>batch.inputs.size()-batch.input_count)return ARS_E_OUT_OF_BUDGET;
+    for(std::uint32_t i=0;i<stage.candidate.input_count;++i)if(stage.candidate.present[i])
+        for(std::uint32_t j=0;j<batch.input_count;++j)if(batch.inputs[j].pin.payload()==stage.inputs[i].payload())return ARS_E_INVALID_ARGUMENT;
+    batch.owner=this;
+    batch.entries[batch.count++]={stage.reserved,stage.expected_generation,stage.commit_extension,stage.commit_user};stage.reserved=nullptr;
+    for(std::uint32_t i=0;i<stage.candidate.input_count;++i)if(stage.candidate.present[i]) {
+        auto &input=batch.inputs[batch.input_count++];input.pin=std::move(stage.inputs[i]);input.frame=stage.candidate.inputs[i];
+    }
+    return ARS_OK;
+}
+ars_status PublishGate::publish(PublicBatch &batch,void (*commit_extension)(void *) noexcept,void *user) {
+    if(batch.owner!=this || !batch.count)return ARS_E_INVALID_ARGUMENT;
+    std::array<core::CharacterAuthority *,security::max_characters> characters{};
+    for(std::uint32_t i=0;i<batch.count;++i)characters[i]=static_cast<core::CharacterAuthority *>(batch.entries[i].snapshot->character.payload());
+    auto order=characters;std::sort(order.begin(),order.begin()+batch.count,[](auto *a,auto *b){return a->id.id.slot<b->id.id.slot;});
+    std::array<Snapshot *,security::max_characters> retired{};
+    {
+        std::lock_guard commit(authority_.commit);
+        std::array<std::unique_lock<std::mutex>,security::max_characters> poses;
+        for(std::uint32_t i=0;i<batch.count;++i)poses[i]=std::unique_lock(order[i]->pose);
+        if(authority_.admission_.closing())return ARS_E_CLOSED;
+        if(authority_.callback_.active())return ARS_E_BUSY;
+        for(std::uint32_t i=0;i<batch.count;++i) {
+            auto *ch=characters[i];if(!ch->alive)return ARS_E_CLOSED;
+            if(ch->pose_exhausted || ch->pose_generation==UINT64_MAX)return ARS_E_HANDLE_EXHAUSTED;
+            if(ch->pose_generation!=batch.entries[i].generation)return ARS_E_BUSY;
+        }
+        std::array<Stage::LockTarget,security::max_source_records> targets{};std::uint32_t count=0;
+        auto include=[&](void *source,std::uint32_t slot) {
+            for(std::uint32_t i=0;i<count;++i)if(targets[i].source==source)return true;
+            if(count==targets.size())return false;
+            targets[count++]={source,slot};return true;
+        };
+        for(std::uint32_t i=0;i<batch.count;++i) {
+            auto &snapshot=*batch.entries[i].snapshot;
+            for(std::uint32_t j=0;j<snapshot.state.provenance.count;++j)
+                if(!include(snapshot.sources[j].payload(),snapshot.state.provenance.keys[j].source.id.slot))return ARS_E_OUT_OF_BUDGET;
+        }
+        for(std::uint32_t i=0;i<batch.input_count;++i)if(!include(batch.inputs[i].pin.payload(),batch.inputs[i].frame.source.id.slot))return ARS_E_OUT_OF_BUDGET;
+        std::sort(targets.begin(),targets.begin()+count,[](auto a,auto b){return a.slot<b.slot;});
+        std::array<std::unique_lock<std::mutex>,security::max_source_records> locks;
+        for(std::uint32_t i=0;i<count;++i)locks[i]=std::unique_lock(static_cast<security::SourceAuthority::Source *>(targets[i].source)->mutex);
+        auto time=authority_.clock_.observe();if(time.status!=ARS_OK)return time.status;
+        for(std::uint32_t i=0;i<batch.count;++i) {
+            auto &snapshot=*batch.entries[i].snapshot;
+            for(std::uint32_t j=0;j<snapshot.state.provenance.count;++j) {
+                auto *source=static_cast<security::SourceAuthority::Source *>(snapshot.sources[j].payload());const auto &key=snapshot.state.provenance.keys[j];
+                auto status=authority_.observe_source(*source,time.now);if(status!=ARS_OK)return status;
+                if((source->tombstone.dirty.load(std::memory_order_acquire) && source->tombstone.invalidated_through.load(std::memory_order_acquire)>=key.epoch) ||
+                    source->epoch!=key.epoch || !security::same(source->id.id,key.source.id) || !security::same(source->character.id,key.character.id))return ARS_E_REVOKED;
+            }
+        }
+        for(std::uint32_t i=0;i<batch.input_count;++i) {
+            auto &input=batch.inputs[i];auto *source=static_cast<security::SourceAuthority::Source *>(input.pin.payload());
+            auto status=authority_.observe_source(*source,time.now);if(status!=ARS_OK)return status;
+            if(source->epoch!=input.frame.epoch || !security::same(source->id.id,input.frame.source.id) || !security::same(source->character.id,input.frame.character.id))return ARS_E_REVOKED;
+            if(source->data>=security::max_sources || source->front_ordinal!=input.frame.ordinal || !authority_.queues_[source->data].queue.size())return ARS_E_BUSY;
+        }
+        // All checks precede this no-fail block. All characters, queues, retained
+        // caches and S/time ownership become visible under the same complete fence.
+        for(std::uint32_t i=0;i<batch.input_count;++i) {
+            auto &input=batch.inputs[i];auto *source=static_cast<security::SourceAuthority::Source *>(input.pin.payload());auto &queue=authority_.queues_[source->data].queue;
+            (void)queue.pop(&input.frame);source->front_ordinal=queue.size()?input.frame.ordinal+1:0;
+        }
+        for(std::uint32_t i=0;i<batch.count;++i) {
+            auto &entry=batch.entries[i];auto *ch=characters[i];if(entry.commit)entry.commit(entry.user);
+            auto *snapshot=entry.snapshot;snapshot->generation=ch->pose_generation+1;retired[i]=ch->snapshot;
+            ch->snapshot=snapshot;ch->pose_generation=snapshot->generation;entry.snapshot=nullptr;
+        }
+        if(commit_extension)commit_extension(user);
+    }
+    for(auto *snapshot:retired)Snapshot::release(snapshot);
+    return ARS_OK;
 }
 ars_status PublishGate::read(ars_character_h id,Snapshot **out) {
     *out=nullptr; core::ObjectLease pin; auto status=authority_.pin_character(id,&pin); if(status!=ARS_OK) return status;

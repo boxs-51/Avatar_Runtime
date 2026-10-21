@@ -50,6 +50,19 @@ public:
     ~CallbackLease() { if(owner_) owner_->leave_callback(); }
     explicit operator bool() const noexcept { return owner_!=nullptr; }
 };
+// Both public simulation updates and ingress share callback exclusion and history.
+// Never hold an ARS mutex across a caller supplied clock.
+inline ars_status sample_simulation_clock(CallbackState &state,const ars_runtime_desc &descriptor,
+                                         std::uint64_t &sample,ars_status exception_status) {
+    CallbackLease callback(state);
+    if(!callback)return ARS_E_BUSY;
+    try { sample=descriptor.simulation_now_ns(descriptor.clock_user_data); }
+    catch(...) { return exception_status; }
+    std::lock_guard samples(state.samples);
+    if(state.observed && sample<state.highwater)return ARS_E_CLOCK_REGRESSION;
+    state.observed=true;state.highwater=sample;
+    return ARS_OK;
+}
 inline constexpr std::uint32_t max_sources=16,max_source_records=64,max_characters=16;
 inline constexpr std::uint32_t max_channels=256,queue_capacity=16,max_workspaces=16;
 inline constexpr std::uint32_t max_admissions=8,ledger_capacity=4096,mint_attempts=8;

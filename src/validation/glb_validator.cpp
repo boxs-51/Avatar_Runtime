@@ -51,6 +51,10 @@ struct Context {
     const assets::Limits &limits;
     assets::Work &work;
     bool disabled = false;
+    std::size_t binary_size = 0;
+#ifdef ARS_GLB_TYPED_ONLY
+    const assets::GlbData *typed = nullptr;
+#endif
     std::pmr::vector<std::uint32_t> parents;
     std::pmr::vector<unsigned char> view_use, vertex_accessors;
     std::pmr::vector<std::uint32_t> vertex_view_counts;
@@ -235,10 +239,16 @@ struct Context {
             object(b);
             require(!b.has("uri"));
             const auto size = b.at("byteLength").u32();
+#ifdef ARS_GLB_TYPED_ONLY
+            require(size > 0 && size <= limits.expanded, ARS_E_OUT_OF_BUDGET);
+            binary_size = size;
+#else
             require(size > 0 && size <= bin.size() && bin.size() - size <= 3);
             for (std::size_t i = size; i < bin.size(); ++i)
                 require(bin[i] == 0);
             bin = bin.first(size);
+            binary_size = bin.size();
+#endif
         } else
             require(bin.empty());
         const auto views = count(root, "bufferViews");
@@ -252,7 +262,7 @@ struct Context {
             out.length = v.at("byteLength").u32();
             out.stride = number(v, "byteStride");
             out.target = number(v, "target");
-            require(out.length > 0 && out.offset <= bin.size() && out.length <= bin.size() - out.offset);
+            require(out.length > 0 && out.offset <= binary_size && out.length <= binary_size - out.offset);
             if (v.has("byteStride"))
                 require(out.stride >= 4 && out.stride <= 252 && out.stride % 4 == 0);
             require(!v.has("target") || out.target == 34962 || out.target == 34963);
@@ -264,6 +274,9 @@ struct Context {
     void accessors() {
         const auto n = count(root, "accessors");
         data.accessors.reserve(n);
+#ifdef ARS_GLB_TYPED_ONLY
+        require(typed && typed->accessors.size() == n);
+#endif
         vertex_accessors.resize(n);
         for (std::size_t i = 0; i < n; ++i) {
             auto v = root.at("accessors").at(i);
@@ -301,11 +314,13 @@ struct Context {
                 if (a.columns > 1)
                     require((b.offset + a.offset) % 4 == 0);
                 range(a.offset, a.count, stride, extent, b.length);
+#ifndef ARS_GLB_TYPED_ONLY
                 for (std::size_t j = 0; j < a.count; ++j)
                     for (std::size_t k = 0; k < a.components; ++k)
                         a.values[j * a.components + k] = component(
                             b.offset + a.offset + j * stride + (k / a.rows) * column + (k % a.rows) * size,
                             a.component);
+#endif
             } else
                 require(a.offset == 0);
             if (v.has("sparse")) {
@@ -329,6 +344,9 @@ struct Context {
                     require((vb.offset + vo) % 4 == 0);
                 range(io, count, isize, isize, ib.length);
                 range(vo, count, element, extent, vb.length);
+#ifdef ARS_GLB_TYPED_ONLY
+                work.take(std::size_t(count) * (a.components + 1));
+#else
                 std::uint32_t previous = 0;
                 for (std::size_t j = 0; j < count; ++j) {
                     work.take(a.components + 1);
@@ -340,7 +358,32 @@ struct Context {
                             vb.offset + vo + j * element + (k / a.rows) * column + (k % a.rows) * size,
                             a.component);
                 }
+#endif
             }
+#ifdef ARS_GLB_TYPED_ONLY
+            const auto &values = typed->accessors[i].values;
+            require(values.size() == a.values.size());
+            for (std::size_t k = 0; k < values.size(); ++k) {
+                const double value = values[k];
+                require(std::isfinite(value));
+                if (a.component == 5126) require(double(static_cast<float>(value)) == value && std::abs(value) <= float_max);
+                else {
+                    const double lo = a.component == 5120 ? -128. : a.component == 5122 ? -32768. : 0.;
+                    const double hi = a.component == 5120 ? 127. : a.component == 5121 ? 255. : a.component == 5122 ? 32767. : a.component == 5123 ? 65535. : double(UINT32_MAX);
+                    require(value >= lo && value <= hi && std::floor(value) == value);
+                }
+                if (!v.has("bufferView") && !v.has("sparse")) require(value == 0);
+                a.values[k] = value;
+            }
+            if (!v.has("bufferView") && v.has("sparse")) {
+                std::size_t nonzero = 0;
+                for (std::size_t j = 0; j < a.count; ++j) {
+                    bool any = false; for (std::size_t k = 0; k < a.components; ++k) any |= a.values[j * a.components + k] != 0;
+                    nonzero += any ? 1 : 0;
+                }
+                require(nonzero <= v.at("sparse").at("count").u32());
+            }
+#endif
             for (auto key : {"min", "max"})
                 if (v.has(key)) {
                     auto bounds = v.at(key);
@@ -849,6 +892,7 @@ void Context::animation() {
 }
 // JPEG is a recognized disabled codec. Validate its bounded marker/frame/scan
 // envelope only; this is deliberately not a claim of JPEG entropy decoding.
+#ifndef ARS_GLB_TYPED_ONLY
 void jpeg_envelope(std::span<const std::uint8_t> bytes, const assets::Limits &limits, assets::Work &work) {
     require(bytes.size() >= 4 && bytes[0] == 0xff && bytes[1] == 0xd8);
     std::size_t at = 2;
@@ -898,9 +942,13 @@ void jpeg_envelope(std::span<const std::uint8_t> bytes, const assets::Limits &li
     }
     assets::fail();
 }
+#endif
 void Context::images_and_materials() {
     const auto images = count(root, "images");
     data.images.reserve(images);
+#ifdef ARS_GLB_TYPED_ONLY
+    require(typed && typed->images.size() == images);
+#endif
     std::size_t pixels = 0;
     for (std::size_t i = 0; i < images; ++i) {
         auto image = root.at("images").at(i);
@@ -910,17 +958,32 @@ void Context::images_and_materials() {
         const auto &v = view(vi);
         require(v.target == 0 && v.stride == 0 && (view_use[vi] == 0 || view_use[vi] == 32));
         view_use[vi] = 32;
+#ifndef ARS_GLB_TYPED_ONLY
         const auto bytes = bin.subspan(v.offset, v.length);
+#endif
         const auto mime = image.at("mimeType").string();
         auto remaining = limits;
         remaining.pixels -= pixels;
         data.images.emplace_back(&resource);
         if (mime == "image/png") {
+#ifdef ARS_GLB_TYPED_ONLY
+            const auto &source = typed->images[i]; auto &dest = data.images.back();
+            require(source.width && source.height && source.width <= limits.edge && source.height <= limits.edge);
+            const auto size = std::uint64_t(source.width) * source.height * 4;
+            require(size <= remaining.pixels, ARS_E_OUT_OF_BUDGET);
+            require(size == source.rgba.size()); work.take(static_cast<std::size_t>(size / 64 + 1));
+            dest.width = source.width; dest.height = source.height; dest.rgba = source.rgba;
+#else
             assets::decode_png(bytes, data.images.back(), resource, remaining, work);
+#endif
             pixels += data.images.back().rgba.size();
         } else if (mime == "image/jpeg") {
+#ifdef ARS_GLB_TYPED_ONLY
+            assets::fail(ARS_E_UNSUPPORTED);
+#else
             jpeg_envelope(bytes, remaining, work);
             disabled = true;
+#endif
         } else
             assets::fail();
     }
@@ -1047,6 +1110,7 @@ void Context::images_and_materials() {
     }
 }
 } // namespace
+#ifndef ARS_GLB_TYPED_ONLY
 bool validate_glb(const Document &doc, std::span<const std::uint8_t> bin, assets::GlbData &out,
                   assets::Resource &r, const assets::Limits &limits, assets::Work &work) {
     Context c(doc, bin, out, r, limits, work);
@@ -1060,14 +1124,33 @@ bool validate_glb(const Document &doc, std::span<const std::uint8_t> bin, assets
     c.images_and_materials();
     return c.disabled;
 }
-void validate_glb_mappings(Value manifest, const assets::GlbModel &model, assets::Work &work) {
+#else
+bool validate_typed_glb(const Document &doc, const assets::GlbData &typed, assets::GlbData &out,
+                       assets::Resource &r, const assets::Limits &limits, assets::Work &work) {
+    Context c(doc, {}, out, r, limits, work); c.typed = &typed;
+    c.extensions(); c.buffers(); c.accessors(); c.meshes(); c.nodes(); c.skins(); c.animation(); c.images_and_materials();
+    return c.disabled;
+}
+#endif
+#ifdef ARS_GLB_TYPED_ONLY
+void validate_typed_glb_mappings(Value manifest,
+#else
+void validate_glb_mappings(Value manifest,
+#endif
+    const assets::GlbModel &model, assets::Work &work) {
     const auto mappings = manifest.at("representations").at("3d").at("mappings");
     const auto semantics = manifest.at("rig_semantics");
     const auto &data = model.data();
     for (std::size_t i = 0; i < mappings.size(); ++i) {
         work.take();
-        const auto mapping = mappings.at(i),
-                   semantic = semantics.at(id_index(semantics, mapping.at("semantic").string(), work));
+        const auto mapping = mappings.at(i);
+        std::size_t index = semantics.size();
+        for (std::size_t j = 0; j < semantics.size(); ++j) {
+            work.take();
+            if (semantics.at(j).at("id").string() == mapping.at("semantic").string()) { require(index == semantics.size()); index = j; }
+        }
+        require(index < semantics.size());
+        const auto semantic = semantics.at(index);
         const auto target = mapping.at("target").string(), type = semantic.at("type").string();
         const auto units = semantic.has("units") ? semantic.at("units").string() : std::string_view{};
         if (target.starts_with("bone:")) {

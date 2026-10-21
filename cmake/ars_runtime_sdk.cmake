@@ -12,6 +12,21 @@ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/ars/ars.h" DESTINATION includ
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/docs/reference/SDK_DEVELOPMENT_PACKAGE.md"
     "${CMAKE_CURRENT_SOURCE_DIR}/docs/in-progress/ALPHA_59_PUBLIC_ABI_CONTRACT.md"
     DESTINATION share/AvatarRuntime)
+if(ARS_ENABLE_PUBLIC_CPU_ASSETS)
+    set(ARS_SDK_PROFILE "ISOLATED_PUBLIC_CPU_ASSETS")
+    set_target_properties(ars_cpu_admission_worker PROPERTIES EXPORT_NAME CpuAdmissionWorker)
+    set_target_properties(ars_cpu_model_broker PROPERTIES EXPORT_NAME CpuModelBroker)
+    install(TARGETS ars_cpu_isolation ars_cpu_model_packet ars_typed_glb
+        EXPORT AvatarRuntimeTargets ARCHIVE DESTINATION lib)
+    install(TARGETS ars_cpu_admission_worker ars_cpu_model_broker
+        EXPORT AvatarRuntimeTargets RUNTIME DESTINATION bin)
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/AvatarRuntimeCpuHelpers.cmake"
+        DESTINATION lib/cmake/AvatarRuntime)
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/docs/in-progress/ALPHA_60_PUBLIC_CPU_COMPLETION_DESIGN.md"
+        DESTINATION share/AvatarRuntime)
+else()
+    set(ARS_SDK_PROFILE "CPU_LIFECYCLE_FEATURES_OFF")
+endif()
 configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/AvatarRuntimeConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/AvatarRuntimeConfig.cmake"
     INSTALL_DESTINATION lib/cmake/AvatarRuntime)

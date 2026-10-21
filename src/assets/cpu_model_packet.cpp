@@ -3,6 +3,8 @@
 #include <windows.h>
 #include <bcrypt.h>
 #include "cpu_model_packet.hpp"
+#include "typed_glb_packet.hpp"
+#include "../validation/glb_validator.hpp"
 #include <algorithm>
 #include <bit>
 #include <cmath>
@@ -23,10 +25,13 @@ class CpuPacketBuilder {
     static auto &semantics(ValidatedCpuModel &m) { return m.semantics_; }
     static auto &image(ValidatedCpuModel &m) { return m.image_; }
     static auto &canvas(ValidatedCpuModel &m) { return m.canvas_; }
+    static auto &glb(ValidatedCpuModel &m) { return m.glb_; }
+    static auto &mode(ValidatedCpuModel &m) { return m.default_mode_; }
+    static auto &hierarchy(ValidatedCpuModel &m) { return m.complete_hierarchy_; }
 };
 namespace packet {
 namespace {
-constexpr std::string_view magic = "ARSCPU2D";
+constexpr std::string_view magic = "ARSCPU2D", full_magic = "ARSCPUFN";
 struct Job {
     Resource &r;
     explicit Job(Resource &resource) : r(resource) { require(r.begin_job(), ARS_E_BUSY); }
@@ -108,23 +113,66 @@ template<class Values> void unique(const Values &values, Work &work, std::size_t
         for (std::size_t j = 0; j < i; ++j) { work.take(); require(values[i].id != values[j].id); }
     }
 }
-void validate(const ValidatedCpuModel &m, const Limits &limits, Work &work) {
-    require(!m.glb(), ARS_E_UNSUPPORTED);
-    require(!m.parts().empty() && m.parts().size() <= 128 && !m.layers().empty() && m.layers().size() <= 128);
+void mappings(const ValidatedCpuModel &m, Work &work) {
+    // Reconstruct only a typed manifest projection, never encoded JSON.
+    auto *memory = m.semantics().get_allocator().resource();
+    validation::Document doc(memory);
+    auto add = [&](validation::Kind kind, std::string_view key, std::size_t parent = SIZE_MAX) {
+        const auto i = doc.nodes.size(); doc.nodes.emplace_back(memory); doc.nodes[i].kind = kind; doc.nodes[i].key = key;
+        if (parent != SIZE_MAX) doc.nodes[parent].children.push_back(i); return i;
+    };
+    auto text = [&](std::string_view key, std::string_view value, std::size_t parent) {
+        doc.nodes[add(validation::Kind::string, key, parent)].text = value;
+    };
+    auto root = add(validation::Kind::object, "");
+    auto semantics = add(validation::Kind::array, "rig_semantics", root);
+    auto reps = add(validation::Kind::object, "representations", root);
+    auto three = add(validation::Kind::object, "3d", reps);
+    auto maps = add(validation::Kind::array, "mappings", three);
+    for (const auto &s : m.semantics()) {
+        auto entry = add(validation::Kind::object, "", semantics);
+        text("id", s.id, entry); text("type", s.type, entry); text("units", s.units, entry);
+        // The common mapping validator reads default only for scalar morphs.
+        doc.nodes[add(validation::Kind::number, "default", entry)].number = s.initial[0];
+        if (!s.target3d.empty()) {
+            auto map = add(validation::Kind::object, "", maps); text("semantic", s.id, map); text("target", s.target3d, map);
+        }
+    }
+    validation::validate_typed_glb_mappings(doc.root(), *m.glb(), work);
+}
+void validate(const ValidatedCpuModel &m, const Limits &limits, Work &work, bool full = false) {
+    require(full || !m.glb(), ARS_E_UNSUPPORTED);
+    const bool two = !m.parts().empty();
+    require((two || (full && m.glb())) && m.parts().size() <= 128 && (!two || !m.layers().empty()) && m.layers().size() <= 128);
+    if (full) {
+        require(m.complete_hierarchy() && m.default_mode() <= 1);
+        require(m.default_mode() == 0 ? two : bool(m.glb()));
+        for (std::size_t i = 0; i < m.layers().size(); ++i) {
+            const auto &l = m.layers()[i]; bool visible = true; float opacity = 1; auto current = static_cast<std::uint32_t>(i);
+            for (std::size_t depth = 0; current != UINT32_MAX; ++depth) {
+                require(depth < m.layers().size() && current < m.layers().size()); work.take();
+                const auto &p = m.layers()[current];
+                require(std::isfinite(p.local_opacity) && p.local_opacity >= 0 && p.local_opacity <= 1);
+                visible &= p.local_visible; opacity *= p.local_opacity; current = p.parent;
+            }
+            require(visible == l.visible && opacity == l.opacity);
+        }
+    }
     require(m.parameters().size() <= 512 && m.semantics().size() <= 512);
-    for (auto edge : m.canvas()) require(edge && edge <= limits.edge);
+    for (auto edge : m.canvas()) require(two ? edge && edge <= limits.edge : edge == 0);
     const auto &image = m.image();
-    require(image.width && image.height && image.width <= limits.edge && image.height <= limits.edge);
+    require(two ? image.width && image.height && image.width <= limits.edge && image.height <= limits.edge : image.width == 0 && image.height == 0 && m.parameters().empty());
     const auto pixels = std::uint64_t(image.width) * image.height * 4;
     require(pixels <= limits.pixels, ARS_E_OUT_OF_BUDGET); require(pixels == image.rgba.size());
     unique(m.layers(), work, 128); unique(m.parts(), work); unique(m.parameters(), work); unique(m.semantics(), work, 128);
-    for (const auto &l : m.layers()) { binding_id(l.id); require(l.z >= -10000 && l.z <= 10000 && std::isfinite(l.opacity) && l.opacity >= 0 && l.opacity <= 1); }
+    for (const auto &l : m.layers()) { if (two) binding_id(l.id); require(l.z >= -10000 && l.z <= 10000 && std::isfinite(l.opacity) && l.opacity >= 0 && l.opacity <= 1); }
     for (const auto &p : m.parameters()) require(std::isfinite(p.minimum) && std::isfinite(p.maximum) && std::isfinite(p.initial) && p.minimum <= p.initial && p.initial <= p.maximum);
     for (std::size_t i = 0; i < m.semantics().size(); ++i) {
         const auto &s = m.semantics()[i]; canonical(s.id);
         if (i) require(m.semantics()[i - 1].id < s.id);
         require(s.units.empty() || s.units == "normalized" || s.units == "radians" || s.units == "meters" || s.units == "unitless");
-        require(s.target3d.empty()); utf8(s.target2d, true);
+        require(full || s.target3d.empty()); utf8(s.target2d, true); utf8(s.target3d, true);
+        if (!s.target3d.empty()) require(bool(m.glb()));
         require(std::isfinite(s.minimum) && std::isfinite(s.maximum) && std::abs(s.minimum) <= 3.402823466e38 && std::abs(s.maximum) <= 3.402823466e38);
         if (!s.has_minimum) require(s.minimum == 0);
         if (!s.has_maximum) require(s.maximum == 0);
@@ -167,12 +215,18 @@ void validate(const ValidatedCpuModel &m, const Limits &limits, Work &work) {
             for (auto v : d.deltas) { work.take(); require(std::isfinite(v.x) && std::isfinite(v.y)); }
         }
     }
-    for (std::size_t i = 0; i < m.layers().size(); ++i) require(used[i]);
+    if (two) for (std::size_t i = 0; i < m.layers().size(); ++i) require(used[i]);
+    if (full && m.glb()) {
+        auto total = pixels;
+        for (const auto &im : m.glb()->data().images) { require(im.rgba.size() <= limits.pixels - total, ARS_E_OUT_OF_BUDGET); total += im.rgba.size(); }
+        mappings(m, work);
+    }
 }
-void header(Writer &w, ars_status status, Identity id) {
+void header(Writer &w, ars_status status, Identity id, bool full = false) {
     require(id.nonce != 0, ARS_E_INVALID_ARGUMENT);
-    w.add({reinterpret_cast<const std::uint8_t *>(magic.data()), magic.size()});
-    w.integer(1); w.integer(1); w.integer(0); w.integer(static_cast<std::uint32_t>(status));
+    const auto marker = full ? full_magic : magic;
+    w.add({reinterpret_cast<const std::uint8_t *>(marker.data()), marker.size()});
+    w.integer(1); w.integer(full ? 2 : 1); w.integer(0); w.integer(static_cast<std::uint32_t>(status));
     w.integer(id.nonce, 8); w.add(id.request); Digest zero{}; w.add(zero);
 }
 void finish(Writer &w) {
@@ -196,18 +250,20 @@ ars_status rejection(ars_status status, Identity id, Resource &r, std::pmr::vect
     return boundary([&] { require(error_status(status) && out.get_allocator().resource() == &r, ARS_E_INVALID_ARGUMENT);
         Job job(r); Writer w(r); header(w, status, id); finish(w); out.swap(w.bytes); });
 }
-ars_status encode(const ValidatedCpuModel &m, Identity id, Resource &r, std::pmr::vector<std::uint8_t> &out) noexcept {
+ars_status encode_impl(const ValidatedCpuModel &m, Identity id, Resource &r, std::pmr::vector<std::uint8_t> &out, bool full) noexcept {
     return boundary([&] {
         require(out.get_allocator().resource() == &r, ARS_E_INVALID_ARGUMENT); Job job(r);
-        Work work{Limits{}.work}; validate(m, Limits{}, work);
-        Writer w(r); header(w, ARS_OK, id);
+        Work work{Limits{}.work}; validate(m, Limits{}, work, full);
+        Writer w(r); header(w, ARS_OK, id, full);
+        if (full) { w.integer(m.default_mode()); w.integer(bool(m.glb())); }
         for (auto v : m.canvas()) w.integer(v);
         w.integer(m.image().width); w.integer(m.image().height);
         w.integer(m.layers().size()); w.integer(m.parameters().size()); w.integer(m.parts().size()); w.integer(m.semantics().size()); w.integer(m.image().rgba.size());
-        for (const auto &l : m.layers()) { w.text(l.id); w.integer(static_cast<std::uint32_t>(l.z)); w.integer(l.visible); w.f32(l.opacity); }
+        for (const auto &l : m.layers()) { w.text(l.id); w.integer(static_cast<std::uint32_t>(l.z)); w.integer(l.visible); w.f32(l.opacity); if (full) { w.integer(l.parent); w.integer(l.local_visible); w.f32(l.local_opacity); } }
         for (const auto &p : m.parameters()) { w.text(p.id); w.f32(p.minimum); w.f32(p.maximum); w.f32(p.initial); }
         for (const auto &s : m.semantics()) {
             for (std::string_view v : std::array<std::string_view, 4>{s.id, s.type, s.units, s.target2d}) w.text(v);
+            if (full) w.text(s.target3d);
             w.integer(unsigned(s.has_minimum) | (unsigned(s.has_maximum) << 1) | (unsigned(s.has_default) << 2));
             for (auto v : s.initial) w.f64(v); w.f64(s.minimum); w.f64(s.maximum);
         }
@@ -218,16 +274,23 @@ ars_status encode(const ValidatedCpuModel &m, Identity id, Resource &r, std::pmr
             for (auto t : p.triangles) for (auto v : t) w.integer(v);
             for (const auto &d : p.deforms) { w.integer(d.parameter); for (auto v : d.deltas) w.pair(v); }
         }
-        w.add(m.image().rgba); finish(w); out.swap(w.bytes);
+        w.add(m.image().rgba); if (full && m.glb()) write_glb(*m.glb(), w.bytes, work); finish(w); out.swap(w.bytes);
     });
+}
+ars_status encode(const ValidatedCpuModel &m, Identity id, Resource &r, std::pmr::vector<std::uint8_t> &out) noexcept { return encode_impl(m, id, r, out, false); }
+ars_status encode_full(const ValidatedCpuModel &m, Identity id, Resource &r, std::pmr::vector<std::uint8_t> &out) noexcept { return encode_impl(m, id, r, out, true); }
+ars_status rejection_full(ars_status status, Identity id, Resource &r, std::pmr::vector<std::uint8_t> &out) noexcept {
+    return boundary([&] { require(error_status(status) && out.get_allocator().resource() == &r, ARS_E_INVALID_ARGUMENT);
+        Job job(r); Writer w(r); header(w, status, id, true); finish(w); out.swap(w.bytes); });
 }
 ars_status decode(std::span<const std::uint8_t> bytes, Identity expected, Resource &r,
                   std::shared_ptr<const ValidatedCpuModel> &out, const Limits &limits) noexcept {
     return boundary([&] {
         require(expected.nonce && limits.valid(), ARS_E_INVALID_ARGUMENT); Job job(r);
         require(bytes.size() >= header_bytes && bytes.size() <= byte_cap);
-        Reader rd{bytes}; auto marker = rd.take(8); require(std::equal(marker.begin(), marker.end(), magic.begin()));
-        require(rd.u32() == 1 && rd.u32() == 1 && rd.u32() == bytes.size());
+        Reader rd{bytes}; auto marker = rd.take(8); const bool full = std::equal(marker.begin(), marker.end(), full_magic.begin());
+        require(full || std::equal(marker.begin(), marker.end(), magic.begin()));
+        require(rd.u32() == 1 && rd.u32() == (full ? 2u : 1u) && rd.u32() == bytes.size());
         auto status = static_cast<ars_status>(rd.u32()); require(status == ARS_OK || error_status(status));
         require(rd.integer(8) == expected.nonce); auto request_hash = rd.take(32);
         require(std::equal(request_hash.begin(), request_hash.end(), expected.request.begin()));
@@ -235,18 +298,21 @@ ars_status decode(std::span<const std::uint8_t> bytes, Identity expected, Resour
         require(std::equal(payload_hash.begin(), payload_hash.end(), actual.begin()));
         if (status != ARS_OK) { require(bytes.size() == header_bytes); fail(status); }
         auto m = CpuPacketBuilder::make(r);
+        bool has_glb = false;
+        if (full) { CpuPacketBuilder::mode(*m) = rd.u32(); auto flags = rd.u32(); require(flags <= 1); has_glb = flags != 0; CpuPacketBuilder::hierarchy(*m) = true; }
         for (auto &v : CpuPacketBuilder::canvas(*m)) v = rd.u32();
         auto &image = CpuPacketBuilder::image(*m); image.width = rd.u32(); image.height = rd.u32();
         auto nl = rd.count(128, 16), np = rd.count(512, 16), nt = rd.count(128, 64), ns = rd.count(512, 68);
         const auto pixels = rd.u32(); require(pixels <= limits.pixels, ARS_E_OUT_OF_BUDGET);
-        require(image.width && image.height && image.width <= limits.edge && image.height <= limits.edge && std::uint64_t(image.width) * image.height * 4 == pixels);
+        require(image.width <= limits.edge && image.height <= limits.edge && std::uint64_t(image.width) * image.height * 4 == pixels);
+        require((image.width && image.height) || (full && has_glb && !image.width && !image.height && !nt && !np));
         auto &layers = CpuPacketBuilder::layers(*m);
-        while (nl--) { auto &l = layers.emplace_back(&r); rd.text(l.id); l.z = rd.i32(); const auto visible = rd.u32(); require(visible <= 1); l.visible = visible != 0; l.opacity = rd.f32(); }
+        while (nl--) { auto &l = layers.emplace_back(&r); rd.text(l.id); l.z = rd.i32(); const auto visible = rd.u32(); require(visible <= 1); l.visible = visible != 0; l.opacity = rd.f32(); if (full) { l.parent = rd.u32(); auto local = rd.u32(); require(local <= 1); l.local_visible = local != 0; l.local_opacity = rd.f32(); } }
         auto &params = CpuPacketBuilder::parameters(*m);
         while (np--) { auto &p = params.emplace_back(&r); rd.text(p.id); p.minimum = rd.f32(); p.maximum = rd.f32(); p.initial = rd.f32(); }
         auto &semantics = CpuPacketBuilder::semantics(*m);
         while (ns--) {
-            auto &s = semantics.emplace_back(&r); rd.text(s.id); rd.text(s.type); rd.text(s.units, true); rd.text(s.target2d, true);
+            auto &s = semantics.emplace_back(&r); rd.text(s.id); rd.text(s.type); rd.text(s.units, true); rd.text(s.target2d, true); if (full) rd.text(s.target3d, true);
             const auto flags = rd.u32(); require(flags <= 7); s.has_minimum = (flags & 1) != 0; s.has_maximum = (flags & 2) != 0; s.has_default = (flags & 4) != 0;
             for (auto &v : s.initial) v = rd.f64(); s.minimum = rd.f64(); s.maximum = rd.f64();
         }
@@ -261,8 +327,10 @@ ars_status decode(std::span<const std::uint8_t> bytes, Identity expected, Resour
             for (std::size_t i = 0; i < triangles; ++i) { const auto a = rd.u32(), b = rd.u32(), c = rd.u32(); p.triangles.push_back({a,b,c}); }
             for (std::size_t i = 0; i < deforms; ++i) { auto &d = p.deforms.emplace_back(&r); d.parameter = rd.u32(); for (std::size_t j = 0; j < nv; ++j) d.deltas.push_back(rd.pair()); }
         }
-        auto rgba = rd.take(pixels); require(rd.pos == bytes.size()); image.rgba.assign(rgba.begin(), rgba.end());
-        validate(*m, limits, parse_work); out = std::move(m);
+        auto rgba = rd.take(pixels); image.rgba.assign(rgba.begin(), rgba.end());
+        if (has_glb) { auto remaining = limits; remaining.pixels -= pixels; CpuPacketBuilder::glb(*m) = read_glb(bytes, rd.pos, r, remaining, parse_work); }
+        require(rd.pos == bytes.size());
+        validate(*m, limits, parse_work, full); out = std::move(m);
     });
 }
 } // namespace packet

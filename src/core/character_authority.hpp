@@ -3,6 +3,7 @@
 #include "../security/authority_types.hpp"
 #include <atomic>
 #include <mutex>
+#include <memory>
 
 namespace ars::security { class SourceAuthority; }
 namespace ars::motion { struct Snapshot; }
@@ -26,6 +27,8 @@ struct CharacterAuthority {
     std::mutex pose;
     std::atomic<std::uint32_t> users{0};
     bool allocated=false,alive=false;
+    // Detached by full record identity before reuse, then freed outside locks.
+    std::shared_ptr<const void> cpu_owner;
     ars_character_h id{};
     std::uint32_t count=0;
     motion::Snapshot *snapshot=nullptr;

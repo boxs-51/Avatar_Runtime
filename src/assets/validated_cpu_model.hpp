@@ -34,6 +34,9 @@ struct Layer {
     std::int32_t z = 0;
     bool visible = true;
     float opacity = 1;
+    std::uint32_t parent = UINT32_MAX;
+    bool local_visible = true;
+    float local_opacity = 1;
     explicit Layer(std::pmr::memory_resource *r) : id(r) {}
 };
 struct Semantic {
@@ -54,6 +57,8 @@ class ValidatedCpuModel {
     Image image_;
     std::array<std::uint32_t, 2> canvas_{};
     std::shared_ptr<const GlbModel> glb_;
+    std::uint32_t default_mode_ = 0; // 0=2D, 1=3D
+    bool complete_hierarchy_ = false;
     explicit ValidatedCpuModel(Resource &r)
         : parts_(&r), parameters_(&r), layers_(&r), semantics_(&r), image_(&r) {}
 
@@ -65,6 +70,8 @@ class ValidatedCpuModel {
     const Image &image() const { return image_; }
     const auto &canvas() const { return canvas_; }
     const auto &glb() const { return glb_; }
+    auto default_mode() const { return default_mode_; }
+    bool complete_hierarchy() const { return complete_hierarchy_; }
 };
 // Private algorithm injection for a contained worker. This is not an isolation
 // guarantee: callers remain responsible for their process boundary.

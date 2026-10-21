@@ -1,7 +1,9 @@
 #include "semantic_candidate.hpp"
+#include "public_resolution.hpp"
 #include <cmath>
 namespace ars::motion {
 ars_status SemanticCandidate::evaluate(const Program &program,std::span<const security::SemanticChannel> catalog) {
+    if(program.public_resolution) return program.public_resolution->evaluate(*this,catalog);
     if(program.count>max_nodes || catalog.size()>max_cells) return ARS_E_OUT_OF_BUDGET;
     channel_count=static_cast<std::uint32_t>(catalog.size());
     for(std::uint32_t i=0;i<channel_count;++i) outputs[i]={catalog[i].neutral[0],0};

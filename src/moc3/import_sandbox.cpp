@@ -58,7 +58,7 @@ int wmain(int argc,wchar_t** argv){
     const bool package=false,lease=false;
 #endif
 #ifdef ARS_CPU_MODEL_PACKET
-    if(std::wstring(argv[3])!=L"--cpu-model-2d")return 2;
+    if(std::wstring(argv[3])!=L"--cpu-model-2d" && std::wstring(argv[3])!=L"--cpu-model-full")return 2;
     output_cap=16ull*1024*1024;
 #endif
     // The trusted broker chooses the worker copy and fresh profile name. Public bytes are stdin only.
@@ -195,7 +195,7 @@ int wmain(int argc,wchar_t** argv){
     if(code!=0){std::cout<<"WORKER_REJECTED"<<std::endl;return 0;}
 #ifdef ARS_CPU_MODEL_PACKET
     // Transport custody only. The separate host must validate every field.
-    if(output.size()<96||output.compare(0,8,"ARSCPU2D")!=0){std::cout<<"OUTPUT_REJECTED"<<std::endl;return 0;}
+    if(output.size()<96||(output.compare(0,8,"ARSCPU2D")!=0 && output.compare(0,8,"ARSCPUFN")!=0)){std::cout<<"OUTPUT_REJECTED"<<std::endl;return 0;}
     _setmode(_fileno(stdout),_O_BINARY);
     std::cout.write(output.data(),output.size());return std::cout?0:15;
 #endif

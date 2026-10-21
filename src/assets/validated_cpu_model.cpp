@@ -28,6 +28,8 @@ class ModelBuilder {
             std::pmr::polymorphic_allocator<std::byte>(&r));
         model->image_ = std::move(image);
         model->glb_ = std::move(glb);
+        model->default_mode_ = manifest.at("default_mode").string() == "3d" ? 1 : 0;
+        model->complete_hierarchy_ = true;
         const auto layers = manifest.at("visual_layers"), sem = manifest.at("rig_semantics");
         for (std::size_t i = 0; i < sem.size(); ++i) {
             auto source = sem.at(i);
@@ -79,6 +81,8 @@ class ModelBuilder {
             l.z = static_cast<std::int32_t>(source.at("z_index").number());
             l.visible = source.at("visible").boolean();
             l.opacity = f(source.at("opacity"));
+            l.local_visible = l.visible; l.local_opacity = l.opacity;
+            if (source.has("parent")) l.parent = static_cast<std::uint32_t>(validation::id_index(layers, source.at("parent").string(), work));
             std::size_t current = i;
             for (std::size_t depth = 0; layers.at(current).has("parent"); ++depth) {
                 require(depth < 128);
