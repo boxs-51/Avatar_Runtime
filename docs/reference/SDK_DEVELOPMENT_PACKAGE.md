@@ -1,4 +1,6 @@
-# Feature-off CPU development SDK package
+# CPU development SDK profiles
+
+## Default feature-off profile
 
 This opt-in source-built package is for ABI/lifecycle development. It implements
 CPU runtime create/capabilities/close only; model,character,source,motion,render
@@ -35,3 +37,38 @@ installs and physically relocates static/shared packages, then verifies real
 behavior using installed files only. Detailed logs remain under build/.
 Windows local evidence is primary; other toolchains/platforms need their own
 observed results. This package does not close G00,G01,G02,G10 or shipping gates.
+
+## Isolated public CPU asset profile (Windows x64)
+
+Explicitly add `ARS_ENABLE_PUBLIC_CPU_ASSETS=ON`,
+`ARS_BUILD_ASSET_VALIDATOR=ON`, `ARS_BUILD_RUNTIME_CORE=ON` and
+`ARS_INSTALL_RUNTIME_CORE_SDK=ON`. The CPU asset option defaults OFF. Select a
+matching static/shared Release/Debug build and the existing validated dependency
+cache; build RuntimeCore plus `ars_cpu_admission_worker` and
+`ars_cpu_model_broker` before installing. This profile exports
+`AvatarRuntime_PROFILE=ISOLATED_PUBLIC_CPU_ASSETS`; the default profile reports
+`CPU_LIFECYCLE_FEATURES_OFF`.
+
+After linking `ARS::RuntimeCore`, call `ars_copy_cpu_helpers(app)` in consumer
+CMake. It copies the fixed helpers and, for shared linkage, the runtime DLL. It
+also selects the matching MSVC static CRT and iterator ABI. Preserve this
+trusted adjacent deployment: static hosts resolve helpers beside the executable,
+shared hosts beside the runtime DLL. The runtime ignores worker paths supplied
+by assets, environment, PATH or current directory. The worker parses only through
+bounded isolated IPC; no private headers or encoded parsers are linked into the
+host RuntimeCore dependency closure.
+
+This profile accepts native2D, GLB3D and dual memory bundles, retaining complete
+validated CPU models. It implements public model/character/mode/layer and
+source/ingress/update lifecycle with generation-bound ownership and final
+authority checks. Only `ARS_CAP_HOST_SCOPED_MOTION_INGRESS` is advertised;
+render/GPU drain remain UNSUPPORTED. MOC3 import/physics, production rendering,
+non-Windows CPU asset packages and shipping activation are separate work.
+
+`python scripts/verify_public_cpu_sdk.py --corpus <generated-corpus> --evidence
+<local-evidence-root>` qualifies installed, physically relocated C11/C++20
+consumers for all four configurations. Use generated or independently permitted
+assets; no restricted sample is installed. See the installed
+`ALPHA_60_PUBLIC_CPU_COMPLETION_DESIGN.md` and repository
+[completion ledger](../in-progress/ALPHA_60_COMPLETION_PROGRESS.md) for scope and
+source-attributed evidence. Neither profile installation is release approval.

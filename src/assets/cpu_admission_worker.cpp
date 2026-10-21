@@ -89,7 +89,8 @@ int wmain(int argc, wchar_t **argv) {
         }
     }
 #endif
-    const bool transfer = argc == 2 && std::wcscmp(argv[1], L"--cpu-model-2d") == 0;
+    const bool full = argc == 2 && std::wcscmp(argv[1], L"--cpu-model-full") == 0;
+    const bool transfer = full || (argc == 2 && std::wcscmp(argv[1], L"--cpu-model-2d") == 0);
     if (argc != 2 || (!transfer && std::wcscmp(argv[1], L"--cpu-admit") != 0))
         return 22;
     _setmode(_fileno(stdin), _O_BINARY);
@@ -124,8 +125,8 @@ int wmain(int argc, wchar_t **argv) {
                 assets::packet::Identity identity;
                 identity.nonce = std::uint64_t(validation::get(request, 16)) | (std::uint64_t(validation::get(request, 20)) << 32);
                 if (assets::packet::digest(bytes, identity.request) != ARS_OK) return 24;
-                if (status == ARS_OK) status = assets::packet::encode(*model, identity, resource, encoded);
-                if (status != ARS_OK && assets::packet::rejection(status, identity, resource, encoded) != ARS_OK) return 24;
+                if (status == ARS_OK) status = full ? assets::packet::encode_full(*model, identity, resource, encoded) : assets::packet::encode(*model, identity, resource, encoded);
+                if (status != ARS_OK && (full ? assets::packet::rejection_full(status, identity, resource, encoded) : assets::packet::rejection(status, identity, resource, encoded)) != ARS_OK) return 24;
                 if (std::fwrite(encoded.data(), 1, encoded.size(), stdout) != encoded.size() || std::fflush(stdout) != 0) return 25;
             }
         }

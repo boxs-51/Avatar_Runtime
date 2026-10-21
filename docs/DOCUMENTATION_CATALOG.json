@@ -9,8 +9,8 @@
   "classification_is_gate_approval": false,
   "counts": {
     "reference": 84,
-    "completed": 46,
-    "in_progress": 26,
+    "completed": 47,
+    "in_progress": 28,
     "obsolete": 4
   },
   "baseline_counts": {
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 160,
+  "total_documents": 163,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -125,7 +125,7 @@
       "reason": "Mục lục/phân loại và review notes được tạo trong lần rà soát này.",
       "lifecycle": "navigation",
       "related_paths": [],
-      "reviewed_sha256": "052a1f401cb73c06fd164aaa32e7102bd95be4c2b69c39e709d8fc3e6c88b285",
+      "reviewed_sha256": "c0a68227f8c2067dd365d7ac03d936f27ab07fd176ba4bf13c1ddad2bf4e4409",
       "hash_note": "Generated navigation artifacts omit self/cross hashes to avoid cyclic provenance.",
       "document_kind": "markdown",
       "legacy_path": "docs/DOCUMENTATION_INDEX.md"
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "45c9db9b6fc9fcbbfd3351dd5867273fe5b547669b7de0741f138b934c770793"
+      "reviewed_sha256": "6bc2559a443ca253f2dd3acfbbe4b5d1bee8644971cb08a14b3aa5d29e7c255d"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -1871,7 +1871,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "82144ebcee33eecfbaee13618e72bb0f7e96159ab1a64d2b99be83ab79d86835"
+      "reviewed_sha256": "4862a4b2f6225db3644d73964c446412037387b93232933df86c0cdfa9694acd"
     },
     {
       "path": "docs/completed/audits/ALPHA_59_INSTALLED_ABI_ACCEPTANCE.md",
@@ -1922,6 +1922,36 @@
       "encoding": "utf-8",
       "document_kind": "markdown",
       "reviewed_sha256": "f91790755aeceae44c46f2d6f3922fa7093c602b0e7ac42f4f107c1374eb1232"
+    },
+    {
+      "path": "docs/in-progress/ALPHA_60_PUBLIC_CPU_COMPLETION_DESIGN.md",
+      "category": "in_progress",
+      "lifecycle": "in_progress",
+      "reason": "Full issue60 CPU lifecycle design; implementation in progress, no full gate closure.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "7ab70c13906178ebb328b87df36d7e869be6252b5b119aeb727222c39c07cfb1"
+    },
+    {
+      "path": "docs/in-progress/ALPHA_60_COMPLETION_PROGRESS.md",
+      "category": "in_progress",
+      "lifecycle": "in_progress",
+      "reason": "Full CPU implementation/evidence reconciliation and explicit remaining integration steps; quota blocker resolved.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "1b82bc0bd8d8b88b2a268201c251eec700beceb052d41edb9cc3cf5f989bb070"
+    },
+    {
+      "path": "docs/completed/audits/ALPHA_60_PUBLIC_CPU_ACCEPTANCE.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Direct local Windows full F1-F5 CPU acceptance; final committed integration recorded separately; no product gate closure.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "0268e06b0346614d2aaeaf20aab41d764f67d612f5c676d0daea1bf1798f4fc7"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1933,11 +1963,11 @@
     "classification_is_gate_approval": false
   },
   "latest_checkpoint": {
-    "basis_head": "fa9a1a02afc8cf75c1867f58aff9f6e70fd0bdbb",
+    "basis_head": "5d90997e3f1e6df0ed5bef2b77318f815aa17769",
     "date": "2026-10-21",
-    "scope": "Alpha issue60 A60-1b-2D typed model transfer; GLB/dual and full CPU lifecycle OPEN",
-    "new_documents": 2,
+    "scope": "Issue60 complete public CPU local qualification; final committed integration recorded separately",
+    "new_documents": 3,
     "classification_is_gate_approval": false
   },
-  "date": "2026-10-20"
+  "date": "2026-10-21"
 }

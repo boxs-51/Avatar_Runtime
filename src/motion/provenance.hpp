@@ -13,7 +13,7 @@ struct Provenance {
     std::uint32_t count=0;
     ars_status include(const Key &,std::uint16_t *) noexcept;
 };
-struct Value { float scalar=0; std::uint16_t dependencies=0; };
+struct Value { float scalar=0; std::uint16_t dependencies=0; std::array<float,3> tail{}; };
 Value add(Value,Value) noexcept;
 Value scale(Value,float) noexcept;
 }

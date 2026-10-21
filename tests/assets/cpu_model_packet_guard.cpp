@@ -1,5 +1,6 @@
 #include "../../src/assets/cpu_model_packet.hpp"
 #include "../../src/rendering/scene2d.hpp"
+#include "../../src/rendering/scene3d.hpp"
 #include "asset_test_support.hpp"
 #include <algorithm>
 #include <charconv>
@@ -47,27 +48,38 @@ void stress(const std::vector<std::uint8_t> &bytes, packet::Identity id) {
     }
     std::pmr::vector<std::uint8_t> encoded(&r);
     const auto before_encode=host.calls;
-    test::check(packet::encode(*old,id,r,encoded)==ARS_OK && std::equal(encoded.begin(),encoded.end(),bytes.begin(),bytes.end()),"canonical encode equality");
+    test::check((old->complete_hierarchy() ? packet::encode_full(*old,id,r,encoded) : packet::encode(*old,id,r,encoded))==ARS_OK && std::equal(encoded.begin(),encoded.end(),bytes.begin(),bytes.end()),"canonical encode equality");
     const auto encode_allocs=host.calls-before_encode;
     for (std::size_t i=1;i<=encode_allocs;++i) {
         const auto encoder_live=r.live(); auto copy=std::vector<std::uint8_t>(encoded.begin(),encoded.end()); host.fail_at=host.calls+i;
-        test::check(packet::encode(*old,id,r,encoded)==ARS_E_OUT_OF_BUDGET && std::equal(encoded.begin(),encoded.end(),copy.begin(),copy.end()) && r.live()==encoder_live,"encode OOM preserves old bytes");
+        test::check((old->complete_hierarchy() ? packet::encode_full(*old,id,r,encoded) : packet::encode(*old,id,r,encoded))==ARS_E_OUT_OF_BUDGET && std::equal(encoded.begin(),encoded.end(),copy.begin(),copy.end()) && r.live()==encoder_live,"encode OOM preserves old bytes");
     }
     host.fail_at=0;
     test::check(r.begin_job(),"reserve resource job");
-    test::check(packet::decode(bytes,id,r,old)==ARS_E_BUSY && packet::encode(*old,id,r,encoded)==ARS_E_BUSY,"busy resource"); r.end_job();
+    test::check(packet::decode(bytes,id,r,old)==ARS_E_BUSY && (old->complete_hierarchy() ? packet::encode_full(*old,id,r,encoded) : packet::encode(*old,id,r,encoded))==ARS_E_BUSY,"busy resource"); r.end_job();
     auto limits=Limits{}; limits.work=1;
     test::check(packet::decode(bytes,id,r,old,limits)==ARS_E_OUT_OF_BUDGET,"lower work cap");
     limits=Limits{}; limits.pixels=1;
-    test::check(packet::decode(bytes,id,r,old,limits)==ARS_E_OUT_OF_BUDGET,"lower pixel cap");
+    if (!old->image().rgba.empty() || (old->glb() && !old->glb()->data().images.empty()))
+        test::check(packet::decode(bytes,id,r,old,limits)==ARS_E_OUT_OF_BUDGET,"lower pixel cap");
+    if (old->glb() && !old->parts().empty() && !old->glb()->data().images.empty()) {
+        const auto two = old->image().rgba.size(); std::size_t three = 0;
+        for (const auto &im : old->glb()->data().images) three += im.rgba.size();
+        limits=Limits{}; limits.pixels=std::max(two,three);
+        const auto *prior=old.get(); const auto before=r.live();
+        test::check(packet::decode(bytes,id,r,old,limits)==ARS_E_OUT_OF_BUDGET && old.get()==prior && r.live()==before,"dual aggregate pixel cap preserves previous model");
+    }
     host.throwing=true;
     test::check(packet::decode(bytes,id,r,old)==ARS_E_INTERNAL,"throwing host allocator fenced"); host.throwing=false;
     std::vector<std::uint8_t> changed(bytes); std::shared_ptr<const ValidatedCpuModel> copied;
     test::check(packet::decode(changed,id,r,copied)==ARS_OK,"buffer lifetime decode");
     changed.assign(changed.size(),0); changed.clear(); changed.shrink_to_fit();
-    std::pmr::vector<std::uint8_t> after(&r); test::check(packet::encode(*copied,id,r,after)==ARS_OK && std::equal(after.begin(),after.end(),bytes.begin(),bytes.end()),"model owns data after input destroyed");
+    std::pmr::vector<std::uint8_t> after(&r); test::check((copied->complete_hierarchy() ? packet::encode_full(*copied,id,r,after) : packet::encode(*copied,id,r,after))==ARS_OK && std::equal(after.begin(),after.end(),bytes.begin(),bytes.end()),"model owns data after input destroyed");
+    if (!old->parts().empty()) {
     ars::rendering::PreparedScene2D a,b;
     test::check(ars::rendering::prepare_static_2d(ars::rendering::scene_input(*old),a)==ARS_OK && ars::rendering::prepare_static_2d(ars::rendering::scene_input(*copied),b)==ARS_OK && a.draws.size()==b.draws.size(),"prepared geometry after packet destruction");
+    }
+    if (old->glb()) { ars::rendering::PreparedScene3D a,b; test::check(ars::rendering::prepare_static_3d(*old,a)==ARS_OK && ars::rendering::prepare_static_3d(*copied,b)==ARS_OK && a.draws.size()==b.draws.size(),"3D survives input buffer destruction"); }
     std::printf("STRESS_PASS decode_allocations=%zu encode_allocations=%zu truncations=%zu\n",allocations,encode_allocs,bytes.size());
 }
 } // namespace
@@ -97,9 +109,15 @@ int main(int argc,char **argv) {
         } else status=packet::decode(bytes,id,resource,model);
         if(status==ARS_OK) {
             std::pmr::vector<std::uint8_t> output(&resource);
-            test::check(packet::encode(*model,id,resource,output)==ARS_OK && std::equal(output.begin(),output.end(),bytes.begin(),bytes.end()),"complete canonical roundtrip");
-            ars::rendering::PreparedScene2D scene;
-            test::check(ars::rendering::prepare_static_2d(ars::rendering::scene_input(*model),scene)==ARS_OK,"independent decoded model prepares geometry");
+            test::check((model->complete_hierarchy() ? packet::encode_full(*model,id,resource,output) : packet::encode(*model,id,resource,output))==ARS_OK && std::equal(output.begin(),output.end(),bytes.begin(),bytes.end()),"complete canonical roundtrip");
+            if (!model->parts().empty()) {
+                ars::rendering::PreparedScene2D scene;
+                test::check(ars::rendering::prepare_static_2d(ars::rendering::scene_input(*model),scene)==ARS_OK,"independent decoded model prepares geometry");
+            }
+            if (model->glb()) {
+                ars::rendering::PreparedScene3D scene;
+                test::check(ars::rendering::prepare_static_3d(*model,scene)==ARS_OK,"typed GLB prepares 3D geometry");
+            }
         }
     }
     test::check(host.records.empty(),"all host allocations retired");

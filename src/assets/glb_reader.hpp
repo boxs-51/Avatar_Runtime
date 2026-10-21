@@ -97,6 +97,7 @@ std::shared_ptr<GlbParseArena> make_glb_arena(Resource &);
 class GlbBuilder;
 class GlbModel {
     friend class GlbBuilder;
+    friend class GlbPacketBuilder;
     std::shared_ptr<GlbParseArena> arena_;
     validation::Document json_;
     GlbData data_;
@@ -109,6 +110,7 @@ class GlbModel {
     GlbModel &operator=(const GlbModel &) = delete;
     const GlbData &data() const { return data_; }
     validation::Value metadata() const { return json_.root(); }
+    const validation::Document &metadata_document() const { return json_; }
     bool requires_disabled() const { return disabled_; }
 };
 // Transaction-local core validation; caller must finish cross-file validation
