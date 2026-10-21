@@ -14,6 +14,11 @@ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/docs/reference/SDK_DEVELOPMENT_PACKAG
     DESTINATION share/AvatarRuntime)
 if(ARS_ENABLE_PUBLIC_CPU_ASSETS)
     set(ARS_SDK_PROFILE "ISOLATED_PUBLIC_CPU_ASSETS")
+    if(ARS_ENABLE_PUBLIC_D3D11_HOST)
+        set(ARS_SDK_PROFILE "OPT_IN_PUBLIC_D3D11_HOST")
+        install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/docs/in-progress/ALPHA_39_COMMITTED_RENDER_DESIGN.md"
+            DESTINATION share/AvatarRuntime)
+    endif()
     set_target_properties(ars_cpu_admission_worker PROPERTIES EXPORT_NAME CpuAdmissionWorker)
     set_target_properties(ars_cpu_model_broker PROPERTIES EXPORT_NAME CpuModelBroker)
     install(TARGETS ars_cpu_isolation ars_cpu_model_packet ars_typed_glb

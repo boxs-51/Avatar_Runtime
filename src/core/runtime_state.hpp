@@ -1,6 +1,7 @@
 #pragma once
 #include "runtime_lifecycle.hpp"
 #include <thread>
+namespace ars::rendering { class PublicD3D11Host; }
 namespace ars::core {
 #ifdef ARS_PUBLIC_CPU_ASSETS
 ars_runtime_desc cpu_descriptor(const ars_runtime_desc &,Runtime *) noexcept;
@@ -21,6 +22,9 @@ struct Runtime {
     CpuContext *cpu=nullptr;
     std::atomic_flag cpu_operation=ATOMIC_FLAG_INIT;
     std::atomic<bool> asset_callback{false};
+#ifdef ARS_PUBLIC_D3D11
+    std::shared_ptr<rendering::PublicD3D11Host> gpu;
+#endif
 #endif
     bool publication_allocating=false;
     security::CallbackState callback;

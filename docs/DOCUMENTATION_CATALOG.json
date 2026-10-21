@@ -8,9 +8,9 @@
   "scope": "README.md + every file recursively under docs/; build/, local-assets/, source/tests excluded from document inventory",
   "classification_is_gate_approval": false,
   "counts": {
-    "reference": 85,
-    "completed": 48,
-    "in_progress": 29,
+    "reference": 86,
+    "completed": 49,
+    "in_progress": 30,
     "obsolete": 4
   },
   "baseline_counts": {
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 166,
+  "total_documents": 169,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -125,7 +125,7 @@
       "reason": "Mục lục/phân loại và review notes được tạo trong lần rà soát này.",
       "lifecycle": "navigation",
       "related_paths": [],
-      "reviewed_sha256": "c44f00ba951d7a7e2a3c0a7b805a7cab3bc22e9e7ef1410d8962e33ca635ba37",
+      "reviewed_sha256": "1731476d1e8d53710354a7f7c234a90240c0ac6eb4bbe7730ed91f25d1e5d079",
       "hash_note": "Generated navigation artifacts omit self/cross hashes to avoid cyclic provenance.",
       "document_kind": "markdown",
       "legacy_path": "docs/DOCUMENTATION_INDEX.md"
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "045ac0eb1b8b484c5efd67c4b58babb99b099caca9bed45eeb0622f4a7db4bc8"
+      "reviewed_sha256": "143036d9da10fdc2176943e8521567aa3e56a9cbb560581dcbc93db0697bef0b"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -1871,7 +1871,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "4862a4b2f6225db3644d73964c446412037387b93232933df86c0cdfa9694acd"
+      "reviewed_sha256": "cc5c0b888ae3ac49c1d2e2afc191260817905cb5ba6f745e499d65ab36bd9b7c"
     },
     {
       "path": "docs/completed/audits/ALPHA_59_INSTALLED_ABI_ACCEPTANCE.md",
@@ -1982,6 +1982,36 @@
       "encoding": "utf-8",
       "document_kind": "json",
       "reviewed_sha256": "8cc9919e22c2008e4f3a399744468bed616cff6ed198a6c0253f4933da090617"
+    },
+    {
+      "path": "docs/in-progress/ALPHA_39_COMMITTED_RENDER_DESIGN.md",
+      "category": "in_progress",
+      "lifecycle": "in_progress",
+      "reason": "Owner-approved C1 default-OFF ABI20 D3D11 contract; local acceptance recorded separately, integration pending.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "99a098bd21033229651883a3d55c730f502a16e67c6383ac4293c828cf518349"
+    },
+    {
+      "path": "docs/completed/audits/ALPHA_39_COMMITTED_RENDER_ACCEPTANCE.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Direct local committed public rendering evidence; separate scoped gate assessment and pending integration.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "a30f7e0e48e0c76e9a7947e5624c9e873b925c37218133fae36f5cfc82f5940a"
+    },
+    {
+      "path": "docs/reference/audits/ALPHA_39_COMMITTED_RENDER_SOURCE.json",
+      "category": "reference",
+      "lifecycle": "reference",
+      "reason": "Source, binaries and direct local native/installed receipt; generated inputs only.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "json",
+      "reviewed_sha256": "f2c28e76ae8455d3aa59b8712a788a3b09bf3710492d203e064ea83a9ad81b33"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -1992,12 +2022,6 @@
     "new_documents": 4,
     "classification_is_gate_approval": false
   },
-  "latest_checkpoint": {
-    "basis_head": "64c129eb1c8be3a4a12ac8b7fb807bfdbb0276eb",
-    "date": "2026-10-21",
-    "scope": "Issue38 current registered native context ownership local verification; public/physical gates separate",
-    "new_documents": 3,
-    "classification_is_gate_approval": false
-  },
+  "latest_checkpoint": "Alpha39 local native/installed qualification; source custody/CI/alpha integration pending; physical D06/D08 HOLD.",
   "date": "2026-10-21"
 }

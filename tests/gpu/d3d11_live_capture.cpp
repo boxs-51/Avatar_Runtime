@@ -34,24 +34,28 @@ int wmain(int argc,wchar_t **argv) {
     const bool ownership_mode=argc==4 && (std::wcscmp(argv[1],L"--ownership")==0 ||
                                          std::wcscmp(argv[1],L"--ownership-hardware")==0);
     const bool ownership_hardware=ownership_mode && std::wcscmp(argv[1],L"--ownership-hardware")==0;
-    if (argc>1 && !close_mode && !m2c_mode && !m2d_mode && !ownership_mode) return 2;
+    const bool committed_mode=argc==3 && (std::wcscmp(argv[1],L"--committed")==0 ||
+                                         std::wcscmp(argv[1],L"--committed-hardware")==0);
+    const bool committed_hardware=committed_mode && std::wcscmp(argv[1],L"--committed-hardware")==0;
+    if (argc>1 && !close_mode && !m2c_mode && !m2d_mode && !ownership_mode && !committed_mode) return 2;
     wchar_t self[MAX_PATH]{};
     if (!GetModuleFileNameW(nullptr,self,MAX_PATH)) return 2;
     std::wstring child=self;
     const auto slash=child.find_last_of(L"\\/");
     if (slash==std::wstring::npos) return 2;
-    if (m2c_mode || m2d_mode || ownership_mode) {
+    if (m2c_mode || m2d_mode || ownership_mode || committed_mode) {
         const auto parent=child.find_last_of(L"\\/",slash-1);
         if (parent==std::wstring::npos) return 2;
         const auto config=child.substr(parent+1,slash-parent-1);
         child.resize(parent+1);
-        child+=L"bin\\"+config+(ownership_mode?L"\\ars_context_ownership_tests.exe":m2d_mode?L"\\ars_m2_dual_pixels.exe":
+        child+=L"bin\\"+config+(committed_mode?L"\\ars_committed_host_tests.exe":ownership_mode?L"\\ars_context_ownership_tests.exe":m2d_mode?L"\\ars_m2_dual_pixels.exe":
                                      L"\\ars_m2_3d_pixels.exe");
     } else {
         child.resize(slash+1);
         child+=close_mode ? L"ars_d3d11_close_physical.exe" : L"ars_d3d11_query_retirement.exe";
     }
     std::wstring command=L"\""+child+L"\"";
+    if(committed_mode)command+=L" \""+std::wstring(argv[2])+L"\""+(committed_hardware?L" --hardware":L"");
     if(ownership_mode)command+=L" \""+std::wstring(argv[2])+L"\" \""+std::wstring(argv[3])+L"\""+(ownership_hardware?L" --hardware":L"");
     if (m2c_mode) command+=L" \""+std::wstring(argv[2])+L"\" "+
                            (m2c_hardware?L"--live-hardware":L"--live-report");
@@ -119,7 +123,8 @@ int wmain(int argc,wchar_t **argv) {
     const auto after=live_objects(final_report);
     std::printf("live_objects_before=%zu live_objects_after=%zu\n",before.size(),after.size());
     if (before.empty() || before!=after) return 4;
-    std::puts(ownership_mode ? "PASS alpha38 owned context live-object identity unchanged" :
+    std::puts(committed_mode ? "PASS alpha39 committed host live-object identity unchanged" :
+        ownership_mode ? "PASS alpha38 owned context live-object identity unchanged" :
         m2d_mode ? "PASS M2-D dual-mode live-object identity unchanged" :
         m2c_mode ? "PASS M2-C healthy 3D live-object identity unchanged" :
         close_mode ? "PASS D07 physical post-close live-object identity unchanged across 100 cycles" :

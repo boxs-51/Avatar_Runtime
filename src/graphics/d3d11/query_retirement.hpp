@@ -35,6 +35,7 @@ class QueryRetirement {
     bool started_=false, ended_=false, flushed_=false, complete_=false, quarantined_=false, detached_lost_=false;
     QueryOps *ops_;
     friend class ars::rendering::D3D11DualModeHost;
+    friend class ars::rendering::PublicD3D11Host;
     Result detach_lost_impl(std::uint64_t generation);
 public:
     explicit QueryRetirement(QueryOps *ops=nullptr,std::shared_ptr<ContextOwnership> ownership={});

@@ -140,8 +140,8 @@ Result preflight(const PreparedScene3D &scene,const Camera3D &camera,
     for (const auto &draw:scene.draws)
         for (const auto &ref:{draw.material.base_texture,draw.material.metallic_roughness_texture})
             if (ref.image!=assets::glb_none) {
-                if (ref.image>=scene.source->data().images.size()) return Result::invalid_argument;
-                const auto &image=scene.source->data().images[ref.image];
+                if (ref.image>=(draw.source?draw.source:scene.source)->data().images.size()) return Result::invalid_argument;
+                const auto &image=(draw.source?draw.source:scene.source)->data().images[ref.image];
                 if (!image.width || !image.height ||
                     std::uint64_t(image.width)*image.height*4!=image.rgba.size()) return Result::invalid_argument;
                 texture_bytes+=std::uint64_t(image.width)*image.height*6; // mip chain upper bound
@@ -229,7 +229,7 @@ Result build(ID3D11Device *device,const PreparedScene3D &scene,const Camera3D &c
         for (int type=0;type<2;++type) {
             const auto &ref=type?draw.material.metallic_roughness_texture:draw.material.base_texture;
             if (ref.image==assets::glb_none) continue;
-            const auto &image=scene.source->data().images[ref.image];
+            const auto &image=(draw.source?draw.source:scene.source)->data().images[ref.image];
             Result created=type?
                 make_texture(device,context,image,ref,false,range.mr_texture,range.mr_view,
                              range.mr_sampler,probe):
@@ -343,6 +343,8 @@ graphics::Result render_offscreen_3d(graphics::d3d11::HostDevice &backend,
     const auto admission=preflight(*scene,camera,info);
     if (admission!=Result::ok) return admission;
     try {
+        graphics::d3d11::StateScope restore(backend.context(),backend.ownership());
+        if(restore.result()!=Result::ok)return restore.result();
         auto frame=std::make_shared<Frame>();
         if(backend.ownership()){const auto r=backend.ownership()->retain(frame->gpu_owner);if(r!=Result::ok)return r;}
         frame->snapshot=scene;
@@ -358,8 +360,6 @@ graphics::Result render_offscreen_3d(graphics::d3d11::HostDevice &backend,
             return prepared;
         }
         {
-            graphics::d3d11::StateScope restore(backend.context(),backend.ownership());
-            if(restore.result()!=Result::ok){retirement.cancel_unsubmitted();return restore.result();}
             auto *context=backend.context();
             constexpr FLOAT clear[4]{0,0,0,0};
             context->ClearRenderTargetView(target,clear);

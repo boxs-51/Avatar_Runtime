@@ -27,6 +27,9 @@ ARS_API ars_status ARS_CALL ars_runtime_get_capabilities(ars_runtime_h runtime,a
         if(status!=ARS_OK) return status;
         out->struct_size=sizeof(*out); out->abi_version=ARS_ABI_VERSION;
         out->feature_bits=ARS_CAP_HOST_SCOPED_MOTION_INGRESS;
+#ifdef ARS_PUBLIC_D3D11
+        out->feature_bits|=ARS_CAP_D3D11_HOST_DEVICE|ARS_CAP_NATIVE_2D_PROFILE_B|ARS_CAP_GLTF2_GLB_SUBSET|ARS_CAP_DUAL_MODE;
+#endif
         out->max_active_sources=16;out->max_channels_per_frame=ARS_MAX_CHANNELS_PER_FRAME;out->max_texture_edge=8192;
         return ARS_OK;
     });
@@ -66,6 +69,19 @@ ARS_API ars_status ARS_CALL ars_source_rotate(ars_runtime_h r,ars_source_admin_h
 ARS_API ars_status ARS_CALL ars_source_revoke(ars_runtime_h r,ars_source_admin_h a) {return boundary([&]{return ars::core::global_router().cpu_source_control(r,a,1);});}
 ARS_API ars_status ARS_CALL ars_motion_submit(ars_runtime_h r,ars_ingress_cap cap,const ars_motion_frame *frame) {return boundary([&]{return ars::core::global_router().submit_frame(r,cap,frame);});}
 ARS_API ars_status ARS_CALL ars_runtime_update(ars_runtime_h r,std::uint64_t time) {return boundary([&]{return ars::core::global_router().cpu_update(r,time);});}
-ARS_API ars_status ARS_CALL ars_runtime_render(ars_runtime_h r,const ars_render_target *target) {(void)r;return ars::abi::valid(target)?ARS_E_UNSUPPORTED:ARS_E_INVALID_ARGUMENT;}
-ARS_API ars_status ARS_CALL ars_runtime_drain_gpu(ars_runtime_h r) {(void)r;return ARS_E_UNSUPPORTED;}
+ARS_API ars_status ARS_CALL ars_runtime_render(ars_runtime_h r,const ars_render_target *target) {
+    if(!ars::abi::valid(target))return ARS_E_INVALID_ARGUMENT;
+#ifdef ARS_PUBLIC_D3D11
+    return boundary([&]{return ars::core::global_router().gpu_render(r,target);});
+#else
+    (void)r;return ARS_E_UNSUPPORTED;
+#endif
+}
+ARS_API ars_status ARS_CALL ars_runtime_drain_gpu(ars_runtime_h r) {
+#ifdef ARS_PUBLIC_D3D11
+    return boundary([&]{return ars::core::global_router().gpu_drain(r);});
+#else
+    (void)r;return ARS_E_UNSUPPORTED;
+#endif
+}
 }

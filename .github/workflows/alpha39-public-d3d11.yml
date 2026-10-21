@@ -1,0 +1,46 @@
+name: Alpha39 opt-in ABI20 D3D11 (WARP corroboration)
+on:
+  pull_request:
+    paths:
+      - 'CMakeLists.txt'
+      - 'cmake/**'
+      - 'src/core/**'
+      - 'src/abi/**'
+      - 'src/rendering/**'
+      - 'src/graphics/d3d11/**'
+      - 'tests/rendering/**'
+      - 'tests/abi/**'
+      - '.github/workflows/alpha39-public-d3d11.yml'
+permissions:
+  contents: read
+jobs:
+  public-warp:
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        shared: ['OFF', 'ON']
+        config: [Release, Debug]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {fetch-depth: 0}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with: {python-version: '3.12'}
+      - name: Build the explicit public D3D11 development profile
+        shell: pwsh
+        run: |
+          cmake -S . -B build/a39 -A x64 -DARS_BUILD_RUNTIME_CORE=ON -DARS_BUILD_ASSET_VALIDATOR=ON -DARS_ENABLE_PUBLIC_CPU_ASSETS=ON -DARS_ENABLE_PUBLIC_D3D11_HOST=ON -DARS_ASSET_FETCH_DEPS=ON -DARS_ENABLE_PREP_TESTS=OFF -DBUILD_SHARED_LIBS=${{ matrix.shared }}
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build build/a39 --config ${{ matrix.config }} --parallel 2
+          exit $LASTEXITCODE
+      - name: Corroborate public CPU, numeric and WARP oracles
+        shell: pwsh
+        run: |
+          ctest --test-dir build/a39 -C ${{ matrix.config }} -R '^(alpha39_|cpu_public_)' -E 'hardware' --no-tests=error --output-on-failure --output-junit results.xml
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ('${{ matrix.shared }}' -eq 'ON') {
+            ctest --test-dir build/a39 -C ${{ matrix.config }} -R '^b1_exact_exports$' --no-tests=error --output-on-failure
+            exit $LASTEXITCODE
+          }
+      # Named hardware, physical loss and relocated SDK qualification use the
+      # separate local receipts; hosted WARP is never their replacement.
