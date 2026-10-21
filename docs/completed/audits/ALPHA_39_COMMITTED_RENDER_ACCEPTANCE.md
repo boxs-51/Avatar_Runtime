@@ -1,6 +1,6 @@
 # Alpha #39: committed public render acceptance
 
-Local qualification on 2026-10-21, Asia/Bangkok, against alpha base
+Local qualification on 2026-10-21 through 2026-10-22, Asia/Bangkok, against alpha base
 `83938df825d8a1618d907fc15d72904fb0d3b39f`. The owner selected the existing
 C ABI20 render/drain entrypoints in an explicit, default-OFF D3D11 profile.
 [The design](../../in-progress/ALPHA_39_COMMITTED_RENDER_DESIGN.md) defines the
@@ -48,6 +48,7 @@ unknown-query CPU/runtime pins can be released by the owning receipt.
 | Final affected owned/live suite | 4/4 PASS, exit0, after adding100 actual-runtime H-close/R-publication races per backend; WARP/hardware ordinary and debug-captured runs, exact CLOSED result, R drain and unchanged live-object identities |
 | Affected private/feature-off regression suite | 38/38 PASS, exit0, zero skipped/disabled; original C2/M2/MOC3/ownership pixel and failure oracles retained |
 | CPU-only compatibility | Freshly rebuilt profile37/37 PASS, exit0, zero skipped/disabled, including original UNSUPPORTED render/drain assertions |
+| Debug direct C++ smoke consumer | CI exposed a static Debug iterator-ABI mismatch; the same local build failed before a three-line test-target CMake fix. The unchanged1000-finalizer race then passed. Runtime/export flags and feature-off targets are unchanged; installed4-config qualification was repeated on the corrected CMake, all4 PASS. Full51/private38/CPU37 precede this test-build-only delta. |
 | Frozen contracts | 178/178 PASS, exit0, native filesystem execution with dedicated workspace TEMP/TMP |
 | Numeric producer/projection | Actual semantic ingress/update/capture; neutral/static parity, independent Euler/quaternion calculations, hierarchy, skin/morph/camera and retained historical snapshots |
 | Public pixels | Visibility and half-opacity controls, independently expected colored-quad displacement/Z, committed skin/morph/camera changes; WARP and NVIDIA GTX1060 3GB, driver32.0.15.8157 |

@@ -125,7 +125,7 @@
       "reason": "Mục lục/phân loại và review notes được tạo trong lần rà soát này.",
       "lifecycle": "navigation",
       "related_paths": [],
-      "reviewed_sha256": "1731476d1e8d53710354a7f7c234a90240c0ac6eb4bbe7730ed91f25d1e5d079",
+      "reviewed_sha256": "d4a329ca30d9d709550a9d3cd52b784f6750979827efa0d66520890ecc6c10ce",
       "hash_note": "Generated navigation artifacts omit self/cross hashes to avoid cyclic provenance.",
       "document_kind": "markdown",
       "legacy_path": "docs/DOCUMENTATION_INDEX.md"
@@ -2001,7 +2001,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "a30f7e0e48e0c76e9a7947e5624c9e873b925c37218133fae36f5cfc82f5940a"
+      "reviewed_sha256": "d55d58950ba005de6afe9def8225c19363f2a043057fe9fbe7b228c0226a44ac"
     },
     {
       "path": "docs/reference/audits/ALPHA_39_COMMITTED_RENDER_SOURCE.json",
@@ -2011,7 +2011,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "json",
-      "reviewed_sha256": "f2c28e76ae8455d3aa59b8712a788a3b09bf3710492d203e064ea83a9ad81b33"
+      "reviewed_sha256": "623b97786528f1b2cca33262f2bdd4993570cd39a2b4631e5c794cb32f9102e4"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -2023,5 +2023,5 @@
     "classification_is_gate_approval": false
   },
   "latest_checkpoint": "Alpha39 local native/installed qualification; source custody/CI/alpha integration pending; physical D06/D08 HOLD.",
-  "date": "2026-10-21"
+  "date": "2026-10-22"
 }
