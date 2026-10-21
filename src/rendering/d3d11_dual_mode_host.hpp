@@ -21,6 +21,10 @@ public:
     };
 private:
     struct Pending;
+    std::shared_ptr<graphics::d3d11::ContextOwnership> ownership_;
+    graphics::d3d11::ContextOwnership::Participant target_owner_;
+    ID3D11Device *identity_=nullptr;
+    bool surrendered_=false;
     graphics::d3d11::HostDevice backend_;
     graphics::d3d11::QueryOps *ops_=nullptr;
     Microsoft::WRL::ComPtr<ID3D11Texture2D> active_texture_;
@@ -32,10 +36,17 @@ private:
     std::uint32_t width_=0, height_=0;
     bool lost_=false, closed_=false;
     graphics::Result prepare_target(Pending &,std::uint32_t,std::uint32_t,bool);
+    graphics::Result poll_commit_impl();
+    D3D11DualModeHost(ID3D11Device *,ID3D11DeviceContext *,std::uint64_t,
+        graphics::d3d11::QueryOps *,std::shared_ptr<graphics::d3d11::ContextOwnership>);
     graphics::Result start(std::unique_ptr<Pending>,graphics::Result);
 public:
     D3D11DualModeHost(ID3D11Device *,ID3D11DeviceContext *,std::uint64_t generation,
                       graphics::d3d11::QueryOps *ops=nullptr);
+    static graphics::Result create_owned(std::shared_ptr<graphics::d3d11::ContextOwnership>,
+        graphics::d3d11::QueryOps *,std::unique_ptr<D3D11DualModeHost>&);
+    graphics::Result prepare_lost_teardown();
+    graphics::Result acknowledge_teardown(graphics::d3d11::HostTeardownReceipt &);
     ~D3D11DualModeHost();
     D3D11DualModeHost(const D3D11DualModeHost &)=delete;
     D3D11DualModeHost &operator=(const D3D11DualModeHost &)=delete;
@@ -62,8 +73,8 @@ public:
     Mode mode() const noexcept { return mode_; }
     std::uint64_t pose_generation() const noexcept { return pose_generation_; }
     std::uint64_t target_epoch() const noexcept { return target_epoch_; }
-    ID3D11RenderTargetView *target() const noexcept { return active_view_.Get(); }
-    ID3D11Texture2D *texture() const noexcept { return active_texture_.Get(); }
+    ID3D11RenderTargetView *target() const noexcept { return !ownership_||ownership_->admitted()?active_view_.Get():nullptr; }
+    ID3D11Texture2D *texture() const noexcept { return !ownership_||ownership_->admitted()?active_texture_.Get():nullptr; }
     bool pending() const noexcept { return pending_!=nullptr; }
     bool lost() const noexcept { return lost_; }
 };

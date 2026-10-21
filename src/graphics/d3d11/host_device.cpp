@@ -55,15 +55,19 @@ bool input_conflicts(ID3D11DeviceContext *context, ID3D11Resource *target) {
     return any_uav;
 }
 }
-HostDevice::HostDevice(ID3D11Device *device, ID3D11DeviceContext *context, std::uint64_t generation)
-    : device_(device), context_(context), owner_(std::this_thread::get_id()), generation_(generation) {}
+HostDevice::HostDevice(ID3D11Device *device, ID3D11DeviceContext *context, std::uint64_t generation,
+                       std::shared_ptr<ContextOwnership> ownership)
+    : ownership_(std::move(ownership)),device_(device), context_(context), owner_(std::this_thread::get_id()), generation_(generation) {
+    if(ownership_) ownership_status_=ownership_->owns(device,context,generation)?ownership_->retain(gpu_owner_):Result::invalid_argument;
+}
 HostDevice::~HostDevice() {
     if (!on_owner_thread()) std::terminate();
 }
 Result HostDevice::release_owned_references() {
     if (!on_owner_thread()) return Result::wrong_thread;
+    if(ownership_&&!ownership_->admitted())return Result::busy;
     vs_.Reset(); ps_.Reset(); rasterizer_.Reset(); blend_.Reset(); depth_.Reset();
-    context_.Reset(); device_.Reset();
+    context_.Reset(); device_.Reset();gpu_owner_.reset();
     return Result::ok;
 }
 
@@ -75,6 +79,8 @@ Result HostDevice::mark_lost() {
 
 Result HostDevice::validate(ID3D11RenderTargetView *target, TargetInfo info) const {
     if (!on_owner_thread()) return Result::wrong_thread;
+    if (ownership_status_!=Result::ok)return ownership_status_;
+    if (ownership_ && !ownership_->admitted())return Result::busy;
     if (!device_ || !context_ || !target || !generation_ || !info.generation || !info.width || !info.height)
         return Result::invalid_argument;
     if (info.generation!=generation_) return Result::invalid_argument;
@@ -128,11 +134,14 @@ Result HostDevice::init() {
     return Result::ok;
 }
 Result HostDevice::submit(ID3D11RenderTargetView *target, TargetInfo info) {
+    auto operation=enter_context();
+    if(operation.result()!=Result::ok)return operation.result();
     const auto valid=validate(target, info);
     if (valid!=Result::ok) return valid;
     const auto ready=init();
     if (ready!=Result::ok) return ready;
-    StateScope restore(context_.Get());
+    StateScope restore(context_.Get(),ownership_);
+    if(restore.result()!=Result::ok)return restore.result();
     context_->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     context_->VSSetShader(vs_.Get(), nullptr, 0);
     context_->PSSetShader(ps_.Get(), nullptr, 0);

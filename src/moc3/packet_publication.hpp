@@ -11,6 +11,8 @@ class PacketPublication {
     using Host=rendering::D3D11DualModeHost;
     struct Fence;
     CoreConsumer core_;
+    std::shared_ptr<graphics::d3d11::ContextOwnership> ownership_;
+    graphics::d3d11::ContextOwnership::Participant gpu_owner_;
     Microsoft::WRL::ComPtr<ID3D11Device> device_;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> context_;
     std::unique_ptr<Host> host_;
@@ -21,6 +23,7 @@ class PacketPublication {
     std::uint64_t sequence_=0,nonce_=0,clock_=0,accepted_cursor_=0;
     std::uint32_t index_=0;
     ID3D11Texture2D* accepted_texture_=nullptr;
+    bool closing_=false;
     bool hardware_,opened_=false,prepared_=false,terminal_=false,closed_=false;
     GpuProbe probe_;
     bool step_session_=false;

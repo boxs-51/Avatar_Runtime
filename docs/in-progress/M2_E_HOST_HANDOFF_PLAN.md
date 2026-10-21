@@ -10,3 +10,16 @@
 | E3 — physical loss packet | On a disposable Windows GPU runner, observe an actual DXGI removal/reset, quarantine old generation, complete the production host barrier, recover with a new device and compare post-release live objects against the exact source baseline. Record adapter/driver, raw logs and hashes. | D06/D08 physical portions stay `HOLD_CARRY_TO_M2` while no reset-capable runner exists. No TDR or driver reset on the shared workstation. |
 
 E0's negative controls must fail before the receipt exists and must not release a quarantined CPU pin. A receipt is valid only for the coordinator registered with that isolated host and device generation. Successful WARP injection is protocol evidence, not physical loss/recovery evidence or a gate PASS. Review the final E0 source and logs separately from the pending #37 merge before using them to amend any HOLD ledger.
+
+## Current #38 E1 checkpoint - 2026-10-21
+
+After #59/#60, [the owned native design](ALPHA_38_PRODUCTION_OWNERSHIP_DESIGN.md)
+is implemented in the actual packet/lease adapters and 2D/3D/MOC3 host graph.
+[Direct local acceptance](../completed/audits/ALPHA_38_PRODUCTION_OWNERSHIP_ACCEPTANCE.md)
+records canonical admission, registered GPU owners, readback/restoration/caches,
+real runtime pins, two-phase receipts, healthy/injected WARP and named hardware
+and exact live-object identities. G00 technical-method is accepted only for this
+registered native graph. Public graphics and unregistered future SDK users are
+not certified; whole G00 remains HOLD. E2/#39 committed pose/camera/render matrix
+and E3/#40 actual destructive loss remain separate. Earlier E0/E1 table entries
+describe the original plan, not current absence of this implementation.

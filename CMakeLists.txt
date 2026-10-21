@@ -104,7 +104,8 @@ if(ARS_BUILD_D3D11_SPIKE)
         src/graphics/d3d11/state_scope.cpp
         src/graphics/d3d11/query_retirement.cpp
         src/graphics/d3d11/close_coordinator.cpp
-        src/graphics/d3d11/teardown_receipt.cpp)
+        src/graphics/d3d11/teardown_receipt.cpp
+        src/graphics/d3d11/context_ownership.cpp)
     target_compile_features(ars_d3d11_spike PUBLIC cxx_std_20)
     target_include_directories(ars_d3d11_spike PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
     target_link_libraries(ars_d3d11_spike PUBLIC d3d11 dxgi d3dcompiler)
@@ -889,6 +890,19 @@ if(ARS_BUILD_MOC3_PUBLIC_PIPELINE)
             add_executable(ars_moc3_publication_fence_tests tests/moc3/publication_fence_tests.cpp)
             target_link_libraries(ars_moc3_publication_fence_tests PRIVATE ars_moc3_packet_publication)
             add_test(NAME moc3_owned_publication_fence COMMAND ars_moc3_publication_fence_tests)
+            add_executable(ars_context_ownership_tests tests/gpu/d3d11_context_ownership.cpp src/abi/runtime_api.cpp)
+            target_link_libraries(ars_context_ownership_tests PRIVATE ars_moc3_packet_publication)
+            add_dependencies(ars_context_ownership_tests ars_asset_fixtures ars_schema_worker)
+            add_test(NAME alpha38_warp_context_ownership COMMAND ars_context_ownership_tests $<TARGET_FILE:ars_schema_worker> "${ARS_ASSET_CORPUS}")
+            add_test(NAME alpha38_hardware_context_ownership COMMAND ars_context_ownership_tests $<TARGET_FILE:ars_schema_worker> "${ARS_ASSET_CORPUS}" --hardware)
+            add_test(NAME alpha38_warp_owned_live_objects COMMAND ars_d3d11_live_capture --ownership $<TARGET_FILE:ars_schema_worker> "${ARS_ASSET_CORPUS}")
+            add_test(NAME alpha38_hardware_owned_live_objects COMMAND ars_d3d11_live_capture --ownership-hardware $<TARGET_FILE:ars_schema_worker> "${ARS_ASSET_CORPUS}")
+            set_tests_properties(alpha38_warp_owned_live_objects alpha38_hardware_owned_live_objects
+                PROPERTIES TIMEOUT 120 LABELS "ALPHA38;LIVE_OBJECT_IDENTITY")
+            set_tests_properties(alpha38_warp_context_ownership alpha38_hardware_context_ownership
+                PROPERTIES TIMEOUT 120 LABELS "ALPHA38;REAL_CORE;OWNED_CONTEXT")
+            set_property(TEST alpha38_hardware_context_ownership alpha38_hardware_owned_live_objects
+                APPEND PROPERTY LABELS "PHYSICAL_GPU_REQUIRED")
             add_test(NAME moc3_packet_publication COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/moc3/test_packet_publication.py")
             add_test(NAME moc3_step_publication COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/moc3/test_step_publication.py")
             set_tests_properties(moc3_packet_publication moc3_step_publication PROPERTIES

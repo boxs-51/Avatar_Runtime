@@ -8,6 +8,8 @@ namespace ars::moc3 {
 class LeasePublication {
     struct Fence;
     CoreConsumer core_;
+    std::shared_ptr<graphics::d3d11::ContextOwnership> ownership_;
+    graphics::d3d11::ContextOwnership::Participant gpu_owner_;
     Microsoft::WRL::ComPtr<ID3D11Device> device_;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> context_;
     std::unique_ptr<rendering::D3D11DualModeHost> host_;

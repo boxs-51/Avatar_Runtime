@@ -19,6 +19,7 @@ struct Vertex {
 struct Constants { float canvas_x,canvas_y,atlas_x,atlas_y; };
 struct Range { UINT count, start; };
 struct FrameResources {
+    graphics::d3d11::ContextOwnership::Participant gpu_owner;
     std::shared_ptr<const void> snapshot_owner;
     ComPtr<ID3D11Texture2D> texture;
     ComPtr<ID3D11ShaderResourceView> view;
@@ -174,19 +175,23 @@ graphics::Result render_offscreen_2d(graphics::d3d11::HostDevice &backend,
     graphics::d3d11::QueryRetirement &retirement,
     std::shared_ptr<const void> snapshot_owner) {
     if (!backend.on_owner_thread()) return Result::wrong_thread;
+    auto operation=backend.enter_context();
+    if(operation.result()!=Result::ok)return operation.result();
     const auto valid=backend.validate(target,info);
     if (valid!=Result::ok) return valid;
     if (!valid_scene(scene,atlas)) return Result::invalid_argument;
     try {
         auto frame=std::make_shared<FrameResources>();
+        if(backend.ownership()){const auto r=backend.ownership()->retain(frame->gpu_owner);if(r!=Result::ok)return r;}
         frame->snapshot_owner=std::move(snapshot_owner);
         const auto ready=build(backend.device(),scene,atlas,*frame);
         if (ready!=Result::ok) return ready;
-        const auto prepared=retirement.prepare(backend.device(),backend.context(),target,
-                                                backend.generation(),frame);
+        const auto prepared=retirement.prepare_split(backend.device(),backend.context(),target,
+                                                backend.generation(),frame->snapshot_owner,frame);
         if (prepared!=Result::ok) return prepared;
         {
-            graphics::d3d11::StateScope restore(backend.context());
+            graphics::d3d11::StateScope restore(backend.context(),backend.ownership());
+            if(restore.result()!=Result::ok){retirement.cancel_unsubmitted();return restore.result();}
             auto *context=backend.context();
             constexpr FLOAT transparent[4]{0,0,0,0};
             context->ClearRenderTargetView(target,transparent);

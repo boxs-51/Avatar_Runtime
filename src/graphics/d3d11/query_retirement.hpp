@@ -1,6 +1,7 @@
 #pragma once
 #ifdef _WIN32
 #include "../backend.hpp"
+#include "context_ownership.hpp"
 #include <d3d11.h>
 #include <wrl/client.h>
 #include <memory>
@@ -20,6 +21,10 @@ struct QueryOps {
 // One submission per object. The host must keep the borrowed device/context
 // alive and destroy this object on its R thread after completion or teardown.
 class QueryRetirement {
+    std::shared_ptr<ContextOwnership> ownership_;
+    ContextOwnership::Participant gpu_owner_;
+    std::shared_ptr<const void> gpu_pin_;
+    bool surrendered_=false;
     std::thread::id owner_=std::this_thread::get_id();
     Microsoft::WRL::ComPtr<ID3D11Device> device_;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> context_;
@@ -29,8 +34,10 @@ class QueryRetirement {
     std::uint64_t generation_=0;
     bool started_=false, ended_=false, flushed_=false, complete_=false, quarantined_=false, detached_lost_=false;
     QueryOps *ops_;
+    friend class ars::rendering::D3D11DualModeHost;
+    Result detach_lost_impl(std::uint64_t generation);
 public:
-    explicit QueryRetirement(QueryOps *ops=nullptr);
+    explicit QueryRetirement(QueryOps *ops=nullptr,std::shared_ptr<ContextOwnership> ownership={});
     ~QueryRetirement();
     QueryRetirement(const QueryRetirement &)=delete;
     QueryRetirement &operator=(const QueryRetirement &)=delete;
@@ -38,6 +45,9 @@ public:
                  std::uint64_t, std::shared_ptr<const void> snapshot_pin);
     Result prepare(ID3D11Device *, ID3D11DeviceContext *, ID3D11RenderTargetView *,
                    std::uint64_t, std::shared_ptr<const void> snapshot_pin);
+    Result prepare_split(ID3D11Device *,ID3D11DeviceContext *,ID3D11RenderTargetView *,
+                         std::uint64_t,std::shared_ptr<const void> cpu_pin,std::shared_ptr<const void> gpu_pin);
+    Result surrender_lost(std::uint64_t generation);
     Result end();
     Result cancel_unsubmitted();
     Result mark_lost();

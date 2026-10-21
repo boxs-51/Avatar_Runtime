@@ -9,7 +9,7 @@ using graphics::TargetInfo;
 using graphics::d3d11::QueryRetirement;
 using Microsoft::WRL::ComPtr;
 struct D3D11DualModeHost::Pending {
-    explicit Pending(graphics::d3d11::QueryOps *ops) : query(ops) {}
+    explicit Pending(graphics::d3d11::QueryOps *ops,std::shared_ptr<graphics::d3d11::ContextOwnership> owner) : query(ops,std::move(owner)) {}
     Mode mode=Mode::none;
     std::uint64_t pose=0;
     std::uint32_t width=0,height=0;
@@ -26,7 +26,22 @@ struct Pins2D {
 }
 D3D11DualModeHost::D3D11DualModeHost(ID3D11Device *device,ID3D11DeviceContext *context,
                                      std::uint64_t generation,graphics::d3d11::QueryOps *ops)
-    : backend_(device,context,generation), ops_(ops) {}
+    : D3D11DualModeHost(device,context,generation,ops,{}) {}
+D3D11DualModeHost::D3D11DualModeHost(ID3D11Device *device,ID3D11DeviceContext *context,
+    std::uint64_t generation,graphics::d3d11::QueryOps *ops,
+    std::shared_ptr<graphics::d3d11::ContextOwnership> owner)
+    : ownership_(std::move(owner)),identity_(device),backend_(device,context,generation,ownership_),ops_(ops) {}
+Result D3D11DualModeHost::create_owned(std::shared_ptr<graphics::d3d11::ContextOwnership> owner,
+    graphics::d3d11::QueryOps *ops,std::unique_ptr<D3D11DualModeHost>& out) {
+    if(!owner || out)return Result::invalid_argument;
+    auto operation=owner->enter();if(operation.result()!=Result::ok)return operation.result();
+    try {
+        auto candidate=std::unique_ptr<D3D11DualModeHost>(new D3D11DualModeHost(operation.device(),operation.context(),owner->generation(),ops,owner));
+        auto status=candidate->backend_.ownership_status();if(status!=Result::ok)return status;
+        status=owner->retain(candidate->target_owner_);if(status!=Result::ok)return status;
+        out=std::move(candidate);return Result::ok;
+    }catch(const std::bad_alloc&){return Result::out_of_budget;}
+}
 D3D11DualModeHost::~D3D11DualModeHost() {
     if (!backend_.on_owner_thread()) std::terminate();
     // A pending query is intentionally fatal unless the owner explicitly
@@ -65,11 +80,12 @@ Result D3D11DualModeHost::request_2d(std::shared_ptr<const PreparedScene2D> scen
     std::shared_ptr<const assets::Image> atlas,std::uint64_t pose,
     std::uint32_t width,std::uint32_t height,bool fail_target_create) {
     if (!backend_.on_owner_thread()) return Result::wrong_thread;
+    auto operation=backend_.enter_context();if(operation.result()!=Result::ok)return operation.result();
     if (lost_) return Result::device_lost;
     if (closed_ || closing_.load(std::memory_order_acquire) || pending_) return Result::busy;
     if (!scene || !atlas || !pose) return Result::unsupported;
     try {
-        auto candidate=std::make_unique<Pending>(ops_);
+        auto candidate=std::make_unique<Pending>(ops_,ownership_);
         candidate->mode=Mode::two_d;candidate->pose=pose;
         auto ready=prepare_target(*candidate,width,height,fail_target_create);
         if (ready!=Result::ok) return ready;
@@ -85,11 +101,12 @@ Result D3D11DualModeHost::request_3d(std::shared_ptr<const PreparedScene3D> scen
     const Camera3D &camera,std::uint64_t pose,std::uint32_t width,std::uint32_t height,
     GpuCreateProbe *probe,bool fail_target_create) {
     if (!backend_.on_owner_thread()) return Result::wrong_thread;
+    auto operation=backend_.enter_context();if(operation.result()!=Result::ok)return operation.result();
     if (lost_) return Result::device_lost;
     if (closed_ || closing_.load(std::memory_order_acquire) || pending_) return Result::busy;
     if (!scene || !pose) return Result::unsupported;
     try {
-        auto candidate=std::make_unique<Pending>(ops_);
+        auto candidate=std::make_unique<Pending>(ops_,ownership_);
         candidate->mode=Mode::three_d;candidate->pose=pose;
         auto ready=prepare_target(*candidate,width,height,fail_target_create);
         if (ready!=Result::ok) return ready;
@@ -101,6 +118,10 @@ Result D3D11DualModeHost::request_3d(std::shared_ptr<const PreparedScene3D> scen
     } catch (...) { return Result::failed; }
 }
 Result D3D11DualModeHost::poll_commit() {
+    auto operation=backend_.enter_context();if(operation.result()!=Result::ok)return operation.result();
+    return poll_commit_impl();
+}
+Result D3D11DualModeHost::poll_commit_impl() {
     if (!backend_.on_owner_thread()) return Result::wrong_thread;
     if (!pending_) return Result::invalid_argument;
     if (lost_) return Result::device_lost;
@@ -122,11 +143,12 @@ Result D3D11DualModeHost::poll_commit() {
 Result D3D11DualModeHost::request_moc(const MocPass& pass,std::uint64_t pose,
     std::uint32_t width,std::uint32_t height,bool fail_target_create,std::shared_ptr<PublicationFence> fence) {
     if(!backend_.on_owner_thread())return Result::wrong_thread;
+    auto operation=backend_.enter_context();if(operation.result()!=Result::ok)return operation.result();
     if(lost_)return Result::device_lost;
     if(closed_||closing_.load(std::memory_order_acquire)||pending_)return Result::busy;
     if(!pass||!pose||!width||!height||width>2048||height>2048)return Result::invalid_argument;
     try {
-        auto candidate=std::make_unique<Pending>(ops_);
+        auto candidate=std::make_unique<Pending>(ops_,ownership_);
         candidate->fence=std::move(fence);
         candidate->mode=Mode::moc3;candidate->pose=pose;
         auto result=prepare_target(*candidate,width,height,fail_target_create);
@@ -142,23 +164,26 @@ Result D3D11DualModeHost::request_moc(const MocPass& pass,std::uint64_t pose,
 }
 Result D3D11DualModeHost::begin_close() noexcept {
     closing_.store(true,std::memory_order_release);
+    if(ownership_)ownership_->begin_close();
     return Result::ok;
 }
 Result D3D11DualModeHost::poll_close() {
     if (!backend_.on_owner_thread()) return Result::wrong_thread;
     if (!closing_.load(std::memory_order_acquire)) return Result::invalid_argument;
     if (closed_) return Result::ok;
+    auto operation=backend_.enter_context(true);if(operation.result()!=Result::ok)return operation.result();
     if (lost_) return Result::device_lost;
     if (pending_) {
-        const auto result=poll_commit();
-        if (result!=Result::ok) return result;
+        const auto result=poll_commit_impl();
+        if (result!=Result::ok && (!ownership_ || pending_ || lost_)) return result;
     }
     active_view_.Reset();active_texture_.Reset();
-    backend_.release_owned_references();
+    backend_.release_owned_references();target_owner_.reset();
     closed_=true;
     return Result::ok;
 }
 Result D3D11DualModeHost::detach_lost() {
+    if(ownership_)return Result::invalid_argument;
     if (!backend_.on_owner_thread()) return Result::wrong_thread;
     if (!lost_ || !closing_.load(std::memory_order_acquire) || closed_)
         return Result::invalid_argument;
@@ -172,9 +197,31 @@ Result D3D11DualModeHost::detach_lost() {
         if (result!=Result::ok) return result;
         pending_.reset();
     }
-    backend_.release_owned_references();
+    backend_.release_owned_references();target_owner_.reset();
     closed_=true;
     return Result::ok;
+}
+Result D3D11DualModeHost::prepare_lost_teardown() {
+    if(!backend_.on_owner_thread())return Result::wrong_thread;
+    if(surrendered_)return Result::ok;
+    if(!ownership_ || !lost_ || !closing_.load(std::memory_order_acquire) || closed_ || surrendered_)return Result::invalid_argument;
+    auto operation=ownership_->enter(true);if(operation.result()!=Result::ok)return operation.result();
+    active_view_.Reset();active_texture_.Reset();
+    if(pending_){
+        pending_->view.Reset();pending_->texture.Reset();
+        const auto status=pending_->query.surrender_lost(backend_.generation());if(status!=Result::ok)return status;
+    }
+    backend_.release_owned_references();target_owner_.reset();surrendered_=true;return Result::ok;
+}
+Result D3D11DualModeHost::acknowledge_teardown(graphics::d3d11::HostTeardownReceipt &receipt) {
+    if(!backend_.on_owner_thread())return Result::wrong_thread;
+    if(!ownership_ || (!closed_ && !surrendered_) ||
+       !receipt.matches(ownership_->authority(),backend_.generation(),identity_))return Result::invalid_argument;
+    if(pending_){
+        const auto status=pending_->query.detach_lost_impl(backend_.generation());if(status!=Result::ok)return status;
+        pending_.reset();
+    }
+    receipt.consume();closed_=true;return Result::ok;
 }
 bool D3D11DualModeHost::accepts(ID3D11RenderTargetView *view,
                                 std::uint64_t target_epoch) const noexcept {

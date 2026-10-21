@@ -183,3 +183,15 @@ Alpha custody regressions:15/15 PASS, exit0 (`build/alpha58-r0-custody-tests.log
 catalog151 entries and341 relative links resolve. Actual committed five-file
 scope and integration receipts are recorded in the R0 PR/parent issue. G1-G7
 apply to this design dependency only; full #58 runtime was NOT IMPLEMENTED at that R0 checkpoint.
+
+## #38 ownership implementation checkpoint - 2026-10-21
+
+The R0 inventory above is historical. [#38 design](ALPHA_38_PRODUCTION_OWNERSHIP_DESIGN.md)
+and [direct acceptance](../completed/audits/ALPHA_38_PRODUCTION_OWNERSHIP_ACCEPTANCE.md)
+now enroll the actual packet/lease adapters, host/backend, frames, query, restore
+scopes, cache and readback into one canonical generation-bound native domain.
+Actual runtime work stays pinned until reference surrender and owning-host receipt
+consumption. The current native graph has direct healthy/injected WARP/hardware
+proof. Public graphics remains OFF; unknown future installed callers must enroll
+before receiving any production teardown guarantee. This does not close #39's
+committed pose/camera matrix or physical D06/D08.

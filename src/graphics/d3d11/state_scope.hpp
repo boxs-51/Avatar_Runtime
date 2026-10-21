@@ -1,5 +1,6 @@
 #pragma once
 #ifdef _WIN32
+#include "context_ownership.hpp"
 #include <array>
 #include <d3d11.h>
 #include <wrl/client.h>
@@ -8,6 +9,8 @@ namespace ars::graphics::d3d11 {
 // Exactly the pipeline slots changed by HostDevice::submit. Get* calls retain
 // references; the scope owns them through restoration and then releases them.
 class StateScope {
+    ContextOwnership::Operation operation_;
+    Result result_=Result::ok;
     ID3D11DeviceContext *context_;
     D3D11_PRIMITIVE_TOPOLOGY topology_{};
     Microsoft::WRL::ComPtr<ID3D11InputLayout> input_layout_;
@@ -33,7 +36,8 @@ class StateScope {
     Microsoft::WRL::ComPtr<ID3D11DepthStencilState> depth_;
     UINT stencil_ref_{};
 public:
-    explicit StateScope(ID3D11DeviceContext *context);
+    explicit StateScope(ID3D11DeviceContext *context,std::shared_ptr<ContextOwnership> ownership={});
+    Result result() const noexcept {return result_!=Result::ok?result_:operation_.result();}
     ~StateScope();
     StateScope(const StateScope &)=delete;
     StateScope &operator=(const StateScope &)=delete;

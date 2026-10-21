@@ -81,7 +81,7 @@ Result CloseCoordinator::acknowledge_lost_teardown(std::uint64_t generation,
     const auto state=receipt.state_;
     if (!generation || generation!=backend_.generation() ||
         phase_!=Phase::lost_quarantined || !close_requested() ||
-        !state || state!=host_authority_.state_ || !state->issued || state->consumed ||
+        !state || state->context || state!=host_authority_.state_ || !state->issued || state->consumed ||
         state->generation!=generation || state->device!=backend_.device() ||
         state->owner!=std::this_thread::get_id()) return Result::invalid_argument;
     for (auto &entry : pending_) {

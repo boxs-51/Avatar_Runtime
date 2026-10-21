@@ -1,6 +1,6 @@
 # Mục lục và phân loại tài liệu
 
-Rà soát ngày **21-10-2026, Asia/Bangkok**, nhánh `alpha`. Inventory hiện tại: **160 tệp**, gồm `README.md` và toàn bộ `docs/`. Mốc phân loại ban đầu có 125 tệp; PUB-02-A/B + PUB-04-A/B + alpha audit thêm 35 tài liệu. Xem checkpoint mới nhất ở cuối trang và catalog cho danh sách đầy đủ.
+Rà soát ngày **21-10-2026, Asia/Bangkok**, nhánh `alpha`. Inventory hiện tại: **166 tệp**, gồm `README.md` và toàn bộ `docs/`. Mốc phân loại ban đầu có 125 tệp; PUB-02-A/B + PUB-04-A/B + alpha audit thêm 41 tài liệu. Xem checkpoint mới nhất ở cuối trang và catalog cho danh sách đầy đủ.
 
 Việc phân loại đánh giá vai trò hiện tại của tài liệu. “Đã hoàn thành” chỉ áp dụng cho phạm vi component/private/test ghi ở từng dòng, không tuyên bố milestone, G00–G11 hay SDK đã hoàn tất. “Tham khảo” gồm cả contract đang áp dụng và chứng cứ lịch sử; “lỗi thời” nghĩa là không còn dùng làm kế hoạch/trạng thái hiện hành. Tài liệu đã được chuyển sang bốn thư mục theo phân loại; raw log và JSON chứng cứ giữ nguyên bytes/pins. Markdown chỉ đổi liên kết tương đối. [Bản đồ đường dẫn](DOCUMENTATION_PATHS.json) lưu legacy → canonical và hash trước/sau. Các đường dẫn trong snapshot Git/JSON lịch sử vẫn mô tả source gốc.
 
@@ -266,3 +266,14 @@ Historical inventory before full #60: **160 files**; completed **46**, reference
 ## #60 public CPU completion - 21-10-2026
 
 Current exhaustive inventory: **163 files**; completed **47**, reference **84**, obsolete **4**, in-progress **28**. [Design](in-progress/ALPHA_60_PUBLIC_CPU_COMPLETION_DESIGN.md), [continuation ledger](in-progress/ALPHA_60_COMPLETION_PROGRESS.md) and [direct local acceptance](completed/audits/ALPHA_60_PUBLIC_CPU_ACCEPTANCE.md) reconcile full typed native2D/GLB/dual, bounded runtime ownership, atomic public authority publication and installed four-config CPU SDK qualification. Final committed custody/integration is recorded on issue60/its PR. The earlier quota blocker is resolved. Default feature-off behavior and physical D06/D08 HOLD remain separate; CPU integration is not release qualification.
+
+## #38 owned context checkpoint - 21-10-2026
+
+Current exhaustive inventory: **166 files**; completed **48**, reference **85**,
+obsolete **4**, in-progress **29**. [Native ownership design](in-progress/ALPHA_38_PRODUCTION_OWNERSHIP_DESIGN.md),
+[direct acceptance](completed/audits/ALPHA_38_PRODUCTION_OWNERSHIP_ACCEPTANCE.md)
+and [source/binary/test receipt](reference/audits/ALPHA_38_OWNERSHIP_SOURCE.json)
+cover the actual packet/lease host graph, real runtime custody and ordered
+reference surrender on WARP/hardware. G00 method is accepted for that registered
+native graph only. Whole G00/public GPU and D06/D08 physical remain HOLD. #60 was
+integrated by PR74 at alpha64c129e; next is #39 after #38 committed integration.
