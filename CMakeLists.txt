@@ -1038,6 +1038,19 @@ if(ARS_ENABLE_PUBLIC_D3D11_HOST)
         add_dependencies(ars_lps_native_pixels ars_committed_fixtures ars_cpu_admission_worker ars_cpu_model_broker)
         set_target_properties(ars_lps_native_pixels PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
         ars_runtime_options(ars_lps_native_pixels)
+        # Optional native Win32 desktop viewer: actual admitted model geometry.
+        add_executable(ars_lps_native_viewer
+            experiments/layer-physics-studio-v03/tests/native_viewer.cpp
+            src/abi/abi_version.cpp src/abi/cpu_api.cpp)
+        target_compile_features(ars_lps_native_viewer PRIVATE cxx_std_20)
+        target_compile_definitions(ars_lps_native_viewer PRIVATE NOMINMAX)
+        target_link_libraries(ars_lps_native_viewer PRIVATE ars_runtime_components gdi32 user32)
+        add_dependencies(ars_lps_native_viewer ars_committed_fixtures ars_cpu_admission_worker ars_cpu_model_broker)
+        set_target_properties(ars_lps_native_viewer PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+        ars_runtime_options(ars_lps_native_viewer)
+        add_test(NAME lps_v03_native_viewer_warp_smoke
+            COMMAND ars_lps_native_viewer "${ARS_COMMITTED_FIXTURES}/committed-euler.arschar" --smoke)
+        set_tests_properties(lps_v03_native_viewer_warp_smoke PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE)
         add_test(NAME lps_v03_native_warp_pixels COMMAND ars_lps_native_pixels
             "${ARS_COMMITTED_FIXTURES}/committed-euler.arschar" "${CMAKE_BINARY_DIR}/lps-pixels")
         set_tests_properties(lps_v03_native_warp_pixels PROPERTIES TIMEOUT 180 RUN_SERIAL TRUE)
