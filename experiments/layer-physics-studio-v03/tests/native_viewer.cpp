@@ -1,6 +1,6 @@
 // Experimental native Windows viewer: original .arschar CPU admission +
 // committed 2D geometry -> XPBD -> native D3D11 WARP -> visible Win32 window.
-// D3D11 offscreen readback is copied to Win32 for interactive viewing.
+// A DXGI swapchain presents query-completed D3D11 pixels in a native child HWND.
 // No claim of alpha MOC3/GLB feature parity or public ABI support.
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -15,6 +15,30 @@
 #include <utility>
 
 namespace {
+// Native DXGI presentation of pixels already generated and query-completed by
+// the original D3D11 offscreen renderer. The swapchain is confined to its
+// child HWND; editor controls remain separate Win32 child controls.
+struct DxgiPresenter {
+  ComPtr<IDXGISwapChain> chain;
+  ComPtr<ID3D11Texture2D> backbuffer;
+  explicit DxgiPresenter(Gpu &gpu,HWND canvas){
+    ComPtr<IDXGIDevice> dxgi;ComPtr<IDXGIAdapter> adapter;ComPtr<IDXGIFactory> factory;
+    require(SUCCEEDED(gpu.device.As(&dxgi)),"DXGI adapter device");
+    require(SUCCEEDED(dxgi->GetAdapter(&adapter)),"DXGI physical adapter");
+    require(SUCCEEDED(adapter->GetParent(IID_PPV_ARGS(&factory))),"DXGI factory");
+    DXGI_SWAP_CHAIN_DESC d{};
+    d.BufferCount=2;d.BufferDesc.Width=gpu.width;d.BufferDesc.Height=gpu.height;
+    d.BufferDesc.Format=DXGI_FORMAT_R8G8B8A8_UNORM;d.SampleDesc.Count=1;
+    d.BufferUsage=DXGI_USAGE_RENDER_TARGET_OUTPUT;d.OutputWindow=canvas;
+    d.Windowed=TRUE;d.SwapEffect=DXGI_SWAP_EFFECT_DISCARD;
+    require(SUCCEEDED(factory->CreateSwapChain(gpu.device.Get(),&d,&chain)),"DXGI viewer swapchain");
+    require(SUCCEEDED(chain->GetBuffer(0,IID_PPV_ARGS(&backbuffer))),"DXGI viewer buffer");
+  }
+  bool present(Gpu &gpu){
+    gpu.context->CopyResource(backbuffer.Get(),gpu.texture.Get());
+    return SUCCEEDED(chain->Present(1,0));
+  }
+};
 constexpr int kList=101,kDynamic=102,kGravityUp=103,kGravityDown=104,kWindUp=105,
  kWindDown=106,kSoft=107,kStiff=108,kCollision=109,kJoint=110,kPause=111,kReset=112;
 class NativeViewer {
@@ -23,6 +47,8 @@ class NativeViewer {
   std::unique_ptr<core::RenderFrameLease> captured;
   ars::rendering::PreparedScene2D base;
   std::unique_ptr<Gpu> gpu;
+  std::unique_ptr<DxgiPresenter> presenter;
+  HWND canvas=nullptr;
   Session<ars::rendering::PreparedScene2D> solver;
   Options options;
   HWND window=nullptr,listing=nullptr,status=nullptr;
@@ -101,17 +127,20 @@ class NativeViewer {
         solver_ready=false;update_label();
       }else{
         pixels=gpu->render(candidate.scene,next->model()->image());
+        if(!presenter->present(*gpu))return false;
         if(solver.accept(std::move(candidate),17)!=Status::ok)return false;
       }
     }
-    if(paused||!solver_ready)
+    if(paused||!solver_ready){
       pixels=gpu->render(scene,next->model()->image());
+      if(!presenter->present(*gpu))return false;
+    }
     if(pixels.size()!=std::size_t(viewport_w)*viewport_h*4)return false;
     // BI_RGB 32-bit GDI expects B,G,R,A; D3D11 readback is R,G,B,A.
     for(std::size_t i=0;i<pixels.size();i+=4)std::swap(pixels[i],pixels[i+2]);
     captured=std::move(next);
     ++rendered;
-    if(!smoke)InvalidateRect(window,nullptr,FALSE);
+    // Presented by DXGI; GDI readback is kept solely for smoke/pixel inspection.
     return true;
   }
   void paint(){
@@ -167,6 +196,9 @@ class NativeViewer {
       rect.right-rect.left,rect.bottom-rect.top,nullptr,nullptr,cls.hInstance,this);
     require(window!=nullptr,"native viewer window");
     const int x=int(viewport_w)+8;
+    canvas=CreateWindowW(L"STATIC",L"",WS_CHILD|WS_VISIBLE|SS_BLACKRECT,
+      0,0,viewport_w,viewport_h,window,nullptr,cls.hInstance,nullptr);
+    require(canvas!=nullptr,"create native DXGI canvas");
     listing=CreateWindowExW(WS_EX_CLIENTEDGE,L"LISTBOX",L"",
       WS_CHILD|WS_VISIBLE|WS_VSCROLL|LBS_NOTIFY,x,8,238,182,
       window,reinterpret_cast<HMENU>(std::intptr_t(kList)),cls.hInstance,nullptr);
@@ -191,6 +223,7 @@ class NativeViewer {
       8,int(viewport_h)+4,int(viewport_w)+248,22,window,nullptr,cls.hInstance,nullptr);
     update_label();
     gpu=std::make_unique<Gpu>(viewport_w,viewport_h);
+    presenter=std::make_unique<DxgiPresenter>(*gpu,canvas);
     ShowWindow(window,smoke?SW_SHOWNOACTIVATE:SW_SHOW);
     UpdateWindow(window);
     // Windows UI and solver both run on the model/GPU owner thread.
@@ -208,9 +241,10 @@ class NativeViewer {
         TranslateMessage(&message);DispatchMessageW(&message);
       }
     }
+    presenter.reset();
     gpu.reset();
     captured.reset();
-    if(smoke&&!failed)std::printf("PASS Win32 native D3D11 WARP UI smoke; original parts=%zu frames=%u\n",
+    if(smoke&&!failed)std::printf("PASS Win32 native D3D11 WARP DXGI swapchain UI smoke; original parts=%zu frames=%u\n",
       base.draws.size(),rendered);
     return failed?3:0;
   }
