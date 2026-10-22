@@ -34,6 +34,10 @@ jobs:
         run: |
           python -m py_compile experiments/layer-physics-studio-v03/moc3_viewer.py
           python -m unittest discover -s experiments/layer-physics-studio-v03/tests -p test_moc3_editor.py -v
+      - name: Real Tk 8.6 binary PPM regression and first-frame crash retention
+        run: |
+          if ! command -v xvfb-run >/dev/null 2>&1; then sudo apt-get update && sudo apt-get install -y xvfb xauth; fi
+          xvfb-run -a python -m unittest discover -s experiments/layer-physics-studio-v03/tests -p test_moc3_tk_regression.py -v
   moc3-windows-native:
     name: Real private MOC3 evaluator + D3D11 WARP generated pixels (Windows)
     runs-on: windows-2022
