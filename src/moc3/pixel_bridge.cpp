@@ -258,7 +258,7 @@ int main(int argc,char** argv){
                     case ars::moc3::Result::allocation_failed: reason="allocation_failed";break;
                     default:break;
                 }
-                std::cout<<"ERR parameter "<<reason<<std::endl;continue;
+                std::cout<<"ERR parameter "<<reason<<" "<<session->last_failure_stage()<<std::endl;continue;
             }
             auto snapshot=session->current();ars::moc3::GpuProbe probe;
 #ifdef ARS_LPS_MOC3_BRIDGE
