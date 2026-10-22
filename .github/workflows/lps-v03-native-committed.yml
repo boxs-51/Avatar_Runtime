@@ -60,12 +60,12 @@ jobs:
       - name: Build committed-source native test target
         shell: pwsh
         run: |
-          cmake --build build/lps-committed --config Release --target ars_lps_committed_bridge ars_lps_native_pixels --parallel 2
+          cmake --build build/lps-committed --config Release --target ars_lps_committed_bridge ars_lps_native_pixels ars_lps_native_viewer --parallel 2
           exit $LASTEXITCODE
       - name: Check original projection and XPBD WARP output pixels
         shell: pwsh
         run: |
-          ctest --test-dir build/lps-committed -C Release -R '^lps_v03_(committed_native_cpu|native_warp_pixels)$' --no-tests=error --output-on-failure
+          ctest --test-dir build/lps-committed -C Release -R '^lps_v03_(committed_native_cpu|native_warp_pixels|native_viewer_warp_smoke)$' --no-tests=error --output-on-failure
           exit $LASTEXITCODE
       - name: Retain native WARP before/after pixel images
         if: success()
