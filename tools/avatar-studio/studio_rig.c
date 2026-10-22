@@ -44,3 +44,37 @@ int studio_rig_load(StudioRig *r,const char *path,uint64_t sig,int vertices){
  if(ok){char extra;ok=fscanf(f," %c",&extra)==EOF;}
  fclose(f);if(ok)*r=temp;return ok;
 }
+
+int studio_rig_bank_select(StudioRigBank *bank,StudioRig *current,
+                           int drawable,uint64_t signature,int vertices){
+ if(!bank||!current||drawable<0||signature==0||vertices<1||vertices>2048)return 0;
+ if(current->vertex_count==vertices&&current->drawable==drawable&&
+    current->model_signature==signature)return 1;
+ StudioRigBank temp=*bank;
+ if(temp.signature!=signature){
+  memset(&temp,0,sizeof temp);
+  temp.signature=signature;
+ }
+ if(current->vertex_count>0&&current->model_signature==signature){
+  int slot=-1;
+  for(int i=0;i<temp.count;++i)
+   if(temp.rigs[i].drawable==current->drawable){slot=i;break;}
+  if(slot<0){
+   if(temp.count>=STUDIO_RIG_BANK_CAP)return 0;
+   slot=temp.count++;
+  }
+  temp.rigs[slot]=*current;
+ }
+ StudioRig next={0};
+ int cached=0;
+ for(int i=0;i<temp.count;++i)
+  if(temp.rigs[i].drawable==drawable){
+   if(temp.rigs[i].vertex_count!=vertices)return 0;
+   next=temp.rigs[i];
+   cached=1;break;
+  }
+ if(!cached&&!studio_rig_init(&next,drawable,signature,vertices))return 0;
+ *bank=temp;
+ *current=next;
+ return 1;
+}

@@ -259,3 +259,19 @@ hair/skirt mapping remain unproven. API acknowledgement is not a physics
 quality oracle. Log/JSON only in ignored build/studio-user.
 Telemetry regression fixed moved-from candidate access before numerical
 read; pinned presentation points bypass smoothing.
+
+## Local per-drawable rig editing — cache and Agent query
+The Rig editor now retains distinct anchor/beam sets for up to
+32 drawables per model generation. Switching A -> B -> A through the
+GUI or local Agent API restores A's authored constraints; changing
+the model signature invalidates the old cache. Per-drawable saved
+presets use ignored rig-layer-N.txt files (no model bytes written).
+If the bounded bank is full, a new uncached outgoing rig is not
+silently discarded.
+
+Agent caller may invoke rig.inspect with no other fields to obtain
+only the selected drawable index, anchor count and beam count.
+These numeric receipts do not enumerate model parts or export
+textures/geometry. Model-private local E2E: 11 agent operations PASS
+including editing A, switching to B and back, inspecting A, then
+reapplying the authored rig. Native synthetic rig cache tests PASS.

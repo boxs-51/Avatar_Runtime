@@ -33,6 +33,9 @@ def main()->int:
                 {"op":"rig.anchor","vertex":0,"enabled":True},
                 {"op":"rig.anchor","vertex":1,"enabled":True},
                 {"op":"rig.beam","a":1,"b":2,"enabled":True},
+                {"op":"rig.select","drawable":1},
+                {"op":"rig.select","drawable":0},
+                {"op":"rig.inspect"},
                 {"op":"physics.set","gravity":-8,"wind":2,"damping":.94},
                 {"op":"action.trigger","kind":"pull","strength":.5},
                 {"op":"action.trigger","kind":"release","strength":0},
@@ -43,6 +46,8 @@ def main()->int:
                 result=bridge.call(command)
                 cases.append({"op":command["op"],**result})
                 if not result["ok"]:raise RuntimeError("API rejected "+command["op"]+": "+result["receipt"])
+                if command["op"]=="rig.inspect" and not ("anchors=2" in result["receipt"] and "beams=1" in result["receipt"]):
+                    raise RuntimeError("Rig state lost across drawable switch")
             print("NATIVE_AGENT_API_PASS commands="+str(len(cases)))
         finally:
             if process.poll() is None:

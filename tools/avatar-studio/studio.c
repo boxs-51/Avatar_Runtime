@@ -25,7 +25,7 @@ typedef struct {
     int history;float scroll;char search[96],model_name[256],folder[1024],notice[192];
     double notice_until;void *linked;int physics_reset,step_requested;
     int failures,checks,physics_expected,xpbd_smoke,xpbd_smoke_frames,xpbd_motion_case,xpbd_motion_rebinds;float paused_time;double paused_checksum;
-    void *xpbd;int xpbd_first,xpbd_second,xpbd_joint,xpbd_page,rig_selected,rig_beam_start,rig_overlay;StudioRig rig;float xpbd_gravity,xpbd_wind,xpbd_compliance,xpbd_collision,xpbd_mass,xpbd_damping,xpbd_contact_compliance,xpbd_step,xpbd_iters,xpbd_pin,xpbd_substeps,xpbd_pose_compliance,xpbd_source_transfer,xpbd_bending,xpbd_surface,xpbd_anchors;
+    void *xpbd;int xpbd_first,xpbd_second,xpbd_joint,xpbd_page,rig_selected,rig_beam_start,rig_overlay;StudioRig rig;StudioRigBank rig_bank;float xpbd_gravity,xpbd_wind,xpbd_compliance,xpbd_collision,xpbd_mass,xpbd_damping,xpbd_contact_compliance,xpbd_step,xpbd_iters,xpbd_pin,xpbd_substeps,xpbd_pose_compliance,xpbd_source_transfer,xpbd_bending,xpbd_surface,xpbd_anchors;
     Settings settings;RenderTexture2D target;Rectangle viewport;
 } Studio;
 static Studio s;
@@ -71,7 +71,7 @@ static void defaults(void){
     memset(s.weights,0,sizeof s.weights);s.weights[0]=1;s.physics_reset=1;
 }
 static void free_model(void){
-    memset(&s.rig,0,sizeof s.rig);
+    memset(&s.rig,0,sizeof s.rig);memset(&s.rig_bank,0,sizeof s.rig_bank);
     studio_xpbd_disable(s.xpbd);s.xpbd=NULL;
     if(s.core.model){studio_physics_free(s.linked);s.linked=NULL;RendererFree(&s.renderer);FreeCore(&s.core);}
     free(s.sorted);free(s.manual);free(s.pins);free(s.part_values);free(s.part_defaults);s.part_defaults=NULL;
@@ -258,7 +258,7 @@ static void rig_overlay_ui(void){
  if(!counts||!vertices||!vertices[d]||counts[d]<1)return;
  int n=counts[d];
  if(s.rig.vertex_count!=n||s.rig.drawable!=d)
-   if(!studio_rig_init(&s.rig,d,signature(),n))return;
+   if(!studio_rig_bank_select(&s.rig_bank,&s.rig,d,signature(),n))return;
  Vector2 mouse=GetMousePosition();
  float best=18.f*18.f;int nearest=-1;
  for(int j=0;j<n;++j){
@@ -309,7 +309,8 @@ static void rig_ui(float x){
  if(d>=n||d<0)return;
  const int *vc=csmGetDrawableVertexCounts(s.core.model);
  if(s.rig.vertex_count!=vc[d]||s.rig.drawable!=d){
-  studio_rig_init(&s.rig,d,signature(),vc[d]);s.rig_selected=0;s.rig_beam_start=-1;
+     if(!studio_rig_bank_select(&s.rig_bank,&s.rig,d,signature(),vc[d]))return;
+   s.rig_selected=0;s.rig_beam_start=-1;
  }
  label("LAYER RIG EDITOR",x,190,16,ACCENT);
  label(TextFormat("Drawable %d / %d",d,n),x,224,14,TEXT);
@@ -327,11 +328,11 @@ static void rig_ui(float x){
  }
  label(TextFormat("Anchors %d / Support beams %d",s.rig.anchor_count,s.rig.beam_count),x,410,14,ACCENT);
  if(button((Rectangle){x,454,132,31},"Save rig",0)){
-  char path[1200];snprintf(path,sizeof path,"%s/rig-local.txt",s.folder);
+  char path[1200];snprintf(path,sizeof path,"%s/rig-layer-%d.txt",s.folder,d);
   toast(studio_rig_save(&s.rig,path)?"Rig saved locally.":"Save rig failed.");
  }
  if(button((Rectangle){x+144,454,136,31},"Load rig",0)){
-  char path[1200];snprintf(path,sizeof path,"%s/rig-local.txt",s.folder);
+  char path[1200];snprintf(path,sizeof path,"%s/rig-layer-%d.txt",s.folder,d);
   toast(studio_rig_load(&s.rig,path,signature(),vc[d])?"Rig loaded.":"Rig signature mismatch.");
  }
  if(button((Rectangle){x,505,280,34},"Apply rig to XPBD",0)){
@@ -472,10 +473,17 @@ static void process_agent_request(void){
  int d=s.xpbd_first,n=csmGetDrawableCount(s.core.model);
  if(!strcmp(op,"RIG_SELECT")){
   int v,tail;if(fscanf(f,"%d",&v)==1&&fscanf(f,"%d",&tail)!=1&&v>=0&&v<n){
-    s.xpbd_first=v;s.tab=3;s.rig_selected=0;
     const int *vc=csmGetDrawableVertexCounts(s.core.model);
-    ok=studio_rig_init(&s.rig,v,signature(),vc[v]);
-    snprintf(receipt,sizeof receipt,"drawable=%d",v);
+    ok=studio_rig_bank_select(&s.rig_bank,&s.rig,v,signature(),vc[v]);
+    if(ok){s.xpbd_first=v;s.tab=3;s.rig_selected=0;s.rig_beam_start=-1;
+      snprintf(receipt,sizeof receipt,"drawable=%d",v);}
+  }
+ }else if(!strcmp(op,"RIG_INSPECT")){
+  int tail;
+  if(fscanf(f,"%d",&tail)!=1&&s.rig.vertex_count>0){
+   ok=1;
+   snprintf(receipt,sizeof receipt,"drawable=%d anchors=%d beams=%d",
+       s.rig.drawable,s.rig.anchor_count,s.rig.beam_count);
   }
  }else if(!strcmp(op,"RIG_ANCHOR")||!strcmp(op,"RIG_BEAM")){
   int a,b,e,tail;int beam=!strcmp(op,"RIG_BEAM");

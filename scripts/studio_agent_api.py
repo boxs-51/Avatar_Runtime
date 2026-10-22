@@ -15,6 +15,7 @@ def validate_command(cmd:dict)->str:
         "rig.anchor":{"op","vertex","enabled"},
         "rig.beam":{"op","a","b","enabled"},
         "rig.apply":{"op"},
+        "rig.inspect":{"op"},
         "physics.set":{"op","gravity","wind","damping"},
         "action.trigger":{"op","kind","strength"},
     }
@@ -38,6 +39,7 @@ def validate_command(cmd:dict)->str:
         if a==b or type(cmd["enabled"]) is not bool:raise ValueError("invalid beam")
         return f"RIG_BEAM {a} {b} {int(cmd['enabled'])}"
     if op=="rig.apply":return "RIG_APPLY"
+    if op=="rig.inspect":return "RIG_INSPECT"
     if op=="physics.set":
         return "PHYSICS_SET "+" ".join((finite("gravity",-80,80),finite("wind",-60,60),finite("damping",0,1)))
     if cmd["kind"] not in ("pull","release","shake","settle"):raise ValueError("invalid action")

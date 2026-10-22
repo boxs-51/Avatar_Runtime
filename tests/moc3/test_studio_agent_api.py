@@ -19,6 +19,7 @@ class AgentApiContract(unittest.TestCase):
         self.assertEqual(validate_command({"op": "rig.anchor", "vertex": 12, "enabled": True}), "RIG_ANCHOR 12 1")
         self.assertEqual(validate_command({"op": "rig.beam", "a": 2, "b": 9, "enabled": False}), "RIG_BEAM 2 9 0")
         self.assertEqual(validate_command({"op": "rig.apply"}), "RIG_APPLY")
+        self.assertEqual(validate_command({"op": "rig.inspect"}), "RIG_INSPECT")
         self.assertEqual(validate_command({"op": "physics.set", "gravity": -12.5, "wind": 3, "damping": .95}), "PHYSICS_SET -12.5 3 0.95")
         self.assertEqual(validate_command({"op": "action.trigger", "kind": "pull", "strength": .6}), "ACTION pull 0.6")
         for invalid in (
