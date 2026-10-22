@@ -50,15 +50,15 @@ viewer edits are preserved; the new viewer builds separately.
 | Requirement | Direct local verification | Result |
 | --- | --- | --- |
 | UI1 viewport/layout | Actual native window and inspected full-window screenshots at 1460×1000 and 1250×920; nonblank model | PASS |
-| UI2 automatic controls | Idle/happy/dance/zoom captures differ by 37,248 / 55,390 / 92,548 pixels above threshold 25 from idle on permitted fixture; native finite/catalog bounds monitored | PASS within this fixture |
+| UI2 automatic controls | Idle/happy/dance/zoom captures differ by 37,232 / 55,393 / 92,543 pixels above threshold 25 from idle on permitted fixture; native finite/catalog bounds monitored | PASS within this fixture |
 | UI3 manual/camera | Real keyboard and mouse: expression, search/pin/right-click clear, layers tab, pause/step, face/fit, background | PASS |
-| UI4 linked physics | Native 80-update boundary probe at 125ms/update; 1800 visible frames, linked solver remains available; six native checks, zero failures; final 60 FPS observed | PASS within this fixture |
+| UI4 linked physics | Native 80-update boundary probe at 125ms/update; 1800 visible frames, linked solver remains available; seven native checks, zero failures; final 60 FPS observed | PASS within this fixture |
 | UI5 persistence/capture | Actual Save/Load, corrupt preset rollback, PNG export, clean close; preset/state replacement uses temporary file plus atomic Windows replacement | PASS |
 | UI6 launch/regression/review | Auto-selected local model, separate output folders; old diagnostic guards 4/4 and linked-physics Python tests 9/9; independent reviewer identified boundary defect, fixed with direct RED/GREEN and reviewed again | PASS |
 
 Actual commands: `python scripts/avatar_studio.py --smoke --frames 1800`;
 `ARS_STUDIO_LIVE=1` with unittest `test_avatar_studio_live.py` (six behavior
-groups in one integration test, 12.2 seconds); existing unittest files
+groups in one integration test, 9.743 seconds); existing unittest files
 `test_viewer_diagnostic_guards.py` and `test_linked_physics.py`.
 Private evidence stays under `build/studio-user/`; logs under `build/`.
 First full-window screenshot test exposed raylib absolute-path screenshot
@@ -87,3 +87,22 @@ microphone lip-sync, high-DPI or multi-monitor qualification, all GPU/model
 versions, public SDK acceptance, G01/G02 or physical D06/D08 closure. Human
 hands-on acceptance remains with the owner. This document stays in-progress
 for that iteration; implemented local behavior above is independently testable.
+
+Final capture/privacy check: raylib's built-in F12 handler initially created an
+untracked root screenshot during the real input test. That image was moved to
+ignored storage and never committed. Studio now compiles only raylib with
+`SUPPORT_SCREEN_CAPTURE=0`, retaining the normal default config and frame loop.
+A broad `CUSTOMIZE_BUILD=ON` attempt was rejected by runtime evidence (FPS zero
+and no input polling); this dependency version maps zero-valued config macros
+to ON in its option parser. It is disabled in the final configuration. Native
+smoke additionally verifies frame timing/presentation. The unchanged legacy
+viewer's default root screenshot pattern is narrowly ignored as a safeguard;
+the final GUI test independently asserts that no root screenshot is created.
+The GUI harness also matches GLFW per-monitor DPI awareness for mouse positions.
+
+Final exact-binary evidence: `build/studio-user/smoke-20261022-202726-644441`
+contains 1800 frames, seven checks, zero failures, linked physics available,
+29.396 seconds of simulation and final observed 60 FPS.
+`build/studio-user/controls-6f4ecf5ecefb4e6187b068dd56cb85b4` contains the six
+successful real-input behavior groups including clean close and the no-root-PNG
+invariant. These supersede earlier intermediate capture-configuration attempts.

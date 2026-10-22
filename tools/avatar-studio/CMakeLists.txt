@@ -13,7 +13,11 @@ set(PURISM_CORE_BUILD_VIEWER ON CACHE BOOL "" FORCE)
 set(PURISM_CORE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(PURISM_CORE_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(FETCHCONTENT_SOURCE_DIR_RAYLIB "${STUDIO_RAYLIB_ROOT}" CACHE PATH "" FORCE)
+# Studio owns F12 and its private output directory. Disable raylib's global
+# shortcut, which otherwise writes screenshot000.png into the working directory.
+set(CUSTOMIZE_BUILD OFF CACHE BOOL "" FORCE)
 add_subdirectory("${STUDIO_PURISM_ROOT}" purism EXCLUDE_FROM_ALL)
+target_compile_definitions(raylib PRIVATE SUPPORT_SCREEN_CAPTURE=0)
 get_target_property(support viewer SOURCES)
 set(studio_sources "")
 foreach(path IN LISTS support)

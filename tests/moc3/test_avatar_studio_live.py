@@ -25,7 +25,10 @@ class VisibleStudio(unittest.TestCase):
         self.assertTrue(BINARY.is_file())
         output = ROOT / "build/studio-user" / ("controls-" + uuid.uuid4().hex)
         output.mkdir(parents=True)
+        root_screenshots = set(ROOT.glob("screenshot*.png"))
         user = ctypes.WinDLL("user32", use_last_error=True)
+        # Match GLFW's per-monitor awareness: Win32 coordinates must stay physical.
+        user.SetProcessDpiAwarenessContext(ctypes.c_void_p(-4))
         callback_type = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
         user.EnumWindows.argtypes = [callback_type, wintypes.LPARAM]
         user.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
@@ -58,6 +61,7 @@ class VisibleStudio(unittest.TestCase):
             self.fail("Timed out waiting for Studio state")
 
         def focus():
+            self.assertIsNone(process.poll(), "Studio exited before focus/input")
             user.SetForegroundWindow(window)
             if user.GetForegroundWindow() != window:
                 foreground = user.GetForegroundWindow()
@@ -168,6 +172,8 @@ class VisibleStudio(unittest.TestCase):
             cases.append("camera_fit_and_capture")
             user.PostMessageW(window, 0x10, 0, 0)  # WM_CLOSE.
             self.assertEqual(process.wait(timeout=5), 0)
+            self.assertEqual(set(ROOT.glob("screenshot*.png")), root_screenshots,
+                             "F12 must not create a second capture in repository root")
             cases.append("clean_window_close")
             (output / "controls.json").write_text(json.dumps({"result": "PASS", "cases": cases}, indent=2))
             print(f"Visible controls evidence: {output.relative_to(ROOT)}")

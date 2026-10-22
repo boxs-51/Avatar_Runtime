@@ -3,3 +3,5 @@ __pycache__/
 *.py[cod]
 .venv/
 /local-assets/
+# raylib's legacy F12 diagnostic capture can contain private model pixels.
+/screenshot*.png

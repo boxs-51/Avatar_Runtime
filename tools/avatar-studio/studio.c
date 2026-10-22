@@ -370,6 +370,7 @@ int main(int argc,char **argv){
     while(!WindowShouldClose()&&(!s.limit||s.frame<s.limit))frame();
     state_file();
     if(s.smoke){verify(s.frame==s.limit,"complete frame count");verify(s.linked!=NULL||!s.physics_expected,"physics still available");
+        verify(GetFPS()>0&&s.time>s.frame/120.0f,"real frame timing and presentation");
         char path[1200];snprintf(path,sizeof path,"%s/smoke.json",s.folder);FILE *f=fopen(path,"w");
         if(f){fprintf(f,"{\"checks\":%d,\"failures\":%d,\"frames\":%d,\"linked_physics\":%d}\n",s.checks,s.failures,s.frame,s.linked!=NULL);fclose(f);}else ++s.failures;
     }
