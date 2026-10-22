@@ -65,11 +65,8 @@ jobs:
       - name: Check original projection and XPBD WARP output pixels
         shell: pwsh
         run: |
-          ctest --test-dir build/lps-committed -C Release -R '^lps_v03_(committed_native_cpu|native_warp_pixels) --no-tests=error --output-on-failure
+          ctest --test-dir build/lps-committed -C Release -R '^lps_v03_(committed_native_cpu|native_warp_pixels)$' --no-tests=error --output-on-failure
           exit $LASTEXITCODE
- --no-tests=error --output-on-failure
-          exit $LASTEXITCODE
-
       - name: Retain native WARP before/after pixel images
         if: success()
         uses: actions/upload-artifact@v4
