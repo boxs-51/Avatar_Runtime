@@ -220,7 +220,7 @@ Result Session::update(const std::vector<Parameter>& parameters) noexcept {
         auto restore = rollback;
         if (csmGetLastError(model) != csmError_NoError) {
             restore();
-            { last_failure_stage_="invalid_model";return Result::invalid_model; }
+            { return Result::invalid_model; }
         }
         last_failure_stage_="drawable_header";
         const int count = csmGetDrawableCount(model);
@@ -251,7 +251,7 @@ Result Session::update(const std::vector<Parameter>& parameters) noexcept {
             !indices || !mask_counts || !masks || !textures || !draw_orders ||
             !orders || !blends || !flags || !dynamic_flags || !opacities ||
             !multiply || !screen) {
-            restore(); { last_failure_stage_="invalid_model";return Result::invalid_model; }
+            restore(); { return Result::invalid_model; }
         }
         std::size_t total = sizeof(Snapshot);
         if (!add_bytes(total, count, sizeof(Drawable), budget_.max_snapshot_bytes)) {
@@ -273,10 +273,10 @@ Result Session::update(const std::vector<Parameter>& parameters) noexcept {
                 textures[i] < 0 ||
                 !std::isfinite(opacities[i]) || opacities[i] < 0 || opacities[i] > 1 ||
                 !finite_color(multiply[i]) || !finite_color(screen[i])) {
-                restore(); { last_failure_stage_="invalid_model";return Result::invalid_model; }
+                restore(); { return Result::invalid_model; }
             }
             if (!seen_ids.emplace(drawable_ids[i], id_size).second) {
-                restore(); { last_failure_stage_="invalid_model";return Result::invalid_model; }
+                restore(); { return Result::invalid_model; }
             }
             if (blends[i] != csmColorBlendType_Normal &&
                 blends[i] != csmColorBlendType_AddCompatible &&
@@ -322,19 +322,19 @@ Result Session::update(const std::vector<Parameter>& parameters) noexcept {
                 const auto& p = positions[i][j]; const auto& uv = uvs[i][j];
                 if (!std::isfinite(p.X) || !std::isfinite(p.Y) ||
                     !std::isfinite(uv.X) || !std::isfinite(uv.Y)) {
-                    restore(); { last_failure_stage_="invalid_model";return Result::invalid_model; }
+                    restore(); { return Result::invalid_model; }
                 }
                 drawable.vertices.push_back({p.X, p.Y, uv.X, uv.Y});
             }
             drawable.indices.reserve(ic);
             for (std::size_t j = 0; j < ic; ++j) {
-                if (indices[i][j] >= vc) { restore(); { last_failure_stage_="invalid_model";return Result::invalid_model; } }
+                if (indices[i][j] >= vc) { restore(); { return Result::invalid_model; } }
                 drawable.indices.push_back(indices[i][j]);
             }
             drawable.masks.reserve(mc);
             for (std::size_t j = 0; j < mc; ++j) {
                 const int mask = masks[i][j];
-                if (mask < 0 || mask >= count) { restore(); { last_failure_stage_="invalid_model";return Result::invalid_model; } }
+                if (mask < 0 || mask >= count) { restore(); { return Result::invalid_model; } }
                 drawable.masks.push_back(static_cast<std::uint32_t>(mask));
             }
             snapshot->drawables.push_back(std::move(drawable));
