@@ -20,10 +20,17 @@ class AgentApiContract(unittest.TestCase):
         self.assertEqual(validate_command({"op": "rig.beam", "a": 2, "b": 9, "enabled": False}), "RIG_BEAM 2 9 0")
         self.assertEqual(validate_command({"op": "rig.apply"}), "RIG_APPLY")
         self.assertEqual(validate_command({"op": "rig.inspect"}), "RIG_INSPECT")
+        self.assertEqual(validate_command({"op": "layer.scan"}), "LAYER_SCAN")
+        self.assertEqual(validate_command({"op": "layer.suggest"}), "LAYER_SUGGEST")
+        self.assertEqual(validate_command({"op": "layer.adopt"}), "LAYER_ADOPT")
+        self.assertEqual(validate_command({"op": "layer.label", "kind": "skirt"}), "LAYER_LABEL skirt")
         self.assertEqual(validate_command({"op": "physics.set", "gravity": -12.5, "wind": 3, "damping": .95}), "PHYSICS_SET -12.5 3 0.95")
         self.assertEqual(validate_command({"op": "action.trigger", "kind": "pull", "strength": .6}), "ACTION pull 0.6")
         for invalid in (
             {"op":"unknown"},
+            {"op":"layer.label","kind":"body"},
+            {"op":"layer.label","kind":True},
+            {"op":"layer.scan","path":"../private"},
             {"op":"rig.select","drawable":-1},
             {"op":"rig.anchor","vertex":3,"enabled":"yes"},
             {"op":"rig.beam","a":2,"b":2,"enabled":True},

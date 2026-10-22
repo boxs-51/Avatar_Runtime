@@ -31,7 +31,7 @@ foreach(path IN LISTS support)
 endforeach()
 set(UTF8PROC_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 add_subdirectory("${ARS_ROOT}/build/c-deps/utf8proc" utf8proc EXCLUDE_FROM_ALL)
-add_executable(avatar_studio studio.c studio_render.c studio_backend.cpp studio_xpbd.cpp studio_rig.c ${studio_sources}
+add_executable(avatar_studio studio.c studio_render.c studio_backend.cpp studio_xpbd.cpp studio_rig.c studio_layer_analysis.c ${studio_sources}
   "${ARS_ROOT}/src/moc3/retained_physics.cpp"
   "${ARS_ROOT}/src/moc3/physics_admission.cpp"
   "${ARS_ROOT}/src/validation/strict_json.cpp"
@@ -54,3 +54,7 @@ target_compile_features(studio_xpbd_parameter_tests PRIVATE cxx_std_20)
 # Pure local rig editor regression, no model / raylib required.
 add_executable(studio_rig_tests tests/studio_rig_tests.c studio_rig.c)
 target_compile_features(studio_rig_tests PRIVATE c_std_11)
+
+# Pure C deterministic layer analysis: synthetic mesh only.
+add_executable(studio_layer_analysis_tests tests/studio_layer_analysis_tests.c studio_layer_analysis.c)
+target_compile_features(studio_layer_analysis_tests PRIVATE c_std_11)

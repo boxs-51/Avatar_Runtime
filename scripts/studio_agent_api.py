@@ -16,6 +16,10 @@ def validate_command(cmd:dict)->str:
         "rig.beam":{"op","a","b","enabled"},
         "rig.apply":{"op"},
         "rig.inspect":{"op"},
+        "layer.scan":{"op"},
+        "layer.suggest":{"op"},
+        "layer.adopt":{"op"},
+        "layer.label":{"op","kind"},
         "physics.set":{"op","gravity","wind","damping"},
         "action.trigger":{"op","kind","strength"},
     }
@@ -40,6 +44,13 @@ def validate_command(cmd:dict)->str:
         return f"RIG_BEAM {a} {b} {int(cmd['enabled'])}"
     if op=="rig.apply":return "RIG_APPLY"
     if op=="rig.inspect":return "RIG_INSPECT"
+    if op=="layer.scan":return "LAYER_SCAN"
+    if op=="layer.suggest":return "LAYER_SUGGEST"
+    if op=="layer.adopt":return "LAYER_ADOPT"
+    if op=="layer.label":
+        if type(cmd["kind"]) is not str or cmd["kind"] not in ("unknown","hair","skirt","strap"):
+            raise ValueError("invalid manually confirmed layer role")
+        return "LAYER_LABEL "+cmd["kind"]
     if op=="physics.set":
         return "PHYSICS_SET "+" ".join((finite("gravity",-80,80),finite("wind",-60,60),finite("damping",0,1)))
     if cmd["kind"] not in ("pull","release","shake","settle"):raise ValueError("invalid action")

@@ -275,3 +275,53 @@ These numeric receipts do not enumerate model parts or export
 textures/geometry. Model-private local E2E: 11 agent operations PASS
 including editing A, switching to B and back, inspecting A, then
 reapplying the authored rig. Native synthetic rig cache tests PASS.
+
+## Preliminary drawable decomposition and agent-assisted labeling
+
+The **Rig** tab includes an opt-in **Analyze layer** action. It reads the
+currently loaded MOC3 drawable *locally*, evaluates conservative semantic
+name hints (hair, skirt, ribbon/strap) and mesh geometry, then previews
+confidence and candidate root vertices. The model file is not changed.
+Ambiguous identifiers remain **unknown** and cannot automatically adopt
+anchors. For unknown layers, positional grouping (upper, middle, lower,
+spanning) and mesh shape are only geometry hints, NOT verified body-part
+labels.
+
+**Adopt anchors** is separately gated to a known semantic class with
+confidence >=80, and changes the editable rig only; **Apply rig to XPBD**
+remains a separate deliberate action. Users can explicitly confirm a
+drawable's role as Unknown, Hair, Skirt or Strap using the rig controls.
+That role is stored with the local rig in STUDIO_RIG_2 format, with
+backward-compatible read of STUDIO_RIG_1. A per-drawable rig cache keeps
+the manual label while switching layers.
+
+Authorized local Agent API v1.0 additions:
+- \`layer.scan\` — grouped numeric totals (no names or vertex positions);
+  \`up/mid/low/span\` are relative bounding-box regions and \`bad\` is
+  the number of drawables that could not be evaluated.
+- \`layer.suggest\` — selected drawable's role hint, confidence, proposed
+  anchor count, region and shape, with no raw identifier.
+- \`layer.adopt\` — explicit acceptance of high-confidence suggested roots;
+  refuses ambiguous candidates, does not enable physics automatically.
+- \`layer.label\` — explicit manual assignment: kind is exactly
+  \`unknown\`, \`hair\`, \`skirt\` or \`strap\`. It is not an automatic
+  classifier and can be revised before saving the rig.
+- \`rig.inspect\` additionally reports the manual role.
+
+Example CLI (inside the trusted workspace):
+\`py scripts/studio_agent_cli.py '{"op":"layer.scan"}'\`
+\`py scripts/studio_agent_cli.py '{"op":"layer.suggest"}'\`
+\`py scripts/studio_agent_cli.py '{"op":"layer.label","kind":"hair"}'\`
+
+RED-first synthetic classification tests:
+\`build/avatar-studio/Release/studio_layer_analysis_tests.exe\`
+Live-model privacy-preserving numeric regression:
+\`py scripts/test_studio_layer_scan_live.py\`
+Performance timing is measured *after Studio readiness*; time spent
+starting the model is not counted as classification latency.
+
+This is preliminary spatial decomposition, NOT automatic physical
+segmentation or verified hair/skirt detection. It does not export
+private model names, coordinates, screenshots or textures. The local
+file bridge is limited to trusted processes sharing the Windows account;
+it provides no separate OS-enforced authorization boundary.

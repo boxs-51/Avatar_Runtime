@@ -6,6 +6,10 @@ int studio_rig_init(StudioRig *r,int d,uint64_t sig,int v){
  if(!r||d<0||!sig||v<1||v>2048)return 0;
  memset(r,0,sizeof(*r));r->drawable=d;r->model_signature=sig;r->vertex_count=v;return 1;
 }
+int studio_rig_set_role(StudioRig *r,int role){
+ if(!r||r->vertex_count<=0||role<0||role>3)return 0;
+ r->role=role;return 1;
+}
 int studio_rig_toggle_anchor(StudioRig *r,int v){
  if(!valid(r,v))return 0;
  for(int i=0;i<r->anchor_count;++i)if(r->anchors[i]==v){
@@ -28,7 +32,7 @@ int studio_rig_toggle_beam(StudioRig *r,int a,int b){
 int studio_rig_save(const StudioRig *r,const char *path){
  if(!r||!path||!r->model_signature)return 0;
  FILE *f=fopen(path,"w");if(!f)return 0;
- int ok=fprintf(f,"STUDIO_RIG_1 %llu %d %d %d %d\n",(unsigned long long)r->model_signature,r->drawable,r->vertex_count,r->anchor_count,r->beam_count)>0;
+ int ok=fprintf(f,"STUDIO_RIG_2 %llu %d %d %d %d %d\n",(unsigned long long)r->model_signature,r->drawable,r->vertex_count,r->anchor_count,r->beam_count,r->role)>0;
  for(int i=0;i<r->anchor_count;++i)ok&=fprintf(f,"A %d\n",r->anchors[i])>0;
  for(int i=0;i<r->beam_count;++i)ok&=fprintf(f,"B %d %d\n",r->beams[i].a,r->beams[i].b)>0;
  return fclose(f)==0&&ok;
@@ -36,9 +40,14 @@ int studio_rig_save(const StudioRig *r,const char *path){
 int studio_rig_load(StudioRig *r,const char *path,uint64_t sig,int vertices){
  if(!r||!path)return 0;FILE *f=fopen(path,"r");if(!f)return 0;
  char magic[32];unsigned long long got=0;int d,v,na,nb;
- int ok=fscanf(f,"%31s %llu %d %d %d %d",magic,&got,&d,&v,&na,&nb)==6&&
- !strcmp(magic,"STUDIO_RIG_1")&&got==sig&&v==vertices&&na>=0&&na<=STUDIO_RIG_MAX_ANCHORS&&nb>=0&&nb<=STUDIO_RIG_MAX_BEAMS;
- StudioRig temp={0};if(ok)ok=studio_rig_init(&temp,d,sig,v);
+ int role=0;
+ int ok=fscanf(f,"%31s %llu %d %d %d %d",magic,&got,&d,&v,&na,&nb)==6;
+ if(ok&&!strcmp(magic,"STUDIO_RIG_2"))ok=fscanf(f,"%d",&role)==1;
+ else if(ok&&strcmp(magic,"STUDIO_RIG_1"))ok=0;
+ ok=ok&&got==sig&&v==vertices&&role>=0&&role<=3&&
+     na>=0&&na<=STUDIO_RIG_MAX_ANCHORS&&
+     nb>=0&&nb<=STUDIO_RIG_MAX_BEAMS;
+ StudioRig temp={0};if(ok){ok=studio_rig_init(&temp,d,sig,v);temp.role=role;}
  for(int i=0;i<na&&ok;++i){char type;int x;ok=fscanf(f," %c %d",&type,&x)==2&&type=='A'&&studio_rig_toggle_anchor(&temp,x);}
  for(int i=0;i<nb&&ok;++i){char type;int a,b;ok=fscanf(f," %c %d %d",&type,&a,&b)==3&&type=='B'&&studio_rig_toggle_beam(&temp,a,b);}
  if(ok){char extra;ok=fscanf(f," %c",&extra)==EOF;}

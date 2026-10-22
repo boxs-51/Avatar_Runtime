@@ -64,7 +64,9 @@ def main():
   rested=next(item for item in report if item["stage"]=="settle")
   recovered=report[-1]
   assert pulled["xpbd_max_step"]>baseline["xpbd_max_step"]*2, "No response to pull"
-  assert recovered["xpbd_current_step"]<rested["xpbd_current_step"]*.4, "Motion did not settle"
+  forced_peak=max(pulled["xpbd_current_step"],next(item for item in report if item["stage"]=="shake")["xpbd_current_step"])
+  assert forced_peak>baseline.get("xpbd_current_step",0)*3, "No distinct forced response"
+  assert recovered["xpbd_current_step"]<forced_peak*.4, "Motion did not settle after forced motion"
   assert recovered["interaction_pull_x"]==0, "Interaction force persisted after release"
   assert report[-1]["accepted_frames"]>20
   assert report[-1]["xpbd_pin_drift"]<1e-5

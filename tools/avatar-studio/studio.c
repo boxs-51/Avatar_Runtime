@@ -2,6 +2,7 @@
 #include "viewer.h"
 #include "studio_backend.h"
 #include "studio_xpbd.h"
+#include "studio_layer_analysis.h"
 extern __declspec(dllimport) void __stdcall glFinish(void);
 extern __declspec(dllimport) unsigned int __stdcall glGetError(void);
 #define GL_NO_ERROR 0
@@ -25,7 +26,8 @@ typedef struct {
     int history;float scroll;char search[96],model_name[256],folder[1024],notice[192];
     double notice_until;void *linked;int physics_reset,step_requested;
     int failures,checks,physics_expected,xpbd_smoke,xpbd_smoke_frames,xpbd_motion_case,xpbd_motion_rebinds;float paused_time;double paused_checksum;
-    void *xpbd;int xpbd_first,xpbd_second,xpbd_joint,xpbd_page,rig_selected,rig_beam_start,rig_overlay;StudioRig rig;StudioRigBank rig_bank;float xpbd_gravity,xpbd_wind,xpbd_compliance,xpbd_collision,xpbd_mass,xpbd_damping,xpbd_contact_compliance,xpbd_step,xpbd_iters,xpbd_pin,xpbd_substeps,xpbd_pose_compliance,xpbd_source_transfer,xpbd_bending,xpbd_surface,xpbd_anchors;
+    void *xpbd;int xpbd_first,xpbd_second,xpbd_joint,xpbd_page,rig_selected,rig_beam_start,rig_overlay;StudioRig rig;StudioRigBank rig_bank;StudioLayerSuggestion layer_proposal;
+     int layer_proposal_valid,layer_proposal_drawable;uint64_t layer_proposal_signature;float xpbd_gravity,xpbd_wind,xpbd_compliance,xpbd_collision,xpbd_mass,xpbd_damping,xpbd_contact_compliance,xpbd_step,xpbd_iters,xpbd_pin,xpbd_substeps,xpbd_pose_compliance,xpbd_source_transfer,xpbd_bending,xpbd_surface,xpbd_anchors;
     Settings settings;RenderTexture2D target;Rectangle viewport;
 } Studio;
 static Studio s;
@@ -71,7 +73,7 @@ static void defaults(void){
     memset(s.weights,0,sizeof s.weights);s.weights[0]=1;s.physics_reset=1;
 }
 static void free_model(void){
-    memset(&s.rig,0,sizeof s.rig);memset(&s.rig_bank,0,sizeof s.rig_bank);
+    memset(&s.rig,0,sizeof s.rig);memset(&s.rig_bank,0,sizeof s.rig_bank);s.layer_proposal_valid=0;
     studio_xpbd_disable(s.xpbd);s.xpbd=NULL;
     if(s.core.model){studio_physics_free(s.linked);s.linked=NULL;RendererFree(&s.renderer);FreeCore(&s.core);}
     free(s.sorted);free(s.manual);free(s.pins);free(s.part_values);free(s.part_defaults);s.part_defaults=NULL;
@@ -304,6 +306,72 @@ static void rig_overlay_ui(void){
   DrawCircleV((Vector2){x,y},j==s.rig_selected?8:5,color);
  }
 }
+static int studio_model_y_bounds(float *low,float *high){
+ if(!s.core.model||!low||!high)return 0;
+ const int n=csmGetDrawableCount(s.core.model);
+ const int *counts=csmGetDrawableVertexCounts(s.core.model);
+ const csmVector2 **pos=csmGetDrawableVertexPositions(s.core.model);
+ if(n<1||n>4096||!counts||!pos)return 0;
+ float mn=INFINITY,mx=-INFINITY;
+ for(int i=0;i<n;++i){
+  if(counts[i]<0||counts[i]>8192||(counts[i]&&!pos[i]))return 0;
+  for(int j=0;j<counts[i];++j){
+   float y=pos[i][j].Y;
+   if(!isfinite(y))return 0;
+   if(y<mn)mn=y;if(y>mx)mx=y;
+  }
+ }
+ if(!isfinite(mn)||!isfinite(mx)||mx<=mn)return 0;
+ *low=mn;*high=mx;return 1;
+}
+static int studio_suggest_drawable_cached(int d,int n,const int *counts,
+          const csmVector2 **pos,const char **ids,float low,float high,
+          StudioLayerSuggestion *out){
+ if(!out||d<0||d>=n||!counts||!pos||!ids||
+    !ids[d]||counts[d]<3||counts[d]>2048||!pos[d])return 0;
+ StudioLayerVertex sample[2048];
+ for(int j=0;j<counts[d];++j)
+  sample[j]=(StudioLayerVertex){pos[d][j].X,pos[d][j].Y};
+ StudioLayerInput input={ids[d],sample,counts[d],low,high,high-low};
+ return studio_layer_analyze(&input,out);
+}
+static int studio_suggest_drawable_bounds(int d,float low,float high,
+                                          StudioLayerSuggestion *out){
+ return studio_suggest_drawable_cached(d,csmGetDrawableCount(s.core.model),
+     csmGetDrawableVertexCounts(s.core.model),
+     csmGetDrawableVertexPositions(s.core.model),
+     csmGetDrawableIds(s.core.model),low,high,out);
+}
+static int studio_suggest_drawable(int d,StudioLayerSuggestion *out){
+ float low,high;
+ return studio_model_y_bounds(&low,&high)&&
+   studio_suggest_drawable_bounds(d,low,high,out);
+}
+static int studio_propose_layer(int drawable){
+ StudioLayerSuggestion next;
+ if(!studio_suggest_drawable(drawable,&next)){s.layer_proposal_valid=0;return 0;}
+ s.layer_proposal=next;
+ s.layer_proposal_drawable=drawable;
+ s.layer_proposal_signature=signature();
+ s.layer_proposal_valid=1;
+ return 1;
+}
+static int studio_adopt_proposal(void){
+ if(!s.layer_proposal_valid||
+    s.layer_proposal_drawable!=s.rig.drawable||
+    s.layer_proposal_signature!=signature()||
+    s.layer_proposal.kind==STUDIO_LAYER_UNKNOWN||
+    s.layer_proposal.confidence<80)return 0;
+ StudioRig next=s.rig;
+ for(int i=0;i<s.layer_proposal.anchor_count;++i){
+  const int v=s.layer_proposal.anchors[i];
+  int present=0;
+  for(int j=0;j<next.anchor_count;++j)if(next.anchors[j]==v)present=1;
+  if(!present&&!studio_rig_toggle_anchor(&next,v))return 0;
+ }
+ s.rig=next;
+ return 1;
+}
 static void rig_ui(float x){
  int d=s.xpbd_first,n=csmGetDrawableCount(s.core.model);
  if(d>=n||d<0)return;
@@ -344,9 +412,33 @@ static void rig_ui(float x){
   void *next=studio_xpbd_bind_rig(s.core.model,o,&s.rig);
   if(next){studio_xpbd_disable(s.xpbd);s.xpbd=next;toast("Rig and support beams activated.");}
   else toast("Rig rejected: invalid vertex/mesh.");
+  label(TextFormat("Confirmed role: %s",
+    studio_layer_kind_name((StudioLayerKind)s.rig.role)),x,788,12,TEXT);
+  const char *roles[]={"Unknown","Hair","Skirt","Strap"};
+  for(int i=0;i<4;++i)
+   if(button((Rectangle){x+i*71.f,815,67,29},roles[i],s.rig.role==i))
+    studio_rig_set_role(&s.rig,i);
  }
  label("Click vertex to select, Shift+click anchor",x,580,12,MUTED);
  label("Ctrl+click two vertices for a beam",x,600,12,MUTED);
+  if(button((Rectangle){x,640,135,32},"Analyze layer",0)){
+    if(!studio_propose_layer(d))toast("Layer analysis unavailable.");
+  }
+  if(button((Rectangle){x+145,640,135,32},"Adopt anchors",0)){
+    toast(studio_adopt_proposal()?"Suggested anchors added (not applied to XPBD).":
+      "No confident layer proposal. Rig unchanged.");
+  }
+  if(s.layer_proposal_valid&&s.layer_proposal_drawable==d&&
+      s.layer_proposal_signature==signature()){
+    label(TextFormat("Type: %s  Confidence: %d%%",
+      studio_layer_kind_name(s.layer_proposal.kind),s.layer_proposal.confidence),
+      x,695,13,ACCENT);
+    label(TextFormat("Region: %s  Shape: %s",
+      studio_layer_region_name(s.layer_proposal.region),
+      studio_layer_shape_name(s.layer_proposal.shape)),x,748,12,MUTED);
+    label(TextFormat("Suggested anchors: %d (preview only)",
+      s.layer_proposal.anchor_count),x,718,12,MUTED);
+  }
 }
 static void xpbd_ui(float x){
  int n=csmGetDrawableCount(s.core.model);
@@ -482,8 +574,66 @@ static void process_agent_request(void){
   int tail;
   if(fscanf(f,"%d",&tail)!=1&&s.rig.vertex_count>0){
    ok=1;
-   snprintf(receipt,sizeof receipt,"drawable=%d anchors=%d beams=%d",
-       s.rig.drawable,s.rig.anchor_count,s.rig.beam_count);
+   snprintf(receipt,sizeof receipt,"drawable=%d anchors=%d beams=%d role=%s",
+       s.rig.drawable,s.rig.anchor_count,s.rig.beam_count,
+       studio_layer_kind_name((StudioLayerKind)s.rig.role));
+  }
+ }else if(!strcmp(op,"LAYER_SCAN")){
+  double scan_started=GetTime();
+   int tail;const int count=csmGetDrawableCount(s.core.model);float low,high;
+  if(fscanf(f,"%d",&tail)!=1&&count>=0&&count<=4096&&studio_model_y_bounds(&low,&high)){
+    const int *counts=csmGetDrawableVertexCounts(s.core.model);
+    const csmVector2 **positions=csmGetDrawableVertexPositions(s.core.model);
+    const char **ids=csmGetDrawableIds(s.core.model);
+    int cats[4]={0},regions[5]={0},unsupported=0;ok=1;
+    if(!counts||!positions||!ids)ok=0;
+    for(int j=0;ok&&j<count;++j){
+     StudioLayerSuggestion suggestion={0};
+     if(!studio_suggest_drawable_cached(j,count,counts,positions,ids,low,high,&suggestion)){
+      ++cats[0];++unsupported;continue;
+     }
+     if(suggestion.kind>=STUDIO_LAYER_UNKNOWN&&suggestion.kind<=STUDIO_LAYER_STRAP)
+      ++cats[suggestion.kind];
+     if(suggestion.region>=1&&suggestion.region<=4)
+      ++regions[suggestion.region];
+    }
+    snprintf(receipt,sizeof receipt,
+      "total=%d hair=%d skirt=%d strap=%d unknown=%d up=%d mid=%d low=%d span=%d bad=%d",
+      count,cats[1],cats[2],cats[3],cats[0],
+      regions[1],regions[2],regions[3],regions[4],unsupported);
+    if(ok){size_t used=strlen(receipt);
+      if(used<sizeof receipt)snprintf(receipt+used,sizeof receipt-used," ms=%d",
+        (int)((GetTime()-scan_started)*1000));}
+   }
+ }else if(!strcmp(op,"LAYER_SUGGEST")){
+  int tail;
+  if(fscanf(f,"%d",&tail)!=1&&studio_propose_layer(s.xpbd_first)){
+   ok=1;
+   snprintf(receipt,sizeof receipt,
+      "kind=%s confidence=%d anchors=%d region=%s shape=%s",
+      studio_layer_kind_name(s.layer_proposal.kind),
+      s.layer_proposal.confidence,s.layer_proposal.anchor_count,
+      studio_layer_region_name(s.layer_proposal.region),
+      studio_layer_shape_name(s.layer_proposal.shape));
+  }
+ }else if(!strcmp(op,"LAYER_ADOPT")){
+  int tail;
+  if(fscanf(f,"%d",&tail)!=1&&studio_adopt_proposal()){
+   ok=1;
+   snprintf(receipt,sizeof receipt,"anchors=%d pending_rig_apply=1",
+     s.rig.anchor_count);
+  }
+ }else if(!strcmp(op,"LAYER_LABEL")){
+  char name[16];int tail;
+  if(fscanf(f,"%15s",name)==1&&fscanf(f,"%d",&tail)!=1&&s.rig.vertex_count>0){
+   int role=-1;
+   if(!strcmp(name,"unknown"))role=0;
+   if(!strcmp(name,"hair"))role=1;
+   if(!strcmp(name,"skirt"))role=2;
+   if(!strcmp(name,"strap"))role=3;
+   if(role>=0&&studio_rig_set_role(&s.rig,role)){
+     ok=1;snprintf(receipt,sizeof receipt,"role=%s save_pending=1",name);
+   }
   }
  }else if(!strcmp(op,"RIG_ANCHOR")||!strcmp(op,"RIG_BEAM")){
   int a,b,e,tail;int beam=!strcmp(op,"RIG_BEAM");
