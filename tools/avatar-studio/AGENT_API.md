@@ -91,3 +91,23 @@ Known missing platform features: remote/HTTP serving, a native MCP
 Studio tool registered with Computer Bridge, atomic multi-command
 transactions, a graphical paint-weight editor, skeletal parenting
 and automatic semantic identification for all model components.
+
+## Component-aware anchor suggestions (experimental)
+
+Selected drawable components can now be inspected and explicitly
+adopted by an agent:
+
+    py scripts/studio_agent_cli.py '{"op":"layer.component.inspect","component":0}'
+    py scripts/studio_agent_cli.py '{"op":"layer.component.adopt","component":0}'
+
+Component numbers follow deterministic ascending first-used-vertex
+order; isolated vertices are counted separately and have no automatic
+anchor proposal. Each component reports vertex count, first referenced
+vertex and one topmost anchor candidate. Inspect is read-only; adopt
+changes only the editable rig, not the original MOC3 and not the active
+XPBD solver. Apply rig separately to activate physics. The native
+handler requires a rig matching the current drawable and model
+signature, and rejects absent components or full anchor capacity.
+
+This is a **geometric selection aid**, not verified skeletal rigging,
+weighted bone binding or semantic hair/skirt segmentation.

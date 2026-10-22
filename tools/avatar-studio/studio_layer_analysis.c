@@ -131,3 +131,46 @@ int studio_layer_components(const unsigned short *indices,int index_count,
   if(seen[i]&&weight[i]>next.largest)next.largest=weight[i];
  *out=next;return 1;
 }
+
+/* Deterministically enumerate islands by smallest referenced vertex.
+   Candidate root is the topmost vertex in that island; never auto-bind. */
+int studio_layer_component_suggest(const unsigned short *indices,int index_count,
+     const StudioLayerVertex *vertices,int vertex_count,int component,
+     StudioLayerComponent *out){
+ StudioLayerTopology verified={0};
+ if(!vertices||!out||component<0||
+    !studio_layer_components(indices,index_count,vertex_count,&verified)||
+    component>=verified.islands)return 0;
+ int parent[2048],weight[2048];
+ unsigned char used[2048]={0},seen[2048]={0};
+ for(int i=0;i<vertex_count;++i){
+  if(!isfinite(vertices[i].x)||!isfinite(vertices[i].y))return 0;
+  parent[i]=i;weight[i]=1;
+ }
+ for(int i=0;i<index_count;i+=3){
+  const int a=indices[i],b=indices[i+1],c=indices[i+2];
+  used[a]=used[b]=used[c]=1;
+  studio_unite(parent,weight,a,b);
+  studio_unite(parent,weight,b,c);
+ }
+ int selected_root=-1,first_vertex=-1,ordinal=0;
+ for(int i=0;i<vertex_count;++i){
+  if(!used[i])continue;
+  int root=studio_root(parent,i);
+  if(!seen[root]){
+   seen[root]=1;
+   if(ordinal==component){selected_root=root;first_vertex=i;break;}
+   ++ordinal;
+  }
+ }
+ if(selected_root<0)return 0;
+ StudioLayerComponent next={first_vertex,0,-1};
+ for(int i=0;i<vertex_count;++i){
+  if(!used[i]||studio_root(parent,i)!=selected_root)continue;
+  ++next.vertices;
+  if(next.anchor<0||vertices[i].y>vertices[next.anchor].y||
+     (vertices[i].y==vertices[next.anchor].y&&i<next.anchor))next.anchor=i;
+ }
+ if(next.vertices<3||next.anchor<0)return 0;
+ *out=next;return 1;
+}

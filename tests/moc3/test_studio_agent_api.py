@@ -28,6 +28,11 @@ class AgentApiContract(unittest.TestCase):
         self.assertEqual(validate_command({"op": "action.trigger", "kind": "pull", "strength": .6}), "ACTION pull 0.6")
         for invalid in (
             {"op":"unknown"},
+            {"op":"layer.component.adopt","component":-1},
+            {"op":"layer.component.inspect","component":2048},
+            {"op":"studio.play","enabled":1},
+            {"op":"studio.capture","kind":"desktop"},
+            {"op":"xpbd.set","name":"substeps","value":4.1},
             {"op":"layer.label","kind":"body"},
             {"op":"layer.label","kind":True},
             {"op":"layer.scan","path":"../private"},
@@ -46,6 +51,8 @@ class AgentApiContract(unittest.TestCase):
         cases=[
             ({"op":"layer.topology"},"LAYER_TOPOLOGY"),
             ({"op":"layer.topology.scan"},"LAYER_TOPOLOGY_SCAN"),
+            ({"op":"layer.component.inspect","component":0},"LAYER_COMPONENT_INSPECT 0"),
+            ({"op":"layer.component.adopt","component":0},"LAYER_COMPONENT_ADOPT 0"),
             ({"op":"studio.status"},"STUDIO_STATUS"),
             ({"op":"studio.play","enabled":False},"STUDIO_PLAY 0"),
             ({"op":"studio.step"},"STUDIO_STEP"),

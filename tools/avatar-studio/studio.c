@@ -1,4 +1,4 @@
-﻿/* Avatar Studio: local interactive model lab, not public SDK qualification. */
+/* Avatar Studio: local interactive model lab, not public SDK qualification. */
 #include "viewer.h"
 #include "studio_backend.h"
 #include "studio_xpbd.h"
@@ -347,6 +347,20 @@ static int studio_suggest_drawable(int d,StudioLayerSuggestion *out){
  return studio_model_y_bounds(&low,&high)&&
    studio_suggest_drawable_bounds(d,low,high,out);
 }
+static int studio_component_suggest(int component,StudioLayerComponent *out){
+ int d=s.xpbd_first,n=csmGetDrawableCount(s.core.model);
+ const int *vc=csmGetDrawableVertexCounts(s.core.model);
+ const int *ic=csmGetDrawableIndexCounts(s.core.model);
+ const unsigned short **idx=csmGetDrawableIndices(s.core.model);
+ const csmVector2 **positions=csmGetDrawableVertexPositions(s.core.model);
+ if(!out||d<0||d>=n||!vc||!ic||!idx||!positions||
+    vc[d]<3||vc[d]>2048||!positions[d]||!idx[d])return 0;
+ StudioLayerVertex vertices[2048];
+ for(int i=0;i<vc[d];++i)
+  vertices[i]=(StudioLayerVertex){positions[d][i].X,positions[d][i].Y};
+ return studio_layer_component_suggest(idx[d],ic[d],vertices,vc[d],
+                                     component,out);
+}
 static int studio_selected_topology(int drawable,StudioLayerTopology *out){
  int n=csmGetDrawableCount(s.core.model);
  const int *vc=csmGetDrawableVertexCounts(s.core.model);
@@ -593,6 +607,25 @@ static void process_agent_request(void){
    snprintf(receipt,sizeof receipt,"drawable=%d anchors=%d beams=%d role=%s",
        s.rig.drawable,s.rig.anchor_count,s.rig.beam_count,
        studio_layer_kind_name((StudioLayerKind)s.rig.role));
+  }
+ }else if(!strcmp(op,"LAYER_COMPONENT_INSPECT")||
+           !strcmp(op,"LAYER_COMPONENT_ADOPT")){
+  int component;char extra;StudioLayerComponent detail={0};
+  if(fscanf(f,"%d",&component)==1&&fscanf(f," %c",&extra)==EOF&&
+     component>=0&&component<2048&&studio_component_suggest(component,&detail)){
+   int changing=!strcmp(op,"LAYER_COMPONENT_ADOPT");
+   int present=0;
+   if(changing){
+    if(s.rig.drawable!=s.xpbd_first||s.rig.vertex_count<=0||
+       s.rig.model_signature!=signature())changing=-1;
+    if(changing>0)for(int j=0;j<s.rig.anchor_count;++j)
+     if(s.rig.anchors[j]==detail.anchor)present=1;
+    if(changing>0&&!present&&!studio_rig_toggle_anchor(&s.rig,detail.anchor))changing=-1;
+   }
+   ok=changing>=0;
+   snprintf(receipt,sizeof receipt,
+     "component=%d vertices=%d root=%d anchor=%d adopted=%d",
+     component,detail.vertices,detail.root,detail.anchor,changing);
   }
  }else if(!strcmp(op,"LAYER_TOPOLOGY_SCAN")){
   char extra;

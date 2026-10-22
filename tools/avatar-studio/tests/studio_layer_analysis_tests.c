@@ -44,6 +44,14 @@ int main(void){
  const unsigned short invalid[]={0,1,9};
  CHECK(!studio_layer_components(invalid,3,4,&topology));
  CHECK(!studio_layer_components(connected,5,4,&topology));
+ const StudioLayerVertex points[]={{0,0},{0,2},{2,0},{4,0},{4,3},{6,0},{9,0}};
+ StudioLayerComponent segment={0};
+ CHECK(studio_layer_component_suggest(twins,6,points,7,0,&segment));
+ CHECK(segment.vertices==3&&segment.anchor==1&&segment.root==0);
+ CHECK(studio_layer_component_suggest(twins,6,points,7,1,&segment));
+ CHECK(segment.vertices==3&&segment.anchor==4&&segment.root==3);
+ CHECK(!studio_layer_component_suggest(twins,6,points,7,2,&segment));
+ CHECK(!studio_layer_component_suggest(invalid,3,points,4,0,&segment));
  puts("LAYER_COMPONENTS_PASS islands=2 orphan=1 invalid=reject");
  puts("LAYER_CLASSIFICATION_PASS hair=1 skirt=1 strap=1 ambiguous=unknown conservative=1");
  return 0;

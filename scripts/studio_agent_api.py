@@ -29,6 +29,8 @@ def validate_command(cmd:dict)->str:
         "xpbd.select":{"op","first","second","joint"},
         "xpbd.apply":{"op"}, "xpbd.disable":{"op"}, "xpbd.inspect":{"op"},
         "layer.topology":{"op"}, "layer.topology.scan":{"op"},
+        "layer.component.inspect":{"op","component"},
+        "layer.component.adopt":{"op","component"},
         "rig.select":{"op","drawable"},
         "rig.anchor":{"op","vertex","enabled"},
         "rig.beam":{"op","a","b","enabled"},
@@ -124,6 +126,8 @@ def validate_command(cmd:dict)->str:
         joint=boolean("joint")
         if joint and b<0:raise ValueError("joint needs second mesh")
         return f"XPBD_SELECT {a} {b} {joint}"
+    if op in ("layer.component.inspect","layer.component.adopt"):
+        return ("LAYER_COMPONENT_INSPECT" if op.endswith("inspect") else "LAYER_COMPONENT_ADOPT")+f" {integer('component')}"
     if op=="layer.topology":return "LAYER_TOPOLOGY"
     if op=="layer.topology.scan":return "LAYER_TOPOLOGY_SCAN"
     if op=="rig.select":return f"RIG_SELECT {integer('drawable')}"

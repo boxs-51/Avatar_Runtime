@@ -29,6 +29,22 @@ def main():
    if int(top_counts["analyzed"])+int(top_counts["invalid"])!=int(top_counts["total"]):
     raise RuntimeError("Topology aggregate accounting mismatch")
    cases.append({"op":"layer.topology.scan","ok":True,"aggregate":top_counts})
+   component=bridge.call({"op":"layer.component.inspect","component":0})
+   if not component["ok"] or "anchor=" not in component["receipt"]:
+    raise RuntimeError("Topology component detail not available")
+   before=bridge.call({"op":"rig.inspect"})
+   chosen=bridge.call({"op":"layer.component.adopt","component":0})
+   after=bridge.call({"op":"rig.inspect"})
+   if not all(r["ok"] for r in (before,chosen,after)):
+    raise RuntimeError("Explicit component anchor failed")
+   count=lambda receipt:int(re.search(r"anchors=(\d+)",receipt).group(1))
+   if count(after["receipt"])<=count(before["receipt"]):
+    raise RuntimeError("Component adoption did not change rig")
+   invalid_component=bridge.call({"op":"layer.component.inspect","component":2000})
+   if invalid_component["ok"]:
+    raise RuntimeError("Invalid component accepted")
+   cases.append({"op":"layer.component.inspect+adopt","ok":True,
+                 "explicit_anchor_added":True,"invalid_rejected":True})
    top=bridge.call({"op":"layer.topology"})
    if not top["ok"] or "islands=" not in top["receipt"]:
     raise RuntimeError("Native topology query was rejected")
