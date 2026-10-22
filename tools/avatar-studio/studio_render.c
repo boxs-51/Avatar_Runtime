@@ -1,6 +1,7 @@
 /* Preserve the Studio viewport across the sample renderer's mask prepasses.
  * No vendor source is modified. Purism Core sample renderer is MIT licensed. */
 #include "viewer.h"
+#include "studio_xpbd.h"
 typedef struct {unsigned id;int w,h;} ParentTarget;
 static ParentTarget targets[8];
 static int target_depth;
@@ -20,4 +21,6 @@ static void nested_end(void){
 }
 #define BeginTextureMode nested_begin
 #define EndTextureMode nested_end
+#define csmGetDrawableVertexPositions studio_xpbd_positions
 #include "render.c"
+#undef csmGetDrawableVertexPositions

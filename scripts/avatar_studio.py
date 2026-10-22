@@ -78,6 +78,7 @@ def output_directory(smoke: bool) -> Path:
     if not output.resolve().is_relative_to((ROOT / "build").resolve()):
         raise ValueError("Studio output must remain in ignored build storage")
     output.mkdir(parents=True, exist_ok=True)
+    (output / "api").mkdir(exist_ok=True)
     return output
 
 

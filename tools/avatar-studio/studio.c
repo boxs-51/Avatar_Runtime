@@ -1,10 +1,15 @@
 /* Avatar Studio: local interactive model lab, not public SDK qualification. */
 #include "viewer.h"
 #include "studio_backend.h"
+#include "studio_xpbd.h"
+extern __declspec(dllimport) void __stdcall glFinish(void);
+extern __declspec(dllimport) unsigned int __stdcall glGetError(void);
+#define GL_NO_ERROR 0
 #include <math.h>
 #include <stdint.h>
 
 #define MAX_ITEMS 4096
+#define STUDIO_RENDER_SCALE 1.5f
 static const Color BG={12,17,27,255},CARD={20,28,42,255},LINE={40,53,73,255};
 static const Color TEXT={224,232,243,255},MUTED={134,153,177,255},ACCENT={88,211,195,255};
 static const char *expressions[]={"Idle","Happy","Surprised","Angry","Shy","Dance","Sleepy","Wink","Talking"};
@@ -19,7 +24,8 @@ typedef struct {
     float time,gaze_x,gaze_y,pull_x,pull_y,base_zoom,weights[9],fps_history[120];
     int history;float scroll;char search[96],model_name[256],folder[1024],notice[192];
     double notice_until;void *linked;int physics_reset,step_requested;
-    int failures,checks,physics_expected;float paused_time;double paused_checksum;
+    int failures,checks,physics_expected,xpbd_smoke,xpbd_smoke_frames,xpbd_motion_case,xpbd_motion_rebinds;float paused_time;double paused_checksum;
+    void *xpbd;int xpbd_first,xpbd_second,xpbd_joint,xpbd_page,rig_selected,rig_beam_start,rig_overlay;StudioRig rig;float xpbd_gravity,xpbd_wind,xpbd_compliance,xpbd_collision,xpbd_mass,xpbd_damping,xpbd_contact_compliance,xpbd_step,xpbd_iters,xpbd_pin,xpbd_substeps,xpbd_pose_compliance,xpbd_source_transfer,xpbd_bending,xpbd_surface,xpbd_anchors;
     Settings settings;RenderTexture2D target;Rectangle viewport;
 } Studio;
 static Studio s;
@@ -61,9 +67,12 @@ static void control(int id,float x,float y,const char *name,float *value,float l
 static void defaults(void){
     s.settings=(Settings){1,1,1,1,1,0,0,1,1,0,1,.7f,.15f,3.5f,7,1};
     s.selected=0;s.time=0;s.gaze_x=s.gaze_y=s.pull_x=s.pull_y=0;
+    s.xpbd_first=0;s.xpbd_second=-1;s.xpbd_joint=0;s.xpbd_gravity=-12;s.xpbd_wind=3;s.xpbd_compliance=.0000001f;s.xpbd_collision=0;s.xpbd_mass=1;s.xpbd_damping=.96f;s.xpbd_contact_compliance=0;s.xpbd_step=1.f/60;s.xpbd_iters=8;s.xpbd_pin=0;s.xpbd_substeps=4;s.xpbd_pose_compliance=.004f;s.xpbd_source_transfer=.03f;s.xpbd_bending=.00001f;s.xpbd_surface=.02f;s.xpbd_anchors=2;
     memset(s.weights,0,sizeof s.weights);s.weights[0]=1;s.physics_reset=1;
 }
 static void free_model(void){
+    memset(&s.rig,0,sizeof s.rig);
+    studio_xpbd_disable(s.xpbd);s.xpbd=NULL;
     if(s.core.model){studio_physics_free(s.linked);s.linked=NULL;RendererFree(&s.renderer);FreeCore(&s.core);}
     free(s.sorted);free(s.manual);free(s.pins);free(s.part_values);free(s.part_defaults);s.part_defaults=NULL;
     s.sorted=NULL;s.manual=NULL;s.pins=NULL;s.part_values=NULL;s.core.model=NULL;
@@ -239,10 +248,153 @@ static int contains(const char *haystack,const char *needle){
     if(!needle[0])return 1;size_t n=strlen(needle);
     for(;*haystack;++haystack){size_t i=0;while(i<n&&haystack[i]&&tolower((unsigned char)haystack[i])==tolower((unsigned char)needle[i]))++i;if(i==n)return 1;}return 0;
 }
+static void rig_overlay_ui(void){
+ if(s.tab!=3||!s.core.model)return;
+ int d=s.xpbd_first;
+ int count=csmGetDrawableCount(s.core.model);
+ if(d<0||d>=count)return;
+ const int *counts=csmGetDrawableVertexCounts(s.core.model);
+ const csmVector2 **vertices=csmGetDrawableVertexPositions(s.core.model);
+ if(!counts||!vertices||!vertices[d]||counts[d]<1)return;
+ int n=counts[d];
+ if(s.rig.vertex_count!=n||s.rig.drawable!=d)
+   if(!studio_rig_init(&s.rig,d,signature(),n))return;
+ Vector2 mouse=GetMousePosition();
+ float best=18.f*18.f;int nearest=-1;
+ for(int j=0;j<n;++j){
+  float px,py;
+  WorldToScreen(&s.view,vertices[d][j].X,vertices[d][j].Y,&px,&py);
+  Vector2 view_point={s.viewport.x+px*s.viewport.width/s.view.sw,
+    s.viewport.y+py*s.viewport.height/s.view.sh};
+  float dd=(view_point.x-mouse.x)*(view_point.x-mouse.x)+
+           (view_point.y-mouse.y)*(view_point.y-mouse.y);
+  if(dd<best){best=dd;nearest=j;}
+ }
+ // A selected vertex is scoped to the visible viewport only.
+ if(CheckCollisionPointRec(mouse,s.viewport)&&nearest>=0&&IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+  s.rig_selected=nearest;
+  if(IsKeyDown(KEY_LEFT_SHIFT)||IsKeyDown(KEY_RIGHT_SHIFT))
+   studio_rig_toggle_anchor(&s.rig,nearest);
+  else if(IsKeyDown(KEY_LEFT_CONTROL)||IsKeyDown(KEY_RIGHT_CONTROL)){
+   if(s.rig_beam_start<0)s.rig_beam_start=nearest;
+   else {studio_rig_toggle_beam(&s.rig,s.rig_beam_start,nearest);s.rig_beam_start=-1;}
+  }
+ }
+ const Color rigAnchor={252,166,76,240},rigBeam={104,222,190,230};
+ for(int j=0;j<s.rig.beam_count;++j){
+  int a=s.rig.beams[j].a,b=s.rig.beams[j].b;
+  if(a>=n||b>=n)continue;
+  float ax,ay,bx,by;
+  WorldToScreen(&s.view,vertices[d][a].X,vertices[d][a].Y,&ax,&ay);
+  WorldToScreen(&s.view,vertices[d][b].X,vertices[d][b].Y,&bx,&by);
+  DrawLineEx((Vector2){s.viewport.x+ax*s.viewport.width/s.view.sw,s.viewport.y+ay*s.viewport.height/s.view.sh},
+             (Vector2){s.viewport.x+bx*s.viewport.width/s.view.sw,s.viewport.y+by*s.viewport.height/s.view.sh},2,rigBeam);
+ }
+ for(int j=0;j<n;++j){
+  int pinned=0;
+  for(int k=0;k<s.rig.anchor_count;++k)if(s.rig.anchors[k]==j){pinned=1;break;}
+  if(!pinned&&j!=s.rig_selected&&j!=nearest)continue;
+  float px,py;
+  WorldToScreen(&s.view,vertices[d][j].X,vertices[d][j].Y,&px,&py);
+  float x=s.viewport.x+px*s.viewport.width/s.view.sw;
+  float y=s.viewport.y+py*s.viewport.height/s.view.sh;
+  if(x<s.viewport.x||y<s.viewport.y||x>s.viewport.x+s.viewport.width||
+      y>s.viewport.y+s.viewport.height)continue;
+  Color color=pinned?rigAnchor:rigBeam;
+  DrawCircleV((Vector2){x,y},j==s.rig_selected?8:5,color);
+ }
+}
+static void rig_ui(float x){
+ int d=s.xpbd_first,n=csmGetDrawableCount(s.core.model);
+ if(d>=n||d<0)return;
+ const int *vc=csmGetDrawableVertexCounts(s.core.model);
+ if(s.rig.vertex_count!=vc[d]||s.rig.drawable!=d){
+  studio_rig_init(&s.rig,d,signature(),vc[d]);s.rig_selected=0;s.rig_beam_start=-1;
+ }
+ label("LAYER RIG EDITOR",x,190,16,ACCENT);
+ label(TextFormat("Drawable %d / %d",d,n),x,224,14,TEXT);
+ if(button((Rectangle){x+176,218,40,27},"-",0))s.xpbd_first=(d+n-1)%n;
+ if(button((Rectangle){x+226,218,40,27},"+",0))s.xpbd_first=(d+1)%n;
+ label(TextFormat("Vertex: %d / %d",s.rig_selected,vc[d]),x,264,14,TEXT);
+ if(button((Rectangle){x+176,260,40,27},"-",0))s.rig_selected=(s.rig_selected+vc[d]-1)%vc[d];
+ if(button((Rectangle){x+226,260,40,27},"+",0))s.rig_selected=(s.rig_selected+1)%vc[d];
+ if(button((Rectangle){x,315,280,33},"Toggle anchor",0)){
+   studio_rig_toggle_anchor(&s.rig,s.rig_selected);
+ }
+ if(button((Rectangle){x,358,280,33},s.rig_beam_start<0?"Start support beam":"Finish support beam",0)){
+   if(s.rig_beam_start<0)s.rig_beam_start=s.rig_selected;
+   else {studio_rig_toggle_beam(&s.rig,s.rig_beam_start,s.rig_selected);s.rig_beam_start=-1;}
+ }
+ label(TextFormat("Anchors %d / Support beams %d",s.rig.anchor_count,s.rig.beam_count),x,410,14,ACCENT);
+ if(button((Rectangle){x,454,132,31},"Save rig",0)){
+  char path[1200];snprintf(path,sizeof path,"%s/rig-local.txt",s.folder);
+  toast(studio_rig_save(&s.rig,path)?"Rig saved locally.":"Save rig failed.");
+ }
+ if(button((Rectangle){x+144,454,136,31},"Load rig",0)){
+  char path[1200];snprintf(path,sizeof path,"%s/rig-local.txt",s.folder);
+  toast(studio_rig_load(&s.rig,path,signature(),vc[d])?"Rig loaded.":"Rig signature mismatch.");
+ }
+ if(button((Rectangle){x,505,280,34},"Apply rig to XPBD",0)){
+  StudioXpbdOptions o={d,-1,0,s.xpbd_gravity,s.xpbd_wind,s.xpbd_compliance,
+    s.xpbd_collision,s.xpbd_mass,s.xpbd_damping,s.xpbd_contact_compliance,
+    s.xpbd_step,(int)s.xpbd_iters,(int)s.xpbd_pin,(int)s.xpbd_substeps,
+    s.xpbd_pose_compliance,s.xpbd_source_transfer,s.xpbd_bending,s.xpbd_surface,
+    (int)s.xpbd_anchors};
+  void *next=studio_xpbd_bind_rig(s.core.model,o,&s.rig);
+  if(next){studio_xpbd_disable(s.xpbd);s.xpbd=next;toast("Rig and support beams activated.");}
+  else toast("Rig rejected: invalid vertex/mesh.");
+ }
+ label("Click vertex to select, Shift+click anchor",x,580,12,MUTED);
+ label("Ctrl+click two vertices for a beam",x,600,12,MUTED);
+}
+static void xpbd_ui(float x){
+ int n=csmGetDrawableCount(s.core.model);
+ label("XPBD: maximum 2048 mesh vertices",x,188,12,ACCENT);
+ label(TextFormat("Mesh A: %d",s.xpbd_first),x,224,14,TEXT);
+ if(button((Rectangle){x+170,217,40,26},"-",0))s.xpbd_first=(s.xpbd_first+n-1)%n;
+ if(button((Rectangle){x+221,217,40,26},"+",0))s.xpbd_first=(s.xpbd_first+1)%n;
+ label(s.xpbd_second<0?"Mesh B: none":TextFormat("Mesh B: %d",s.xpbd_second),x,264,14,TEXT);
+ if(button((Rectangle){x+170,257,40,26},"-",0))s.xpbd_second=(s.xpbd_second+n)%(n+1)-1;
+ if(button((Rectangle){x+221,257,40,26},"+",0))s.xpbd_second=(s.xpbd_second+2)%(n+1)-1;
+ if(button((Rectangle){x,304,135,30},"Forces",s.xpbd_page==0))s.xpbd_page=0;
+ if(button((Rectangle){x+145,304,135,30},"Advanced",s.xpbd_page==1))s.xpbd_page=1;
+ if(s.xpbd_page==0){
+  control(41,x,361,"Gravity",&s.xpbd_gravity,-80,80);
+  control(42,x,423,"Wind",&s.xpbd_wind,-60,60);
+  control(43,x,485,"Edge compliance",&s.xpbd_compliance,0,.0002f);
+  control(44,x,547,"Collision radius",&s.xpbd_collision,0,.15f);
+  toggle(x,609,"Two-mesh joint",&s.xpbd_joint);
+ }else{
+  control(45,x,361,"Mass",&s.xpbd_mass,.1f,10);
+  control(46,x,423,"Damping",&s.xpbd_damping,0,1);
+  control(47,x,485,"Contact softness",&s.xpbd_contact_compliance,0,.001f);
+  control(48,x,547,"Solver iterations",&s.xpbd_iters,1,24);
+  control(49,x,609,"Step duration",&s.xpbd_step,1.f/240,1.f/60);
+  control(50,x,671,"Pin vertex",&s.xpbd_pin,0,100);
+  control(51,x,728,"Pose softness",&s.xpbd_pose_compliance,0,.02f);
+  control(52,x,790,"Bending stiffness",&s.xpbd_bending,0,.002f);
+ }
+ if(button((Rectangle){x,771,135,32},"Apply XPBD",0)){
+  StudioXpbdOptions o={s.xpbd_first,s.xpbd_second,s.xpbd_joint,s.xpbd_gravity,s.xpbd_wind,
+   s.xpbd_compliance,s.xpbd_collision,s.xpbd_mass,s.xpbd_damping,s.xpbd_contact_compliance,
+   s.xpbd_step,(int)s.xpbd_iters,(int)s.xpbd_pin,(int)s.xpbd_substeps,s.xpbd_pose_compliance,s.xpbd_source_transfer,s.xpbd_bending,s.xpbd_surface,(int)s.xpbd_anchors};
+  void *next=studio_xpbd_bind(s.core.model,o);
+  if(next){studio_xpbd_disable(s.xpbd);s.xpbd=next;toast("XPBD enabled with new parameters.");}
+  else toast("XPBD rejected: invalid geometry or settings.");
+ }
+ if(button((Rectangle){x+145,771,135,32},"Disable",0)){
+  studio_xpbd_disable(s.xpbd);s.xpbd=NULL;toast("Original MOC3 geometry restored.");
+ }
+ label(s.xpbd?"XPBD ON":"XPBD OFF",x,815,14,s.xpbd?ACCENT:MUTED);
+}
 static void inspector(void){
     float x=GetScreenWidth()-316.0f;label("MODEL INSPECTOR",x,110,12,MUTED);
-    if(button((Rectangle){x,136,136,32},"Parameters",s.tab==0)){s.tab=0;s.scroll=0;}
-    if(button((Rectangle){x+144,136,136,32},"Layers",s.tab==1)){s.tab=1;s.scroll=0;}
+    if(button((Rectangle){x,136,68,32},"Params",s.tab==0)){s.tab=0;s.scroll=0;}
+    if(button((Rectangle){x+73,136,68,32},"Layers",s.tab==1)){s.tab=1;s.scroll=0;}
+    if(button((Rectangle){x+146,136,68,32},"XPBD",s.tab==2)){s.tab=2;s.scroll=0;}
+    if(button((Rectangle){x+219,136,61,32},"Rig",s.tab==3)){s.tab=3;s.scroll=0;}
+    if(s.tab==3){rig_ui(x);return;}
+    if(s.tab==2){xpbd_ui(x);return;}
     Rectangle search={x,180,280,32};DrawRectangleRounded(search,.2f,6,s.search_focus?LINE:BG);
     label(s.search[0]?s.search:"Search by ID...",x+10,188,14,s.search[0]?TEXT:MUTED);
     if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT))s.search_focus=hit(search);
@@ -283,7 +435,7 @@ static void input(float dt){
         Vector2 p=GetMousePosition();float gx=bound((p.x-s.viewport.x)/s.viewport.width*2-1,-1,1),gy=bound((p.y-s.viewport.y)/s.viewport.height*2-1,-1,1);
         s.gaze_x=mix(s.gaze_x,gx,1-expf(-dt*8));s.gaze_y=mix(s.gaze_y,gy,1-expf(-dt*8));
         s.settings.zoom=bound(s.settings.zoom*powf(1.1f,GetMouseWheelMove()),.3f,3);
-        if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)&&!s.active_slider)s.dragging=(p.y-s.viewport.y)/s.viewport.height<.4f?1:(p.y-s.viewport.y)/s.viewport.height<.7f?2:3;
+        if(s.tab!=3&&IsMouseButtonPressed(MOUSE_BUTTON_LEFT)&&!s.active_slider)s.dragging=(p.y-s.viewport.y)/s.viewport.height<.4f?1:(p.y-s.viewport.y)/s.viewport.height<.7f?2:3;
         if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT)||IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)){Vector2 d=GetMouseDelta();s.view.panx+=d.x*s.view.sw/s.viewport.width;s.view.pany+=d.y*s.view.sh/s.viewport.height;}
     }else{s.gaze_x*=expf(-dt*3);s.gaze_y*=expf(-dt*3);}
     if(s.dragging&&IsMouseButtonDown(MOUSE_BUTTON_LEFT)){Vector2 d=GetMouseDelta();s.pull_x=bound(s.pull_x+d.x*.35f,-35,35);s.pull_y=bound(s.pull_y-d.y*.25f,-25,25);}
@@ -296,6 +448,13 @@ static void state_file(void){
     int pins=0;for(int i=0;i<s.count;++i)pins+=s.pins[i]!=0;
     fprintf(f,"{\"frame\":%d,\"playing\":%d,\"expression\":%d,\"physics_available\":%d,\"physics_enabled\":%d,\"time\":%.6f,\"parameter_checksum\":%.9g,\"zoom\":%.3f,\"fps\":%d,\"pins\":%d,\"background\":%d,\"tab\":%d,\"speed\":%.4f,\"pan_x\":%.3f,\"pan_y\":%.3f}\n",s.frame,s.settings.playing,s.selected,s.linked!=NULL,s.settings.physics,s.time,checksum,s.settings.zoom,GetFPS(),pins,s.settings.background,s.tab,s.settings.speed,s.view.panx,s.view.pany);
     if(!fclose(f))studio_replace_file(temporary,path);
+    StudioXpbdMetrics m={0};
+    if(studio_xpbd_metrics(s.xpbd,&m)){
+        char dest[1200];snprintf(dest,sizeof dest,"%s/xpbd_metrics.json",s.folder);
+        FILE *mf=fopen(dest,"w");
+        if(mf){fprintf(mf,"{\"frame\":%d,\"xpbd_max_step\":%.8g,\"xpbd_max_acceleration\":%.8g,\"xpbd_pin_drift\":%.8g,\"xpbd_current_step\":%.8g,\"accepted_frames\":%d,\"interaction_pull_x\":%.8g,\"interaction_pull_y\":%.8g}\n",
+            s.frame,m.max_step,m.max_acceleration,m.pin_drift,m.current_step,m.accepted_frames,s.pull_x,s.pull_y);fclose(mf);}
+    }
 }
 static double parameter_checksum(void){
     const float *v=csmGetParameterValues(s.core.model);double sum=0;
@@ -304,20 +463,95 @@ static double parameter_checksum(void){
 static void verify(int pass,const char *name){
     ++s.checks;if(!pass){++s.failures;fprintf(stderr,"Studio check FAILED: %s\n",name);}
 }
+static void process_agent_request(void){
+ char path[1200],out[1200],token[48]={0},op[48]={0};
+ snprintf(path,sizeof path,"%s/api/request.txt",s.folder);
+ FILE *f=fopen(path,"r");if(!f)return;
+ if(fscanf(f,"%47s %47s",token,op)!=2){fclose(f);remove(path);return;}
+ int ok=0;char receipt[96]="rejected";
+ int d=s.xpbd_first,n=csmGetDrawableCount(s.core.model);
+ if(!strcmp(op,"RIG_SELECT")){
+  int v,tail;if(fscanf(f,"%d",&v)==1&&fscanf(f,"%d",&tail)!=1&&v>=0&&v<n){
+    s.xpbd_first=v;s.tab=3;s.rig_selected=0;
+    const int *vc=csmGetDrawableVertexCounts(s.core.model);
+    ok=studio_rig_init(&s.rig,v,signature(),vc[v]);
+    snprintf(receipt,sizeof receipt,"drawable=%d",v);
+  }
+ }else if(!strcmp(op,"RIG_ANCHOR")||!strcmp(op,"RIG_BEAM")){
+  int a,b,e,tail;int beam=!strcmp(op,"RIG_BEAM");
+  int parsed=beam?fscanf(f,"%d %d %d",&a,&b,&e):fscanf(f,"%d %d",&a,&e);
+  if(parsed==(beam?3:2)&&fscanf(f,"%d",&tail)!=1&&e>=0&&e<=1&&s.rig.vertex_count>0){
+   if(beam){
+    int exists=0;for(int i=0;i<s.rig.beam_count;++i)
+      if(s.rig.beams[i].a==(a<b?a:b)&&s.rig.beams[i].b==(a<b?b:a))exists=1;
+    ok=(exists==e)||studio_rig_toggle_beam(&s.rig,a,b);
+    snprintf(receipt,sizeof receipt,"beams=%d",s.rig.beam_count);
+   }else{
+    int exists=0;for(int i=0;i<s.rig.anchor_count;++i)if(s.rig.anchors[i]==a)exists=1;
+    ok=(exists==e)||studio_rig_toggle_anchor(&s.rig,a);
+    snprintf(receipt,sizeof receipt,"anchors=%d",s.rig.anchor_count);
+   }
+  }
+ }else if(!strcmp(op,"PHYSICS_SET")){
+  float g,w,dec;int tail;
+  if(fscanf(f,"%f %f %f",&g,&w,&dec)==3&&fscanf(f,"%d",&tail)!=1&&isfinite(g)&&isfinite(w)&&isfinite(dec)&&
+   g>=-80&&g<=80&&w>=-60&&w<=60&&dec>=0&&dec<=1){
+   s.xpbd_gravity=g;s.xpbd_wind=w;s.xpbd_damping=dec;ok=1;
+   snprintf(receipt,sizeof receipt,"settings=updated");
+  }
+ }else if(!strcmp(op,"ACTION")){
+  char kind[24];float strength;int tail;
+  if(fscanf(f,"%23s %f",kind,&strength)==2&&fscanf(f,"%d",&tail)!=1&&isfinite(strength)&&strength>=0&&strength<=1){
+   if(!strcmp(kind,"pull")){s.pull_x=bound(s.pull_x+strength*12,-35,35);ok=1;}
+   if(!strcmp(kind,"release")){s.dragging=0;s.pull_x=0;s.pull_y=0;ok=1;}
+   if(!strcmp(kind,"shake")){s.pull_x=bound(s.pull_x-strength*15,-35,35);ok=1;}
+   if(!strcmp(kind,"settle")){s.pull_x=0;s.pull_y=0;ok=1;}
+   if(ok)snprintf(receipt,sizeof receipt,"action=%s",kind);
+  }
+ }else if(!strcmp(op,"RIG_APPLY")&&s.rig.vertex_count>0){
+  StudioXpbdOptions opt={s.rig.drawable,-1,0,s.xpbd_gravity,s.xpbd_wind,
+    s.xpbd_compliance,s.xpbd_collision,s.xpbd_mass,s.xpbd_damping,s.xpbd_contact_compliance,
+    s.xpbd_step,(int)s.xpbd_iters,(int)s.xpbd_pin,(int)s.xpbd_substeps,
+    s.xpbd_pose_compliance,s.xpbd_source_transfer,s.xpbd_bending,s.xpbd_surface,(int)s.xpbd_anchors};
+  void *next=studio_xpbd_bind_rig(s.core.model,opt,&s.rig);
+  if(next){studio_xpbd_disable(s.xpbd);s.xpbd=next;ok=1;snprintf(receipt,sizeof receipt,"rig=applied");}
+ }
+ fclose(f);remove(path);
+ snprintf(out,sizeof out,"%s/api/response.txt",s.folder);
+ FILE *w=fopen(out,"w");
+ if(w){fprintf(w,"%s %s %s\n",token,ok?"OK":"ERR",receipt);fclose(w);}
+}
 static void frame(void){
     float dt=bound(GetFrameTime(),.001f,.05f);int w=GetScreenWidth(),h=GetScreenHeight();
     s.viewport=(Rectangle){288,136,(float)w-636,(float)h-250};
-    int rw=(int)s.viewport.width,rh=(int)s.viewport.height;
+    int rw=(int)(s.viewport.width*STUDIO_RENDER_SCALE),rh=(int)(s.viewport.height*STUDIO_RENDER_SCALE);
     if(rw>1280){rh=(int)(rh*1280.0f/rw);rw=1280;}
     if(s.target.texture.width!=rw||s.target.texture.height!=rh){
         RenderTexture2D next=LoadRenderTexture(rw,rh);if(next.id){if(s.target.id)UnloadRenderTexture(s.target);s.target=next;
             float ratio=s.view.sw?(float)rw/s.view.sw:1;s.view.sw=rw;s.view.sh=rh;s.base_zoom*=ratio;RendererResize(&s.renderer,rw,rh);SetTextureFilter(s.target.texture,TEXTURE_FILTER_BILINEAR);}
     }
-    if(!s.smoke)input(dt);update(dt);s.view.zoom=s.base_zoom*s.settings.zoom;
+    process_agent_request();if(!s.smoke)input(dt);update(dt);s.view.zoom=s.base_zoom*s.settings.zoom;
+    if(s.xpbd_smoke&&s.frame==12){int count=csmGetDrawableCount(s.core.model);const int *vertices=csmGetDrawableVertexCounts(s.core.model);
+      for(int d=0;d<count;++d)if(vertices[d]>=3&&vertices[d]<=2048){StudioXpbdOptions o={d,-1,0,-12,3,.0000001f,0,1,.995f,0,1.f/120,8,0,3,.004f,.08f,.00001f,.02f,2};
+        s.xpbd=studio_xpbd_bind(s.core.model,o);if(s.xpbd)break;}
+      verify(s.xpbd!=NULL,"XPBD binds a physical drawable");}
+    if(s.xpbd_motion_case&&s.frame==44&&s.xpbd){
+      StudioXpbdOptions o={s.xpbd_first,-1,0,(s.xpbd_motion_case==1?60:-30),(s.xpbd_motion_case==2?55:-20),.000001f,0,2,(s.xpbd_motion_case==3?.2f:.995f),0,1.f/120,12,0,3,.004f,.08f,.00001f,.02f,2};
+      studio_xpbd_disable(s.xpbd);s.xpbd=studio_xpbd_bind(s.core.model,o);if(s.xpbd)++s.xpbd_motion_rebinds;else verify(0,"XPBD parameter rebind");}
+    if(s.xpbd_motion_case&&s.frame==74&&s.xpbd){
+      StudioXpbdOptions o={s.xpbd_first,-1,0,-12,10,.0000001f,0,1,.90f,0,1.f/240,16,0,3,.004f,.08f,.00001f,.02f,2};
+      studio_xpbd_disable(s.xpbd);s.xpbd=studio_xpbd_bind(s.core.model,o);if(s.xpbd)++s.xpbd_motion_rebinds;else verify(0,"XPBD second rebind");}
+    if(s.xpbd_smoke&&s.frame==90){verify(!s.xpbd_motion_case||s.xpbd_motion_rebinds==2,"XPBD two parameter changes");verify(s.xpbd_smoke_frames>=20,"XPBD prepare/render/accept continuity");
+      studio_xpbd_disable(s.xpbd);s.xpbd=NULL;}
     if(s.smoke){const float *v=csmGetParameterValues(s.core.model),*lo=csmGetParameterMinimumValues(s.core.model),*hi=csmGetParameterMaximumValues(s.core.model);
         for(int i=0;i<s.count;++i)if(!isfinite(v[i])||v[i]<lo[i]||v[i]>hi[i]){verify(0,"finite bounded parameters");break;}
         if(s.physics_expected&&!s.linked)verify(0,"linked physics continuity");}
+    studio_xpbd_set_interaction(s.xpbd,s.pull_x*8.f,s.pull_y*8.f);
+    if(s.xpbd&&!studio_xpbd_prepare(s.xpbd,s.core.model)){studio_xpbd_disable(s.xpbd);s.xpbd=NULL;toast("XPBD stopped: invalid geometry.");}
     BeginTextureMode(s.target);stage_background();RenderModel(s.core.model,&s.renderer,&s.view,1,&s.opt,s.sorted);EndTextureMode();
+    if(s.xpbd){rlDrawRenderBatchActive();glFinish();
+        if(glGetError()!=GL_NO_ERROR||!studio_xpbd_accept(s.xpbd)){studio_xpbd_disable(s.xpbd);s.xpbd=NULL;toast("XPBD render failed.");}else if(s.xpbd_smoke)++s.xpbd_smoke_frames;
+    }
     BeginDrawing();ClearBackground(BG);
     DrawRectangle(0,0,w,74,CARD);DrawCircle(35,34,13,ACCENT);label("A",29,23,22,BG);
     label("AVATAR STUDIO",59,18,23,TEXT);label("Interactive model lab",60,45,12,MUTED);
@@ -327,6 +561,7 @@ static void frame(void){
     card((Rectangle){16,90,256,(float)h-140});card((Rectangle){(float)w-332,90,316,(float)h-140});
     camera_ui();
     DrawTexturePro(s.target.texture,(Rectangle){0,0,(float)s.target.texture.width,-(float)s.target.texture.height},s.viewport,(Vector2){0,0},0,WHITE);
+    rig_overlay_ui();
     DrawRectangleLinesEx(s.viewport,1,LINE);label(s.linked?"LINKED PHYSICS3":"NO LINKED PHYSICS3",s.viewport.x+14,s.viewport.y+14,11,s.linked?ACCENT:MUTED);
     if(s.dragging)label(s.dragging==1?"PULL / HEAD":s.dragging==2?"PULL / ARMS":"PULL / BODY",s.viewport.x+14,s.viewport.y+35,12,ACCENT);
     float y=s.viewport.y+s.viewport.height+14;
@@ -355,13 +590,13 @@ static void frame(void){
         if(s.frame==180){s.settings.physics=1;s.settings.playing=1;s.settings.zoom=1.35f;}
         if(s.frame==210)capture("05-zoom",0);
         if(s.frame==220)SetWindowSize(1250,920);
-        if(s.frame==235){capture("studio-minimum",1);verify(s.target.texture.width==614&&s.target.texture.height==670,"resize viewport");}
+        if(s.frame==235){capture("studio-minimum",1);verify(s.target.texture.width==921&&s.target.texture.height==1005,"resize viewport");}
         if(s.frame==245)SetWindowSize(1460,1000);
     }
 }
 int main(int argc,char **argv){
     const char *model=NULL;snprintf(s.folder,sizeof s.folder,"build/studio-user");
-    for(int i=1;i<argc;++i){if(!strcmp(argv[i],"--model")&&i+1<argc)model=argv[++i];else if(!strcmp(argv[i],"--evidence")&&i+1<argc){const char *folder=argv[++i];if(strlen(folder)>=sizeof s.folder)return 2;snprintf(s.folder,sizeof s.folder,"%s",folder);}else if(!strcmp(argv[i],"--frames")&&i+1<argc){char *end;long n=strtol(argv[++i],&end,10);if(*end||n<1||n>1000000)return 2;s.limit=(int)n;}else if(!strcmp(argv[i],"--smoke"))s.smoke=1;else return 2;}
+    for(int i=1;i<argc;++i){if(!strcmp(argv[i],"--model")&&i+1<argc)model=argv[++i];else if(!strcmp(argv[i],"--evidence")&&i+1<argc){const char *folder=argv[++i];if(strlen(folder)>=sizeof s.folder)return 2;snprintf(s.folder,sizeof s.folder,"%s",folder);}else if(!strcmp(argv[i],"--frames")&&i+1<argc){char *end;long n=strtol(argv[++i],&end,10);if(*end||n<1||n>1000000)return 2;s.limit=(int)n;}else if(!strcmp(argv[i],"--smoke"))s.smoke=1;else if(!strcmp(argv[i],"--xpbd-smoke"))s.xpbd_smoke=1;else if(!strcmp(argv[i],"--xpbd-motion-case")&&i+1<argc){s.xpbd_motion_case=atoi(argv[++i]);if(s.xpbd_motion_case<1||s.xpbd_motion_case>3)return 2;s.xpbd_smoke=1;}else return 2;}
     if(!model||(s.smoke&&s.limit<270))return 2;SetTraceLogLevel(LOG_WARNING);csmSetLogFunction(NULL);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE|FLAG_VSYNC_HINT|FLAG_MSAA_4X_HINT);InitWindow(1460,1000,"Avatar Studio | Interactive Model Lab");SetWindowMinSize(1250,920);SetTargetFPS(60);SetExitKey(KEY_NULL);
     s.font=LoadUiFont();s.view.sw=824;s.view.sh=750;s.opt.maskScale=.75f;s.opt.maxOrder=1<<30;s.opt.onlyDrawable=-1;
@@ -369,6 +604,8 @@ int main(int argc,char **argv){
     s.physics_expected=s.linked!=NULL;if(s.smoke)s.settings.gaze=0;
     while(!WindowShouldClose()&&(!s.limit||s.frame<s.limit))frame();
     state_file();
+    if(s.xpbd_smoke){verify(s.xpbd_smoke_frames>=20,"XPBD accepted frames");
+      fprintf(stderr,"XPBD_SMOKE_RESULT frames=%d accepted=%d checks=%d failures=%d active=%d\\n",s.frame,s.xpbd_smoke_frames,s.checks,s.failures,s.xpbd!=NULL);}
     if(s.smoke){verify(s.frame==s.limit,"complete frame count");verify(s.linked!=NULL||!s.physics_expected,"physics still available");
         verify(GetFPS()>0&&s.time>s.frame/120.0f,"real frame timing and presentation");
         char path[1200];snprintf(path,sizeof path,"%s/smoke.json",s.folder);FILE *f=fopen(path,"w");
