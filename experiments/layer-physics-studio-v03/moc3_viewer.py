@@ -7,7 +7,6 @@ Never loads .moc3 bytes as an ARSCHAR or substitutes flattened sprites.
 from __future__ import annotations
 
 import argparse
-import base64
 import json
 from pathlib import Path
 import sys
@@ -52,6 +51,17 @@ def native_bridge_path() -> Path:
     return ROOT / "build" / "m2-d-private" / "bin" / "Release" / "ars_lps_moc3_bridge.exe"
 
 
+def photoimage_from_ppm(tk, frame: bytes):
+    """Give Tk the native binary P6 payload, NOT base64 with an explicit PPM format.
+
+    Tk's PPM decoder expects the original P6 bytes. A base64 wrapper causes
+    TclError("couldn't recognize image data") on the first rendered frame.
+    """
+    if not isinstance(frame, bytes) or not frame.startswith(b"P6\\n"):
+        raise ValueError("Invalid native PPM frame")
+    return tk.PhotoImage(data=frame, format="PPM")
+
+
 class Editor:
     def __init__(self, model3: Path, output: Path, hardware: bool = False):
         import tkinter as tk
@@ -79,6 +89,7 @@ class Editor:
         self.busy = False
         self.previous_photo = None
         self.root = tk.Tk()
+        self.root.report_callback_exception = self.report_callback_exception
         self.root.title("Avatar Runtime - MOC3 XPBD native D3D11 viewer (experimental)")
         self.root.protocol("WM_DELETE_WINDOW", self.close)
         note = "HOLD Physics3: " + self.physics_hold if self.physics_hold else (
@@ -173,19 +184,41 @@ class Editor:
                 if meta["width"] != 512 or meta["height"] != 512:
                     raise RuntimeError("Unexpected rendered frame size")
                 frame = (self.output / meta["image"]).read_bytes()
-                photo = self.tk.PhotoImage(data=base64.b64encode(frame), format="PPM")
+                photo = photoimage_from_ppm(self.tk, frame)
                 self.picture.configure(image=photo)
                 self.previous_photo = photo
                 self.status.set(f"Native D3D11 {meta['backend']} | frame {meta['frame_generation']} "
                                 f"| target epoch {meta['target_epoch']}")
             except Exception as exc:
                 self.running = False
-                self.status.set("HOLD: " + str(exc))
-                self.root.after(50, self.close)
+                # Retain the desktop window so the user can read the failure.
+                # Only an explicit close from the user tears down the bridge.
+                self._report_error("RENDER_HOLD", exc)
             finally:
                 self.busy = False
         if self.running:
             self.root.after(100, self.tick)
+
+    def _report_error(self, category: str, exc: BaseException, tb=None):
+        import traceback
+        if tb is None:
+            tb = exc.__traceback__
+        safe_message = str(exc).replace("\\r", " ").replace("\\n", " ")
+        log = self.output / "viewer_error.log"
+        self.status.set(f"{category}: {type(exc).__name__}: {safe_message} | see {log}")
+        try:
+            with log.open("a", encoding="utf-8") as stream:
+                stream.write(f"\\n[{category}]\\n")
+                traceback.print_exception(type(exc), exc, tb, file=stream)
+        except OSError:
+            # A read-only folder must not make a diagnostic failure terminate Tk.
+            pass
+        traceback.print_exception(type(exc), exc, tb, file=sys.stderr)
+
+    def report_callback_exception(self, exc_type, exc, tb):
+        # Tk normally writes callback errors only to stderr; surface them in
+        # the GUI too. A user-correctable selection error must not kill ticks.
+        self._report_error("CONTROL_ERROR", exc, tb)
 
     def run(self):
         try:
