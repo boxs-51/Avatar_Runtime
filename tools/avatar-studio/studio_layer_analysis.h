@@ -25,6 +25,11 @@ typedef struct StudioLayerSuggestion {
 
 } StudioLayerSuggestion;
 int studio_layer_analyze(const StudioLayerInput *,StudioLayerSuggestion *);
+typedef struct StudioLayerTopology {
+ int islands,used,isolated,largest,triangles;
+} StudioLayerTopology;
+int studio_layer_components(const unsigned short *indices,int index_count,
+                            int vertex_count,StudioLayerTopology *result);
 const char *studio_layer_kind_name(StudioLayerKind kind);
 const char *studio_layer_region_name(int region);
 const char *studio_layer_shape_name(int shape);

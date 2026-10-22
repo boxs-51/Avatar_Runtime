@@ -93,3 +93,41 @@ const char *studio_layer_shape_name(int shape){
  switch(shape){case 1:return "thin";case 2:return "wide";case 3:return "tall";
  default:return "compact";}
 }
+/* Strict triangle-index connectivity analysis; no private model data persisted. */
+static int studio_root(int *parent,int i){
+ while(parent[i]!=i){parent[i]=parent[parent[i]];i=parent[i];}
+ return i;
+}
+static void studio_unite(int *parent,int *weight,int a,int b){
+ a=studio_root(parent,a);b=studio_root(parent,b);
+ if(a==b)return;
+ if(weight[a]<weight[b]){int t=a;a=b;b=t;}
+ parent[b]=a;weight[a]+=weight[b];
+}
+int studio_layer_components(const unsigned short *indices,int index_count,
+                             int vertex_count,StudioLayerTopology *out){
+ if(!indices||!out||vertex_count<3||vertex_count>2048||
+     index_count<3||index_count>65535||index_count%3)return 0;
+ int parent[2048],weight[2048];
+ unsigned char used[2048]={0},seen[2048]={0};
+ for(int i=0;i<vertex_count;++i){parent[i]=i;weight[i]=1;}
+ for(int t=0;t<index_count;t+=3){
+  int a=indices[t],b=indices[t+1],c=indices[t+2];
+  if(a>=vertex_count||b>=vertex_count||c>=vertex_count||
+     a==b||b==c||a==c)return 0;
+  used[a]=used[b]=used[c]=1;
+  studio_unite(parent,weight,a,b);
+  studio_unite(parent,weight,b,c);
+ }
+ StudioLayerTopology next={0};
+ next.triangles=index_count/3;
+ for(int i=0;i<vertex_count;++i){
+  if(!used[i]){next.isolated++;continue;}
+  next.used++;
+  int root=studio_root(parent,i);
+  if(!seen[root]){seen[root]=1;next.islands++;}
+ }
+ for(int i=0;i<vertex_count;++i)
+  if(seen[i]&&weight[i]>next.largest)next.largest=weight[i];
+ *out=next;return 1;
+}

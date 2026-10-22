@@ -1,4 +1,4 @@
-#include "../studio_layer_analysis.h"
+﻿#include "../studio_layer_analysis.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -33,6 +33,18 @@ int main(void){
  CHECK(!studio_layer_analyze(&in,&result));
  in.vertices=quad;in.vertex_count=4;in.object_height=0;
  CHECK(!studio_layer_analyze(&in,&result));
+ const unsigned short twins[]={0,1,2,3,4,5};
+ StudioLayerTopology topology={0};
+ CHECK(studio_layer_components(twins,6,7,&topology));
+ CHECK(topology.islands==2&&topology.largest==3);
+ CHECK(topology.isolated==1&&topology.used==6&&topology.triangles==2);
+ const unsigned short connected[]={0,1,2,2,1,3};
+ CHECK(studio_layer_components(connected,6,4,&topology));
+ CHECK(topology.islands==1&&topology.isolated==0&&topology.largest==4);
+ const unsigned short invalid[]={0,1,9};
+ CHECK(!studio_layer_components(invalid,3,4,&topology));
+ CHECK(!studio_layer_components(connected,5,4,&topology));
+ puts("LAYER_COMPONENTS_PASS islands=2 orphan=1 invalid=reject");
  puts("LAYER_CLASSIFICATION_PASS hair=1 skirt=1 strap=1 ambiguous=unknown conservative=1");
  return 0;
 }

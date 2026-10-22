@@ -1,4 +1,4 @@
-/* Avatar Studio: local interactive model lab, not public SDK qualification. */
+﻿/* Avatar Studio: local interactive model lab, not public SDK qualification. */
 #include "viewer.h"
 #include "studio_backend.h"
 #include "studio_xpbd.h"
@@ -26,7 +26,7 @@ typedef struct {
     int history;float scroll;char search[96],model_name[256],folder[1024],notice[192];
     double notice_until;void *linked;int physics_reset,step_requested;
     int failures,checks,physics_expected,xpbd_smoke,xpbd_smoke_frames,xpbd_motion_case,xpbd_motion_rebinds;float paused_time;double paused_checksum;
-    void *xpbd;int xpbd_first,xpbd_second,xpbd_joint,xpbd_page,rig_selected,rig_beam_start,rig_overlay;StudioRig rig;StudioRigBank rig_bank;StudioLayerSuggestion layer_proposal;
+    void *xpbd;int xpbd_first,xpbd_second,xpbd_joint,xpbd_page,rig_selected,rig_beam_start,rig_overlay;StudioRig rig;StudioRigBank rig_bank;StudioLayerSuggestion layer_proposal;StudioLayerTopology layer_topology;int layer_topology_valid;
      int layer_proposal_valid,layer_proposal_drawable;uint64_t layer_proposal_signature;float xpbd_gravity,xpbd_wind,xpbd_compliance,xpbd_collision,xpbd_mass,xpbd_damping,xpbd_contact_compliance,xpbd_step,xpbd_iters,xpbd_pin,xpbd_substeps,xpbd_pose_compliance,xpbd_source_transfer,xpbd_bending,xpbd_surface,xpbd_anchors;
     Settings settings;RenderTexture2D target;Rectangle viewport;
 } Studio;
@@ -73,7 +73,7 @@ static void defaults(void){
     memset(s.weights,0,sizeof s.weights);s.weights[0]=1;s.physics_reset=1;
 }
 static void free_model(void){
-    memset(&s.rig,0,sizeof s.rig);memset(&s.rig_bank,0,sizeof s.rig_bank);s.layer_proposal_valid=0;
+    memset(&s.rig,0,sizeof s.rig);memset(&s.rig_bank,0,sizeof s.rig_bank);s.layer_proposal_valid=0;s.layer_topology_valid=0;
     studio_xpbd_disable(s.xpbd);s.xpbd=NULL;
     if(s.core.model){studio_physics_free(s.linked);s.linked=NULL;RendererFree(&s.renderer);FreeCore(&s.core);}
     free(s.sorted);free(s.manual);free(s.pins);free(s.part_values);free(s.part_defaults);s.part_defaults=NULL;
@@ -167,10 +167,10 @@ static uint64_t signature(void){
     for(int i=0;i<s.parts;++i){for(const unsigned char *p=(const unsigned char*)ids[i];*p;++p){h^=*p;h*=1099511628211ull;}h^=254;h*=1099511628211ull;}
     return h;
 }
-static void save_preset(void){
-    if(!s.core.model)return;char path[1200],temporary[1200];snprintf(path,sizeof path,"%s/preset.txt",s.folder);
+static int save_preset(void){
+    if(!s.core.model)return 0;char path[1200],temporary[1200];snprintf(path,sizeof path,"%s/preset.txt",s.folder);
     snprintf(temporary,sizeof temporary,"%s/preset.tmp",s.folder);
-    FILE *f=fopen(temporary,"w");if(!f){toast("Cannot save preset.");return;}
+    FILE *f=fopen(temporary,"w");if(!f){toast("Cannot save preset.");return 0;}
     fprintf(f,"AVATAR_STUDIO_1 %llu %d %d\n",(unsigned long long)signature(),s.count,s.parts);
     Settings *q=&s.settings;
     fprintf(f,"%d %d %d %d %d %d %d %d %d %d\n",q->playing,q->physics,q->blink,q->breath,q->gaze,q->speech,q->cycle,q->grid,q->particles,q->background);
@@ -179,11 +179,11 @@ static void save_preset(void){
     for(int i=0;i<s.parts;++i)fprintf(f,"%.9g\n",s.part_values[i]);
     int failed=ferror(f);if(fclose(f))failed=1;
     if(!failed&&!studio_replace_file(temporary,path))failed=1;
-    toast(failed?"Preset write failed; previous preset kept.":"Preset saved locally.");
+    toast(failed?"Preset write failed; previous preset kept.":"Preset saved locally.");return !failed;
 }
-static void load_preset(void){
-    if(!s.core.model)return;char path[1200];snprintf(path,sizeof path,"%s/preset.txt",s.folder);FILE *f=fopen(path,"r");
-    if(!f){toast("No saved preset yet.");return;}
+static int load_preset(void){
+    if(!s.core.model)return 0;char path[1200];snprintf(path,sizeof path,"%s/preset.txt",s.folder);FILE *f=fopen(path,"r");
+    if(!f){toast("No saved preset yet.");return 0;}
     unsigned long long hash=0;int count=0,parts=0,selected=0;Settings q={0};char magic[32]={0};
     float *manual=calloc((size_t)s.count,sizeof(float)),*opacity=calloc((size_t)(s.parts?s.parts:1),sizeof(float));
     unsigned char *pins=calloc((size_t)s.count,1);int ok=manual&&opacity&&pins;
@@ -198,7 +198,7 @@ static void load_preset(void){
     if(ok){int ch;do{ch=fgetc(f);}while(ch==' '||ch=='\n'||ch=='\r'||ch=='\t');ok=ch==EOF;}
     fclose(f);
     if(ok){s.settings=q;s.selected=selected;memcpy(s.manual,manual,(size_t)s.count*sizeof(float));memcpy(s.pins,pins,(size_t)s.count);memcpy(s.part_values,opacity,(size_t)s.parts*sizeof(float));s.physics_reset=1;}
-    free(manual);free(pins);free(opacity);toast(ok?"Preset restored.":"Preset rejected; current settings kept.");
+    free(manual);free(pins);free(opacity);toast(ok?"Preset restored.":"Preset rejected; current settings kept.");return ok;
 }
 static void capture(const char *name,int window){
     char path[1200];snprintf(path,sizeof path,"%s/%s.png",s.folder,name);
@@ -347,9 +347,20 @@ static int studio_suggest_drawable(int d,StudioLayerSuggestion *out){
  return studio_model_y_bounds(&low,&high)&&
    studio_suggest_drawable_bounds(d,low,high,out);
 }
+static int studio_selected_topology(int drawable,StudioLayerTopology *out){
+ int n=csmGetDrawableCount(s.core.model);
+ const int *vc=csmGetDrawableVertexCounts(s.core.model);
+ const int *ic=csmGetDrawableIndexCounts(s.core.model);
+ const unsigned short **indices=csmGetDrawableIndices(s.core.model);
+ if(!out||drawable<0||drawable>=n||!vc||!ic||!indices||
+    vc[drawable]<3||vc[drawable]>2048||ic[drawable]<3||
+    ic[drawable]>65535||!indices[drawable])return 0;
+ return studio_layer_components(indices[drawable],ic[drawable],vc[drawable],out);
+}
 static int studio_propose_layer(int drawable){
  StudioLayerSuggestion next;
  if(!studio_suggest_drawable(drawable,&next)){s.layer_proposal_valid=0;return 0;}
+ s.layer_topology_valid=studio_selected_topology(drawable,&s.layer_topology);
  s.layer_proposal=next;
  s.layer_proposal_drawable=drawable;
  s.layer_proposal_signature=signature();
@@ -438,6 +449,10 @@ static void rig_ui(float x){
       studio_layer_shape_name(s.layer_proposal.shape)),x,748,12,MUTED);
     label(TextFormat("Suggested anchors: %d (preview only)",
       s.layer_proposal.anchor_count),x,718,12,MUTED);
+    if(s.layer_topology_valid)
+      label(TextFormat("Islands %d  Loose %d  Triangles %d",
+        s.layer_topology.islands,s.layer_topology.isolated,
+        s.layer_topology.triangles),x,860,12,MUTED);
   }
 }
 static void xpbd_ui(float x){
@@ -556,6 +571,7 @@ static double parameter_checksum(void){
 static void verify(int pass,const char *name){
     ++s.checks;if(!pass){++s.failures;fprintf(stderr,"Studio check FAILED: %s\n",name);}
 }
+#include "studio_agent_extended.inc"
 static void process_agent_request(void){
  char path[1200],out[1200],token[48]={0},op[48]={0};
  snprintf(path,sizeof path,"%s/api/request.txt",s.folder);
@@ -577,6 +593,35 @@ static void process_agent_request(void){
    snprintf(receipt,sizeof receipt,"drawable=%d anchors=%d beams=%d role=%s",
        s.rig.drawable,s.rig.anchor_count,s.rig.beam_count,
        studio_layer_kind_name((StudioLayerKind)s.rig.role));
+  }
+ }else if(!strcmp(op,"LAYER_TOPOLOGY_SCAN")){
+  char extra;
+  const int n=csmGetDrawableCount(s.core.model);
+  const int *v=csmGetDrawableVertexCounts(s.core.model);
+  const int *ic=csmGetDrawableIndexCounts(s.core.model);
+  const unsigned short **idx=csmGetDrawableIndices(s.core.model);
+  if(fscanf(f," %c",&extra)==EOF&&n>0&&n<=4096&&v&&ic&&idx){
+   int multi=0,loose=0,bad=0,maximum=0,good=0;
+   for(int j=0;j<n;++j){
+    StudioLayerTopology top={0};
+    if(!studio_layer_components(idx[j],ic[j],v[j],&top)){++bad;continue;}
+    ++good;
+    if(top.islands>1)++multi;
+    if(top.isolated>0)++loose;
+    if(top.islands>maximum)maximum=top.islands;
+   }
+   ok=1;
+   snprintf(receipt,sizeof receipt,
+      "total=%d analyzed=%d multi=%d loose=%d invalid=%d max_islands=%d",
+      n,good,multi,loose,bad,maximum);
+  }
+ }else if(!strcmp(op,"LAYER_TOPOLOGY")){
+  char extra;
+  StudioLayerTopology top={0};
+  if(fscanf(f," %c",&extra)==EOF&&studio_selected_topology(s.xpbd_first,&top)){
+   ok=1;
+   snprintf(receipt,sizeof receipt,"islands=%d used=%d loose=%d largest=%d triangles=%d",
+       top.islands,top.used,top.isolated,top.largest,top.triangles);
   }
  }else if(!strcmp(op,"LAYER_SCAN")){
   double scan_started=GetTime();
@@ -674,6 +719,7 @@ static void process_agent_request(void){
   void *next=studio_xpbd_bind_rig(s.core.model,opt,&s.rig);
   if(next){studio_xpbd_disable(s.xpbd);s.xpbd=next;ok=1;snprintf(receipt,sizeof receipt,"rig=applied");}
  }
+ if(!ok){int extra=studio_agent_extended(f,op,receipt,sizeof receipt);if(extra>=0)ok=extra;}
  fclose(f);remove(path);
  snprintf(out,sizeof out,"%s/api/response.txt",s.folder);
  FILE *w=fopen(out,"w");

@@ -1,4 +1,4 @@
-"""Read-only model layer resolution diagnostic; private assets stay on Host."""
+﻿"""Read-only model layer resolution diagnostic; private assets stay on Host."""
 import json,re,subprocess,sys,time
 from pathlib import Path
 from datetime import datetime
@@ -22,6 +22,20 @@ def main():
    ready=bridge.call({"op":"rig.select","drawable":0})
    if not ready["ok"]:raise RuntimeError("Studio readiness failed")
    t0=time.perf_counter()
+   aggregate_top=bridge.call({"op":"layer.topology.scan"})
+   if not aggregate_top["ok"]:
+    raise RuntimeError("Topology aggregate scan rejected")
+   top_counts=dict(re.findall(r"([a-z_]+)=(\d+)",aggregate_top["receipt"]))
+   if int(top_counts["analyzed"])+int(top_counts["invalid"])!=int(top_counts["total"]):
+    raise RuntimeError("Topology aggregate accounting mismatch")
+   cases.append({"op":"layer.topology.scan","ok":True,"aggregate":top_counts})
+   top=bridge.call({"op":"layer.topology"})
+   if not top["ok"] or "islands=" not in top["receipt"]:
+    raise RuntimeError("Native topology query was rejected")
+   top_numbers=dict(re.findall(r"([a-z]+)=(\d+)",top["receipt"]))
+   if int(top_numbers["islands"])<1 or int(top_numbers["triangles"])<1:
+    raise RuntimeError("Invalid topology aggregates")
+   cases.append({"op":"layer.topology","ok":True,"aggregate":top_numbers})
    scan=bridge.call({"op":"layer.scan"})
    scan_ms=round((time.perf_counter()-t0)*1000,2)
    if not scan["ok"]:raise RuntimeError("layer.scan failed (no private labels logged)")

@@ -1,4 +1,4 @@
-"""RED-first contract for local agent API; no private model in these fixtures."""
+﻿"""RED-first contract for local agent API; no private model in these fixtures."""
 from __future__ import annotations
 import tempfile
 import threading
@@ -42,6 +42,38 @@ class AgentApiContract(unittest.TestCase):
             with self.subTest(invalid=invalid),self.assertRaises(ValueError):
                 validate_command(invalid)
 
+    def test_extended_studio_api(self):
+        cases=[
+            ({"op":"layer.topology"},"LAYER_TOPOLOGY"),
+            ({"op":"layer.topology.scan"},"LAYER_TOPOLOGY_SCAN"),
+            ({"op":"studio.status"},"STUDIO_STATUS"),
+            ({"op":"studio.play","enabled":False},"STUDIO_PLAY 0"),
+            ({"op":"studio.step"},"STUDIO_STEP"),
+            ({"op":"studio.expression","index":5},"STUDIO_EXPRESSION 5"),
+            ({"op":"studio.toggle","feature":"blink","enabled":True},"STUDIO_TOGGLE blink 1"),
+            ({"op":"studio.setting","name":"motion_speed","value":1.2},"STUDIO_SETTING motion_speed 1.2"),
+            ({"op":"studio.camera","mode":"fit"},"STUDIO_CAMERA fit"),
+            ({"op":"studio.zoom","value":1.6},"STUDIO_ZOOM 1.6"),
+            ({"op":"studio.pan","x":12,"y":-5},"STUDIO_PAN 12 -5"),
+            ({"op":"studio.reset"},"STUDIO_RESET"),
+            ({"op":"studio.preset","action":"save"},"STUDIO_PRESET save"),
+            ({"op":"studio.capture","kind":"viewport"},"STUDIO_CAPTURE viewport"),
+            ({"op":"param.set","index":3,"value":.6},"PARAM_SET 3 0.6"),
+            ({"op":"param.clear","index":3},"PARAM_CLEAR 3"),
+            ({"op":"param.reset"},"PARAM_RESET"),
+            ({"op":"part.opacity","index":1,"value":.5},"PART_OPACITY 1 0.5"),
+            ({"op":"rig.vertex","index":2},"RIG_VERTEX 2"),
+            ({"op":"rig.store","action":"save"},"RIG_STORE save"),
+            ({"op":"xpbd.set","name":"bending","value":.001},"XPBD_SET bending 0.001"),
+            ({"op":"xpbd.select","first":0,"second":-1,"joint":False},"XPBD_SELECT 0 -1 0"),
+            ({"op":"xpbd.apply"},"XPBD_APPLY"),
+            ({"op":"xpbd.disable"},"XPBD_DISABLE"),
+            ({"op":"xpbd.inspect"},"XPBD_INSPECT"),
+            ({"op":"studio.metrics"},"STUDIO_METRICS"),
+        ]
+        for command,wire in cases:
+            with self.subTest(op=command["op"]):
+                self.assertEqual(validate_command(command),wire)
     def test_live_bridge_receipt_correlates_and_removes_request(self):
         with tempfile.TemporaryDirectory() as root:
             folder=Path(root)
