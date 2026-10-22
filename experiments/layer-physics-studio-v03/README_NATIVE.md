@@ -40,8 +40,14 @@ motion/replay and confirms 3D draw identity is untouched. See CI workflow.
   copy-ready/accepted publication. GPU query failure must never commit solver
   state. `source model id + pose generation + configuration + target generation`
   must be checked before admitting any candidate.
-- A real interactive native Viewer/editor (and whole-model PNG readback to a
-  visible window) has not been built. The browser v0.3 editor is NOT that Viewer.
+- A Windows **experimental native2D** Viewer is available as
+  `ars_lps_native_viewer.exe`. It loads a complete admitted native 2D
+  `.arschar` model, projects all visible native 2D parts, simulates selected
+  parts through XPBD and presents query-completed D3D11 WARP output through a
+  DXGI swapchain to its Win32 canvas. Controls let the user select parts,
+  change gravity/wind/compliance and toggle collisions and two-way joints.
+  This is not a full GLB/MOC3 Viewer or an implementation of public ABI20
+  XPBD rendering. A successful CI smoke cannot replace physical GUI inspection.
 - Native GLB3D and private MOC3 drawables are not deformed by the XPBD bridge.
   Their original render paths remain untouched; full native parity is HOLD.
 - No physical Windows host/device evidence has been collected; Windows GitHub
@@ -65,3 +71,20 @@ This is a **headless native WARP pixel-probe**, not yet an interactive desktop
 window. Unsupported models are rejected rather than approximated. GLB and
 MOC3 are still not deformed. The public D3D11 publication fence, lifecycle,
 host resize, failure injection, image authenticity and full parity remain HOLD.
+
+## Windows native Viewer (opt-in)
+```powershell
+cmake -S . -B build/lps-committed -A x64 `
+  -DARS_BUILD_RUNTIME_CORE=ON -DARS_BUILD_ASSET_VALIDATOR=ON `
+  -DARS_ENABLE_PUBLIC_CPU_ASSETS=ON -DARS_ENABLE_PUBLIC_D3D11_HOST=ON `
+  -DARS_ASSET_FETCH_DEPS=ON -DARS_ENABLE_PREP_TESTS=OFF -DARS_BUILD_LPS_NATIVE_TESTS=ON
+cmake --build build/lps-committed --config Release --target ars_lps_native_viewer
+.\build\lps-committed\bin\Release\ars_lps_native_viewer.exe "E:\models\my-character.arschar"
+```
+This tool reads `.arschar` from the selected local path and is intentionally
+native2D-only. It refuses GLB-only / MOC3-only models instead of claiming support.
+Win32 panel: select part; toggle dynamic XPBD, gravity, wind, soft/stiff,
+collision, joint and pause/reset. GDI readback is diagnostic only; visible
+pixel presentation uses the native DXGI child swapchain. The same original
+model's atlas/UV/part order is retained; edit affects selected native parts.
+The studio and this viewer are separate experimental applications.

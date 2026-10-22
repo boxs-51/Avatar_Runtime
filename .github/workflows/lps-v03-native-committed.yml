@@ -75,3 +75,12 @@ jobs:
           path: build/lps-committed/lps-pixels-*.ppm
           retention-days: 7
           if-no-files-found: error
+
+      - name: Retain Windows native XPBD Viewer executable
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lps-v03-win32-d3d11-viewer-experimental
+          path: build/lps-committed/bin/Release/ars_lps_native_viewer.exe
+          retention-days: 7
+          if-no-files-found: error
