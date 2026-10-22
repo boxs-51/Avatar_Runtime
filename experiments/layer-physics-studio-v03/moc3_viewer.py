@@ -57,7 +57,7 @@ def photoimage_from_ppm(tk, frame: bytes):
     Tk's PPM decoder expects the original P6 bytes. A base64 wrapper causes
     TclError("couldn't recognize image data") on the first rendered frame.
     """
-    if not isinstance(frame, bytes) or not frame.startswith(b"P6\\n"):
+    if not isinstance(frame, bytes) or not frame.startswith(b"P6\n"):
         raise ValueError("Invalid native PPM frame")
     return tk.PhotoImage(data=frame, format="PPM")
 
@@ -203,12 +203,12 @@ class Editor:
         import traceback
         if tb is None:
             tb = exc.__traceback__
-        safe_message = str(exc).replace("\\r", " ").replace("\\n", " ")
+        safe_message = str(exc).replace("\r", " ").replace("\n", " ")
         log = self.output / "viewer_error.log"
         self.status.set(f"{category}: {type(exc).__name__}: {safe_message} | see {log}")
         try:
             with log.open("a", encoding="utf-8") as stream:
-                stream.write(f"\\n[{category}]\\n")
+                stream.write(f"\n[{category}]\n")
                 traceback.print_exception(type(exc), exc, tb, file=stream)
         except OSError:
             # A read-only folder must not make a diagnostic failure terminate Tk.
