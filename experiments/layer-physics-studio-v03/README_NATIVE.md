@@ -51,3 +51,17 @@ motion/replay and confirms 3D draw identity is untouched. See CI workflow.
 
 The native side is intentionally nonshipping and must stay in this experiment
 branch until separately approved and independently reviewed.
+
+## Windows-native pixel probe (new experimental application)
+`ars_lps_native_pixels accepted-model.arschar [output-prefix]` loads the
+entire **supported native2D** model through real runtime admission/pose,
+projects its full original drawable set and displays no fake sprites.
+It renders a neutral frame and 24 XPBD-affected native frames via D3D11 WARP,
+checks exact query completion before calling solver `accept`, and requires a
+nonzero before/after pixel difference. With an optional output prefix, it
+writes two PPM images for visual inspection; CI retains these as artifacts.
+
+This is a **headless native WARP pixel-probe**, not yet an interactive desktop
+window. Unsupported models are rejected rather than approximated. GLB and
+MOC3 are still not deformed. The public D3D11 publication fence, lifecycle,
+host resize, failure injection, image authenticity and full parity remain HOLD.
