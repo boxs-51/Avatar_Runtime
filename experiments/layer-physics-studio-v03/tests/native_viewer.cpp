@@ -3,7 +3,9 @@
 // A DXGI swapchain presents query-completed D3D11 pixels in a native child HWND.
 // No claim of alpha MOC3/GLB feature parity or public ABI support.
 #define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #define main lps_existing_pixel_probe_entry
 #include "native_pixel_probe.cpp"
