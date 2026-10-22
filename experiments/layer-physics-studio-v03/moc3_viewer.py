@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 from moc3_package_admission import admit_package, AdmissionError  # noqa: E402
 from moc3_local_physics import Bridge  # noqa: E402
-from moc3_physics import Physics, STEP_NS  # noqa: E402
+from moc3_physics import Physics, PhysicsError, STEP_NS  # noqa: E402
 
 
 def validate_model3(path: Path) -> Path:
@@ -65,7 +65,14 @@ class Editor:
                                    ". Build ars_lps_moc3_bridge with pinned PurismCore.")
         package = admit_package(model3.parent, model3.name)
         self.bridge = Bridge(package, output, hardware, binary=binary.name)
-        self.physics = Physics(package.linked_physics_bytes, self.bridge.catalog) if package.linked_physics_bytes else None
+        self.physics = None
+        self.physics_hold = None
+        if package.linked_physics_bytes:
+            try:
+                self.physics = Physics(package.linked_physics_bytes, self.bridge.catalog)
+            except PhysicsError as exc:
+                # Unsupported optional Physics3 must not block the original MOC3 or XPBD.
+                self.physics_hold = str(exc)
         self.clock = 0
         self.index = decode_drawables(self.bridge)
         self.running = True
@@ -74,7 +81,9 @@ class Editor:
         self.root = tk.Tk()
         self.root.title("Avatar Runtime - MOC3 XPBD native D3D11 viewer (experimental)")
         self.root.protocol("WM_DELETE_WINDOW", self.close)
-        self.status = tk.StringVar(value="MOC3 D3D11 WARP; select up to 2 drawable meshes for XPBD")
+        note = "HOLD Physics3: " + self.physics_hold if self.physics_hold else (
+            "MOC3 D3D11 WARP; select up to 2 drawable meshes for XPBD")
+        self.status = tk.StringVar(value=note)
         self.gravity = tk.DoubleVar(value=-12.0)
         self.wind = tk.DoubleVar(value=3.0)
         self.compliance = tk.DoubleVar(value=0.0000001)
