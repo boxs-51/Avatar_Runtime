@@ -110,6 +110,7 @@ int main(int argc, char** argv) {
         CHECK(Session::open_blob(blob, Budget{}.max_atlases, Budget{}, copied) == Result::invalid_model);
         CHECK(copied->current()->drawables == original_drawables);
         CHECK(session->update({{"missing-parameter", 1}}) == Result::invalid_parameter);
+        CHECK(std::string_view(session->last_failure_stage()) == "invalid_parameter");
         CHECK(session->current() == baseline);
         CHECK(session->update({{parameter_id, std::numeric_limits<float>::infinity()}})
               == Result::invalid_parameter);
@@ -146,6 +147,7 @@ int main(int argc, char** argv) {
               == Result::invalid_parameter);
         CHECK(session->current() == complete_changed);
         CHECK(session->update_complete({}) == Result::ok);
+        CHECK(std::string_view(session->last_failure_stage()) == "none");
         CHECK(session->current()->drawables == original_drawables);
         CHECK(session->update_complete({}) == Result::ok);
         CHECK(session->current()->drawables == original_drawables);
