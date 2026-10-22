@@ -1,5 +1,6 @@
 #include "runtime_state.hpp"
 #include "cpu_context.hpp"
+#include "render_frame.hpp"
 #include "../security/source_authority.hpp"
 #include "../abi/api_validation.hpp"
 #include <algorithm>
@@ -117,7 +118,7 @@ ars_status RuntimeRouter::cpu_create_character(ars_runtime_h handle,ars_model_h 
         std::memcpy(v.id.data(),s.id.data(),s.id.size());v.kind=kind(s.type);for(unsigned j=0;j<4;++j)v.neutral[j]=static_cast<float>(s.initial[j]);}
     security::SourceAuthority *authority=nullptr;status=ensure_authority(lease,&authority);if(status!=ARS_OK)return status;
     status=authority->bind(std::span(catalog.data(),model->semantics().size()),out,model,true);if(status!=ARS_OK)return status;
-    record->id=*out;record->live=true;record->mode=actual;record->model=std::move(model);
+    record->id=*out;record->live=true;record->mode=actual;record->model_id=id;record->configuration=1;record->model=std::move(model);
     for(std::size_t i=0;i<record->model->layers().size();++i){const auto &l=record->model->layers()[i];record->layers[i]={l.local_visible,l.local_opacity,l.z};}
     return ARS_OK;
 }
@@ -133,7 +134,8 @@ ars_status RuntimeRouter::cpu_destroy_character(ars_runtime_h handle,ars_charact
 ars_status RuntimeRouter::cpu_mode(ars_runtime_h handle,ars_character_h id,std::uint32_t requested) {
     RuntimeLease lease;CpuOperation operation;CpuContext *c=nullptr;auto status=cpu_enter(handle,false,&lease,&operation,&c);if(status!=ARS_OK)return status;
     status=lease.runtime_->registry.check(id.id,ObjectType::character);if(status!=ARS_OK)return status;
-    auto *ch=find_character(*c,id);if(!ch)return ARS_E_STALE_HANDLE;std::uint32_t actual=0;status=mode(*ch->model,requested,&actual);if(status==ARS_OK)ch->mode=actual;return status;
+    auto *ch=find_character(*c,id);if(!ch)return ARS_E_STALE_HANDLE;std::uint32_t actual=0;status=mode(*ch->model,requested,&actual);
+    if(status==ARS_OK&&ch->mode!=actual){if(ch->configuration==UINT64_MAX)return ARS_E_HANDLE_EXHAUSTED;ch->mode=actual;++ch->configuration;}return status;
 }
 ars_status RuntimeRouter::cpu_layer(ars_runtime_h handle,ars_character_h id,const ars_layer_change *desc) {
     if(!ars::abi::valid(desc) || desc->visible>1 || !std::isfinite(desc->opacity) || desc->opacity<0 || desc->opacity>1 || desc->z_index < -10000 || desc->z_index>10000 || !security::valid_utf8(desc->layer_id,128))return ARS_E_INVALID_ARGUMENT;
@@ -141,7 +143,12 @@ ars_status RuntimeRouter::cpu_layer(ars_runtime_h handle,ars_character_h id,cons
     status=lease.runtime_->registry.check(id.id,ObjectType::character);if(status!=ARS_OK)return status;
     auto *ch=find_character(*c,id);if(!ch)return ARS_E_STALE_HANDLE;if(ch->mode!=ARS_MODE_2D)return ARS_E_UNSUPPORTED;
     const std::string_view name(desc->layer_id.ptr,desc->layer_id.byte_count);
-    for(std::size_t i=0;i<ch->model->layers().size();++i)if(ch->model->layers()[i].id==name){ch->layers[i]={desc->visible!=0,desc->opacity,desc->z_index};return ARS_OK;}
+    for(std::size_t i=0;i<ch->model->layers().size();++i)if(ch->model->layers()[i].id==name){
+        const auto &old=ch->layers[i];
+        if(old.visible!=(desc->visible!=0)||old.opacity!=desc->opacity||old.z!=desc->z_index){
+            if(ch->configuration==UINT64_MAX)return ARS_E_HANDLE_EXHAUSTED;
+            ch->layers[i]={desc->visible!=0,desc->opacity,desc->z_index};++ch->configuration;
+        }return ARS_OK;}
     return ARS_E_INVALID_ARGUMENT;
 }
 ars_status RuntimeRouter::cpu_register_source(ars_runtime_h handle,ars_character_h character,const ars_source_desc *desc,ars_source_admin_h *out,ars_ingress_cap *cap) {
@@ -158,6 +165,67 @@ ars_status RuntimeRouter::cpu_source_control(ars_runtime_h handle,ars_source_adm
     CpuContext::Source *record=nullptr;for(auto &s:c->sources)if(s.live && security::same(s.id.id,id.id)){record=&s;break;}if(!record)return ARS_E_STALE_HANDLE;
     status=command==0?rotate_source(handle,id,out):command==1?revoke_source(handle,id):release_source(handle,id);
     if(status==ARS_OK){record->cache={};if(command==2)record->live=false;}return status;
+}
+ars_status RuntimeRouter::capture_render(ars_runtime_h handle,ars_character_h id,RenderFrameLease *out) {
+    if(!out || out->valid() || out->model_ || out->pose_.get())return ARS_E_INVALID_ARGUMENT;
+    RuntimeLease lease;auto status=acquire(handle,LeaseKind::work,&lease);if(status!=ARS_OK)return status;
+    auto *r=lease.runtime_;
+    {
+        // R captures only already committed data. It neither binds S nor reads
+        // mutable H/S records without exclusion, and never waits for an update.
+        CpuOperation operation;if(!operation.enter(r))return ARS_E_BUSY;
+        if(!r->cpu || r->cpu->quarantine)return ARS_E_BUSY;
+        status=r->registry.check(id.id,ObjectType::character);if(status!=ARS_OK)return status;
+        const auto *record=find_character(*r->cpu,id);if(!record)return ARS_E_STALE_HANDLE;
+        status=read_cpu(handle,id,&out->pose_);if(status!=ARS_OK)return status;
+        if(out->pose_.get()->channel_count!=record->model->semantics().size()){
+            out->pose_.reset();return ARS_E_INVALID_ARGUMENT;
+        }
+        out->runtime_id_=handle;out->character_id_=id;out->model_id_=record->model_id;
+        out->configuration_=record->configuration;out->mode_=record->mode;
+        out->model_=record->model;out->layer_count_=record->model->layers().size();
+        for(std::size_t i=0;i<out->layer_count_;++i){const auto &layer=record->layers[i];out->layers_[i]={layer.visible,layer.opacity,layer.z};}
+    }
+    // Keep this lease local until CpuOperation has released its runtime flag.
+    out->runtime_=std::move(lease);return ARS_OK;
+}
+ars_status RuntimeRouter::capture_render_set(ars_runtime_h handle,RenderFrameSet *out) {
+    if(!out||out->count)return ARS_E_INVALID_ARGUMENT;
+    RuntimeLease lease;auto status=acquire(handle,LeaseKind::work,&lease);if(status!=ARS_OK)return status;
+    auto *r=lease.runtime_;RenderFrameSet next;
+    {
+        CpuOperation operation;if(!operation.enter(r))return ARS_E_BUSY;
+        if(r->cpu&&r->cpu->quarantine)return ARS_E_BUSY;
+        if(r->cpu)for(const auto &record:r->cpu->characters)if(record.live){
+            if(next.count==next.frames.size())return ARS_E_OUT_OF_BUDGET;
+            auto frame=std::make_shared<RenderFrameLease>();
+            status=acquire(handle,LeaseKind::work,&frame->runtime_);if(status!=ARS_OK)return status;
+            status=read_cpu(handle,record.id,&frame->pose_);if(status!=ARS_OK)return status;
+            if(frame->pose_.get()->channel_count!=record.model->semantics().size())return ARS_E_INTERNAL;
+            frame->runtime_id_=handle;frame->character_id_=record.id;frame->model_id_=record.model_id;
+            frame->configuration_=record.configuration;frame->mode_=record.mode;frame->model_=record.model;
+            frame->layer_count_=record.model->layers().size();
+            for(std::size_t i=0;i<frame->layer_count_;++i){const auto &l=record.layers[i];frame->layers_[i]={l.visible,l.opacity,l.z};}
+            next.frames[next.count++]=std::move(frame);
+        }
+    }
+    *out=std::move(next);return ARS_OK;
+}
+ars_status RuntimeRouter::validate_render_set(ars_runtime_h handle,const RenderFrameSet &frames) {
+    if(frames.count>frames.frames.size())return ARS_E_INVALID_ARGUMENT;
+    RuntimeLease lease;auto status=acquire(handle,LeaseKind::work,&lease);if(status!=ARS_OK)return status;
+    auto *r=lease.runtime_;CpuOperation operation;if(!operation.enter(r))return ARS_E_BUSY;
+    std::size_t count=0;
+    if(r->cpu)for(const auto &record:r->cpu->characters)if(record.live){
+        if(count>=frames.count)return ARS_E_STALE_HANDLE;
+        const auto &frame=frames.frames[count++];
+        if(!frame||!security::same(frame->runtime_id().id,handle.id)||!security::same(frame->character_id().id,record.id.id)||
+           frame->configuration()!=record.configuration)return ARS_E_STALE_HANDLE;
+    }
+    if(count!=frames.count)return ARS_E_STALE_HANDLE;
+    // Linearization of publication permission against begin_close. Historical
+    // source expiry does not revoke an already committed CPU snapshot.
+    std::lock_guard lock(mutex_);return r->closing?ARS_E_CLOSED:ARS_OK;
 }
 ars_status RuntimeRouter::cpu_update(ars_runtime_h handle,std::uint64_t time) {
     RuntimeLease lease;CpuOperation operation;CpuContext *c=nullptr;auto status=cpu_enter(handle,true,&lease,&operation,&c);if(status!=ARS_OK)return status;

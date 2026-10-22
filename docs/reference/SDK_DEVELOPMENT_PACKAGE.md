@@ -1,4 +1,4 @@
-# CPU development SDK profiles
+# Development SDK profiles
 
 ## Default feature-off profile
 
@@ -72,3 +72,43 @@ assets; no restricted sample is installed. See the installed
 `ALPHA_60_PUBLIC_CPU_COMPLETION_DESIGN.md` and repository
 [completion ledger](../in-progress/ALPHA_60_COMPLETION_PROGRESS.md) for scope and
 source-attributed evidence. Neither profile installation is release approval.
+
+## Opt-in public D3D11 host profile (Windows x64)
+
+Add `ARS_ENABLE_PUBLIC_D3D11_HOST=ON` to the isolated public CPU configuration
+above. It defaults OFF and requires the CPU profile. The installed package
+reports `AvatarRuntime_PROFILE=OPT_IN_PUBLIC_D3D11_HOST`. Build and deploy the
+same fixed CPU helpers with `ars_copy_cpu_helpers(app)`; match the static/shared
+library, configuration, CRT and iterator ABI. D3D11/DXGI/compiler system libraries
+are included in the exported link closure; private ARS render targets and headers
+are not dependencies of the consumer.
+
+The existing ABI20 render/drain entrypoints now support committed native2D,
+GLB3D and dual rendering, HOST_DEVICE and host-scoped motion ingress in this
+profile. The canonical public header and exported symbol set do not change.
+MOC3 import/physics and shipping activation remain separate. The CPU-only and
+default profiles keep their earlier behavior.
+
+On R, pass a borrowed immediate context and RGBA8_UNORM DEFAULT single-mip,
+single-slice, single-sample render target, with a stable nonzero device generation
+and dimensions at most8192. Output is sRGB-encoded premultiplied color. Keep the
+target identity stable while render returns BUSY; call render again or drain on
+R to advance the exact GPU queries. SDK retained references protect in-flight
+borrowed resources even if the host releases its own references. `begin_close`
+may run on H; finish_close remains BUSY until R drain retires the GPU graph.
+Serialize external use of the same immediate context with the documented owned
+host domain. Unsupported target shapes are rejected before presentation.
+
+The runtime captures all live characters coherently. It composes 3D with shared
+depth, then 2D, and selects the first eligible GLB camera deterministically.
+See the installed `ALPHA_39_COMMITTED_RENDER_DESIGN.md` for camera fallback,
+configuration fencing, target epoch and loss/receipt rules. GPU losses in tests
+are injected; physical recovery remains HOLD.
+
+`python scripts/verify_public_d3d11_sdk.py --corpus <generated-corpus> --evidence
+<local-evidence-root>` qualifies relocated static/shared Release/Debug packages
+with standalone C11 and C++20 consumers. It exercises actual public render/drain,
+100 switches/resizes, dynamic pixels and fractional LOD/mips on WARP and named
+local hardware. Use short build paths on Windows. See
+[the local acceptance](../completed/audits/ALPHA_39_COMMITTED_RENDER_ACCEPTANCE.md)
+for observed results and the separate qualification boundaries.

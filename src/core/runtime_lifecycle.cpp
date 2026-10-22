@@ -1,5 +1,8 @@
 #include "runtime_lifecycle.hpp"
 #include "runtime_state.hpp"
+#ifdef ARS_PUBLIC_D3D11
+#include "../rendering/public_d3d11.hpp"
+#endif
 #include "../security/source_authority.hpp"
 #include "../motion/publish_gate.hpp"
 #include "../abi/api_validation.hpp"
@@ -176,6 +179,9 @@ ars_status RuntimeRouter::query_close(ars_runtime_h handle,ars_close_state *out)
     out->outstanding_close_management_pins=runtime->management;
     out->outstanding_ingress_pins=runtime->ingress;
     out->outstanding_render_snapshot_pins=runtime->snapshots; // CPU immutable snapshot leases, no GPU work.
+#ifdef ARS_PUBLIC_D3D11
+    out->outstanding_gpu_retires=runtime->gpu&&runtime->gpu->active()?1:0;
+#endif
     out->state=runtime->closing && runtime->quiescing && runtime->work==0 ? ARS_FENCE_COMPLETE:ARS_FENCE_PENDING;
     return ARS_OK;
 }

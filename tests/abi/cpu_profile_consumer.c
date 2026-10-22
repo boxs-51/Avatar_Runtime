@@ -35,7 +35,13 @@ int main(int argc,char **argv) {
     desc.struct_size=sizeof(desc);desc.abi_version=ARS_ABI_VERSION;desc.alloc=allocate;desc.free_fn=release;desc.allocator_user_data=&host;
     CHECK(ars_get_abi_version()==ARS_ABI_VERSION);CHECK(ars_runtime_create(&desc,&runtime)==ARS_OK);host.runtime=runtime;
     caps.struct_size=sizeof(caps);caps.abi_version=ARS_ABI_VERSION;CHECK(ars_runtime_get_capabilities(runtime,&caps)==ARS_OK);
+#ifdef ARS_EXPECT_PUBLIC_D3D11
+    CHECK(caps.feature_bits==(ARS_CAP_HOST_SCOPED_MOTION_INGRESS|ARS_CAP_D3D11_HOST_DEVICE|
+        ARS_CAP_NATIVE_2D_PROFILE_B|ARS_CAP_GLTF2_GLB_SUBSET|ARS_CAP_DUAL_MODE));
+    CHECK(caps.max_channels_per_frame==256 && caps.max_active_sources==16);
+#else
     CHECK(caps.feature_bits==ARS_CAP_HOST_SCOPED_MOTION_INGRESS && caps.max_channels_per_frame==256 && caps.max_active_sources==16);
+#endif
     asset.struct_size=sizeof(asset);asset.abi_version=ARS_ABI_VERSION;asset.kind=ARS_ASSET_MEMORY_BUNDLE;asset.bytes=bytes;asset.byte_count=(uint64_t)size;
     CHECK(ars_model_load(runtime,&asset,&model)==ARS_OK);memset(bytes,0,(size_t)size);free(bytes);asset.bytes=NULL;
     instance.struct_size=sizeof(instance);instance.abi_version=ARS_ABI_VERSION;instance.initial_mode=ARS_MODE_AUTO;

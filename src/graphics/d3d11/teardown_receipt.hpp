@@ -8,7 +8,7 @@
 #include <memory>
 #include <thread>
 
-namespace ars::rendering { class D3D11DualModeHost; }
+namespace ars::rendering { class D3D11DualModeHost; class PublicD3D11Host; }
 namespace ars::graphics::d3d11 {
 class CloseCoordinator;
 class PrivateTeardownHost;
@@ -59,6 +59,7 @@ private:
     void consume() noexcept {state_->consumed=true;state_->runtime_pin.reset();state_.reset();}
     friend class ContextOwnership;
     friend class ars::rendering::D3D11DualModeHost;
+    friend class ars::rendering::PublicD3D11Host;
     friend class PrivateTeardownHost;
     friend class CloseCoordinator;
 };

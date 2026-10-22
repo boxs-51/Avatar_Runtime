@@ -12,6 +12,8 @@ namespace ars::core {
 struct Runtime;
 struct CpuContext;
 class CpuOperation;
+class RenderFrameLease;
+struct RenderFrameSet;
 class RuntimeRouter;
 enum class LeaseKind { work, management, ingress, snapshot };
 class RuntimeLease {
@@ -108,6 +110,13 @@ public:
     ars_status cpu_register_source(ars_runtime_h,ars_character_h,const ars_source_desc *,ars_source_admin_h *,ars_ingress_cap *);
     ars_status cpu_source_control(ars_runtime_h,ars_source_admin_h,unsigned,ars_ingress_cap * = nullptr);
     ars_status cpu_update(ars_runtime_h,std::uint64_t);
+    ars_status capture_render(ars_runtime_h,ars_character_h,RenderFrameLease *);
+    ars_status capture_render_set(ars_runtime_h,RenderFrameSet *);
+    ars_status validate_render_set(ars_runtime_h,const RenderFrameSet &);
+#ifdef ARS_PUBLIC_D3D11
+    ars_status gpu_render(ars_runtime_h,const ars_render_target *);
+    ars_status gpu_drain(ars_runtime_h);
+#endif
     ars_status cpu_reap(ars_runtime_h);
 #endif
     explicit RuntimeRouter(RuntimeBudget budget={});

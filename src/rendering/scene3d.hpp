@@ -30,6 +30,8 @@ struct Draw3D {
     Draw3D(std::pmr::memory_resource *memory=std::pmr::get_default_resource())
         : vertices(memory), indices(memory) {}
     std::uint32_t node = 0, primitive = 0;
+    // Composite scenes may contain multiple immutable model image tables.
+    std::shared_ptr<const assets::GlbModel> source;
     Material3D material;
     std::pmr::vector<Vertex3D> vertices;
     std::pmr::vector<std::uint32_t> indices;
@@ -58,6 +60,17 @@ struct Scene3DLimits {
     std::size_t gpu_bytes = 256 * assets::MiB;
     std::size_t pose_bytes = 64 * assets::MiB;
 };
+// Immutable overlays supplied by a committed pose; source GLB is never edited.
+struct NodePose3D {
+    std::uint32_t node=assets::glb_none;
+    bool translation_set=false,rotation_set=false,scale_set=false;
+    std::array<double,3> translation{},scale{1,1,1};
+    std::array<double,4> rotation{0,0,0,1};
+    std::vector<float> weights;
+};
+ars_status prepare_pose_3d(std::shared_ptr<const assets::GlbModel>,PreparedScene3D &,
+    std::span<const NodePose3D>,std::uint32_t scene=assets::glb_none,
+    Scene3DLimits limits={}) noexcept;
 // Explicit scene selection can override a missing/default glTF scene.
 ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
     PreparedScene3D &out, std::uint32_t scene = assets::glb_none,

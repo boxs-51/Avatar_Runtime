@@ -1,11 +1,15 @@
 #include "../../src/core/runtime_state.hpp"
 #include "../../src/core/cpu_context.hpp"
+#include "../../src/core/render_frame.hpp"
+#include "../../src/rendering/committed_scene.hpp"
 #include "../../src/security/source_authority.hpp"
 #include "../assets/asset_test_support.hpp"
 #include <map>
 #include <chrono>
 #include <thread>
 #include <atomic>
+#include <algorithm>
+#include <cmath>
 using namespace ars;
 namespace ars::core {
 struct ComponentFixture {
@@ -53,6 +57,32 @@ void lifecycle(const std::vector<std::uint8_t> &bytes) {
     check(ARS_OK,ars_runtime_begin_close(f.runtime),"begin with old snapshot");check(ARS_E_BUSY,ars_runtime_finish_close(f.runtime),"finish waits for historical pin");old.reset();
     weak.reset(); // Private weak control blocks must not outlive their Resource.
     check(ARS_OK,ars_runtime_finish_close(f.runtime),"finish after final pin");f.runtime={};test::check(f.host.records.empty() && f.host.probes>0,"model and callbacks fully retired");
+}
+void render_capture(const std::vector<std::uint8_t> &bytes) {
+    Fixture f(bytes);check(ARS_OK,f.load(),"render capture model");auto c=f.character();auto [admin,cap]=f.source(c);
+    auto first=std::make_unique<core::RenderFrameLease>();
+    check(ARS_E_BUSY,core::global_router().capture_render(f.runtime,c,first.get()),"render requires committed pose");
+    f.submit(cap,1,0.7f);check(ARS_OK,ars_runtime_update(f.runtime,1),"render producer update");
+    check(ARS_OK,core::global_router().capture_render(f.runtime,c,first.get()),"capture actual runtime snapshot");
+    const auto &semantics=first->model()->semantics();
+    const auto mouth=std::find_if(semantics.begin(),semantics.end(),[](const auto &s){return s.id=="mouth.open";});
+    test::check(mouth!=semantics.end(),"mouth semantic exists");const auto mouth_index=mouth-semantics.begin();
+    test::check(first->generation()==1 && first->configuration()==1 && std::abs(first->pose()->outputs[mouth_index].scalar-0.7f)<1e-6f,
+        "actual committed pose and config identity");
+    check(ARS_E_INVALID_ARGUMENT,core::global_router().capture_render(f.runtime,c,first.get()),"immutable capture cannot be overwritten");
+    check(ARS_OK,ars_character_set_mode(f.runtime,c,ARS_MODE_2D),"select2D for projection");
+    core::RenderFrameLease second;check(ARS_OK,core::global_router().capture_render(f.runtime,c,&second),"capture2D");
+    rendering::PreparedScene2D scene;std::vector<rendering::LayerControl> controls;
+    for(auto l:second.layers())controls.push_back({l.visible,l.opacity,l.z});
+    check(ARS_OK,rendering::prepare_committed_2d(*second.model(),
+        std::span(second.pose()->outputs.data(),second.pose()->channel_count),controls,scene),"project actual2D snapshot");
+    test::check(!scene.draws.empty(),"nonempty actual2D geometry");
+    check(ARS_OK,ars_model_release(f.runtime,f.model),"captured frame keeps released model");
+    check(ARS_OK,ars_character_destroy(f.runtime,c),"destroy captured character");
+    test::check(first->generation()==1 && std::abs(first->pose()->outputs[mouth_index].scalar-0.7f)<1e-6f,"historical frame unchanged after destroy");
+    check(ARS_OK,ars_source_admin_release(f.runtime,admin),"render source admin cleanup");
+    // second and first destruct before Fixture, retaining allocator custody.
+    std::puts("PASS committed render capture/immutable config/actual2D/model custody");
 }
 void recycling(const std::vector<std::uint8_t> &bytes) {
     Fixture f(bytes);check(ARS_OK,f.load(),"recycle model");
@@ -175,4 +205,4 @@ void oom(const std::vector<std::uint8_t> &bytes) {
     std::printf("PASS public OOM all%zu model allocations +character/publication allocations\n",allocations);
 }
 }
-int main(int argc,char **argv){if(argc!=2 && argc!=3)return 2;auto bytes=test::file(argv[1]);if(argc==3){typed(bytes);return 0;}lifecycle(bytes);recycling(bytes);atomic_update(bytes);clocks(bytes);bounds_controls(bytes);oom(bytes);std::puts("PASS public CPU lifetime/admin96/type/runtime/S/atomic/OOM/reentry");}
+int main(int argc,char **argv){if(argc!=2 && argc!=3)return 2;auto bytes=test::file(argv[1]);if(argc==3){typed(bytes);return 0;}render_capture(bytes);lifecycle(bytes);recycling(bytes);atomic_update(bytes);clocks(bytes);bounds_controls(bytes);oom(bytes);std::puts("PASS public CPU lifetime/admin96/type/runtime/S/atomic/OOM/reentry");}

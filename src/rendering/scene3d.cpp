@@ -16,14 +16,18 @@ Mat multiply(const Mat &a, const Mat &b) {
                 r[c * 4 + row] += a[k * 4 + row] * b[c * 4 + k];
     return r;
 }
-Mat local(const assets::GlbNode &n) {
+Mat local(const assets::GlbNode &n,const NodePose3D *pose=nullptr) {
+    if(pose&&(pose->translation_set||pose->rotation_set||pose->scale_set)&&n.has_matrix)
+        assets::fail(ARS_E_UNSUPPORTED);
     if (n.has_matrix) return n.matrix;
-    const auto &[x, y, z, w] = n.rotation;
+    const auto &[x, y, z, w] = pose&&pose->rotation_set?pose->rotation:n.rotation;
+    const auto &scale=pose&&pose->scale_set?pose->scale:n.scale;
+    const auto &translation=pose&&pose->translation_set?pose->translation:n.translation;
     Mat m{
-        (1 - 2 * (y*y + z*z))*n.scale[0], (2 * (x*y + z*w))*n.scale[0], (2 * (x*z - y*w))*n.scale[0], 0,
-        (2 * (x*y - z*w))*n.scale[1], (1 - 2 * (x*x + z*z))*n.scale[1], (2 * (y*z + x*w))*n.scale[1], 0,
-        (2 * (x*z + y*w))*n.scale[2], (2 * (y*z - x*w))*n.scale[2], (1 - 2 * (x*x + y*y))*n.scale[2], 0,
-        n.translation[0], n.translation[1], n.translation[2], 1};
+        (1 - 2 * (y*y + z*z))*scale[0], (2 * (x*y + z*w))*scale[0], (2 * (x*z - y*w))*scale[0], 0,
+        (2 * (x*y - z*w))*scale[1], (1 - 2 * (x*x + z*z))*scale[1], (2 * (y*z + x*w))*scale[1], 0,
+        (2 * (x*z + y*w))*scale[2], (2 * (y*z - x*w))*scale[2], (1 - 2 * (x*x + y*y))*scale[2], 0,
+        translation[0], translation[1], translation[2], 1};
     return m;
 }
 bool finite(const Mat &m) {
@@ -141,14 +145,36 @@ struct Instance { std::uint32_t node; Mat world; };
 
 ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
     PreparedScene3D &out, std::uint32_t scene, Scene3DLimits limits) noexcept {
+    return prepare_pose_3d(std::move(source),out,{},scene,limits);
+}
+ars_status prepare_pose_3d(std::shared_ptr<const assets::GlbModel> source,
+    PreparedScene3D &out,std::span<const NodePose3D> pose,std::uint32_t scene,Scene3DLimits limits) noexcept {
     if (!source || source->requires_disabled()) return ARS_E_UNSUPPORTED;
     if (!limits.gpu_bytes || !limits.pose_bytes || limits.gpu_bytes>256*assets::MiB ||
         limits.pose_bytes>64*assets::MiB) return ARS_E_INVALID_ARGUMENT;
     try {
         const auto &data=source->data();
+        if(pose.size()>data.nodes.size())return ARS_E_INVALID_ARGUMENT;
+        auto *memory=out.draws.get_allocator().resource();
+        std::pmr::vector<const NodePose3D*> overlays(memory);
+        if(!pose.empty())overlays.resize(data.nodes.size(),nullptr);
+        for(const auto &node:pose){
+            if(node.node>=data.nodes.size()||overlays[node.node])return ARS_E_INVALID_ARGUMENT;
+            overlays[node.node]=&node;
+            for(auto n:node.translation)if(!std::isfinite(n))return ARS_E_INVALID_ARGUMENT;
+            for(auto n:node.scale)if(!std::isfinite(n))return ARS_E_INVALID_ARGUMENT;
+            double length=0;for(auto n:node.rotation){if(!std::isfinite(n))return ARS_E_INVALID_ARGUMENT;length+=n*n;}
+            if(node.rotation_set&&std::abs(length-1)>1e-5)return ARS_E_INVALID_ARGUMENT;
+            const auto &base=data.nodes[node.node];
+            if(!node.weights.empty()){
+                if(base.mesh==assets::glb_none||base.mesh>=data.meshes.size())return ARS_E_INVALID_ARGUMENT;
+                const auto &mesh=data.meshes[base.mesh];
+                if(mesh.primitives.empty()||node.weights.size()!=mesh.primitives.front().morphs.size())return ARS_E_INVALID_ARGUMENT;
+                for(auto n:node.weights)if(!std::isfinite(n))return ARS_E_INVALID_ARGUMENT;
+            }
+        }
         if (scene==assets::glb_none) scene=data.scene;
         if (scene==assets::glb_none || scene>=data.scenes.size()) return ARS_E_UNSUPPORTED;
-        auto *memory=out.draws.get_allocator().resource();
         std::pmr::vector<Instance> reachable(memory);
         std::pmr::vector<Mat> worlds(data.nodes.size(),identity,memory);
         std::pmr::vector<bool> visited(data.nodes.size(),false,memory);
@@ -161,13 +187,14 @@ ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
             if (parent.node>=data.nodes.size() || visited[parent.node]) assets::fail(ARS_E_BAD_ASSET);
             visited[parent.node]=true;
             const auto &node=data.nodes[parent.node];
-            auto world=multiply(parent.world,local(node));
+            auto world=multiply(parent.world,local(node,overlays.empty()?nullptr:overlays[parent.node]));
             if (!finite(world)) assets::fail(ARS_E_UNSUPPORTED);
             worlds[parent.node]=world;
             reachable.push_back({parent.node,world});
             for (auto i=node.children.rbegin();i!=node.children.rend();++i)
                 pending.push_back({*i,world});
         }
+        for(const auto &overlay:pose)if(!visited[overlay.node])return ARS_E_UNSUPPORTED;
         PreparedScene3D next(memory);
         next.source=std::move(source);
         next.gpu_budget=limits.gpu_bytes;
@@ -237,7 +264,9 @@ ars_status prepare_static_3d(std::shared_ptr<const assets::GlbModel> source,
                     for (std::size_t i=0;i<draw.indices.size();i+=3)
                         std::swap(draw.indices[i+1],draw.indices[i+2]);
                 draw.vertices.reserve(positions.count);
-                const auto &weights=node.weights.empty()?mesh.weights:node.weights;
+                const auto *overlay=overlays.empty()?nullptr:overlays[instance.node];
+                const std::span<const float> weights=overlay&&!overlay->weights.empty()?std::span<const float>(overlay->weights):
+                    node.weights.empty()?std::span<const float>(mesh.weights):std::span<const float>(node.weights);
                 for (std::size_t vi=0;vi<positions.count;++vi) {
                     Vec p=read3(positions,vi);
                     Vec n=primitive.normal==assets::glb_none?Vec{0,0,1}:read3(data.accessors.at(primitive.normal),vi);

@@ -20,6 +20,8 @@ struct CpuContext {
         ars_character_h id{};
         bool live=false;
         std::uint32_t mode=ARS_MODE_AUTO;
+        ars_model_h model_id{};
+        std::uint64_t configuration=1;
         std::shared_ptr<const assets::ValidatedCpuModel> model;
         std::array<Layer,128> layers{};
     };
