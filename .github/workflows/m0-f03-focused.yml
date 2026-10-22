@@ -4,18 +4,18 @@ on:
   pull_request:
     paths:
       - 'tests/contracts/test_m0_rc1_schema.py'
-      - 'docs/SPECIFICATION_V0.1.md'
-      - 'docs/V0_1_CANONICAL_CONTRACT_RC1.md'
-      - 'docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md'
+      - 'docs/reference/SPECIFICATION_V0.1.md'
+      - 'docs/reference/V0_1_CANONICAL_CONTRACT_RC1.md'
+      - 'docs/in-progress/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md'
       - '.github/workflows/m0-f03-focused.yml'
   push:
     branches:
       - 'dev/m0-f03-finite-tree-20261014'
     paths:
       - 'tests/contracts/test_m0_rc1_schema.py'
-      - 'docs/SPECIFICATION_V0.1.md'
-      - 'docs/V0_1_CANONICAL_CONTRACT_RC1.md'
-      - 'docs/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md'
+      - 'docs/reference/SPECIFICATION_V0.1.md'
+      - 'docs/reference/V0_1_CANONICAL_CONTRACT_RC1.md'
+      - 'docs/in-progress/V0_1_FORMAT_VALIDATION_FREEZE_MAP.md'
       - '.github/workflows/m0-f03-focused.yml'
 
 permissions:

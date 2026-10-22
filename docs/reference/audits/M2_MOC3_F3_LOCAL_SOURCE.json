@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "phase": "F3",
+  "parent_head": "69eac34c11050799f59e9e339b3ac016d8f093f7",
+  "verdict": "PASS_BOUNDED_TRUSTED_LOCAL_F3",
+  "source_sha256": {
+    "CMakeLists.txt": "6d7acb606c75a1d53beae148e7aeb063cc932318522a1fb4f450ef9a985d247a",
+    "docs/M2_MOC3_F3_LINKED_PHYSICS_DESIGN.md": "9e3eecd05f7b8757826030eeeddf7927d9e7a01f65c2d5e3d7926a7b6b5cd91e",
+    "launch_moc3_test_harness.bat": "d232f60da93225b9c99ae7c112df4bfdc1bc372b581138e4f4ace23154243182",
+    "scripts/moc3_harness_client.py": "2e75010cf1b89fb6c27de3454921dc5f17e626dfd4588f3cdf526d28ec833a5f",
+    "scripts/moc3_local_physics.py": "3ec3c5908ef2d1edba3e73b748d2ce9c569dbbdfdbf9be1c2327f01362957e40",
+    "scripts/moc3_local_pixels.py": "f0af998610efe892e41c364bd3305000854ec3ab214d6ae6f5a9f8162a7b9c03",
+    "scripts/moc3_memory.py": "8be6c03c97c63ae91e297562ef6802e4bbf34e27d34966d27fcdee30a008bf72",
+    "scripts/moc3_package_admission.py": "71b1fb3b000931c7853ba122061748f13f2ac3a190d7e378dfc17d503fbe0173",
+    "scripts/moc3_physics.py": "200717a2bf074d8a5e389e2c360955299ff08c923662cf5b7b791ccddf9ebf67",
+    "scripts/moc3_process_tree.py": "cfbe4ecbb4676350c142df0b9e72df86604fc002e593eabf9f777be41f6b64d5",
+    "scripts/moc3_test_harness.py": "1b5251a8bba0f30da6a6b67e1384722f8837993e08b0793dcd05ef7607410bcc",
+    "scripts/moc3_verify_visible_f2.py": "6f66c865c0258f61631bf7821d0fc704f53a430f87a7e69d34b1f96646325922",
+    "scripts/moc3_verify_visible_f3.py": "179a1e4ab77cf53c441f2c858f389c50ec832ee9251ea308a2a9a5e597c27cf5",
+    "src/graphics/d3d11/host_device.cpp": "4f3db6cc932dda2ffb1b74011ebf3e2819482c89365b1430354b27bd585e489d",
+    "src/graphics/d3d11/query_retirement.cpp": "26d749dafc8a72497f6ba606d7dbeb88d1090b426ee5273273ff65ed84e6b8ab",
+    "src/graphics/d3d11/state_scope.cpp": "034530f5663a68768f3d777c342527db4329d6b1cfadd0d7cdbbcb290bb2921d",
+    "src/moc3/d3d11_renderer.cpp": "4dd69ec14da869c1efdeadef5d3300878e6647555b2e2ac72503cc35852dffb6",
+    "src/moc3/d3d11_renderer.hpp": "53e1492f26183e4f182b53cf519cd5c9215b5f15310452ee3c8a2f9ce4ee54cd",
+    "src/moc3/independent_snapshot.cpp": "287eaf832c7de23a2707d8af9dadffaefde21aecb87d1c86bab6b138807f4094",
+    "src/moc3/independent_snapshot.hpp": "9b2eb0b4b742674cae1c700b61242e187981c6160bbd74913eb8b7ca7f6df661",
+    "src/moc3/pixel_bridge.cpp": "23b33decec1c391296b523d93b544a532691fc671820f50a43685decf74873f3",
+    "src/rendering/d3d11_dual_mode_host.cpp": "c9f5ac8687548306d1390ab30592bb6cd8f366a69ee96bda3606e83b9424569e",
+    "src/rendering/d3d11_dual_mode_host.hpp": "3ed68b50021ba35c463fa23768d81d0bc0e8fb794402d367cbeeac6afb457978",
+    "tests/moc3/d3d11_pixels.cpp": "c05336a55e796e4184f43a9c280cce022c0e549d97d76f1b74e20fad33d2c1dc",
+    "tests/moc3/test_harness_api.py": "86077217f5d15017cf0f5fcaf6979010d68b476179c8bfa064093f5cb535f838",
+    "tests/moc3/test_linked_physics.py": "580558e925571694a75c285edf4598e5d404a6ee259dc8a19ecc9c28fc7a6243",
+    "tests/moc3/test_process_tree.py": "5695ee69dea6ba57cd6b0fc7be094f98dfa355c7d06736837df4c473897d58a3"
+  },
+  "binary_sha256": {
+    "ars_moc3_pixel_bridge.exe": "0a939a55f80c10d3ec9714e78b04c48b6f05113ea90600e844bb07f9ac038547",
+    "ars_moc3_pixel_tests.exe": "46458445abcfb0236c28e88b47ad6942ec163c03be686a10b073bba21d9e5f4f"
+  }
+}

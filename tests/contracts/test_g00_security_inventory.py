@@ -7,8 +7,8 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-DOC = ROOT / "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md"
-DATA = ROOT / "docs/G00_SECURITY_87_CASE_INVENTORY.json"
+DOC = ROOT / 'docs/reference/P0_SECURITY_REGRESSION_GATES_V0.1.md'
+DATA = ROOT / 'docs/reference/G00_SECURITY_87_CASE_INVENTORY.json'
 OS = {"ubuntu-24.04/GCC", "ubuntu-24.04/Clang", "windows-2022/MSVC"}
 
 def from_normative_text(raw):

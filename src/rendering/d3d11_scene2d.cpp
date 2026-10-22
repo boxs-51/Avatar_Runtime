@@ -1,4 +1,6 @@
 #include "d3d11_scene2d.hpp"
+#include "d3d11_scene3d.hpp"
+#include "../graphics/d3d11/creation_status.hpp"
 #ifdef _WIN32
 #include "../graphics/d3d11/state_scope.hpp"
 #include <d3dcompiler.h>
@@ -19,6 +21,8 @@ struct Vertex {
 struct Constants { float canvas_x,canvas_y,atlas_x,atlas_y; };
 struct Range { UINT count, start; };
 struct FrameResources {
+    graphics::d3d11::ContextOwnership::Participant gpu_owner;
+    std::shared_ptr<const void> snapshot_owner;
     ComPtr<ID3D11Texture2D> texture;
     ComPtr<ID3D11ShaderResourceView> view;
     ComPtr<ID3D11Buffer> vertices, indices, constants;
@@ -73,14 +77,14 @@ bool valid_scene(const PreparedScene2D &scene,const assets::Image &atlas) {
     }
     return true;
 }
-template<class Interface, class Descriptor>
-bool create_state(ID3D11Device *device,const Descriptor &desc,
-                  HRESULT (STDMETHODCALLTYPE ID3D11Device::*method)(const Descriptor *,Interface **),
-                  ComPtr<Interface> &result) {
-    return SUCCEEDED((device->*method)(&desc,result.GetAddressOf()));
+template<class F> Result create_2d(ID3D11Device *device,GpuCreateProbe *probe,F make) {
+    if(probe&&!probe->allow())return graphics::d3d11::creation_status(probe->failure,probe->removed_reason);
+    const auto hr=make();
+    return graphics::d3d11::creation_status(hr,device->GetDeviceRemovedReason());
 }
 Result build(ID3D11Device *device,const PreparedScene2D &scene,const assets::Image &atlas,
-             FrameResources &frame) {
+             FrameResources &frame,GpuCreateProbe *probe) {
+    auto create=[&](auto make){return create_2d(device,probe,make);};
     std::vector<Vertex> vertices;
     std::vector<std::uint32_t> indices;
     std::size_t vertex_count=0,index_count=0;
@@ -105,21 +109,21 @@ Result build(ID3D11Device *device,const PreparedScene2D &scene,const assets::Ima
     image.Usage=D3D11_USAGE_IMMUTABLE; image.BindFlags=D3D11_BIND_SHADER_RESOURCE;
     D3D11_SUBRESOURCE_DATA pixels{};
     pixels.pSysMem=atlas.rgba.data(); pixels.SysMemPitch=atlas.width*4;
-    if (FAILED(device->CreateTexture2D(&image,&pixels,&frame.texture)) ||
-        FAILED(device->CreateShaderResourceView(frame.texture.Get(),nullptr,&frame.view))) return Result::failed;
+    if(auto r=create([&]{return device->CreateTexture2D(&image,&pixels,&frame.texture);});r!=Result::ok)return r;
+    if(auto r=create([&]{return device->CreateShaderResourceView(frame.texture.Get(),nullptr,&frame.view);});r!=Result::ok)return r;
     if (!vertices.empty()) {
         D3D11_BUFFER_DESC desc{};
         desc.Usage=D3D11_USAGE_IMMUTABLE; desc.BindFlags=D3D11_BIND_VERTEX_BUFFER;
         desc.ByteWidth=static_cast<UINT>(vertices.size()*sizeof(Vertex));
         D3D11_SUBRESOURCE_DATA data{}; data.pSysMem=vertices.data();
-        if (FAILED(device->CreateBuffer(&desc,&data,&frame.vertices))) return Result::failed;
+        if(auto r=create([&]{return device->CreateBuffer(&desc,&data,&frame.vertices);});r!=Result::ok)return r;
     }
     if (!indices.empty()) {
         D3D11_BUFFER_DESC desc{};
         desc.Usage=D3D11_USAGE_IMMUTABLE; desc.BindFlags=D3D11_BIND_INDEX_BUFFER;
         desc.ByteWidth=static_cast<UINT>(indices.size()*sizeof(std::uint32_t));
         D3D11_SUBRESOURCE_DATA data{}; data.pSysMem=indices.data();
-        if (FAILED(device->CreateBuffer(&desc,&data,&frame.indices))) return Result::failed;
+        if(auto r=create([&]{return device->CreateBuffer(&desc,&data,&frame.indices);});r!=Result::ok)return r;
     }
     const Constants constants{static_cast<float>(scene.canvas[0]),static_cast<float>(scene.canvas[1]),
                               static_cast<float>(atlas.width),static_cast<float>(atlas.height)};
@@ -127,21 +131,17 @@ Result build(ID3D11Device *device,const PreparedScene2D &scene,const assets::Ima
     desc.Usage=D3D11_USAGE_IMMUTABLE; desc.BindFlags=D3D11_BIND_CONSTANT_BUFFER;
     desc.ByteWidth=sizeof(Constants);
     D3D11_SUBRESOURCE_DATA data{}; data.pSysMem=&constants;
-    if (FAILED(device->CreateBuffer(&desc,&data,&frame.constants))) return Result::failed;
+    if(auto r=create([&]{return device->CreateBuffer(&desc,&data,&frame.constants);});r!=Result::ok)return r;
     ComPtr<ID3DBlob> vs_code,ps_code,errors;
-    if (FAILED(D3DCompile(shader,sizeof(shader)-1,nullptr,nullptr,nullptr,"VS","vs_4_0",
-                          D3DCOMPILE_ENABLE_STRICTNESS,0,&vs_code,&errors)) ||
-        FAILED(D3DCompile(shader,sizeof(shader)-1,nullptr,nullptr,nullptr,"PS","ps_4_0",
-                          D3DCOMPILE_ENABLE_STRICTNESS,0,&ps_code,&errors)) ||
-        FAILED(device->CreateVertexShader(vs_code->GetBufferPointer(),vs_code->GetBufferSize(),nullptr,&frame.vs)) ||
-        FAILED(device->CreatePixelShader(ps_code->GetBufferPointer(),ps_code->GetBufferSize(),nullptr,&frame.ps)))
-        return Result::failed;
+    if(auto r=create([&]{return D3DCompile(shader,sizeof(shader)-1,nullptr,nullptr,nullptr,"VS","vs_4_0",D3DCOMPILE_ENABLE_STRICTNESS,0,&vs_code,&errors);});r!=Result::ok)return r;
+    if(auto r=create([&]{return D3DCompile(shader,sizeof(shader)-1,nullptr,nullptr,nullptr,"PS","ps_4_0",D3DCOMPILE_ENABLE_STRICTNESS,0,&ps_code,&errors);});r!=Result::ok)return r;
+    if(auto r=create([&]{return device->CreateVertexShader(vs_code->GetBufferPointer(),vs_code->GetBufferSize(),nullptr,&frame.vs);});r!=Result::ok)return r;
+    if(auto r=create([&]{return device->CreatePixelShader(ps_code->GetBufferPointer(),ps_code->GetBufferSize(),nullptr,&frame.ps);});r!=Result::ok)return r;
     const D3D11_INPUT_ELEMENT_DESC layout[]={{"POSITION",0,DXGI_FORMAT_R32G32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
         {"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,8,D3D11_INPUT_PER_VERTEX_DATA,0},
         {"TEXCOORD",1,DXGI_FORMAT_R32G32B32A32_FLOAT,0,16,D3D11_INPUT_PER_VERTEX_DATA,0},
         {"TEXCOORD",2,DXGI_FORMAT_R32_FLOAT,0,32,D3D11_INPUT_PER_VERTEX_DATA,0}};
-    if (FAILED(device->CreateInputLayout(layout,4,vs_code->GetBufferPointer(),vs_code->GetBufferSize(),&frame.layout)))
-        return Result::failed;
+    if(auto r=create([&]{return device->CreateInputLayout(layout,4,vs_code->GetBufferPointer(),vs_code->GetBufferSize(),&frame.layout);});r!=Result::ok)return r;
     D3D11_SAMPLER_DESC sampler{};
     sampler.Filter=D3D11_FILTER_MIN_MAG_MIP_POINT;
     sampler.AddressU=sampler.AddressV=sampler.AddressW=D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -159,10 +159,10 @@ Result build(ID3D11Device *device,const PreparedScene2D &scene,const assets::Ima
     blend.RenderTarget[0].RenderTargetWriteMask=D3D11_COLOR_WRITE_ENABLE_ALL;
     D3D11_DEPTH_STENCIL_DESC depth{};
     depth.DepthEnable=FALSE; depth.StencilEnable=FALSE;
-    if (!create_state(device,sampler,&ID3D11Device::CreateSamplerState,frame.sampler) ||
-        !create_state(device,raster,&ID3D11Device::CreateRasterizerState,frame.raster) ||
-        !create_state(device,blend,&ID3D11Device::CreateBlendState,frame.blend) ||
-        !create_state(device,depth,&ID3D11Device::CreateDepthStencilState,frame.depth)) return Result::failed;
+    if(auto r=create([&]{return device->CreateSamplerState(&sampler,&frame.sampler);});r!=Result::ok)return r;
+    if(auto r=create([&]{return device->CreateRasterizerState(&raster,&frame.raster);});r!=Result::ok)return r;
+    if(auto r=create([&]{return device->CreateBlendState(&blend,&frame.blend);});r!=Result::ok)return r;
+    if(auto r=create([&]{return device->CreateDepthStencilState(&depth,&frame.depth);});r!=Result::ok)return r;
     return Result::ok;
 }
 } // namespace
@@ -170,23 +170,29 @@ Result build(ID3D11Device *device,const PreparedScene2D &scene,const assets::Ima
 graphics::Result render_offscreen_2d(graphics::d3d11::HostDevice &backend,
     ID3D11RenderTargetView *target,graphics::TargetInfo info,
     const PreparedScene2D &scene,const assets::Image &atlas,
-    graphics::d3d11::QueryRetirement &retirement) {
+    graphics::d3d11::QueryRetirement &retirement,
+    std::shared_ptr<const void> snapshot_owner,bool clear_target,GpuCreateProbe *probe) {
     if (!backend.on_owner_thread()) return Result::wrong_thread;
+    auto operation=backend.enter_context();
+    if(operation.result()!=Result::ok)return operation.result();
     const auto valid=backend.validate(target,info);
     if (valid!=Result::ok) return valid;
     if (!valid_scene(scene,atlas)) return Result::invalid_argument;
     try {
+        graphics::d3d11::StateScope restore(backend.context(),backend.ownership());
+        if(restore.result()!=Result::ok)return restore.result();
         auto frame=std::make_shared<FrameResources>();
-        const auto ready=build(backend.device(),scene,atlas,*frame);
-        if (ready!=Result::ok) return ready;
-        const auto prepared=retirement.prepare(backend.device(),backend.context(),target,
-                                                backend.generation(),frame);
+        if(backend.ownership()){const auto r=backend.ownership()->retain(frame->gpu_owner);if(r!=Result::ok)return r;}
+        frame->snapshot_owner=std::move(snapshot_owner);
+        const auto ready=build(backend.device(),scene,atlas,*frame,probe);
+        if (ready!=Result::ok){if(ready==Result::device_lost)backend.mark_lost();return ready;}
+        const auto prepared=retirement.prepare_split(backend.device(),backend.context(),target,
+                                                backend.generation(),frame->snapshot_owner,frame);
         if (prepared!=Result::ok) return prepared;
         {
-            graphics::d3d11::StateScope restore(backend.context());
             auto *context=backend.context();
             constexpr FLOAT transparent[4]{0,0,0,0};
-            context->ClearRenderTargetView(target,transparent);
+            if(clear_target)context->ClearRenderTargetView(target,transparent);
             context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
             context->IASetInputLayout(frame->layout.Get());
             ID3D11Buffer *vb=frame->vertices.Get();
@@ -218,7 +224,7 @@ graphics::Result render_offscreen_2d(graphics::d3d11::HostDevice &backend,
         }
         return retirement.end();
     } catch (const std::bad_alloc &) {
-        return Result::failed;
+        return Result::out_of_budget;
     } catch (...) {
         return Result::failed;
     }

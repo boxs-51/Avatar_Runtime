@@ -11,6 +11,9 @@ def png(w=1,h=1):
  raw=b'\0\xff\0\0\xff'
  stream=b'\x78\x01\x01'+struct.pack('<HH',len(raw),65535-len(raw))+raw+struct.pack('>I',zlib.adler32(raw))
  return b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',w,h,8,6,0,0,0))+chunk(b'IDAT',stream)+chunk(b'IEND',b'')
+def png_2x2():
+ raw=b'\0'+bytes([255,0,0,255,0,255,0,255])+b'\0'+bytes([0,0,255,255,255,255,255,255])
+ return b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',2,2,8,6,0,0,0))+chunk(b'IDAT',zlib.compress(raw,0))+chunk(b'IEND',b'')
 def archive(items):
  data=io.BytesIO()
  with zipfile.ZipFile(data,'w') as z:
@@ -205,6 +208,82 @@ times=full.accessor([0,1],shape='SCALAR',min=[0],max=[1]);translations=full.acce
 full.doc['animations']=[{'samplers':[{'input':times,'output':translations},{'input':times,'output':rotations,'interpolation':'STEP'},{'input':times,'output':weights}],'channels':[{'sampler':0,'target':{'node':1,'path':'translation'}},{'sampler':1,'target':{'node':1,'path':'rotation'}},{'sampler':2,'target':{'node':0,'path':'weights'}}]}]
 pngview=full.view(png());full.doc.update(images=[{'bufferView':pngview,'mimeType':'image/png'}],textures=[{'source':0}],materials=[{'pbrMetallicRoughness':{'baseColorTexture':{'index':0}}}]);primitive['material']=0
 save('positive-glb-full.glb',full.bytes(),'OK','skin morph animation embedded PNG','C2')
+# M2-C pixel/projection fixture: two distinct joint transforms and a nonzero
+# morph distinguish morph-before-skin from skin-before-morph.
+render=copy.deepcopy(full)
+rp=render.doc['meshes'][0]['primitives'][0]
+rp['attributes']['JOINTS_0']=render.accessor([[0,0,0,0],[1,0,0,0],[1,0,0,0]],5121,'VEC4')
+rp['attributes']['WEIGHTS_0']=render.accessor([[1,0,0,0]]*3,shape='VEC4')
+render.doc['meshes'][0]['weights']=[1]
+render.doc['nodes']=[{'name':'Body','mesh':0,'skin':0,'children':[1,2]},
+                     {'name':'JointX','translation':[1,0,0],'scale':[2,1,1]},
+                     {'name':'JointY','translation':[0,1,0]}]
+render.doc['skins']=[{'joints':[1,2],'skeleton':0,
+                      'inverseBindMatrices':render.accessor([[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]]*2,shape='MAT4')}]
+render.doc.pop('animations')
+save('positive-m2-3d-pose.glb',render.bytes(),'OK','M2-C two-joint morph pose','M2')
+render_override=copy.deepcopy(render)
+render_override.doc['nodes'][0]['weights']=[0]
+save('positive-m2-3d-node-weight.glb',render_override.bytes(),'OK','M2-C node weight overrides mesh','M2')
+render_tangent=copy.deepcopy(render)
+tp=render_tangent.doc['meshes'][0]['primitives'][0]
+tp['attributes']['NORMAL']=render_tangent.accessor([[0,0,1]]*3)
+tp['attributes']['TANGENT']=render_tangent.accessor([[1,0,0,1]]*3,shape='VEC4')
+tp['targets'][0]['TANGENT']=render_tangent.accessor([[0,1,0]]*3)
+save('positive-m2-3d-tangent.glb',render_tangent.bytes(),'OK',
+     'M2-C morph tangent before nonuniform skin','M2')
+render_flat=copy.deepcopy(render)
+render_flat.doc['materials']=[{'pbrMetallicRoughness':{'baseColorFactor':[0,1,0,1]}}]
+render_flat.doc.pop('textures');render_flat.doc.pop('images')
+save('positive-m2-3d-flat.glb',render_flat.bytes(),'OK','M2-C flat color GPU pose','M2')
+for camera_kind,projection in [('perspective',{'yfov':1.5707963267948966,'znear':0.1,'zfar':10}),
+                                ('orthographic',{'xmag':1,'ymag':1,'znear':0.1,'zfar':10})]:
+ camera_case=copy.deepcopy(render_flat)
+ camera_case.doc['nodes'].append({'name':'Camera','camera':0,'translation':[0.5,1,3]})
+ camera_case.doc['scenes'][0]['nodes']=[0,3]
+ camera_case.doc['cameras']=[{'type':camera_kind,camera_kind:projection}]
+ save('positive-m2-3d-camera-'+camera_kind+'.glb',camera_case.bytes(),'OK',
+      'M2-C selected '+camera_kind+' camera','M2')
+camera_infinite=copy.deepcopy(render_flat)
+camera_infinite.doc['nodes'].append({'name':'Camera','camera':0,'translation':[0.5,1,3]})
+camera_infinite.doc['scenes'][0]['nodes']=[0,3]
+camera_infinite.doc['cameras']=[{'type':'perspective','perspective':
+                                 {'yfov':1.5707963267948966,'znear':0.1}}]
+save('positive-m2-3d-camera-infinite.glb',camera_infinite.bytes(),'OK',
+     'M2-C infinite far perspective camera','M2')
+render_texture=copy.deepcopy(render)
+render_texture.doc['samplers']=[{'magFilter':9729,'minFilter':9987,'wrapS':10497,'wrapT':33071}]
+render_texture.doc['textures'][0]['sampler']=0
+render_texture.doc['materials'][0]['pbrMetallicRoughness']['metallicRoughnessTexture']={'index':0}
+save('positive-m2-3d-texture.glb',render_texture.bytes(),'OK','M2-C sRGB base and linear MR','M2')
+render_mask=copy.deepcopy(render_texture)
+render_mask.doc['materials'][0].update(alphaMode='MASK',alphaCutoff=0.5)
+render_mask.doc['materials'][0]['pbrMetallicRoughness']['baseColorFactor']=[1,1,1,0.5]
+save('positive-m2-3d-mask.glb',render_mask.bytes(),'OK','M2-C inclusive alpha cutoff','M2')
+render_blend=copy.deepcopy(render_texture)
+render_blend.doc['materials'][0]['alphaMode']='BLEND'
+render_blend.doc['materials'][0]['pbrMetallicRoughness']['baseColorFactor']=[1,1,1,0.5]
+save('positive-m2-3d-blend.glb',render_blend.bytes(),'OK','M2-C transparent overlap','M2')
+render_unsupported=copy.deepcopy(render_texture)
+render_unsupported.doc['materials'][0]['normalTexture']={'index':0}
+save('positive-m2-3d-unsupported.glb',render_unsupported.bytes(),'OK','M2-C valid but unrenderable material','M2')
+for wrap_name,wrap in [('repeat',10497),('clamp',33071)]:
+ swatch=copy.deepcopy(render)
+ swatch.doc['images']=[{'bufferView':swatch.view(png_2x2()),'mimeType':'image/png'}]
+ swatch.doc['samplers']=[{'magFilter':9728,'minFilter':9728,'wrapS':wrap,'wrapT':33071}]
+ swatch.doc['textures'][0]['sampler']=0
+ swatch.doc['meshes'][0]['primitives'][0]['attributes']['TEXCOORD_0']=swatch.accessor([[1.25,0.25]]*3,shape='VEC2')
+ swatch.doc['materials'][0]['pbrMetallicRoughness'].update(metallicFactor=0,roughnessFactor=1)
+ save('positive-m2-3d-'+wrap_name+'.glb',swatch.bytes(),'OK','M2-C 2x2 sampler '+wrap_name,'M2')
+for filter_name,mag in [('point',9728),('linear',9729)]:
+ swatch=copy.deepcopy(render)
+ swatch.doc['images']=[{'bufferView':swatch.view(png_2x2()),'mimeType':'image/png'}]
+ swatch.doc['samplers']=[{'magFilter':mag,'minFilter':9728,'wrapS':33071,'wrapT':33071}]
+ swatch.doc['textures'][0]['sampler']=0
+ swatch.doc['meshes'][0]['primitives'][0]['attributes']['TEXCOORD_0']=swatch.accessor([[0.5,0.25]]*3,shape='VEC2')
+ swatch.doc['materials'][0]['pbrMetallicRoughness'].update(metallicFactor=0,roughnessFactor=1)
+ save('positive-m2-3d-filter-'+filter_name+'.glb',swatch.bytes(),'OK',
+      'M2-C 2x2 sampler '+filter_name,'M2')
 for label,change in [
  ('glb-joint-index',lambda x: x.binary.__setitem__(x.doc['bufferViews'][x.doc['accessors'][2]['bufferView']]['byteOffset'],1)),
  ('glb-weight-zero',lambda x:struct.pack_into('<f',x.binary,x.doc['bufferViews'][x.doc['accessors'][3]['bufferView']]['byteOffset'],0)),
@@ -273,6 +352,82 @@ glb_case('glb-custom-uint-attribute',lambda x:x.doc['meshes'][0]['primitives'][0
 glb_case('positive-glb-custom-float',lambda x:x.doc['meshes'][0]['primitives'][0]['attributes'].update(_CUSTOM=x.accessor([0,1,2],shape='SCALAR')),'OK')
 glb_case('positive-glb-ignored-channel',lambda x:x.doc['animations'][0]['channels'][0]['target'].pop('node'),'OK',full)
 glb_case('positive-glb-tangent-without-normal',lambda x:(x.doc['meshes'][0]['primitives'][0]['attributes'].pop('NORMAL'),x.doc['meshes'][0]['primitives'][0]['targets'][0].pop('NORMAL')),'OK',normal)
+# Alpha54: append public generated controls without changing any prior oracle.
+for bits,component,maximum,quarter,half in [(8,5121,255,64,128),(16,5123,65535,16384,32768)]:
+ for mode in ('weights','uv','both'):
+  for packed in (False,True):
+   fixture=copy.deepcopy(render);attributes=fixture.doc['meshes'][0]['primitives'][0]['attributes']
+   fixture.doc['images']=[{'bufferView':fixture.view(png_2x2()),'mimeType':'image/png'}]
+   fixture.doc['samplers']=[{'magFilter':9728,'minFilter':9728,'wrapS':33071,'wrapT':33071}]
+   fixture.doc['textures'][0]['sampler']=0
+   fixture.doc['materials'][0]['pbrMetallicRoughness'].update(metallicFactor=0,roughnessFactor=1)
+   if mode in ('weights','both'):
+    attributes['JOINTS_0']=fixture.accessor([[0,1,0,0]]*3,5121,'VEC4')
+    values=[[quarter,maximum-quarter,0,0],[0,maximum,0,0],[half,maximum-half,0,0]]
+    if not packed:values=[[v/maximum for v in row] for row in values]
+    attributes['WEIGHTS_0']=fixture.accessor(values,component if packed else 5126,'VEC4',normalized=packed)
+   if mode in ('uv','both'):
+    values=[[0,quarter],[maximum,0],[half,maximum]]
+    if not packed:values=[[v/maximum for v in row] for row in values]
+    if packed and component==5121:
+     # Vertex attributes need a4-byte aligned stride, including UBYTE VEC2.
+     view=fixture.view(b''.join(struct.pack('<2Bxx',*row) for row in values),byteStride=4)
+     attributes['TEXCOORD_0']=len(fixture.doc['accessors'])
+     fixture.doc['accessors'].append({'bufferView':view,'componentType':component,'count':3,'type':'VEC2','normalized':True})
+    else:attributes['TEXCOORD_0']=fixture.accessor(values,component if packed else 5126,'VEC2',normalized=packed)
+   save(f'positive-alpha54-{bits}-{mode}-'+('packed' if packed else 'float')+'.glb',fixture.bytes(),'OK','Alpha54 packed accessor / float equivalence','M2')
+# Alpha55: independent material-baked references and varying vertex colors.
+for label,component,maximum in [('float',5126,1),('8',5121,255),('16',5123,65535)]:
+ for channels in (3,4):
+  color=[0,maximum,maximum//2 if maximum>1 else 0.5,maximum//2 if maximum>1 else 0.5][:channels]
+  for mode in ('OPAQUE','MASK','BLEND','gradient'):
+   rows=[color]*3 if mode!='gradient' else [[0,maximum,0,maximum],[maximum,0,maximum,0],[maximum,maximum,maximum,maximum]][:]
+   rows=[row[:channels] for row in rows]
+   for baked in ((False,True) if mode!='gradient' else (False,)):
+    fixture=copy.deepcopy(render_flat);p=fixture.doc['meshes'][0]['primitives'][0]
+    material=fixture.doc['materials'][0];material['alphaMode']='OPAQUE' if mode=='gradient' else mode;material['alphaCutoff']=0.2
+    factor=[0.5,0.75,0.25,0.8]
+    if baked:factor=[factor[i]*(color[i]/maximum if i<channels else 1) for i in range(4)]
+    material['pbrMetallicRoughness'].update(baseColorFactor=factor,metallicFactor=0,roughnessFactor=1)
+    if not baked:
+     if component!=5126 and channels==3:
+      stride=4 if component==5121 else 8
+      raw=b''.join(struct.pack('<'+('B' if component==5121 else 'H')*3,*row)+b'\0'*(stride-3*(1 if component==5121 else 2)) for row in rows)
+      view=fixture.view(raw,byteStride=stride);p['attributes']['COLOR_0']=len(fixture.doc['accessors'])
+      fixture.doc['accessors'].append({'bufferView':view,'componentType':component,'count':3,'type':'VEC3','normalized':True})
+     else:p['attributes']['COLOR_0']=fixture.accessor(rows,component,'VEC'+str(channels),normalized=component!=5126)
+    save(f'positive-alpha55-{label}-{channels}-{mode}-'+('baked' if baked else 'color')+'.glb',fixture.bytes(),'OK','Alpha55 vertex color / independent material factor control','M2')
+# Alpha57: transform cases paired with independently baked geometry/orientation.
+for mode in ('direct','nested','matrix','even'):
+ for sided in ('single','double'):
+  sx,sy,tx,ty,shear=-1,(-1 if mode=='even' else 1),1.25,(1.25 if mode=='even' else 0.25),0
+  for baked in (False,True):
+   fixture=GlbFixture();p=fixture.doc['meshes'][0]['primitives'][0]
+   positions=[[0,0,0],[1,0,0],[0,1,0]]
+   if baked:positions=[[sx*x+shear*y+tx,sy*y+ty,z] for x,y,z in positions]
+   p['attributes']['POSITION']=fixture.accessor(positions,min=[min(row[i] for row in positions) for i in range(3)],max=[max(row[i] for row in positions) for i in range(3)])
+   p['attributes']['NORMAL']=fixture.accessor([[0,0,1]]*3)
+   p['attributes']['TANGENT']=fixture.accessor([[(-1 if baked else 1),0,0,(-1 if baked and mode!='even' else 1)]]*3,shape='VEC4')
+   if baked and mode!='even':p['indices']=fixture.accessor([0,2,1],5123,'SCALAR')
+   fixture.doc['materials']=[{'doubleSided':sided=='double','pbrMetallicRoughness':{'baseColorFactor':[0,1,0,1]}}];p['material']=0
+   if not baked:
+    if mode=='matrix':fixture.doc['nodes'][0]['matrix']=[sx,0,0,0,shear,sy,0,0,0,0,1,0,tx,ty,0,1]
+    elif mode in ('nested','even'):
+     fixture.doc['nodes'][0].update(translation=[0.25 if mode=='nested' else 0,ty,0],scale=[1,sy,1])
+     fixture.doc['nodes'].append({'children':[0],'scale':[-1,1,1],'translation':[1.5 if mode=='nested' else tx,0,0]});fixture.doc['scenes'][0]['nodes']=[1]
+    else:fixture.doc['nodes'][0].update(scale=[sx,sy,1],translation=[tx,ty,0])
+   save(f'positive-alpha57-{mode}-{sided}-'+('baked' if baked else 'transform')+'.glb',fixture.bytes(),'OK','Alpha57 authored transform vs baked orientation','M2')
+for mode in ('joint','inherited','blended'):
+ fixture=copy.deepcopy(render_flat)
+ if mode=='joint':fixture.doc['nodes'][1]['scale']=[-2,1,1]
+ elif mode=='inherited':fixture.doc['nodes'][0]['scale']=[-1,1,1]
+ else:
+  fixture.doc['nodes']=[{'mesh':0,'skin':0,'children':[1,2,3]},{'rotation':[1,0,0,0]},{'rotation':[0,1,0,0]},{'rotation':[0,0,1,0]}]
+  fixture.doc['skins']=[{'joints':[1,2,3],'skeleton':0}]
+  attributes=fixture.doc['meshes'][0]['primitives'][0]['attributes']
+  attributes['JOINTS_0']=fixture.accessor([[0,1,2,0]]*3,5121,'VEC4')
+  attributes['WEIGHTS_0']=fixture.accessor([[1/3,1/3,1/3,0]]*3,shape='VEC4')
+ save(f'positive-alpha57-skin-{mode}.glb',fixture.bytes(),'OK','Alpha57 valid GLB, reflected effective skin unsupported beforeGPU','M2')
 (root/'atlas.png').write_bytes(png());(root/'manifest.json').write_bytes((json.dumps(records,indent=2,ensure_ascii=False)+'\n').encode())
 if args.reference_manifest:
  reference=json.loads(pathlib.Path(args.reference_manifest).read_text(encoding='utf-8'))

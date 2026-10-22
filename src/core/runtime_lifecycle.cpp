@@ -1,4 +1,8 @@
 #include "runtime_lifecycle.hpp"
+#include "runtime_state.hpp"
+#ifdef ARS_PUBLIC_D3D11
+#include "../rendering/public_d3d11.hpp"
+#endif
 #include "../security/source_authority.hpp"
 #include "../motion/publish_gate.hpp"
 #include "../abi/api_validation.hpp"
@@ -11,22 +15,7 @@
 #include <utility>
 
 namespace ars::core {
-struct Runtime {
-    const ars_runtime_desc descriptor;
-    const std::thread::id control=std::this_thread::get_id();
-    HandleRegistry registry;
-    ars_runtime_h handle{};
-    std::uint32_t work=0,management=0,ingress=0,snapshots=0;
-    bool closing=false,quiescing=false,finalizer=false;
-    security::SourceAuthority *authority=nullptr;
-    motion::PublishGate *publication=nullptr;
-    bool publication_allocating=false;
-    security::CallbackState callback;
-    const std::uint64_t authority_budget;
-    const std::uint64_t publication_budget;
-    Runtime(const ars_runtime_desc &desc,std::uint64_t uid,const RuntimeBudget &budget)
-        :descriptor(desc),registry(uid,budget.slots,budget.pins),authority_budget(budget.authority_bytes),publication_budget(budget.publication_bytes) {}
-};
+
 namespace {
 ars_status release_block(void *storage,std::uint64_t bytes,std::uint32_t alignment,const ars_runtime_desc &desc) noexcept {
     if(!storage) return ARS_OK;
@@ -64,6 +53,8 @@ void StageLease::reset() noexcept {
     if(owner_) owner_->discard(stage_);
     owner_=nullptr; stage_=nullptr; runtime_.reset();
 }
+BatchLease::~BatchLease(){reset();}
+void BatchLease::reset() noexcept {batch_->reset();owner_=nullptr;runtime_.reset();}
 SnapshotLease::~SnapshotLease() { reset(); }
 void SnapshotLease::reset() noexcept { motion::Snapshot::release(snapshot_); snapshot_=nullptr; runtime_.reset(); }
 void RuntimeLease::reset() noexcept {
@@ -137,7 +128,11 @@ ars_status RuntimeRouter::acquire(ars_runtime_h handle,LeaseKind kind,RuntimeLea
     std::lock_guard lock(mutex_); Runtime *runtime=nullptr;
     auto status=resolve_locked(handle,&runtime); if(status!=ARS_OK) return status;
     if(runtime->finalizer) return ARS_E_BUSY;
-    if(kind!=LeaseKind::management && runtime->callback.active()) return ARS_E_BUSY;
+    if(kind!=LeaseKind::management && (runtime->callback.active()
+#ifdef ARS_PUBLIC_CPU_ASSETS
+        || runtime->asset_callback.load(std::memory_order_acquire)
+#endif
+    )) return ARS_E_BUSY;
     if(kind!=LeaseKind::management && runtime->closing) return ARS_E_CLOSED;
     if(runtime->work+runtime->management>=budget_.pins) return ARS_E_BUSY;
     status=runtime->registry.pin(handle.id,ObjectType::runtime,&out->root_);
@@ -184,6 +179,9 @@ ars_status RuntimeRouter::query_close(ars_runtime_h handle,ars_close_state *out)
     out->outstanding_close_management_pins=runtime->management;
     out->outstanding_ingress_pins=runtime->ingress;
     out->outstanding_render_snapshot_pins=runtime->snapshots; // CPU immutable snapshot leases, no GPU work.
+#ifdef ARS_PUBLIC_D3D11
+    out->outstanding_gpu_retires=runtime->gpu&&runtime->gpu->active()?1:0;
+#endif
     out->state=runtime->closing && runtime->quiescing && runtime->work==0 ? ARS_FENCE_COMPLETE:ARS_FENCE_PENDING;
     return ARS_OK;
 }
@@ -192,7 +190,11 @@ ars_status RuntimeRouter::finish_close(ars_runtime_h handle) {
     {
         std::lock_guard lock(mutex_);
         auto status=resolve_locked(handle,&runtime); if(status!=ARS_OK) return status;
-        if(runtime->callback.active()) return ARS_E_BUSY;
+        if(runtime->callback.active()
+#ifdef ARS_PUBLIC_CPU_ASSETS
+            || runtime->asset_callback.load(std::memory_order_acquire)
+#endif
+        ) return ARS_E_BUSY;
         if(runtime->finalizer || !runtime->quiescing) return ARS_E_BUSY;
         runtime->finalizer=true;
         if(runtime->work || runtime->management) { runtime->finalizer=false; return ARS_E_BUSY; }
@@ -209,7 +211,15 @@ ars_status RuntimeRouter::finish_close(ars_runtime_h handle) {
         publication_status=release_block(runtime->publication,sizeof(motion::PublishGate),alignof(motion::PublishGate),descriptor);
     }
     const auto authority_status=free_authority(runtime->authority,descriptor);
-    runtime->~Runtime(); const auto status=free_storage(runtime,descriptor);
+#ifdef ARS_PUBLIC_CPU_ASSETS
+    free_cpu_context(runtime);
+#endif
+    #ifdef ARS_PUBLIC_CPU_ASSETS
+    const auto storage_descriptor=runtime->host_descriptor;
+#else
+    const auto storage_descriptor=descriptor;
+#endif
+    runtime->~Runtime(); const auto status=free_storage(runtime,storage_descriptor);
     return publication_status!=ARS_OK?publication_status:(authority_status!=ARS_OK?authority_status:status);
 }
 std::uint32_t RuntimeRouter::occupied() const {
@@ -362,6 +372,32 @@ ars_status RuntimeRouter::publish_cpu(StageLease *lease) {
     security::MutationLease mutation(runtime.runtime_->callback);
     const auto status=mutation?lease->owner_->publish(*lease->stage_):ARS_E_BUSY;
     lease->reset(); return status;
+}
+ars_status RuntimeRouter::append_cpu_batch(StageLease *stage,BatchLease *batch) {
+    if(!stage || !batch || stage->runtime_.owner_!=this || !stage->owner_ || !stage->stage_)return ARS_E_INVALID_ARGUMENT;
+    if(batch->owner_ && (batch->owner_!=stage->owner_ || batch->runtime_.runtime_!=stage->runtime_.runtime_))return ARS_E_INVALID_ARGUMENT;
+    auto status=stage->owner_->append(*stage->stage_,*batch->batch_);
+    if(status==ARS_OK){batch->owner_=stage->owner_;if(!batch->runtime_)batch->runtime_=std::move(stage->runtime_);}
+    stage->reset();return status;
+}
+ars_status RuntimeRouter::publish_cpu_batch(BatchLease *batch,void (*commit)(void *) noexcept,void *user) {
+    if(!batch || batch->runtime_.owner_!=this || !batch->owner_)return ARS_E_INVALID_ARGUMENT;
+    RuntimeLease runtime=std::move(batch->runtime_);
+    security::MutationLease mutation(runtime.runtime_->callback);
+    const auto status=mutation?batch->owner_->publish(*batch->batch_,commit,user):ARS_E_BUSY;
+    batch->reset();return status;
+}
+ars_status RuntimeRouter::copy_cpu_candidate(const StageLease &lease,std::span<float> out,
+                                            std::uint64_t *generation) const {
+    if(generation)*generation=0;
+    if(!generation||lease.runtime_.owner_!=this||!lease.owner_||!lease.stage_)
+        return ARS_E_INVALID_ARGUMENT;
+    const auto* stage=lease.stage_;
+    if(out.size()!=stage->candidate.channel_count)return ARS_E_INVALID_ARGUMENT;
+    if(stage->expected_generation==std::numeric_limits<std::uint64_t>::max())return ARS_E_HANDLE_EXHAUSTED;
+    for(std::size_t i=0;i<out.size();++i)out[i]=stage->candidate.outputs[i].scalar;
+    *generation=stage->expected_generation+1;
+    return ARS_OK;
 }
 ars_status RuntimeRouter::read_cpu(ars_runtime_h handle,ars_character_h character,SnapshotLease *out) {
     if(!out) return ARS_E_INVALID_ARGUMENT;

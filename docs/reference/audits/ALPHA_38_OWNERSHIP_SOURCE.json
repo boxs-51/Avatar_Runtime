@@ -1,0 +1,135 @@
+{
+  "base": "64c129eb1c8be3a4a12ac8b7fb807bfdbb0276eb",
+  "phase": "FINAL_NATIVE_SOURCE",
+  "source_files": {
+    "CMakeLists.txt": "de7138af2461c7e7e9131a01bcf4e679acc0c05c09a03e632bec6c60058ee63e",
+    "src/graphics/d3d11/close_coordinator.cpp": "849bd7c9bbddc3cb4177441e418f63855119d889befb7ede48b022d6d64220f7",
+    "src/graphics/d3d11/context_ownership.cpp": "a75fe930ba189ed9eb0932e4ba2b27c54a8570c721e358971ae3debdc7b22f03",
+    "src/graphics/d3d11/context_ownership.hpp": "6ebb9476261f7329f51da952f316d6cc597a9f61598f6ff740aed5126554eb4c",
+    "src/graphics/d3d11/host_device.cpp": "562431441a5ee50373a9d81e0dbbe52b4b0b03bfe52cd8435e99fcca191514d7",
+    "src/graphics/d3d11/host_device.hpp": "cd2b61376dd50ab030129a7821ceb08c426f7ea220cf83ed23280afe56676693",
+    "src/graphics/d3d11/query_retirement.cpp": "6fae076aacdfbeba559434f03a346e7691b707637368d5fa96e3564ed4c6a4de",
+    "src/graphics/d3d11/query_retirement.hpp": "5c2529333bdfd02aee4e6586aeeb16beddfd22f34b2ac3dc60f491e3234ca902",
+    "src/graphics/d3d11/state_scope.cpp": "971cb6707848296db94881699726a1b7730afa45c63440d7a635e30cea3f4ef8",
+    "src/graphics/d3d11/state_scope.hpp": "5d65f505cc1325bb78540e26183a72b16e97b0bf6371f58b3420a6e3801d0018",
+    "src/graphics/d3d11/teardown_receipt.hpp": "6d6ed99d61d7d53177a76cccc21a470a968af4b8029a4858affc7bb6020e656b",
+    "src/moc3/core_consumer.cpp": "41bc23b6ea39b73c790de52f412b3d89ff0c8262b2a449cf2b5c3ec3f5625883",
+    "src/moc3/core_consumer.hpp": "36541332880ba7aab9de51311dd69b69da74e664e56e88184ebabc7fd2e5d17a",
+    "src/moc3/d3d11_renderer.cpp": "488c04d6cd00f992e977bb0e49dea0a8cbb106b38a8f9f679ed2ad70a0eaf86f",
+    "src/moc3/lease_publication.cpp": "94d91efe9fc5f2a92f03bf636ccbdf9d5f89d86e1960ff6afefed3e210a759ec",
+    "src/moc3/lease_publication.hpp": "dabb1298e634b9eefe3d7d197f498faffb976481e1282dac786d33f1c1583908",
+    "src/moc3/packet_publication.cpp": "a13b7766afd9cf7baf7efed945d008d05d153d36070ab9976b5f583280fa6fa0",
+    "src/moc3/packet_publication.hpp": "66a82072786a975eab9bcfeb8fe6b2cf6380bb2204e8449f454da04abb31f12b",
+    "src/rendering/d3d11_dual_mode_host.cpp": "27c0c50b2020edee7f8c97e35235a1a2f544c279d2bb7191b50996773b4a1a4a",
+    "src/rendering/d3d11_dual_mode_host.hpp": "8a8b0f68d5cd8840731fb1827ae9d5ab0281e7828935a05cdc91807667e98537",
+    "src/rendering/d3d11_scene2d.cpp": "3167f503267ce5f1ffa1bbbe3f2bae5622bbaee67c0f621312d0c77ce11d29ea",
+    "src/rendering/d3d11_scene3d.cpp": "d4a919791e30af74964a99d9c03d5fd6e30df2e678a88b35fac2ca7549b3ca12",
+    "tests/gpu/d3d11_context_ownership.cpp": "721c6afb092276bca3b8e606ce48282acb5f3f7a4160ae1b553a77206be63d4f",
+    "tests/gpu/d3d11_live_capture.cpp": "673d51d21dbc3e26bbfafdf366ffe4a9e04bef912ac4a451714e39d03bda8b73"
+  },
+  "binaries": {
+    "build/alpha38-native/bin/Release/ars_context_ownership_tests.exe": "c545ad595df51e94195c11d9e13c16ac2f56cad22ac0e6df3a607639c2538b36",
+    "build/alpha38-native/Release/ars_d3d11_live_capture.exe": "28d5caae64f2ebd6e69992456f31979140242dfba9a53511724dbae85641546f",
+    "build/alpha38-native/bin/Release/ars_moc3_packet_publication_host.exe": "6e85bbe3b8120e080dca9cd9ca35f32b9b9d4fbff734f6e1795412d21f60aa97"
+  },
+  "kind": "ALPHA38_OWNED_NATIVE_GRAPH_LOCAL_EVIDENCE",
+  "date": "2026-10-21",
+  "timezone": "Asia/Bangkok",
+  "source_basis": "base plus source_files raw SHA256; integration SHA recorded on issue/PR",
+  "private_assets_used": false,
+  "official_cubism_sdk_used": false,
+  "purism_core_revision": "1069334965522df5d0b791e97f01e26b19c45456",
+  "purism_local_changes": "viewer.c/viewer.h only; samples/viewer/tests OFF; preserved",
+  "physical_loss": "NOT_RUN; HOLD issue40; injected QueryOps only",
+  "runtime_scope": "registered current native publication graph; public graphics OFF; no universal unregistered native caller claim",
+  "reviews": [
+    {
+      "agent": "/root/f1_independent_review",
+      "finding_ids": [
+        "H38-R1",
+        "H38-R2",
+        "H38-R3"
+      ],
+      "disposition": "fixed and direct regression-tested"
+    },
+    {
+      "agent": "/root/f2_independent_review",
+      "finding": "foreign StateScope context",
+      "disposition": "fixed, independently re-reviewed PASS and direct two-domain regression-tested"
+    }
+  ],
+  "raw_logs": {
+    "build/alpha38-final-owned.log": "d85eca1258ab6d46454b9da0d624f756c5550e47afeb604dd31da03d2f1e07b8",
+    "build/alpha38-final-owned.xml": "642594034657480056b252a21ead3b8310bf0a7b3fee1c7698f6989a7a943a69",
+    "build/alpha38-final-affected.log": "2b8947bf8418cfaf06b8a684475de988dddc887250b9177004119e6ae917075c",
+    "build/alpha38-regressions.log": "d4421dbbe004ab70b38e1f9954f9f376f471a012df087a70e1f92534b51ed62f",
+    "build/alpha38-final-build.log": "ef27662b0d98f34d60e9b4bfa43c33093698ca4348b9d4a820e2c0b68756f1ef",
+    "build/alpha38-configure.log": "ba574010eb5937bac7e8a9f62f08faa89fdedb9c5bba4a6d11aeae4e8eed800b",
+    "build/alpha38-final-owned-details.log": "f2a717a7da811e92d0cab0780ecf42555bf89cb972a8b1db898e4232b78a65a5",
+    "build/alpha38-contracts-qualified.log": "0cf05ade5e24019045d7e02b688ee7cb57deb51b33277cfbd86723fe08a38f8b"
+  },
+  "final_owned_tests": [
+    {
+      "name": "alpha38_warp_context_ownership",
+      "status": "PASS",
+      "seconds": "2.66054",
+      "output": "adapter=Microsoft Basic Render Driver vendor=5140 device=140\nOWNED_CONTEXT_PASS assertions=1523 injected_only=1 physical_loss=HOLD\n"
+    },
+    {
+      "name": "alpha38_hardware_context_ownership",
+      "status": "PASS",
+      "seconds": "1.85933",
+      "output": "adapter=NVIDIA GeForce GTX 1060 3GB vendor=4318 device=7170\nOWNED_CONTEXT_PASS assertions=1524 injected_only=1 physical_loss=HOLD\n"
+    },
+    {
+      "name": "alpha38_warp_owned_live_objects",
+      "status": "PASS",
+      "seconds": "1.94709",
+      "output": "adapter=Microsoft Basic Render Driver vendor=5140 device=140\nOWNED_CONTEXT_PASS assertions=1523 injected_only=1 physical_loss=HOLD\nchild_exit=0 baseline_bytes=424 final_bytes=242\nBASELINE_DEBUG_REPORT\nD3D11 WARNING: Live ID3D11Device at 0x00000218D75CF260, Refcount: 6 [ STATE_CREATION WARNING #441: LIVE_DEVICE]\nD3D11 WARNING: \tLive ID3D11Context at 0x00000218D75D2770, Refcount: 1, IntRef: 1 [ STATE_CREATION WARNING #2097226: LIVE_CONTEXT]\nD3D11 WARNING: alpha38 injected diagnostic [ UNKNOWN WARNING #11: STRING_FROM_APPLICATION]\nD3D11 WARNING: alpha38 injected diagnostic [ UNKNOWN WARNING #11: STRING_FROM_APPLICATION]\n\nFINAL_DEBUG_REPORT\nD3D11 WARNING: Live ID3D11Device at 0x00000218D75CF260, Refcount: 6 [ STATE_CREATION WARNING #441: LIVE_DEVICE]\nD3D11 WARNING: \tLive ID3D11Context at 0x00000218D75D2770, Refcount: 1, IntRef: 1 [ STATE_CREATION WARNING #2097226: LIVE_CONTEXT]\n\nlive_objects_before=2 live_objects_after=2\nPASS alpha38 owned context live-object identity unchanged\n"
+    },
+    {
+      "name": "alpha38_hardware_owned_live_objects",
+      "status": "PASS",
+      "seconds": "3.12788",
+      "output": "adapter=NVIDIA GeForce GTX 1060 3GB vendor=4318 device=7170\nOWNED_CONTEXT_PASS assertions=1524 injected_only=1 physical_loss=HOLD\nchild_exit=0 baseline_bytes=424 final_bytes=242\nBASELINE_DEBUG_REPORT\nD3D11 WARNING: Live ID3D11Device at 0x0000020B255A5610, Refcount: 6 [ STATE_CREATION WARNING #441: LIVE_DEVICE]\nD3D11 WARNING: \tLive ID3D11Context at 0x0000020B255A8C10, Refcount: 1, IntRef: 1 [ STATE_CREATION WARNING #2097226: LIVE_CONTEXT]\nD3D11 WARNING: alpha38 injected diagnostic [ UNKNOWN WARNING #11: STRING_FROM_APPLICATION]\nD3D11 WARNING: alpha38 injected diagnostic [ UNKNOWN WARNING #11: STRING_FROM_APPLICATION]\n\nFINAL_DEBUG_REPORT\nD3D11 WARNING: Live ID3D11Device at 0x0000020B255A5610, Refcount: 6 [ STATE_CREATION WARNING #441: LIVE_DEVICE]\nD3D11 WARNING: \tLive ID3D11Context at 0x0000020B255A8C10, Refcount: 1, IntRef: 1 [ STATE_CREATION WARNING #2097226: LIVE_CONTEXT]\n\nlive_objects_before=2 live_objects_after=2\nPASS alpha38 owned context live-object identity unchanged\n"
+    }
+  ],
+  "prior_regressions": [
+    {
+      "count": 74,
+      "result": "PASS",
+      "source_limit": "before final StateScope identity and legacy receipt isolation changes",
+      "log": "build/alpha38-regressions.log"
+    },
+    {
+      "count": 38,
+      "result": "PASS",
+      "source_limit": "final production code; final test-only legacy-consumer negative added afterward and covered by final4",
+      "log": "build/alpha38-final-affected.log"
+    }
+  ],
+  "whole_g00": "HOLD; scoped owned-native technical method only",
+  "environment": {
+    "os": "Windows 10 10.0.19045",
+    "gpu": "NVIDIA GeForce GTX 1060 3GB",
+    "vendor_id": 4318,
+    "device_id": 7170,
+    "driver": "32.0.15.8157",
+    "debug_layer": "required and available",
+    "build": "Windows x64 MSBuild Release; local offline dependencies"
+  },
+  "commands": {
+    "build": "cmake --build build/alpha38-native --config Release --parallel 4",
+    "full_regression": "ctest --test-dir build/alpha38-native -C Release --no-tests=error --output-on-failure",
+    "affected_final": "ctest --test-dir build/alpha38-native -C Release -R \"^alpha38_|^d[127]_|^m2_warp_|^moc3_(owned|packet_publication|step_publication|f2|f4)|^b[123]_\" --no-tests=error --output-on-failure",
+    "final_owned": "ctest --test-dir build/alpha38-native -C Release -R \"^alpha38_\" --no-tests=error --output-on-failure --output-junit E:/Avatar_Runtime/build/alpha38-final-owned.xml"
+  },
+  "contracts": {
+    "count": 178,
+    "result": "PASS",
+    "exit_code": 0,
+    "log": "build/alpha38-contracts-qualified.log",
+    "environment": "native filesystem permissions; dedicated workspace TEMP/TMP",
+    "prior_attempts": "sandboxed system/workspace TemporaryDirectory writes both failed WinError5 in unchanged F03 exponent test; native retry passed"
+  }
+}

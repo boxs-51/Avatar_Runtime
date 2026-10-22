@@ -1,0 +1,82 @@
+﻿CMake is re-running because E:/Avatar_Runtime/build/m2-c-private/CMakeFiles/generate.stamp is out-of-date.
+  the file 'E:/Avatar_Runtime/CMakeLists.txt'
+  is newer than 'E:/Avatar_Runtime/build/m2-c-private/CMakeFiles/generate.stamp.depend'
+  result='-1'
+-- Selecting Windows SDK version 10.0.26100.0 to target Windows 10.0.19045.
+-- ARS PREP-ONLY: nonfunctional ABI stub and contract model, NOT SDK engine
+-- Configuring done (4.1s)
+-- Generating done (0.5s)
+-- Build files have been written to: E:/Avatar_Runtime/build/m2-c-private
+MSBuild version 18.8.2+ce25c0108 for .NET Framework
+
+  C:\Users\ADMIN\AppData\Local\Programs\Python\Python312\Lib\zipfile\__init__.py:1611: UserWarning: Duplicate name: 'same'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+  {"schema_reference_cases": 14, "schema_parity_sha256": "3b9315ccbca1c5e876e15890fcc0efa15b32ed785e32a08a881f617aef76100e", "reference_checks_executed": false}
+  {"fixtures": 191, "positive_manifests_schema_validated": 0, "seed": "deterministic no RNG", "native_parser_execution": false}
+  ars_asset_zlib.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_zlib.lib
+  ars_asset_png.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_png.lib
+  ars_asset_utf8.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_utf8.lib
+  ars_asset_components.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_components.lib
+  ars_d3d11_spike.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_d3d11_spike.lib
+  scene3d.cpp
+  ars_m2_3d_reference.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_m2_3d_reference.lib
+  d3d11_scene3d.cpp
+  ars_m2_d3d11_3d.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_m2_d3d11_3d.lib
+  d3d11_scene3d_pixels.cpp
+  ars_m2_3d_pixels.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\bin\Release\ars_m2_3d_pixels.exe
+MSBuild version 18.8.2+ce25c0108 for .NET Framework
+
+  C:\Users\ADMIN\AppData\Local\Programs\Python\Python312\Lib\zipfile\__init__.py:1611: UserWarning: Duplicate name: 'same'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+  {"schema_reference_cases": 14, "schema_parity_sha256": "3b9315ccbca1c5e876e15890fcc0efa15b32ed785e32a08a881f617aef76100e", "reference_checks_executed": false}
+  {"fixtures": 191, "positive_manifests_schema_validated": 0, "seed": "deterministic no RNG", "native_parser_execution": false}
+  ars_asset_zlib.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_zlib.lib
+  ars_asset_png.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_png.lib
+  ars_asset_utf8.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_utf8.lib
+  ars_asset_components.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_components.lib
+  ars_m2_3d_reference.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_m2_3d_reference.lib
+  scene3d_tests.cpp
+  ars_m2_3d_tests.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\bin\Release\ars_m2_3d_tests.exe
+MSBuild version 18.8.2+ce25c0108 for .NET Framework
+
+  C:\Users\ADMIN\AppData\Local\Programs\Python\Python312\Lib\zipfile\__init__.py:1611: UserWarning: Duplicate name: 'same'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+  {"schema_reference_cases": 14, "schema_parity_sha256": "3b9315ccbca1c5e876e15890fcc0efa15b32ed785e32a08a881f617aef76100e", "reference_checks_executed": false}
+  {"fixtures": 191, "positive_manifests_schema_validated": 0, "seed": "deterministic no RNG", "native_parser_execution": false}
+  ars_asset_zlib.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_zlib.lib
+  ars_asset_png.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_png.lib
+  ars_asset_utf8.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_utf8.lib
+  ars_asset_components.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_components.lib
+  ars_glb_reader_tests.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\bin\Release\ars_glb_reader_tests.exe
+MSBuild version 18.8.2+ce25c0108 for .NET Framework
+
+  C:\Users\ADMIN\AppData\Local\Programs\Python\Python312\Lib\zipfile\__init__.py:1611: UserWarning: Duplicate name: 'same'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+  {"schema_reference_cases": 14, "schema_parity_sha256": "3b9315ccbca1c5e876e15890fcc0efa15b32ed785e32a08a881f617aef76100e", "reference_checks_executed": false}
+  {"fixtures": 191, "positive_manifests_schema_validated": 0, "seed": "deterministic no RNG", "native_parser_execution": false}
+  ars_asset_zlib.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_zlib.lib
+  ars_asset_png.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_png.lib
+  ars_asset_utf8.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_utf8.lib
+  ars_asset_components.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_components.lib
+  schema_worker_main.cpp
+  ars_schema_worker.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\bin\Release\ars_schema_worker.exe
+  ars_glb_validation_tests.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\bin\Release\ars_glb_validation_tests.exe
+MSBuild version 18.8.2+ce25c0108 for .NET Framework
+
+  C:\Users\ADMIN\AppData\Local\Programs\Python\Python312\Lib\zipfile\__init__.py:1611: UserWarning: Duplicate name: 'same'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+  {"schema_reference_cases": 14, "schema_parity_sha256": "3b9315ccbca1c5e876e15890fcc0efa15b32ed785e32a08a881f617aef76100e", "reference_checks_executed": false}
+  {"fixtures": 191, "positive_manifests_schema_validated": 0, "seed": "deterministic no RNG", "native_parser_execution": false}
+  ars_asset_zlib.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_zlib.lib
+  ars_asset_png.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_png.lib
+  ars_asset_utf8.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_utf8.lib
+  ars_asset_components.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_asset_components.lib
+  ars_schema_worker.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\bin\Release\ars_schema_worker.exe
+  ars_dual_mode_tests.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\bin\Release\ars_dual_mode_tests.exe
+MSBuild version 18.8.2+ce25c0108 for .NET Framework
+
+  ars_d3d11_spike.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_d3d11_spike.lib
+  ars_d3d11_close_physical.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_d3d11_close_physical.exe
+  ars_d3d11_query_retirement.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_d3d11_query_retirement.exe
+  d3d11_live_capture.cpp
+  ars_d3d11_live_capture.vcxproj -> E:\Avatar_Runtime\build\m2-c-private\Release\ars_d3d11_live_capture.exe

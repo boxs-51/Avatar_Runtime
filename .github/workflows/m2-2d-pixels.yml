@@ -6,8 +6,9 @@ on:
       - 'src/rendering/d3d11_scene2d.*'
       - 'src/graphics/d3d11/state_scope.*'
       - 'tests/rendering/d3d11_scene2d_pixels.cpp'
-      - 'docs/M2_B_PIXEL_CONTRACT.md'
-      - 'docs/audits/M2_B*'
+      - 'docs/reference/M2_B_PIXEL_CONTRACT.md'
+      - 'docs/completed/audits/M2_B*'
+      - 'docs/reference/audits/M2_B*'
       - '.github/workflows/m2-2d-pixels.yml'
 permissions:
   contents: read

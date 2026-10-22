@@ -8,7 +8,8 @@ on:
       - 'include/**'
       - 'tests/**'
       - 'examples/plain_c/**'
-      - 'docs/audits/M1_B*'
+      - 'docs/completed/audits/M1_B*'
+      - 'docs/in-progress/audits/M1_B*'
       - '.github/workflows/m1*.yml'
 permissions:
   contents: read

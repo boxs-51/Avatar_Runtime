@@ -35,25 +35,29 @@ ars_status SourceAuthority::pin_source(ars_source_admin_h id,core::ObjectLease *
     }
     return status;
 }
-ars_status SourceAuthority::bind(std::span<const SemanticChannel> catalog,ars_character_h *out) {
+ars_status SourceAuthority::bind(std::span<const SemanticChannel> catalog,ars_character_h *out,std::shared_ptr<const void> owner,bool allow_empty) {
     if(out) *out={};
     if(!out) return ARS_E_INVALID_ARGUMENT;
-    auto status=core::validate_catalog(catalog); if(status!=ARS_OK) return status;
+    auto status=catalog.empty() && allow_empty ? ARS_OK : core::validate_catalog(catalog); if(status!=ARS_OK) return status;
     core::CharacterAuthority *character=nullptr; core::ObjectLease lease;
+    std::shared_ptr<const void> retired;
     {
         std::lock_guard lock(objects_);
         for(std::uint32_t i=0;i<character_limit_;++i)
             if(!characters_[i].allocated && characters_[i].users.load(std::memory_order_acquire)==0) { character=&characters_[i]; break; }
         if(!character) return ARS_E_OUT_OF_BUDGET;
+        // objects_ excludes bind/reclaim; users==0 excludes old snapshot/stage
+        // pins. Detach the old generation before replacing the handle below.
+        retired=std::move(character->cpu_owner); character->cpu_owner=std::move(owner);
         character->count=static_cast<std::uint32_t>(catalog.size());
         std::copy(catalog.begin(),catalog.end(),character->catalog.begin());
         character->alive=false;
         character->pose_generation=0; character->pose_exhausted=false;
         status=registry_.insert(core::ObjectType::character,character,&character->id.id);
-        if(status!=ARS_OK) return status;
+        if(status!=ARS_OK) { owner=std::move(character->cpu_owner); return status; }
         character->allocated=true;
         status=registry_.pin(character->id.id,core::ObjectType::character,&lease.registry_);
-        if(status!=ARS_OK) { registry_.invalidate(character->id.id,core::ObjectType::character); character->allocated=false; return status; }
+        if(status!=ARS_OK) { registry_.invalidate(character->id.id,core::ObjectType::character); character->allocated=false; owner=std::move(character->cpu_owner); return status; }
         character->users.fetch_add(1,std::memory_order_acq_rel); lease.users_=&character->users;
     }
     {
@@ -62,7 +66,27 @@ ars_status SourceAuthority::bind(std::span<const SemanticChannel> catalog,ars_ch
     }
     std::lock_guard lock(objects_);
     registry_.invalidate(character->id.id,core::ObjectType::character); character->allocated=false;
+    owner=std::move(character->cpu_owner);
     return ARS_E_CLOSED;
+}
+ars_status SourceAuthority::active_epoch(ars_source_admin_h id,ars_character_h character,std::uint64_t *epoch) {
+    *epoch=0;core::ObjectLease pin;auto status=pin_source(id,&pin);if(status!=ARS_OK)return status;
+    auto *source=static_cast<Source *>(pin.payload());std::lock_guard lock(source->mutex);
+    auto time=clock_.observe();if(time.status!=ARS_OK)return time.status;
+    status=observe_source(*source,time.now);if(status!=ARS_OK)return status;
+    if(!same(source->character.id,character.id))return ARS_E_SCOPE_DENIED;
+    *epoch=source->epoch;return ARS_OK;
+}
+void SourceAuthority::collect_retired() {
+    std::array<std::shared_ptr<const void>,max_characters> retired;
+    {
+        std::lock_guard objects(objects_);
+        for (std::size_t i=0;i<characters_.size();++i) {
+            auto &c=characters_[i];
+            if (!c.allocated && c.users.load(std::memory_order_acquire)==0) retired[i]=std::move(c.cpu_owner);
+        }
+    }
+    // Host deallocation can reenter; no ARS lock or authority slot access here.
 }
 ars_status SourceAuthority::state_error(const Source &source) const noexcept {
     switch(source.state) {
@@ -312,13 +336,8 @@ ars_status SourceAuthority::prepare(const ars_motion_frame *input,PreparedFrame 
     }
     if(input->timestamp_mode==ARS_TIMESTAMP_ON_ARRIVAL) {
         if(descriptor_.simulation_now_ns) {
-            CallbackLease callback_release(callback_);
-            if(!callback_release) return ARS_E_BUSY;
-            try { frame.timestamp=descriptor_.simulation_now_ns(descriptor_.clock_user_data); }
-            catch(...) { return ARS_E_INTERNAL; }
-            std::lock_guard samples(callback_.samples);
-            if(callback_.observed && frame.timestamp<callback_.highwater) return ARS_E_CLOCK_REGRESSION;
-            callback_.observed=true; callback_.highwater=frame.timestamp;
+            const auto status=sample_simulation_clock(callback_,descriptor_,frame.timestamp,ARS_E_INTERNAL);
+            if(status!=ARS_OK)return status;
         } else if(capture_init_!=ARS_OK || native_clock_now(&capture_clock_,&frame.timestamp)!=ARS_OK) return ARS_E_CLOCK_FAILURE;
     }
     return ARS_OK;

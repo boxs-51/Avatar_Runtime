@@ -1,4 +1,6 @@
 #include "rendering/d3d11_scene2d.hpp"
+#include "../assets/asset_test_support.hpp"
+#include "../../src/assets/validated_cpu_model.hpp"
 #include <d3d11sdklayers.h>
 #include <dxgi.h>
 #include <array>
@@ -69,6 +71,7 @@ void render_and_retire(HostDevice &backend,ID3D11DeviceContext *context,const Ta
 } // namespace
 
 int main(int argc,char **argv) {
+    const bool sample=argc==4 && std::string_view(argv[1])=="--sample";
     const bool hardware=argc==2 && std::string_view(argv[1])=="--hardware";
     ComPtr<ID3D11Device> device;
     ComPtr<ID3D11DeviceContext> context;
@@ -98,6 +101,35 @@ int main(int argc,char **argv) {
     ComPtr<ID3D11InfoQueue> debug_queue;
     if (debug_enabled) check(SUCCEEDED(device.As(&debug_queue)),"D3D11 debug info queue");
     HostDevice backend(device.Get(),context.Get(),19);
+    if (sample) {
+        ars::validation::SchemaClient schema({std::filesystem::absolute(argv[2]).string()});
+        test::Host host;
+        {
+            ars::assets::Resource resource(test::Host::allocate,test::Host::release,&host);
+            auto bytes=test::file(argv[3]);
+            std::shared_ptr<const ars::assets::ValidatedCpuModel> model;
+            check(ars::assets::validate_bundle(bytes,schema,resource,model)==ARS_OK && bool(model),
+                  "sample native ingestion");
+            PreparedScene2D scene;
+            check(prepare_static_2d(ars::rendering::scene_input(*model),scene)==ARS_OK &&
+                  scene.draws.size()==1,"sample scene preparation");
+            auto sample_target=make_target(device.Get(),model->image().width,model->image().height);
+            render_and_retire(backend,context.Get(),sample_target,scene,model->image());
+            for (const auto point : {std::array<UINT,2>{82,124},{128,35},{128,230}}) {
+                const auto x=point[0],y=point[1];
+                check(x<sample_target.width && y<sample_target.height,"sample pixel coordinate");
+                const auto actual=pixel(context.Get(),sample_target,x,y);
+                const auto offset=(std::size_t(y)*model->image().width+x)*4;
+                const auto &rgba=model->image().rgba;
+                check(near_pixel(actual,{rgba[offset],rgba[offset+1],rgba[offset+2],rgba[offset+3]},10),
+                      "sample portrait pixel readback");
+                std::printf("CUBISM_PREVIEW_PIXEL x=%u y=%u rgba=%u,%u,%u,%u\n",
+                            x,y,actual[0],actual[1],actual[2],actual[3]);
+            }
+        }
+        check(host.live==0,"sample host allocations released");
+        return 0;
+    }
     auto target=make_target(device.Get(),4,4);
     auto *memory=std::pmr::get_default_resource();
     ars::assets::Image atlas(memory);

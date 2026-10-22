@@ -8,7 +8,12 @@ struct Node {
     float weight=1;
     std::uint64_t due=0;
 };
-struct Program { std::array<Node,max_nodes> nodes{}; std::uint32_t count=0; };
+struct PublicResolution;
+struct Program {
+    std::array<Node,max_nodes> nodes{}; std::uint32_t count=0;
+    // Trusted synchronous caller owns this prepared transaction until publish.
+    PublicResolution *public_resolution=nullptr;
+};
 struct SemanticCandidate {
     StagedState state;
     std::array<Value,max_cells> outputs{};

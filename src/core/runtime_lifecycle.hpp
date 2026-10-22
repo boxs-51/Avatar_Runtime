@@ -7,9 +7,13 @@
 #include <mutex>
 
 namespace ars::security { class SourceAuthority; }
-namespace ars::motion { class PublishGate; struct Stage; struct Snapshot; struct Program; }
+namespace ars::motion { class PublishGate; struct Stage; struct Snapshot; struct Program; struct PublicBatch; }
 namespace ars::core {
 struct Runtime;
+struct CpuContext;
+class CpuOperation;
+class RenderFrameLease;
+struct RenderFrameSet;
 class RuntimeRouter;
 enum class LeaseKind { work, management, ingress, snapshot };
 class RuntimeLease {
@@ -53,6 +57,17 @@ public:
     ~StageLease();
     void reset() noexcept;
 };
+class BatchLease {
+    RuntimeLease runtime_;
+    motion::PublishGate *owner_=nullptr;
+    motion::PublicBatch *batch_;
+    friend class RuntimeRouter;
+public:
+    explicit BatchLease(motion::PublicBatch &batch):batch_(&batch){}
+    BatchLease(const BatchLease &)=delete;
+    ~BatchLease();
+    void reset() noexcept;
+};
 class SnapshotLease {
     RuntimeLease runtime_;
     motion::Snapshot *snapshot_=nullptr;
@@ -81,7 +96,29 @@ class RuntimeRouter {
     ars_status ensure_publication(RuntimeLease &,motion::PublishGate **);
     friend class RuntimeLease;
     friend struct ComponentFixture;
+#ifdef ARS_PUBLIC_CPU_ASSETS
+    ars_status cpu_enter(ars_runtime_h,bool,RuntimeLease *,CpuOperation *,CpuContext **);
+#endif
 public:
+#ifdef ARS_PUBLIC_CPU_ASSETS
+    ars_status cpu_load(ars_runtime_h,const ars_asset_source *,ars_model_h *);
+    ars_status cpu_release(ars_runtime_h,ars_model_h);
+    ars_status cpu_create_character(ars_runtime_h,ars_model_h,const ars_character_desc *,ars_character_h *);
+    ars_status cpu_destroy_character(ars_runtime_h,ars_character_h);
+    ars_status cpu_mode(ars_runtime_h,ars_character_h,std::uint32_t);
+    ars_status cpu_layer(ars_runtime_h,ars_character_h,const ars_layer_change *);
+    ars_status cpu_register_source(ars_runtime_h,ars_character_h,const ars_source_desc *,ars_source_admin_h *,ars_ingress_cap *);
+    ars_status cpu_source_control(ars_runtime_h,ars_source_admin_h,unsigned,ars_ingress_cap * = nullptr);
+    ars_status cpu_update(ars_runtime_h,std::uint64_t);
+    ars_status capture_render(ars_runtime_h,ars_character_h,RenderFrameLease *);
+    ars_status capture_render_set(ars_runtime_h,RenderFrameSet *);
+    ars_status validate_render_set(ars_runtime_h,const RenderFrameSet &);
+#ifdef ARS_PUBLIC_D3D11
+    ars_status gpu_render(ars_runtime_h,const ars_render_target *);
+    ars_status gpu_drain(ars_runtime_h);
+#endif
+    ars_status cpu_reap(ars_runtime_h);
+#endif
     explicit RuntimeRouter(RuntimeBudget budget={});
     ars_status create(const ars_runtime_desc &,ars_runtime_h *);
     ars_status acquire(ars_runtime_h,LeaseKind,RuntimeLease *);
@@ -98,6 +135,12 @@ public:
     ars_status dequeue_frame(ars_runtime_h,ars_source_admin_h,FrameLease *);
     ars_status prepare_cpu(ars_runtime_h,ars_character_h,std::span<const ars_source_admin_h>,const motion::Program &,StageLease *);
     ars_status publish_cpu(StageLease *);
+    ars_status append_cpu_batch(StageLease *,BatchLease *);
+    ars_status publish_cpu_batch(BatchLease *,void (*)(void *) noexcept=nullptr,void * = nullptr);
+    // Private consumer read: caller serializes access to its StageLease.
+    // Copies scalars without exposing mutable candidate storage; final publish
+    // still performs the existing source/epoch/clock validation fence.
+    ars_status copy_cpu_candidate(const StageLease &,std::span<float>,std::uint64_t *) const;
     ars_status read_cpu(ars_runtime_h,ars_character_h,SnapshotLease *);
     std::uint32_t occupied() const;
 };

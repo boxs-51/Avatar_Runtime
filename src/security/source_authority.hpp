@@ -53,7 +53,9 @@ public:
     // Shared with publication in B3; ordinary lookup never holds router here.
     std::mutex commit;
     SourceAuthority(core::HandleRegistry &,const ars_runtime_desc &,std::uint64_t,CallbackState &);
-    ars_status bind(std::span<const SemanticChannel>,ars_character_h *);
+    ars_status bind(std::span<const SemanticChannel>,ars_character_h *,std::shared_ptr<const void> = {},bool allow_empty=false);
+    void collect_retired();
+    ars_status active_epoch(ars_source_admin_h,ars_character_h,std::uint64_t *);
     ars_status destroy(ars_character_h,motion::Snapshot **);
     ars_status register_source(ars_character_h,const ars_source_desc *,ars_source_admin_h *,ars_ingress_cap *);
     ars_status rotate(ars_source_admin_h,ars_ingress_cap *);

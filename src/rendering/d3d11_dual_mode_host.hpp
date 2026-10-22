@@ -1,0 +1,82 @@
+#pragma once
+#ifdef _WIN32
+#include "d3d11_scene2d.hpp"
+#include "d3d11_scene3d.hpp"
+#include <atomic>
+#include <memory>
+#include <functional>
+
+namespace ars::rendering {
+// Private M2-D host transaction. Only begin_close may be called off R.
+// The host owns the published offscreen target; publication follows exact
+// completion of a candidate query, so an unready frame cannot replace it.
+class D3D11DualModeHost {
+public:
+    enum class Mode { none, two_d, three_d, moc3 };
+    struct PublicationFence {
+        virtual ~PublicationFence()=default;
+        // Trusted owner only: final decision after exact query completion.
+        // Success must be followed only by nonthrowing publication operations.
+        virtual graphics::Result commit() noexcept=0;
+    };
+private:
+    struct Pending;
+    std::shared_ptr<graphics::d3d11::ContextOwnership> ownership_;
+    graphics::d3d11::ContextOwnership::Participant target_owner_;
+    ID3D11Device *identity_=nullptr;
+    bool surrendered_=false;
+    graphics::d3d11::HostDevice backend_;
+    graphics::d3d11::QueryOps *ops_=nullptr;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> active_texture_;
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> active_view_;
+    std::unique_ptr<Pending> pending_;
+    std::atomic<bool> closing_{false};
+    Mode mode_=Mode::none;
+    std::uint64_t pose_generation_=0, target_epoch_=0;
+    std::uint32_t width_=0, height_=0;
+    bool lost_=false, closed_=false;
+    graphics::Result prepare_target(Pending &,std::uint32_t,std::uint32_t,bool);
+    graphics::Result poll_commit_impl();
+    D3D11DualModeHost(ID3D11Device *,ID3D11DeviceContext *,std::uint64_t,
+        graphics::d3d11::QueryOps *,std::shared_ptr<graphics::d3d11::ContextOwnership>);
+    graphics::Result start(std::unique_ptr<Pending>,graphics::Result);
+public:
+    D3D11DualModeHost(ID3D11Device *,ID3D11DeviceContext *,std::uint64_t generation,
+                      graphics::d3d11::QueryOps *ops=nullptr);
+    static graphics::Result create_owned(std::shared_ptr<graphics::d3d11::ContextOwnership>,
+        graphics::d3d11::QueryOps *,std::unique_ptr<D3D11DualModeHost>&);
+    graphics::Result prepare_lost_teardown();
+    graphics::Result acknowledge_teardown(graphics::d3d11::HostTeardownReceipt &);
+    ~D3D11DualModeHost();
+    D3D11DualModeHost(const D3D11DualModeHost &)=delete;
+    D3D11DualModeHost &operator=(const D3D11DualModeHost &)=delete;
+    graphics::Result request_2d(std::shared_ptr<const PreparedScene2D>,
+        std::shared_ptr<const assets::Image>,std::uint64_t pose_generation,
+        std::uint32_t width,std::uint32_t height,bool fail_target_create=false);
+    graphics::Result request_3d(std::shared_ptr<const PreparedScene3D>,
+        const Camera3D &,std::uint64_t pose_generation,
+        std::uint32_t width,std::uint32_t height,GpuCreateProbe *probe=nullptr,
+        bool fail_target_create=false);
+    // Optional private adapter uses the same host target/query transaction.
+    using MocPass=std::function<graphics::Result(graphics::d3d11::HostDevice&,
+        ID3D11RenderTargetView*,graphics::TargetInfo,graphics::d3d11::QueryRetirement&)>;
+    graphics::Result request_moc(const MocPass&,std::uint64_t pose_generation,
+        std::uint32_t width,std::uint32_t height,bool fail_target_create=false,
+        std::shared_ptr<PublicationFence> fence={});
+    graphics::Result poll_commit();
+    graphics::Result begin_close() noexcept;
+    graphics::Result poll_close();
+    // Isolated private host only: all its context users and targets are owned
+    // here. This does not prove teardown of an external production host.
+    graphics::Result detach_lost();
+    bool accepts(ID3D11RenderTargetView *,std::uint64_t target_epoch) const noexcept;
+    Mode mode() const noexcept { return mode_; }
+    std::uint64_t pose_generation() const noexcept { return pose_generation_; }
+    std::uint64_t target_epoch() const noexcept { return target_epoch_; }
+    ID3D11RenderTargetView *target() const noexcept { return !ownership_||ownership_->admitted()?active_view_.Get():nullptr; }
+    ID3D11Texture2D *texture() const noexcept { return !ownership_||ownership_->admitted()?active_texture_.Get():nullptr; }
+    bool pending() const noexcept { return pending_!=nullptr; }
+    bool lost() const noexcept { return lost_; }
+};
+} // namespace ars::rendering
+#endif

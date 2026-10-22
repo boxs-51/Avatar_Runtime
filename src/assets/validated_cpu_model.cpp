@@ -28,6 +28,8 @@ class ModelBuilder {
             std::pmr::polymorphic_allocator<std::byte>(&r));
         model->image_ = std::move(image);
         model->glb_ = std::move(glb);
+        model->default_mode_ = manifest.at("default_mode").string() == "3d" ? 1 : 0;
+        model->complete_hierarchy_ = true;
         const auto layers = manifest.at("visual_layers"), sem = manifest.at("rig_semantics");
         for (std::size_t i = 0; i < sem.size(); ++i) {
             auto source = sem.at(i);
@@ -79,6 +81,8 @@ class ModelBuilder {
             l.z = static_cast<std::int32_t>(source.at("z_index").number());
             l.visible = source.at("visible").boolean();
             l.opacity = f(source.at("opacity"));
+            l.local_visible = l.visible; l.local_opacity = l.opacity;
+            if (source.has("parent")) l.parent = static_cast<std::uint32_t>(validation::id_index(layers, source.at("parent").string(), work));
             std::size_t current = i;
             for (std::size_t depth = 0; layers.at(current).has("parent"); ++depth) {
                 require(depth < 128);
@@ -144,7 +148,17 @@ class ModelBuilder {
 ars_status validate_bundle(std::span<const std::uint8_t> input, validation::SchemaClient &schema,
                            Resource &resource, std::shared_ptr<const ValidatedCpuModel> &out,
                            const Limits &limits) noexcept {
+    return validate_bundle_checked(input,
+        [](void *context, validation::Schema kind, std::string_view text, Resource &r) noexcept {
+            return static_cast<validation::SchemaClient *>(context)->validate(kind, text, r);
+        }, &schema, resource, out, limits);
+}
+ars_status validate_bundle_checked(std::span<const std::uint8_t> input, SchemaCheck schema, void *context,
+                                   Resource &resource, std::shared_ptr<const ValidatedCpuModel> &out,
+                                   const Limits &limits) noexcept {
     out.reset();
+    if (!schema)
+        return ARS_E_INVALID_ARGUMENT;
     if (!resource.begin_job())
         return ARS_E_BUSY;
     struct JobGuard {
@@ -160,7 +174,7 @@ ars_status validate_bundle(std::span<const std::uint8_t> input, validation::Sche
         validation::Document manifest(json_arena->memory()), rig(json_arena->memory());
         const auto &source = bundle.find("character.json");
         validation::parse_json(text(source), manifest, limits, work);
-        auto status = schema.validate(validation::Schema::manifest, text(source), resource);
+        auto status = schema(context, validation::Schema::manifest, text(source), resource);
         require(status == ARS_OK, status);
         const auto m = manifest.root();
         bool disabled = validation::validate_manifest(m, work);
@@ -179,7 +193,7 @@ ars_status validate_bundle(std::span<const std::uint8_t> input, validation::Sche
             const auto rep = reps.at("2d");
             const auto &rig_source = bundle.find(rep.at("asset").string());
             validation::parse_json(text(rig_source), rig, limits, work);
-            status = schema.validate(validation::Schema::rig, text(rig_source), resource);
+            status = schema(context, validation::Schema::rig, text(rig_source), resource);
             require(status == ARS_OK, status);
             decode_png(bundle.find(rep.at("atlas").string()).bytes, image, resource, limits, work);
             validation::validate_profile_b(m, rig.root(), image.width, image.height, limits, work);

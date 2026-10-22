@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-GOV = ROOT / "docs" / "governance"
+GOV = ROOT / "docs/reference/governance"
 INDEX = "ARS_POLICY_V0_1_INDEX.md"
 MODULES = {
     "ARS_M1_SOLO_OWNER_ACK.md": (526, ("OWNER_DIRECT_ACK", "T0", "T1", "T2", "EXPLICIT_MERGE_ACK")),

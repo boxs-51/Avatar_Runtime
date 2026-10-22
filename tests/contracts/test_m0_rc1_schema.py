@@ -367,7 +367,7 @@ class RC1SchemaContracts(unittest.TestCase):
 
     # F08: M0/G00 security DESIGN cannot demand a production registry/mixer.
     def test_red_f08_g00_p0_c_no_production_implementation_deadlock(self):
-        gates = (ROOT / "docs/P0_SECURITY_REGRESSION_GATES_V0.1.md").read_text(encoding="utf-8")
+        gates = (ROOT / 'docs/reference/P0_SECURITY_REGRESSION_GATES_V0.1.md').read_text(encoding="utf-8")
         self.assertNotIn("before production M1, minimal registry/mixer implementation passes", gates)
 
 if __name__ == "__main__":

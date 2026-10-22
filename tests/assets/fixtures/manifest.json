@@ -1080,6 +1080,141 @@
     "stage": "C2"
   },
   {
+    "id": "positive-m2-3d-pose.glb",
+    "file": "positive-m2-3d-pose.glb",
+    "sha256": "cbbcef0f53b60493825c97dd38a82c33b5be5639b473320519f6bf7249a30b89",
+    "bytes": 2936,
+    "expected": "OK",
+    "family": "M2-C two-joint morph pose",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-node-weight.glb",
+    "file": "positive-m2-3d-node-weight.glb",
+    "sha256": "a9b94fec9293334300da3b2d50ae38d6d6ca5e3b2049b5e9ed20ca96048bc813",
+    "bytes": 2952,
+    "expected": "OK",
+    "family": "M2-C node weight overrides mesh",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-tangent.glb",
+    "file": "positive-m2-3d-tangent.glb",
+    "sha256": "88603ab6a6fed2fe48f35afb0e9fca0b9f3d435b5f99dfb99c533178d46f2d42",
+    "bytes": 3420,
+    "expected": "OK",
+    "family": "M2-C morph tangent before nonuniform skin",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-flat.glb",
+    "file": "positive-m2-3d-flat.glb",
+    "sha256": "6966cf067a7022c508658e615a6a7d48fb90dab80a5175794586e1a894c4652e",
+    "bytes": 2856,
+    "expected": "OK",
+    "family": "M2-C flat color GPU pose",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-camera-perspective.glb",
+    "file": "positive-m2-3d-camera-perspective.glb",
+    "sha256": "cd82c2217ca62d5d0b9402fc88b753f8f281b2cd234ca72de264eef228f63a8e",
+    "bytes": 3008,
+    "expected": "OK",
+    "family": "M2-C selected perspective camera",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-camera-orthographic.glb",
+    "file": "positive-m2-3d-camera-orthographic.glb",
+    "sha256": "3c2c8bc4301fbc70b1ce3b6fb7db2e1495833ad4b3e43d470ab4d411f79c8813",
+    "bytes": 3004,
+    "expected": "OK",
+    "family": "M2-C selected orthographic camera",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-camera-infinite.glb",
+    "file": "positive-m2-3d-camera-infinite.glb",
+    "sha256": "ec0bdae31430697839a47b78d6631dc8292a6b0af0a0ce791c84e01ba5227712",
+    "bytes": 3000,
+    "expected": "OK",
+    "family": "M2-C infinite far perspective camera",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-texture.glb",
+    "file": "positive-m2-3d-texture.glb",
+    "sha256": "ba015bf7d5f1900d500cddcc80864c854cdbd2dfda6d9a47dd137283a7d3fb91",
+    "bytes": 3064,
+    "expected": "OK",
+    "family": "M2-C sRGB base and linear MR",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-mask.glb",
+    "file": "positive-m2-3d-mask.glb",
+    "sha256": "7b3d7ddc0031fcb834554095460915a34febb0436cb5652f0415bb74b9a1634b",
+    "bytes": 3132,
+    "expected": "OK",
+    "family": "M2-C inclusive alpha cutoff",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-blend.glb",
+    "file": "positive-m2-3d-blend.glb",
+    "sha256": "bfe26c2b435d99609746fb63ff5268c682196363f61d21431ead77928ce4d390",
+    "bytes": 3116,
+    "expected": "OK",
+    "family": "M2-C transparent overlap",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-unsupported.glb",
+    "file": "positive-m2-3d-unsupported.glb",
+    "sha256": "196595c8216869f3de672c9d7acc0b7995d2076c0bcde355ec1ca2f28f4ed06f",
+    "bytes": 3092,
+    "expected": "OK",
+    "family": "M2-C valid but unrenderable material",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-repeat.glb",
+    "file": "positive-m2-3d-repeat.glb",
+    "sha256": "4c1840a01bb4a8323e9d1415cf886ef6bbdb127bc3116a4408d9b886dbca29b7",
+    "bytes": 3332,
+    "expected": "OK",
+    "family": "M2-C 2x2 sampler repeat",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-clamp.glb",
+    "file": "positive-m2-3d-clamp.glb",
+    "sha256": "f4a64339f2a4980965e48bd20790417fe93650d32c8d05d931bde76628a390a3",
+    "bytes": 3332,
+    "expected": "OK",
+    "family": "M2-C 2x2 sampler clamp",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-filter-point.glb",
+    "file": "positive-m2-3d-filter-point.glb",
+    "sha256": "1db210242d1f06781bb8c7ad0e84a65694914f38cef19686544684787683818c",
+    "bytes": 3332,
+    "expected": "OK",
+    "family": "M2-C 2x2 sampler point",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-m2-3d-filter-linear.glb",
+    "file": "positive-m2-3d-filter-linear.glb",
+    "sha256": "f21c41529f03b38e1aae164ed1ac70dcae001e7d33e89cfb77c44c767a2fa56d",
+    "bytes": 3332,
+    "expected": "OK",
+    "family": "M2-C 2x2 sampler linear",
+    "stage": "M2"
+  },
+  {
     "id": "glb-joint-index.glb",
     "file": "glb-joint-index.glb",
     "sha256": "74e5fc9ec4a4fb84b699bb252ceeca5ea7a3a4323bd11978cc5f44cb7ea18a74",
@@ -1582,5 +1717,662 @@
     "expected": "OK",
     "family": "GLB checked CPU subset",
     "stage": "C2"
+  },
+  {
+    "id": "positive-alpha54-8-weights-float.glb",
+    "file": "positive-alpha54-8-weights-float.glb",
+    "sha256": "b2e6cd1de6444b508afd17309c19047eebfb7c5630845913929492ac6bdc8609",
+    "bytes": 3496,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-8-weights-packed.glb",
+    "file": "positive-alpha54-8-weights-packed.glb",
+    "sha256": "0aa4da5ddf1789bb9683b152f3dacb4277fb9b50995f56995e7987634da1cdbb",
+    "bytes": 3460,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-8-uv-float.glb",
+    "file": "positive-alpha54-8-uv-float.glb",
+    "sha256": "33d90b775dcbd13133e8d43b0e67e556b54962f1357fa5870ec5c84385d8751d",
+    "bytes": 3352,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-8-uv-packed.glb",
+    "file": "positive-alpha54-8-uv-packed.glb",
+    "sha256": "b513a8861357de3787a2dc77a7b7d4d63695bc42399d520d7c5d8db8b5f2fc25",
+    "bytes": 3352,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-8-both-float.glb",
+    "file": "positive-alpha54-8-both-float.glb",
+    "sha256": "915e31b43ef59fe52a6fd8f818aa99da97a29c3119790236133d878758fddf0d",
+    "bytes": 3648,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-8-both-packed.glb",
+    "file": "positive-alpha54-8-both-packed.glb",
+    "sha256": "5e5dc2f8efbb3126c2adc76b7bb94ce0d9942d87a2cb7fbd4b86256ffc76d749",
+    "bytes": 3612,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-16-weights-float.glb",
+    "file": "positive-alpha54-16-weights-float.glb",
+    "sha256": "154ff5985efec2b3a19a8fb1edac8e06a667ab9f8933929d672d0c4d3f0a67d2",
+    "bytes": 3496,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-16-weights-packed.glb",
+    "file": "positive-alpha54-16-weights-packed.glb",
+    "sha256": "663c04f792e61d39e2316602af27c730410b8199af3249d86d78739fccc83239",
+    "bytes": 3472,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-16-uv-float.glb",
+    "file": "positive-alpha54-16-uv-float.glb",
+    "sha256": "2dcf3f730fad5d39c94e2bfd333806605945ab44f48e1ac9cb63bfa5d73cc41a",
+    "bytes": 3352,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-16-uv-packed.glb",
+    "file": "positive-alpha54-16-uv-packed.glb",
+    "sha256": "52f791dd1ba79caff4d68f416c5dc0d9b879e6520cfea9664479e05dc0623d04",
+    "bytes": 3340,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-16-both-float.glb",
+    "file": "positive-alpha54-16-both-float.glb",
+    "sha256": "80ec9647b22b523b7e9c4f43b1c90ce597ab217f16edd7d5ad3bde6d9d1c042f",
+    "bytes": 3648,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha54-16-both-packed.glb",
+    "file": "positive-alpha54-16-both-packed.glb",
+    "sha256": "9e8067702ee2afdc509c37303a24a23c7f4eb0c0d13972ba0819d58dbb4e2b12",
+    "bytes": 3612,
+    "expected": "OK",
+    "family": "Alpha54 packed accessor / float equivalence",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-OPAQUE-color.glb",
+    "file": "positive-alpha55-float-3-OPAQUE-color.glb",
+    "sha256": "947b726609d8b1d0591c41c3334201af7cb6608b71d7e8d3d47605f75d8bd7bf",
+    "bytes": 3120,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-OPAQUE-baked.glb",
+    "file": "positive-alpha55-float-3-OPAQUE-baked.glb",
+    "sha256": "b42e32414daf04bbf868136c7f6e391e2fed0faa82d49d6e42ee8cf2f01f12b5",
+    "bytes": 2944,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-MASK-color.glb",
+    "file": "positive-alpha55-float-3-MASK-color.glb",
+    "sha256": "1b06fbdf3ee90fd7973a39dab9c8f6aae56e595c6e7104f20bf347f8cb4594bd",
+    "bytes": 3120,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-MASK-baked.glb",
+    "file": "positive-alpha55-float-3-MASK-baked.glb",
+    "sha256": "d20dddced24620641f3618e23a257efb8d0a53d08e4eca841e2410f17b0b7567",
+    "bytes": 2944,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-BLEND-color.glb",
+    "file": "positive-alpha55-float-3-BLEND-color.glb",
+    "sha256": "54c47c0c0242e2ae3347b900268c23eae6bae7877b81c060124a16219cced739",
+    "bytes": 3120,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-BLEND-baked.glb",
+    "file": "positive-alpha55-float-3-BLEND-baked.glb",
+    "sha256": "8b49efeafc23ffcd2bac12365a3019639912d5806913521fc0d671c67c814d90",
+    "bytes": 2944,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-3-gradient-color.glb",
+    "file": "positive-alpha55-float-3-gradient-color.glb",
+    "sha256": "200ab3de14e4dce8616ca407d428014fafe47d792e2bb2b97f5fdd8329cc0ba9",
+    "bytes": 3120,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-OPAQUE-color.glb",
+    "file": "positive-alpha55-float-4-OPAQUE-color.glb",
+    "sha256": "58dfd74cab4e43bfa5feb6f6bd6536d2656dd09fa82ba7e5a202f4ed233f1267",
+    "bytes": 3132,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-OPAQUE-baked.glb",
+    "file": "positive-alpha55-float-4-OPAQUE-baked.glb",
+    "sha256": "fda128ed630af4d66b706b57be0a7dc197863a03f52312ff56c4de367f18f4bf",
+    "bytes": 2944,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-MASK-color.glb",
+    "file": "positive-alpha55-float-4-MASK-color.glb",
+    "sha256": "df88f5a083cbe99edf875328fe41652ea0bd1271bf27bc6865a46b48401e9b5e",
+    "bytes": 3132,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-MASK-baked.glb",
+    "file": "positive-alpha55-float-4-MASK-baked.glb",
+    "sha256": "a3a0f9859bf826b516e1da57df68433d94464663fdd4e3288941bd05058a65b7",
+    "bytes": 2944,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-BLEND-color.glb",
+    "file": "positive-alpha55-float-4-BLEND-color.glb",
+    "sha256": "4e670285c571fe881f327d32042d5a8b1e110bcf99dac669295014583112662a",
+    "bytes": 3132,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-BLEND-baked.glb",
+    "file": "positive-alpha55-float-4-BLEND-baked.glb",
+    "sha256": "1105b7997c76a4b346a630aea2cf489c2a2db47c349a68fc42b9ed060ad6940c",
+    "bytes": 2944,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-float-4-gradient-color.glb",
+    "file": "positive-alpha55-float-4-gradient-color.glb",
+    "sha256": "a94c585fd7623317b401e45045f2e71fdca16a9387c78489aa7856bb586f28dc",
+    "bytes": 3132,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-OPAQUE-color.glb",
+    "file": "positive-alpha55-8-3-OPAQUE-color.glb",
+    "sha256": "89f4670e75f8d920124a2c037bfdae6a78dfeed48d9513d10a93746dbb1f4feb",
+    "bytes": 3112,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-OPAQUE-baked.glb",
+    "file": "positive-alpha55-8-3-OPAQUE-baked.glb",
+    "sha256": "2af4c103f579dacb3fa42f5ed6251f9f34c3de8d1c97c510adbda8a3a6b3e7b4",
+    "bytes": 2960,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-MASK-color.glb",
+    "file": "positive-alpha55-8-3-MASK-color.glb",
+    "sha256": "7695fd8a324471442660d3b9387f63df7adbf1f9588cb8426b62975d50eb127d",
+    "bytes": 3108,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-MASK-baked.glb",
+    "file": "positive-alpha55-8-3-MASK-baked.glb",
+    "sha256": "3ed2ea84f9132077912d99c7ab8e2c27a291d1a6e84fa1377e2748a66554b00b",
+    "bytes": 2956,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-BLEND-color.glb",
+    "file": "positive-alpha55-8-3-BLEND-color.glb",
+    "sha256": "8afb4a2612c62d305f83beb34eead8b96d35a1f2003a2a405e5adab95c42bdbb",
+    "bytes": 3108,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-BLEND-baked.glb",
+    "file": "positive-alpha55-8-3-BLEND-baked.glb",
+    "sha256": "71c4f9856576f8c19dea30be76827df46a8c0891d9598733c4dcf61c5dddccf9",
+    "bytes": 2956,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-3-gradient-color.glb",
+    "file": "positive-alpha55-8-3-gradient-color.glb",
+    "sha256": "9c403cabd4c1de42b0d26d7f433fd2bbb5cf8f8206fe37b9c2b48bc6175b6f55",
+    "bytes": 3112,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-OPAQUE-color.glb",
+    "file": "positive-alpha55-8-4-OPAQUE-color.glb",
+    "sha256": "47f019b51d611cc26ddfdb8d6f86e795efe57497977a8f1554a2c74da5a444e9",
+    "bytes": 3096,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-OPAQUE-baked.glb",
+    "file": "positive-alpha55-8-4-OPAQUE-baked.glb",
+    "sha256": "fd880e7e67f1058cd7bfbd9e7bd91998dc1340536754c8e7c6d76ee3e8b50e49",
+    "bytes": 2972,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-MASK-color.glb",
+    "file": "positive-alpha55-8-4-MASK-color.glb",
+    "sha256": "50f2d41b95057db6ee1cf2be15235cb1fe932dcfd5b257f8715fe7dcac6c42de",
+    "bytes": 3092,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-MASK-baked.glb",
+    "file": "positive-alpha55-8-4-MASK-baked.glb",
+    "sha256": "e75a5d2eeab23d466c323198f0fd605976a89032fb4601d10492786a7c35c177",
+    "bytes": 2972,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-BLEND-color.glb",
+    "file": "positive-alpha55-8-4-BLEND-color.glb",
+    "sha256": "c470bdd537efeace1f1af507d2e4b4c80376afbf27f2cf68bd7d8d131a08e78a",
+    "bytes": 3096,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-BLEND-baked.glb",
+    "file": "positive-alpha55-8-4-BLEND-baked.glb",
+    "sha256": "26d785d21e0ed8b306ecabf76a138f2c2bf5813472237c7a421241e524c4ef02",
+    "bytes": 2972,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-8-4-gradient-color.glb",
+    "file": "positive-alpha55-8-4-gradient-color.glb",
+    "sha256": "a9dc3e5d2a9da20981c59d9467026fe5d8e68fa3fbd0571cce8b43b063dc5a87",
+    "bytes": 3096,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-OPAQUE-color.glb",
+    "file": "positive-alpha55-16-3-OPAQUE-color.glb",
+    "sha256": "bd3e7c243dd6e0ab6305b58ca68263d6ddeb54f02a3f393fe10de8d589c1fce3",
+    "bytes": 3124,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-OPAQUE-baked.glb",
+    "file": "positive-alpha55-16-3-OPAQUE-baked.glb",
+    "sha256": "1c55a5087624694c8b46220fc4d0017f5fea91ee077fef690c00b85898fa326c",
+    "bytes": 2960,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-MASK-color.glb",
+    "file": "positive-alpha55-16-3-MASK-color.glb",
+    "sha256": "a12961583eb0bdd3b50b28c7a9d9f90977b4f85e1c542167930261b45b75c583",
+    "bytes": 3120,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-MASK-baked.glb",
+    "file": "positive-alpha55-16-3-MASK-baked.glb",
+    "sha256": "5fcfc0c4c267cc918585934f3827e81bd306657c73abf52871041e049533ebe2",
+    "bytes": 2956,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-BLEND-color.glb",
+    "file": "positive-alpha55-16-3-BLEND-color.glb",
+    "sha256": "d0b28ece6ef80c1164edf229a6461e78f8024aaf877b339718eec7b8a5e2b429",
+    "bytes": 3120,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-BLEND-baked.glb",
+    "file": "positive-alpha55-16-3-BLEND-baked.glb",
+    "sha256": "6391c2dc584c12d409679e46d784bcc8234e315e04bbee32192d02d285c569a8",
+    "bytes": 2956,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-3-gradient-color.glb",
+    "file": "positive-alpha55-16-3-gradient-color.glb",
+    "sha256": "6479b0ab839eae3acc596c737c99702685ab586c6de6719d12dde4bb788a5123",
+    "bytes": 3124,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-OPAQUE-color.glb",
+    "file": "positive-alpha55-16-4-OPAQUE-color.glb",
+    "sha256": "10ca272c1b11ae1fc9c3c99adb72cbde35a9c7b9fcb43e198f265d868f754b25",
+    "bytes": 3108,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-OPAQUE-baked.glb",
+    "file": "positive-alpha55-16-4-OPAQUE-baked.glb",
+    "sha256": "38210596011e78af926cf0cd7254628a248ca5850c2542813c12b98a24193028",
+    "bytes": 2976,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-MASK-color.glb",
+    "file": "positive-alpha55-16-4-MASK-color.glb",
+    "sha256": "6bc7598d7a11917ca2cd2230817cff0fa220a52959d17a295555ba219d292894",
+    "bytes": 3104,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-MASK-baked.glb",
+    "file": "positive-alpha55-16-4-MASK-baked.glb",
+    "sha256": "14dd6d83ae824e83423ff4497702995211c694e8d2caba2519cc4d4865d15de3",
+    "bytes": 2972,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-BLEND-color.glb",
+    "file": "positive-alpha55-16-4-BLEND-color.glb",
+    "sha256": "fd3d088b59718be99d689f22267629958d41d502e15ed5f641f8fe18ba5a98da",
+    "bytes": 3108,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-BLEND-baked.glb",
+    "file": "positive-alpha55-16-4-BLEND-baked.glb",
+    "sha256": "ffaddc998375ad6558e9e33a46f2f248bc2bfbdd5b300df5c0b568c636cc7b9c",
+    "bytes": 2972,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha55-16-4-gradient-color.glb",
+    "file": "positive-alpha55-16-4-gradient-color.glb",
+    "sha256": "9a1ba89cadae0873f7def6cbefe241346817a8865e2ad149ac9ac0f33de0968f",
+    "bytes": 3108,
+    "expected": "OK",
+    "family": "Alpha55 vertex color / independent material factor control",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-direct-single-transform.glb",
+    "file": "positive-alpha57-direct-single-transform.glb",
+    "sha256": "729984ec04566d6f84132b1853cde5a8f016d0a25ca3276679b7e549bbe82440",
+    "bytes": 1168,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-direct-single-baked.glb",
+    "file": "positive-alpha57-direct-single-baked.glb",
+    "sha256": "f3934c6096e44ffeedad33f8c6196daf88ac16135cdba67daedc132f4cd1ff55",
+    "bytes": 1252,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-direct-double-transform.glb",
+    "file": "positive-alpha57-direct-double-transform.glb",
+    "sha256": "b07ae375cb386ecb53bb2201f90f32408ce880523aec952dc8c8390cf8694a98",
+    "bytes": 1168,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-direct-double-baked.glb",
+    "file": "positive-alpha57-direct-double-baked.glb",
+    "sha256": "4daae0857c9a079d1f37d38c5ac6e12d1691d4124448e71b5f48557e6ad4e93b",
+    "bytes": 1252,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-nested-single-transform.glb",
+    "file": "positive-alpha57-nested-single-transform.glb",
+    "sha256": "f187e0787d3326037d909e4be14893dacedd743b9c2a6fe90fc737024fb01bfc",
+    "bytes": 1228,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-nested-single-baked.glb",
+    "file": "positive-alpha57-nested-single-baked.glb",
+    "sha256": "f3934c6096e44ffeedad33f8c6196daf88ac16135cdba67daedc132f4cd1ff55",
+    "bytes": 1252,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-nested-double-transform.glb",
+    "file": "positive-alpha57-nested-double-transform.glb",
+    "sha256": "afadd2b6c261bca7399e5ad972a34216cba97b46d710581411f295b9584e83a5",
+    "bytes": 1224,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-nested-double-baked.glb",
+    "file": "positive-alpha57-nested-double-baked.glb",
+    "sha256": "4daae0857c9a079d1f37d38c5ac6e12d1691d4124448e71b5f48557e6ad4e93b",
+    "bytes": 1252,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-matrix-single-transform.glb",
+    "file": "positive-alpha57-matrix-single-transform.glb",
+    "sha256": "b8b34a7569b62b9341dc2a4007574b591053feb46d0c469c1280aaa5402e3f82",
+    "bytes": 1176,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-matrix-single-baked.glb",
+    "file": "positive-alpha57-matrix-single-baked.glb",
+    "sha256": "f3934c6096e44ffeedad33f8c6196daf88ac16135cdba67daedc132f4cd1ff55",
+    "bytes": 1252,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-matrix-double-transform.glb",
+    "file": "positive-alpha57-matrix-double-transform.glb",
+    "sha256": "fee5afa7e97c0c33973b3a97796b09119cf7bacba645ede9e1c5bfeffa2e91fb",
+    "bytes": 1172,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-matrix-double-baked.glb",
+    "file": "positive-alpha57-matrix-double-baked.glb",
+    "sha256": "4daae0857c9a079d1f37d38c5ac6e12d1691d4124448e71b5f48557e6ad4e93b",
+    "bytes": 1252,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-even-single-transform.glb",
+    "file": "positive-alpha57-even-single-transform.glb",
+    "sha256": "d13ecb9580d954f4aa3535a8b776ad99a792afdb92ee15d8d136e53e5d2d0d6a",
+    "bytes": 1224,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-even-single-baked.glb",
+    "file": "positive-alpha57-even-single-baked.glb",
+    "sha256": "7e87d1092fb81c69b14516cd245d3d5e2f6430ed6876d0372f260618fd285e1c",
+    "bytes": 1136,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-even-double-transform.glb",
+    "file": "positive-alpha57-even-double-transform.glb",
+    "sha256": "fd8f3c60149b82a4d911042ad195c13e4796ac1da2b667e19ef9a5a64dc041c8",
+    "bytes": 1224,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-even-double-baked.glb",
+    "file": "positive-alpha57-even-double-baked.glb",
+    "sha256": "5ab1aa41c71666cead19b1d71bb722615704beee788426b71a349d9b05a73b1a",
+    "bytes": 1136,
+    "expected": "OK",
+    "family": "Alpha57 authored transform vs baked orientation",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-skin-joint.glb",
+    "file": "positive-alpha57-skin-joint.glb",
+    "sha256": "359452fab3f896502dc598042b5f58f3314486b8db11b079f9bef82e128e5bfa",
+    "bytes": 2856,
+    "expected": "OK",
+    "family": "Alpha57 valid GLB, reflected effective skin unsupported beforeGPU",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-skin-inherited.glb",
+    "file": "positive-alpha57-skin-inherited.glb",
+    "sha256": "022e5d8bc3a34e617eda2c01cfe894557cefd4c474be0e1e2458ca16da986f30",
+    "bytes": 2872,
+    "expected": "OK",
+    "family": "Alpha57 valid GLB, reflected effective skin unsupported beforeGPU",
+    "stage": "M2"
+  },
+  {
+    "id": "positive-alpha57-skin-blended.glb",
+    "file": "positive-alpha57-skin-blended.glb",
+    "sha256": "b61f85174cd695fb823291233d23dd0be52c83fa8b9b89e0b435171b8a1c2143",
+    "bytes": 3072,
+    "expected": "OK",
+    "family": "Alpha57 valid GLB, reflected effective skin unsupported beforeGPU",
+    "stage": "M2"
   }
 ]
