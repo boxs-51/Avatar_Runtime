@@ -50,6 +50,11 @@ class AgentApiContract(unittest.TestCase):
     def test_extended_studio_api(self):
         cases=[
             ({"op":"layer.topology"},"LAYER_TOPOLOGY"),
+            ({"op":"layer.component.relation","first":0,"second":1},"LAYER_COMPONENT_RELATION 0 1"),
+            ({"op":"rig.parent","parent":0,"child":2,"stiffness":.85,"enabled":True},"RIG_PARENT 0 2 0.85 1"),
+            ({"op":"rig.weight","vertex":3,"weight":.25},"RIG_WEIGHT 3 0.25"),
+            ({"op":"rig.weight.inspect","vertex":3},"RIG_WEIGHT_INSPECT 3"),
+            ({"op":"rig.parent.inspect","child":2},"RIG_PARENT_INSPECT 2"),
             ({"op":"layer.topology.scan"},"LAYER_TOPOLOGY_SCAN"),
             ({"op":"layer.component.inspect","component":0},"LAYER_COMPONENT_INSPECT 0"),
             ({"op":"layer.component.adopt","component":0},"LAYER_COMPONENT_ADOPT 0"),

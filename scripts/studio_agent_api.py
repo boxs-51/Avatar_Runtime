@@ -34,6 +34,11 @@ def validate_command(cmd:dict)->str:
         "rig.select":{"op","drawable"},
         "rig.anchor":{"op","vertex","enabled"},
         "rig.beam":{"op","a","b","enabled"},
+        "rig.parent":{"op","parent","child","stiffness","enabled"},
+        "rig.parent.inspect":{"op","child"},
+        "rig.weight":{"op","vertex","weight"},
+        "rig.weight.inspect":{"op","vertex"},
+        "layer.component.relation":{"op","first","second"},
         "rig.apply":{"op"},
         "rig.inspect":{"op"},
         "layer.scan":{"op"},
@@ -139,6 +144,21 @@ def validate_command(cmd:dict)->str:
         a,b=integer("a"),integer("b")
         if a==b or type(cmd["enabled"]) is not bool:raise ValueError("invalid beam")
         return f"RIG_BEAM {a} {b} {int(cmd['enabled'])}"
+    if op=="rig.parent.inspect":
+        return f"RIG_PARENT_INSPECT {integer('child')}"
+    if op=="rig.parent":
+        parent,child=integer("parent"),integer("child")
+        if parent==child or type(cmd["enabled"]) is not bool:
+            raise ValueError("parent edge invalid")
+        return f"RIG_PARENT {parent} {child} {finite('stiffness',0,1)} {int(cmd['enabled'])}"
+    if op=="rig.weight":
+        return f"RIG_WEIGHT {integer('vertex')} {finite('weight',0,1)}"
+    if op=="rig.weight.inspect":
+        return f"RIG_WEIGHT_INSPECT {integer('vertex')}"
+    if op=="layer.component.relation":
+        first,second=integer("first"),integer("second")
+        if first==second:raise ValueError("identical components")
+        return f"LAYER_COMPONENT_RELATION {first} {second}"
     if op=="rig.apply":return "RIG_APPLY"
     if op=="rig.inspect":return "RIG_INSPECT"
     if op=="layer.scan":return "LAYER_SCAN"

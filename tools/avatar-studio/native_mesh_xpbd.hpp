@@ -15,6 +15,7 @@
 namespace ars::experimental::lps {
 struct Endpoint {std::uint32_t part=0, vertex=0;};
 struct Joint {Endpoint a,b;double compliance=0;};
+struct VertexInfluence {Endpoint at;double weight=1;};
 struct Selection {std::uint32_t part=0,pin_vertex=0;double mass=1;};
 struct Options {
     double dt=1.0/120.0,gravity_y=200,wind_x=0,edge_compliance=1e-7;
@@ -24,9 +25,11 @@ struct Options {
     unsigned iterations=8;
     std::vector<Selection> dynamic_parts;
     std::vector<Joint> joints;std::vector<Joint> extra_beams;
+    std::vector<Joint> parent_links;
+    std::vector<VertexInfluence> influences;
 };
 enum class Status {ok,invalid,stale,out_of_budget};
-struct Node {double x=0,y=0,previous_x=0,previous_y=0,source_x=0,source_y=0,inverse_mass=0;std::uint32_t draw=0,vertex=0,part=0;};
+struct Node {double x=0,y=0,previous_x=0,previous_y=0,source_x=0,source_y=0,inverse_mass=0;std::uint32_t draw=0,vertex=0,part=0;double influence=1;};
 struct Edge {std::size_t a=0,b=0;double rest=0,compliance=0;};
 template<class Scene> class Session {
     struct Shape {std::uint32_t part=0;std::size_t count=0;};
@@ -57,7 +60,7 @@ public:
            !finite(opt.contact_radius)||!finite(opt.contact_compliance)||!finite(opt.damping)||opt.damping<0||opt.damping>1||
            opt.edge_compliance<0||opt.contact_radius<0||opt.contact_radius>100||
            opt.contact_compliance<0||!finite(opt.pose_compliance)||opt.pose_compliance<0||opt.pose_compliance>1||!finite(opt.source_motion_transfer)||opt.source_motion_transfer<0||opt.source_motion_transfer>1||opt.substeps<1||opt.substeps>8||opt.iterations<1||opt.iterations>24||
-           !finite(opt.bending_compliance)||opt.bending_compliance<0||opt.bending_compliance>1||!finite(opt.surface_thickness)||opt.surface_thickness<0||opt.surface_thickness>10||opt.anchors.size()>256||opt.dynamic_parts.size()>128||opt.extra_beams.size()>256||opt.joints.size()>128||scene.draws.size()>128)
+           !finite(opt.bending_compliance)||opt.bending_compliance<0||opt.bending_compliance>1||!finite(opt.surface_thickness)||opt.surface_thickness<0||opt.surface_thickness>10||opt.anchors.size()>256||opt.dynamic_parts.size()>128||opt.extra_beams.size()>256||opt.joints.size()>128||opt.parent_links.size()>64||opt.influences.size()>256||scene.draws.size()>128)
             return Status::invalid;
         std::set<std::uint32_t> seen_parts,seen_selected;
         std::vector<Shape> shapes;std::vector<Node> nodes;std::vector<Edge> edges;
@@ -123,6 +126,24 @@ public:
             for(std::size_t i=0;i<nodes.size();++i)if(nodes[i].part==e.part&&nodes[i].vertex==e.vertex)return i;
             return nodes.size();
         };
+        std::set<std::pair<std::uint32_t,std::uint32_t>> used_influences;
+        for(const auto &w:opt.influences){
+            if(!finite(w.weight)||w.weight<0||w.weight>1||
+               !used_influences.insert({w.at.part,w.at.vertex}).second)
+                return Status::invalid;
+            const auto id=locate(w.at);
+            if(id==nodes.size())return Status::invalid;
+            nodes[id].influence=w.weight;
+            nodes[id].inverse_mass*=w.weight; // 0 = exact source pin
+        }
+        for(auto j:opt.parent_links){
+            const auto a=locate(j.a),b=locate(j.b);
+            if(a==nodes.size()||b==nodes.size()||a==b||
+               !finite(j.compliance)||j.compliance<0||j.compliance>1)
+                return Status::invalid;
+            edges.push_back({a,b,std::hypot(nodes[a].x-nodes[b].x,
+                                           nodes[a].y-nodes[b].y),j.compliance});
+        }
         for(auto j:opt.joints){
             const auto a=locate(j.a),b=locate(j.b);
             if(a==nodes.size()||b==nodes.size()||a==b||nodes[a].part==nodes[b].part||
@@ -161,8 +182,8 @@ public:
                 const double vx=(p.x-p.previous_x)*options_.damping;
                 const double vy=(p.y-p.previous_y)*options_.damping;
                 p.previous_x=p.x;p.previous_y=p.y;
-                p.x+=vx+(options_.wind_x+action_fx)*dt*dt;
-                p.y+=vy+(options_.gravity_y+action_fy)*dt*dt;
+                p.x+=vx+(options_.wind_x+action_fx)*p.influence*dt*dt;
+                p.y+=vy+(options_.gravity_y+action_fy)*p.influence*dt*dt;
             }
             std::vector<double> lambdas(links_.size(),0);
             for(unsigned it=0;it<options_.iterations;++it){

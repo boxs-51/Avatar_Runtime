@@ -1,4 +1,4 @@
-#include "../native_mesh_xpbd.hpp"
+﻿#include "../native_mesh_xpbd.hpp"
 #include "../studio_motion_filter.hpp"
 #include <array>
 #include <cmath>
@@ -119,6 +119,73 @@ static void interaction_force_oracle(){
  if(!(peak>.001))throw 115;  // distinct from baseline
  if(!(std::abs(b-a)<peak))throw 116;  // settles after release
 }
+static void influence_parent_solver_oracle(){
+ auto pose=mesh();xp::Options o;
+ o.gravity_y=0;o.wind_x=0;o.damping=.995;o.edge_compliance=.02;
+ o.pose_compliance=.08;o.source_motion_transfer=0;o.substeps=4;
+ o.dynamic_parts={{0,0,1}};
+ auto pin=o;pin.influences.push_back({{0,3},0.});
+ xp::Session<Scene> normal,weighted;
+ if(normal.bind(pose,o,700)!=xp::Status::ok||
+    weighted.bind(pose,pin,701)!=xp::Status::ok)throw 210;
+ double far_motion=0;
+ for(int i=0;i<24;++i){
+  xp::Session<Scene>::Candidate n,w;
+  if(normal.prepare(pose,700,n,200,0)!=xp::Status::ok||
+     weighted.prepare(pose,701,w,200,0)!=xp::Status::ok)throw 211;
+  far_motion=std::max(far_motion,
+    std::abs(double(n.scene.draws[0].vertices[3].x)-1));
+  if(std::abs(double(w.scene.draws[0].vertices[3].x)-1)>1e-6){std::cerr<<"WEIGHT_DIAG k="<<i<<" x="<<w.scene.draws[0].vertices[3].x<<" inv="<<w.state[3].inverse_mass<<" inf="<<w.state[3].influence<<" y="<<w.scene.draws[0].vertices[3].y<<"\n";throw 212;}
+  if(normal.accept(std::move(n),700)!=xp::Status::ok||
+     weighted.accept(std::move(w),701)!=xp::Status::ok)throw 213;
+ }
+ if(!(far_motion>.0001))throw 214;
+ auto quarter=o;
+ quarter.influences.push_back({{0,3},.25});
+ xp::Session<Scene> damped;
+ if(damped.bind(pose,quarter,705)!=xp::Status::ok)throw 222;
+ double reduced_motion=0;
+ for(int k=0;k<24;++k){
+  xp::Session<Scene>::Candidate c;
+  if(damped.prepare(pose,705,c,200,0)!=xp::Status::ok)throw 223;
+  reduced_motion=std::max(reduced_motion,
+    std::abs(double(c.scene.draws[0].vertices[3].x)-1));
+  if(damped.accept(std::move(c),705)!=xp::Status::ok)throw 224;
+ }
+ if(!(reduced_motion>0&&reduced_motion<far_motion))throw 225;
+ std::cout<<"VERTEX_WEIGHT_RESPONSE_PASS reduced_ratio="<<reduced_motion/far_motion<<"\n";
+ pin.influences.push_back({{0,3},.5});
+ xp::Session<Scene> reject;
+ if(reject.bind(pose,pin,702)==xp::Status::ok)throw 215;
+ pin.influences.back()={{0,2},2.};
+ if(reject.bind(pose,pin,702)==xp::Status::ok)throw 216;
+ pin.influences.back()={{0,2},.5};
+ pin.parent_links.push_back({{0,0},{0,3},0.});
+ if(reject.bind(pose,pin,702)!=xp::Status::ok)throw 217;
+ // Parent constraint must measurably limit drift from its rest distance.
+ auto rigid=o;
+ rigid.parent_links.push_back({{0,0},{0,3},0.});
+ xp::Session<Scene> free_child,linked_child;
+ if(free_child.bind(pose,o,703)!=xp::Status::ok||
+    linked_child.bind(pose,rigid,704)!=xp::Status::ok)throw 218;
+ double free_error=0,linked_error=0;
+ for(int k=0;k<24;++k){
+  xp::Session<Scene>::Candidate a,b;
+  if(free_child.prepare(pose,703,a,220,0)!=xp::Status::ok||
+     linked_child.prepare(pose,704,b,220,0)!=xp::Status::ok)throw 219;
+  auto deviation=[](const Scene &scene)->double{
+   const auto &vertices=scene.draws[0].vertices;
+   return std::abs(std::hypot(double(vertices[3].x-vertices[0].x),
+     double(vertices[3].y-vertices[0].y))-std::sqrt(2.));
+  };
+  free_error=deviation(a.scene);linked_error=deviation(b.scene);
+  if(free_child.accept(std::move(a),703)!=xp::Status::ok||
+     linked_child.accept(std::move(b),704)!=xp::Status::ok)throw 220;
+ }
+ if(!(free_error>.001&&linked_error<free_error*.5))throw 221;
+ std::cout<<"PARENT_LINK_RESPONSE_PASS ratio="<<linked_error/free_error<<"\n";
+ std::cout<<"WEIGHTED_XPBD_PASS zero=immobile parent=bound baseline_move="<<far_motion<<"\n";
+}
 int main(){
  try{
   xp::Options z;z.gravity_y=0;z.wind_x=0;z.damping=1;z.iterations=8;
@@ -176,6 +243,7 @@ int main(){
    std::cout<<"HAIR_REGION_ANCHOR_BENDING_PASS\n";
   }
   interaction_force_oracle();
+  influence_parent_solver_oracle();
   display_smoothing_oracle();
   inertia_oracle();
   std::cout<<"XPBD_PARAMETER_MATRIX_PASS idle=1 gravity=1 damping=1 timestep=1 iterations=1 invalid=3 pin=1 stale=1\n";

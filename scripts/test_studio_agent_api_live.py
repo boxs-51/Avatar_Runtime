@@ -92,6 +92,8 @@ def main()->int:
             denied=["STUDIO_CAPTURE desktop","XPBD_SET gravity nan",
                     "PARAM_SET -1 0","RIG_STORE load ../../outside",
                     "STUDIO_PLAY 2","STUDIO_STATUS extra",
+                    "RIG_PARENT 2 2 .5 1","RIG_PARENT 0 2 nan 1",
+                    "RIG_WEIGHT 3 nan","RIG_WEIGHT -1 .5",
                     "UNKNOWN_EXEC powershell"]
             for index,wire in enumerate(denied):
                 token=f"{index+1:024x}"

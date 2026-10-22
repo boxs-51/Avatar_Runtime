@@ -67,11 +67,25 @@ extern "C" void *studio_xpbd_bind_rig(csmModel *model,StudioXpbdOptions opt,cons
  if(opt.joint&&r->selected.size()==2)o.joints.push_back({{(uint32_t)r->selected[0],0},{(uint32_t)r->selected[1],0},opt.compliance});
  if(rig&&rig->drawable==opt.first){
   for(int j=0;j<rig->beam_count;++j)o.extra_beams.push_back({{(uint32_t)rig->drawable,(uint32_t)rig->beams[j].a},{(uint32_t)rig->drawable,(uint32_t)rig->beams[j].b},opt.compliance});
+  for(int j=0;j<rig->parent_count;++j){
+   const auto &edge=rig->parents[j];
+   if(!std::isfinite(edge.stiffness)||edge.stiffness<0||edge.stiffness>1)return nullptr;
+   o.parent_links.push_back({{(uint32_t)rig->drawable,(uint32_t)edge.parent},
+      {(uint32_t)rig->drawable,(uint32_t)edge.child},
+      double(1-edge.stiffness)*.0001});
+  }
+  for(int j=0;j<rig->weight_count;++j){
+   const auto &weight=rig->weights[j];
+   if(!std::isfinite(weight.weight)||weight.weight<0||weight.weight>1)return nullptr;
+   o.influences.push_back({{(uint32_t)rig->drawable,(uint32_t)weight.vertex},weight.weight});
+  }
  }
  if(r->solver.bind(scene,o,r->identity)!=xp::Status::ok)return nullptr;
  for(const auto &part:scene.draws)for(size_t j=0;j<part.vertices.size();++j){
   bool fixed=false;for(const auto &a:o.anchors)if(a.part==part.part_index&&a.vertex==j)fixed=true;
   for(const auto &d:o.dynamic_parts)if(d.part==part.part_index&&d.pin_vertex==j)fixed=true;
+  for(const auto &w:o.influences)
+   if(w.at.part==part.part_index&&w.at.vertex==j&&w.weight==0)fixed=true;
   r->pinned.push_back(fixed?1:0);
  }
  r->displaced.resize(csmGetDrawableCount(model));r->pointers.resize(csmGetDrawableCount(model));

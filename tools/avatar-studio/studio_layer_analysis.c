@@ -174,3 +174,45 @@ int studio_layer_component_suggest(const unsigned short *indices,int index_count
  if(next.vertices<3||next.anchor<0)return 0;
  *out=next;return 1;
 }
+
+int studio_layer_component_relation(const unsigned short *indices,int index_count,
+  const StudioLayerVertex *vertices,int vertex_count,int first,int second,
+  StudioLayerRelation *out){
+ StudioLayerTopology checked={0};
+ if(!out||!vertices||first<0||second<0||first==second||
+    !studio_layer_components(indices,index_count,vertex_count,&checked)||
+    first>=checked.islands||second>=checked.islands)return 0;
+ int parent[2048],weight[2048],label[2048];
+ unsigned char used[2048]={0};
+ for(int i=0;i<vertex_count;++i){
+  if(!isfinite(vertices[i].x)||!isfinite(vertices[i].y))return 0;
+  parent[i]=i;weight[i]=1;label[i]=-1;
+ }
+ for(int t=0;t<index_count;t+=3){
+  int a=indices[t],b=indices[t+1],c=indices[t+2];
+  used[a]=used[b]=used[c]=1;
+  studio_unite(parent,weight,a,b);
+  studio_unite(parent,weight,b,c);
+ }
+ int seen[2048],islands=0;
+ for(int i=0;i<vertex_count;++i)seen[i]=-1;
+ for(int i=0;i<vertex_count;++i)if(used[i]){
+  int root=studio_root(parent,i);
+  if(seen[root]<0)seen[root]=islands++;
+  label[i]=seen[root];
+ }
+ StudioLayerRelation best={-1,-1,0};
+ double dist=INFINITY;
+ for(int i=0;i<vertex_count;++i)if(label[i]==first)
+  for(int j=0;j<vertex_count;++j)if(label[j]==second){
+   double dx=(double)vertices[i].x-vertices[j].x;
+   double dy=(double)vertices[i].y-vertices[j].y;
+   double square=dx*dx+dy*dy;
+   if(square<dist){
+    dist=square;best.vertex_a=i;best.vertex_b=j;
+   }
+  }
+ if(best.vertex_a<0||!isfinite(dist))return 0;
+ best.distance=(float)sqrt(dist);
+ *out=best;return 1;
+}

@@ -1,41 +1,41 @@
-# Avatar Studio
+﻿# Avatar Studio
 
-Giao diện desktop để quan sát và chỉnh model local theo thời gian thực.
-Từ thư mục repo, chạy `launch_interactive_viewer.bat` hoặc:
+Giao diá»‡n desktop Ä‘á»ƒ quan sÃ¡t vÃ  chá»‰nh model local theo thá»i gian thá»±c.
+Tá»« thÆ° má»¥c repo, cháº¡y `launch_interactive_viewer.bat` hoáº·c:
 
 ```powershell
 python scripts/avatar_studio.py
 python scripts/avatar_studio.py --model PATH_TO_LOCAL_MODEL3_JSON
 ```
 
-Nếu có đúng một model trong thư mục model cục bộ đã cấu hình, Studio tự chọn model đó; nếu không,
-Studio mở hộp chọn file. `MOC3_VIEWER_PROFILE` hiện có vẫn được ưu tiên. Nút
-**Open model** thay model trong cửa sổ; model lỗi giữ nguyên model đang chạy.
+Náº¿u cÃ³ Ä‘Ãºng má»™t model trong thÆ° má»¥c model cá»¥c bá»™ Ä‘Ã£ cáº¥u hÃ¬nh, Studio tá»± chá»n model Ä‘Ã³; náº¿u khÃ´ng,
+Studio má»Ÿ há»™p chá»n file. `MOC3_VIEWER_PROFILE` hiá»‡n cÃ³ váº«n Ä‘Æ°á»£c Æ°u tiÃªn. NÃºt
+**Open model** thay model trong cá»­a sá»•; model lá»—i giá»¯ nguyÃªn model Ä‘ang cháº¡y.
 
-- Chín biểu cảm chuyển tiếp mượt; tự đổi biểu cảm, chớp mắt, thở, nhìn theo
-  chuột, nói mô phỏng, điều chỉnh tốc độ/cường độ/chuyển động gió.
-- Physics3 liên kết với model chạy bằng retained solver hiện có. Trạng thái
-  thiếu hoặc lỗi physics hiện rõ; không tự thay bằng spring giả.
-- Kéo chuột trái để điều khiển đầu/tay/thân; chuột phải/giữa để pan; cuộn để zoom.
-  Fit/Face đặt camera, Reset khôi phục scene và các giá trị chỉnh tay.
-- Inspector tìm theo ID, chỉnh và ghim tham số, chỉnh độ hiện của part/layer.
-  Chuột phải trên hàng đã ghim để bỏ ghim. Clear manual overrides khôi phục
-  tham số và opacity gốc. Tham số model không có sẽ không được tự tạo.
-- Space pause/play; Step tiến một frame mô phỏng; P bật/tắt physics; 1–9 chọn
-  biểu cảm; R fit camera; F12 hoặc Capture lưu PNG viewport.
-- Bốn nền, grid, particles, biểu đồ thời gian frame; Save/Load preset giữ các
-  tùy chỉnh và override. Preset sai model hoặc hỏng bị từ chối.
+- ChÃ­n biá»ƒu cáº£m chuyá»ƒn tiáº¿p mÆ°á»£t; tá»± Ä‘á»•i biá»ƒu cáº£m, chá»›p máº¯t, thá»Ÿ, nhÃ¬n theo
+  chuá»™t, nÃ³i mÃ´ phá»ng, Ä‘iá»u chá»‰nh tá»‘c Ä‘á»™/cÆ°á»ng Ä‘á»™/chuyá»ƒn Ä‘á»™ng giÃ³.
+- Physics3 liÃªn káº¿t vá»›i model cháº¡y báº±ng retained solver hiá»‡n cÃ³. Tráº¡ng thÃ¡i
+  thiáº¿u hoáº·c lá»—i physics hiá»‡n rÃµ; khÃ´ng tá»± thay báº±ng spring giáº£.
+- KÃ©o chuá»™t trÃ¡i Ä‘á»ƒ Ä‘iá»u khiá»ƒn Ä‘áº§u/tay/thÃ¢n; chuá»™t pháº£i/giá»¯a Ä‘á»ƒ pan; cuá»™n Ä‘á»ƒ zoom.
+  Fit/Face Ä‘áº·t camera, Reset khÃ´i phá»¥c scene vÃ  cÃ¡c giÃ¡ trá»‹ chá»‰nh tay.
+- Inspector tÃ¬m theo ID, chá»‰nh vÃ  ghim tham sá»‘, chá»‰nh Ä‘á»™ hiá»‡n cá»§a part/layer.
+  Chuá»™t pháº£i trÃªn hÃ ng Ä‘Ã£ ghim Ä‘á»ƒ bá» ghim. Clear manual overrides khÃ´i phá»¥c
+  tham sá»‘ vÃ  opacity gá»‘c. Tham sá»‘ model khÃ´ng cÃ³ sáº½ khÃ´ng Ä‘Æ°á»£c tá»± táº¡o.
+- Space pause/play; Step tiáº¿n má»™t frame mÃ´ phá»ng; P báº­t/táº¯t physics; 1â€“9 chá»n
+  biá»ƒu cáº£m; R fit camera; F12 hoáº·c Capture lÆ°u PNG viewport.
+- Bá»‘n ná»n, grid, particles, biá»ƒu Ä‘á»“ thá»i gian frame; Save/Load preset giá»¯ cÃ¡c
+  tÃ¹y chá»‰nh vÃ  override. Preset sai model hoáº·c há»ng bá»‹ tá»« chá»‘i.
 
-Preset, `state.json` và PNG chỉ lưu trong **`build/studio-user/`**, được Git bỏ
-qua. Preset giữ zoom nhưng không lưu vị trí pan. Capture/F12 ghi đè
-`viewport.png`; hãy sao chép ảnh cần giữ trước lần chụp kế tiếp. Các điều khiển
-chu kỳ bổ sung xuất hiện khi cửa sổ đủ cao. Giao diện dùng tiếng Anh.
+Preset, `state.json` vÃ  PNG chá»‰ lÆ°u trong **`build/studio-user/`**, Ä‘Æ°á»£c Git bá»
+qua. Preset giá»¯ zoom nhÆ°ng khÃ´ng lÆ°u vá»‹ trÃ­ pan. Capture/F12 ghi Ä‘Ã¨
+`viewport.png`; hÃ£y sao chÃ©p áº£nh cáº§n giá»¯ trÆ°á»›c láº§n chá»¥p káº¿ tiáº¿p. CÃ¡c Ä‘iá»u khiá»ƒn
+chu ká»³ bá»• sung xuáº¥t hiá»‡n khi cá»­a sá»• Ä‘á»§ cao. Giao diá»‡n dÃ¹ng tiáº¿ng Anh.
 
-`--legacy` mở viewer cũ. `--build` yêu cầu build tăng dần. Studio tự build khi
-chưa có binary hoặc source Studio/runtime mới hơn binary. Cần Windows x64,
-CMake và Visual Studio C++; dùng source Purism Core/raylib/utf8proc đã có trong
-`build/`. Không tải dependency hay SDK mới. Một checkout mới chưa có các source
-local này cần chuẩn bị dependency trước; launcher sẽ báo lỗi rõ.
+`--legacy` má»Ÿ viewer cÅ©. `--build` yÃªu cáº§u build tÄƒng dáº§n. Studio tá»± build khi
+chÆ°a cÃ³ binary hoáº·c source Studio/runtime má»›i hÆ¡n binary. Cáº§n Windows x64,
+CMake vÃ  Visual Studio C++; dÃ¹ng source Purism Core/raylib/utf8proc Ä‘Ã£ cÃ³ trong
+`build/`. KhÃ´ng táº£i dependency hay SDK má»›i. Má»™t checkout má»›i chÆ°a cÃ³ cÃ¡c source
+local nÃ y cáº§n chuáº©n bá»‹ dependency trÆ°á»›c; launcher sáº½ bÃ¡o lá»—i rÃµ.
 
 ```powershell
 python scripts/avatar_studio.py --smoke --frames 1800
@@ -43,16 +43,16 @@ $env:ARS_STUDIO_LIVE='1'
 python -m unittest discover -s tests/moc3 -p test_avatar_studio_live.py -v
 ```
 
-Smoke mở cửa sổ thật, kiểm tra physics ở biên tốc độ, pause, preset, resize và
-lưu ảnh vào thư mục riêng. Bài test GUI gửi phím/chuột chỉ khi đúng cửa sổ do nó
-mở đang ở foreground, rồi đóng process đó. Khi chạy bài này, để chuột/bàn phím
-rảnh cho test. Chạy thường không gửi input tự động.
+Smoke má»Ÿ cá»­a sá»• tháº­t, kiá»ƒm tra physics á»Ÿ biÃªn tá»‘c Ä‘á»™, pause, preset, resize vÃ 
+lÆ°u áº£nh vÃ o thÆ° má»¥c riÃªng. BÃ i test GUI gá»­i phÃ­m/chuá»™t chá»‰ khi Ä‘Ãºng cá»­a sá»• do nÃ³
+má»Ÿ Ä‘ang á»Ÿ foreground, rá»“i Ä‘Ã³ng process Ä‘Ã³. Khi cháº¡y bÃ i nÃ y, Ä‘á»ƒ chuá»™t/bÃ n phÃ­m
+ráº£nh cho test. Cháº¡y thÆ°á»ng khÃ´ng gá»­i input tá»± Ä‘á»™ng.
 
-Đây là viewer chẩn đoán **trusted-local** dùng Purism Core/sample OpenGL renderer
-(MIT, Sakura Motion Project) và retained Physics3 của repo. Chỉ mở model tin cậy.
-Biểu cảm, nói và gió là procedural controls, không phải phát motion/expression
-do tác giả model cung cấp hay nhận âm thanh từ micro. Kết quả không thay chứng
-cứ ARS host/D3D11, không chứng minh tương đương Cubism và không đóng gate sản phẩm.
+ÄÃ¢y lÃ  viewer cháº©n Ä‘oÃ¡n **trusted-local** dÃ¹ng Purism Core/sample OpenGL renderer
+(MIT, Sakura Motion Project) vÃ  retained Physics3 cá»§a repo. Chá»‰ má»Ÿ model tin cáº­y.
+Biá»ƒu cáº£m, nÃ³i vÃ  giÃ³ lÃ  procedural controls, khÃ´ng pháº£i phÃ¡t motion/expression
+do tÃ¡c giáº£ model cung cáº¥p hay nháº­n Ã¢m thanh tá»« micro. Káº¿t quáº£ khÃ´ng thay chá»©ng
+cá»© ARS host/D3D11, khÃ´ng chá»©ng minh tÆ°Æ¡ng Ä‘Æ°Æ¡ng Cubism vÃ  khÃ´ng Ä‘Ã³ng gate sáº£n pháº©m.
 
 ## Primary Layer Physics Studio entrypoint (local experiment)
 
@@ -260,7 +260,7 @@ quality oracle. Log/JSON only in ignored build/studio-user.
 Telemetry regression fixed moved-from candidate access before numerical
 read; pinned presentation points bypass smoothing.
 
-## Local per-drawable rig editing — cache and Agent query
+## Local per-drawable rig editing â€” cache and Agent query
 The Rig editor now retains distinct anchor/beam sets for up to
 32 drawables per model generation. Switching A -> B -> A through the
 GUI or local Agent API restores A's authored constraints; changing
@@ -291,19 +291,19 @@ labels.
 confidence >=80, and changes the editable rig only; **Apply rig to XPBD**
 remains a separate deliberate action. Users can explicitly confirm a
 drawable's role as Unknown, Hair, Skirt or Strap using the rig controls.
-That role is stored with the local rig in STUDIO_RIG_2 format, with
+That role is stored with the local rig in STUDIO_RIG_3 format, with
 backward-compatible read of STUDIO_RIG_1. A per-drawable rig cache keeps
 the manual label while switching layers.
 
 Authorized local Agent API v1.0 additions:
-- \`layer.scan\` — grouped numeric totals (no names or vertex positions);
+- \`layer.scan\` â€” grouped numeric totals (no names or vertex positions);
   \`up/mid/low/span\` are relative bounding-box regions and \`bad\` is
   the number of drawables that could not be evaluated.
-- \`layer.suggest\` — selected drawable's role hint, confidence, proposed
+- \`layer.suggest\` â€” selected drawable's role hint, confidence, proposed
   anchor count, region and shape, with no raw identifier.
-- \`layer.adopt\` — explicit acceptance of high-confidence suggested roots;
+- \`layer.adopt\` â€” explicit acceptance of high-confidence suggested roots;
   refuses ambiguous candidates, does not enable physics automatically.
-- \`layer.label\` — explicit manual assignment: kind is exactly
+- \`layer.label\` â€” explicit manual assignment: kind is exactly
   \`unknown\`, \`hair\`, \`skirt\` or \`strap\`. It is not an automatic
   classifier and can be revised before saving the rig.
 - \`rig.inspect\` additionally reports the manual role.

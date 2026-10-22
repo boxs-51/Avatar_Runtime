@@ -111,3 +111,51 @@ signature, and rejects absent components or full anchor capacity.
 
 This is a **geometric selection aid**, not verified skeletal rigging,
 weighted bone binding or semantic hair/skirt segmentation.
+
+## Experimental hierarchical mesh rig, local only
+
+The native agent now supports geometric relation queries, parent-child
+rig links, and per-vertex weights. A relationship query is read-only:
+layer.component.relation takes two distinct component IDs of the
+selected drawable and returns a nearest vertex pair and gap. Nearby
+components are not automatically connected or considered related
+body parts.
+
+In the Rig Editor, use the Hierarchy toggle to switch to advanced
+editing. Mark a parent vertex, select another vertex and Attach child.
+Cycles, self-parenting, and a second parent per child are rejected.
+Remove child's parent unlinks the child. The weight slider controls
+the selected vertex between 0 (fixed at source) and 1 (full
+simulation). Apply rig is required to rebind XPBD after any edit.
+
+Local Agent JSON command examples:
+    {"op":"rig.parent","parent":0,"child":2,"stiffness":0.85,"enabled":true}
+    {"op":"rig.parent.inspect","child":2}
+    {"op":"rig.weight","vertex":3,"weight":0.25}
+    {"op":"rig.weight.inspect","vertex":3}
+    {"op":"layer.component.relation","first":0,"second":1}
+    {"op":"rig.store","action":"save"}
+    {"op":"rig.apply"}
+
+V3 rig files (STUDIO_RIG_3) persist parent edges and sparse vertex
+weights, with backward reads for V1 and V2. The RigBank stores edited
+rigs only: switching among hundreds of untouched drawables is safe,
+but the cache still has a 32-edited-rig limit.
+
+Current hierarchy is an XPBD parent-distance constraint, not a
+complete hierarchical skeletal transform/skin-weight binding.
+Explicit cross-drawable parent links and automatic semantic body
+part identification remain out of scope for this version. Geometry
+does not imply anatomy. Model assets, textures and screenshots remain
+outside Git.
+
+Tests:
+    build/avatar-studio/Release/studio_rig_tests.exe
+    build/avatar-studio/Release/studio_layer_analysis_tests.exe
+    build/avatar-studio/Release/studio_xpbd_parameter_tests.exe
+    py scripts/test_studio_hierarchy_live.py
+
+The Beta Auditor session marker describes a different review-only
+session, with pending findings and separate temporary IPC. This
+implementation does not modify the auditor marker or IPC and does
+not claim independent auditor approval.

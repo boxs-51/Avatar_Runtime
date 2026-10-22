@@ -52,6 +52,13 @@ int main(void){
  CHECK(segment.vertices==3&&segment.anchor==4&&segment.root==3);
  CHECK(!studio_layer_component_suggest(twins,6,points,7,2,&segment));
  CHECK(!studio_layer_component_suggest(invalid,3,points,4,0,&segment));
+ StudioLayerRelation between={0};
+ CHECK(studio_layer_component_relation(twins,6,points,7,0,1,&between));
+ CHECK(between.vertex_a==2&&between.vertex_b==3);
+ CHECK(fabsf(between.distance-2.f)<.00001f);
+ CHECK(!studio_layer_component_relation(twins,6,points,7,0,0,&between));
+ CHECK(!studio_layer_component_relation(invalid,3,points,4,0,1,&between));
+ puts("MESH_RELATION_PASS closest_pair=validated cross_island_not_auto_connected");
  puts("LAYER_COMPONENTS_PASS islands=2 orphan=1 invalid=reject");
  puts("LAYER_CLASSIFICATION_PASS hair=1 skirt=1 strap=1 ambiguous=unknown conservative=1");
  return 0;

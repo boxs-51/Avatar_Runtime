@@ -1,4 +1,4 @@
-/* Avatar Studio: local interactive model lab, not public SDK qualification. */
+﻿/* Avatar Studio: local interactive model lab, not public SDK qualification. */
 #include "viewer.h"
 #include "studio_backend.h"
 #include "studio_xpbd.h"
@@ -26,7 +26,7 @@ typedef struct {
     int history;float scroll;char search[96],model_name[256],folder[1024],notice[192];
     double notice_until;void *linked;int physics_reset,step_requested;
     int failures,checks,physics_expected,xpbd_smoke,xpbd_smoke_frames,xpbd_motion_case,xpbd_motion_rebinds;float paused_time;double paused_checksum;
-    void *xpbd;int xpbd_first,xpbd_second,xpbd_joint,xpbd_page,rig_selected,rig_beam_start,rig_overlay;StudioRig rig;StudioRigBank rig_bank;StudioLayerSuggestion layer_proposal;StudioLayerTopology layer_topology;int layer_topology_valid;
+    void *xpbd;int xpbd_first,xpbd_second,xpbd_joint,xpbd_page,rig_selected,rig_beam_start,rig_overlay,rig_parent_start,rig_advanced;StudioRig rig;StudioRigBank rig_bank;StudioLayerSuggestion layer_proposal;StudioLayerTopology layer_topology;int layer_topology_valid;
      int layer_proposal_valid,layer_proposal_drawable;uint64_t layer_proposal_signature;float xpbd_gravity,xpbd_wind,xpbd_compliance,xpbd_collision,xpbd_mass,xpbd_damping,xpbd_contact_compliance,xpbd_step,xpbd_iters,xpbd_pin,xpbd_substeps,xpbd_pose_compliance,xpbd_source_transfer,xpbd_bending,xpbd_surface,xpbd_anchors;
     Settings settings;RenderTexture2D target;Rectangle viewport;
 } Studio;
@@ -69,7 +69,7 @@ static void control(int id,float x,float y,const char *name,float *value,float l
 static void defaults(void){
     s.settings=(Settings){1,1,1,1,1,0,0,1,1,0,1,.7f,.15f,3.5f,7,1};
     s.selected=0;s.time=0;s.gaze_x=s.gaze_y=s.pull_x=s.pull_y=0;
-    s.xpbd_first=0;s.xpbd_second=-1;s.xpbd_joint=0;s.xpbd_gravity=-12;s.xpbd_wind=3;s.xpbd_compliance=.0000001f;s.xpbd_collision=0;s.xpbd_mass=1;s.xpbd_damping=.96f;s.xpbd_contact_compliance=0;s.xpbd_step=1.f/60;s.xpbd_iters=8;s.xpbd_pin=0;s.xpbd_substeps=4;s.xpbd_pose_compliance=.004f;s.xpbd_source_transfer=.03f;s.xpbd_bending=.00001f;s.xpbd_surface=.02f;s.xpbd_anchors=2;
+    s.rig_parent_start=-1;s.rig_advanced=0;s.xpbd_first=0;s.xpbd_second=-1;s.xpbd_joint=0;s.xpbd_gravity=-12;s.xpbd_wind=3;s.xpbd_compliance=.0000001f;s.xpbd_collision=0;s.xpbd_mass=1;s.xpbd_damping=.96f;s.xpbd_contact_compliance=0;s.xpbd_step=1.f/60;s.xpbd_iters=8;s.xpbd_pin=0;s.xpbd_substeps=4;s.xpbd_pose_compliance=.004f;s.xpbd_source_transfer=.03f;s.xpbd_bending=.00001f;s.xpbd_surface=.02f;s.xpbd_anchors=2;
     memset(s.weights,0,sizeof s.weights);s.weights[0]=1;s.physics_reset=1;
 }
 static void free_model(void){
@@ -403,9 +403,12 @@ static void rig_ui(float x){
  const int *vc=csmGetDrawableVertexCounts(s.core.model);
  if(s.rig.vertex_count!=vc[d]||s.rig.drawable!=d){
      if(!studio_rig_bank_select(&s.rig_bank,&s.rig,d,signature(),vc[d]))return;
-   s.rig_selected=0;s.rig_beam_start=-1;
+   s.rig_selected=0;s.rig_beam_start=-1;s.rig_parent_start=-1;
  }
  label("LAYER RIG EDITOR",x,190,16,ACCENT);
+  if(button((Rectangle){x+180,185,100,30},
+       s.rig_advanced?"Basic":"Hierarchy",s.rig_advanced))
+    s.rig_advanced=!s.rig_advanced;
  label(TextFormat("Drawable %d / %d",d,n),x,224,14,TEXT);
  if(button((Rectangle){x+176,218,40,27},"-",0))s.xpbd_first=(d+n-1)%n;
  if(button((Rectangle){x+226,218,40,27},"+",0))s.xpbd_first=(d+1)%n;
@@ -437,15 +440,35 @@ static void rig_ui(float x){
   void *next=studio_xpbd_bind_rig(s.core.model,o,&s.rig);
   if(next){studio_xpbd_disable(s.xpbd);s.xpbd=next;toast("Rig and support beams activated.");}
   else toast("Rig rejected: invalid vertex/mesh.");
-  label(TextFormat("Confirmed role: %s",
-    studio_layer_kind_name((StudioLayerKind)s.rig.role)),x,788,12,TEXT);
-  const char *roles[]={"Unknown","Hair","Skirt","Strap"};
-  for(int i=0;i<4;++i)
-   if(button((Rectangle){x+i*71.f,815,67,29},roles[i],s.rig.role==i))
-    studio_rig_set_role(&s.rig,i);
- }
+  }
  label("Click vertex to select, Shift+click anchor",x,580,12,MUTED);
  label("Ctrl+click two vertices for a beam",x,600,12,MUTED);
+ if(s.rig_advanced){
+   label(TextFormat("Parents %d / Weights %d",
+     s.rig.parent_count,s.rig.weight_count),x,633,13,ACCENT);
+   if(button((Rectangle){x,660,135,32},"Mark parent",0))
+     s.rig_parent_start=s.rig_selected;
+   if(button((Rectangle){x+145,660,135,32},"Attach child",0)){
+     int ok=s.rig_parent_start>=0&&
+       studio_rig_parent(&s.rig,s.rig_parent_start,s.rig_selected,.85f,1);
+     toast(ok?"Parent added; Apply rig separately.":"Parent rejected: invalid/cycle.");
+     s.rig_parent_start=-1;
+   }
+   if(button((Rectangle){x,702,280,31},"Remove child's parent",0)){
+     int done=0;
+     for(int i=0;i<s.rig.parent_count;++i)
+       if(s.rig.parents[i].child==s.rig_selected){
+         done=studio_rig_parent(&s.rig,s.rig.parents[i].parent,
+             s.rig_selected,s.rig.parents[i].stiffness,0);break;
+       }
+     toast(done?"Parent removed.":"Selected vertex has no parent.");
+   }
+   float influence=studio_rig_weight_get(&s.rig,s.rig_selected);
+   label(TextFormat("Selected vertex weight: %.2f",influence),x,753,14,TEXT);
+   if(slider(7701,(Rectangle){x,786,270,7},&influence,0,1))
+     studio_rig_weight(&s.rig,s.rig_selected,influence);
+   label("0=fixed; 1=full motion. Apply rig separately.",x,822,12,MUTED);
+ }else{
   if(button((Rectangle){x,640,135,32},"Analyze layer",0)){
     if(!studio_propose_layer(d))toast("Layer analysis unavailable.");
   }
@@ -468,6 +491,14 @@ static void rig_ui(float x){
         s.layer_topology.islands,s.layer_topology.isolated,
         s.layer_topology.triangles),x,860,12,MUTED);
   }
+   label(TextFormat("Confirmed role: %s",
+     studio_layer_kind_name((StudioLayerKind)s.rig.role)),x,788,12,TEXT);
+   const char *roles[]={"Unknown","Hair","Skirt","Strap"};
+   for(int i=0;i<4;++i)
+     if(button((Rectangle){x+i*71.f,815,67,29},roles[i],s.rig.role==i))
+       studio_rig_set_role(&s.rig,i);
+ }
+
 }
 static void xpbd_ui(float x){
  int n=csmGetDrawableCount(s.core.model);
@@ -597,16 +628,17 @@ static void process_agent_request(void){
   int v,tail;if(fscanf(f,"%d",&v)==1&&fscanf(f,"%d",&tail)!=1&&v>=0&&v<n){
     const int *vc=csmGetDrawableVertexCounts(s.core.model);
     ok=studio_rig_bank_select(&s.rig_bank,&s.rig,v,signature(),vc[v]);
-    if(ok){s.xpbd_first=v;s.tab=3;s.rig_selected=0;s.rig_beam_start=-1;
+    if(ok){s.xpbd_first=v;s.tab=3;s.rig_selected=0;s.rig_beam_start=-1;s.rig_parent_start=-1;
       snprintf(receipt,sizeof receipt,"drawable=%d",v);}
   }
  }else if(!strcmp(op,"RIG_INSPECT")){
   int tail;
   if(fscanf(f,"%d",&tail)!=1&&s.rig.vertex_count>0){
    ok=1;
-   snprintf(receipt,sizeof receipt,"drawable=%d anchors=%d beams=%d role=%s",
+   snprintf(receipt,sizeof receipt,"drawable=%d anchors=%d beams=%d role=%s parents=%d weights=%d",
        s.rig.drawable,s.rig.anchor_count,s.rig.beam_count,
-       studio_layer_kind_name((StudioLayerKind)s.rig.role));
+       studio_layer_kind_name((StudioLayerKind)s.rig.role),
+        s.rig.parent_count,s.rig.weight_count);
   }
  }else if(!strcmp(op,"LAYER_COMPONENT_INSPECT")||
            !strcmp(op,"LAYER_COMPONENT_ADOPT")){
@@ -713,6 +745,75 @@ static void process_agent_request(void){
      ok=1;snprintf(receipt,sizeof receipt,"role=%s save_pending=1",name);
    }
   }
+ }else if(!strcmp(op,"RIG_PARENT_INSPECT")){
+   int child,tail;
+   if(fscanf(f,"%d",&child)==1&&fscanf(f,"%d",&tail)!=1&&
+      child>=0&&child<s.rig.vertex_count){
+     ok=1;int parent=-1;float stiffness=0;
+     for(int i=0;i<s.rig.parent_count;++i)
+       if(s.rig.parents[i].child==child){
+         parent=s.rig.parents[i].parent;
+         stiffness=s.rig.parents[i].stiffness;
+         break;
+       }
+     snprintf(receipt,sizeof receipt,"child=%d parent=%d stiffness=%.7g",
+        child,parent,stiffness);
+   }
+ }else if(!strcmp(op,"RIG_WEIGHT_INSPECT")){
+   int vertex,tail;
+   if(fscanf(f,"%d",&vertex)==1&&fscanf(f,"%d",&tail)!=1&&
+      vertex>=0&&vertex<s.rig.vertex_count){
+     const float weight=studio_rig_weight_get(&s.rig,vertex);
+     if(weight>=0){ok=1;snprintf(receipt,sizeof receipt,
+       "vertex=%d weight=%.7g",vertex,weight);}
+   }
+ }else if(!strcmp(op,"RIG_WEIGHT")){
+   int vertex,tail;float weight;
+   if(fscanf(f,"%d %f",&vertex,&weight)==2&&
+      fscanf(f,"%d",&tail)!=1&&s.rig.vertex_count>0){
+     StudioRig candidate=s.rig;
+     if(studio_rig_weight(&candidate,vertex,weight)){
+       s.rig=candidate;ok=1;
+       snprintf(receipt,sizeof receipt,
+         "vertex=%d weight=%.7g pending_apply=1",vertex,weight);
+     }
+   }
+ }else if(!strcmp(op,"RIG_PARENT")){
+   int parent,child,enabled,tail;float stiffness;
+   if(fscanf(f,"%d %d %f %d",&parent,&child,&stiffness,&enabled)==4&&
+      fscanf(f,"%d",&tail)!=1&&s.rig.vertex_count>0){
+     StudioRig candidate=s.rig;
+     if(studio_rig_parent(&candidate,parent,child,stiffness,enabled)){
+       s.rig=candidate;ok=1;
+       snprintf(receipt,sizeof receipt,
+         "parents=%d pending_apply=1",s.rig.parent_count);
+     }
+   }
+ }else if(!strcmp(op,"LAYER_COMPONENT_RELATION")){
+   int first,second,tail;
+   if(fscanf(f,"%d %d",&first,&second)==2&&
+      fscanf(f,"%d",&tail)!=1&&first>=0&&second>=0&&
+      first!=second&&first<2048&&second<2048){
+     const int d=s.xpbd_first,n=csmGetDrawableCount(s.core.model);
+     const int *vc=csmGetDrawableVertexCounts(s.core.model);
+     const int *ic=csmGetDrawableIndexCounts(s.core.model);
+     const unsigned short **idx=csmGetDrawableIndices(s.core.model);
+     const csmVector2 **pos=csmGetDrawableVertexPositions(s.core.model);
+     if(d>=0&&d<n&&vc&&ic&&idx&&pos&&vc[d]>=3&&
+         vc[d]<=2048&&pos[d]&&idx[d]){
+       StudioLayerVertex coords[2048];
+       for(int j=0;j<vc[d];++j)
+         coords[j]=(StudioLayerVertex){pos[d][j].X,pos[d][j].Y};
+       StudioLayerRelation rel={0};
+       if(studio_layer_component_relation(idx[d],ic[d],coords,vc[d],
+                first,second,&rel)){
+         ok=1;
+         snprintf(receipt,sizeof receipt,
+           "a=%d b=%d nearest_a=%d nearest_b=%d gap=%.8g",
+           first,second,rel.vertex_a,rel.vertex_b,rel.distance);
+       }
+     }
+   }
  }else if(!strcmp(op,"RIG_ANCHOR")||!strcmp(op,"RIG_BEAM")){
   int a,b,e,tail;int beam=!strcmp(op,"RIG_BEAM");
   int parsed=beam?fscanf(f,"%d %d %d",&a,&b,&e):fscanf(f,"%d %d",&a,&e);
