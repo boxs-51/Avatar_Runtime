@@ -32,6 +32,15 @@ class Frames(unittest.TestCase):
         self.assertIn("LPS_ERROR",message)
         self.assertIn("accepted_frames=3",message)
         self.assertEqual(b.frames,3)
+    def test_native_parameter_rejection_reports_reason_and_does_not_advance(self):
+        b=self.mock_bridge(["ERR","parameter","invalid_parameter"])
+        with self.assertRaises(PixelError) as failure:b.frame({})
+        self.assertIn("invalid_parameter",str(failure.exception))
+        self.assertEqual(b.frames,3)
+        b=self.mock_bridge(["ERR","parameter","unsupported_feature"])
+        with self.assertRaises(PixelError) as failure:b.frame({})
+        self.assertIn("unsupported_feature",str(failure.exception))
+        self.assertEqual(b.frames,3)
     def test_protocol_error_preserves_wrong_epoch(self):
         b=self.mock_bridge(["FRAME","4","99","4"])
         with self.assertRaises(PixelError) as failure:b.frame({})
