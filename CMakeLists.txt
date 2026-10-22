@@ -5,6 +5,10 @@ project(AvatarRuntimeContractPrep VERSION 0.1.0 LANGUAGES C CXX)
 
 option(ARS_ENABLE_PUBLIC_CPU_ASSETS "Opt-in Windows x64 isolated public CPU asset and authority profile" OFF)
 option(ARS_ENABLE_PUBLIC_D3D11_HOST "Opt-in ABI20 Windows D3D11 committed-pose render/drain" OFF)
+option(ARS_BUILD_LPS_NATIVE_TESTS "Experimental native XPBD committed-scene tests only" OFF)
+if(ARS_BUILD_LPS_NATIVE_TESTS AND NOT ARS_ENABLE_PUBLIC_D3D11_HOST)
+    message(FATAL_ERROR "LPS native committed model tests require explicit public D3D11 host profile")
+endif()
 if(ARS_ENABLE_PUBLIC_D3D11_HOST AND NOT ARS_ENABLE_PUBLIC_CPU_ASSETS)
     message(FATAL_ERROR "Public D3D11 host requires ARS_ENABLE_PUBLIC_CPU_ASSETS=ON")
 endif()
@@ -1012,6 +1016,20 @@ if(ARS_ENABLE_PUBLIC_D3D11_HOST)
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/rendering/generate_committed_fixtures.py"
             "${ARS_ASSET_CORPUS}" "${ARS_COMMITTED_FIXTURES}"
         DEPENDS ars_asset_fixtures)
+    if(ARS_BUILD_LPS_NATIVE_TESTS)
+        add_executable(ars_lps_committed_bridge
+            experiments/layer-physics-studio-v03/tests/native_committed_model_tests.cpp
+            src/abi/abi_version.cpp src/abi/cpu_api.cpp)
+        target_compile_features(ars_lps_committed_bridge PRIVATE cxx_std_20)
+        target_link_libraries(ars_lps_committed_bridge PRIVATE ars_runtime_components)
+        target_compile_definitions(ars_lps_committed_bridge PRIVATE NOMINMAX)
+        add_dependencies(ars_lps_committed_bridge ars_committed_fixtures ars_cpu_admission_worker ars_cpu_model_broker)
+        set_target_properties(ars_lps_committed_bridge PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+        ars_runtime_options(ars_lps_committed_bridge)
+        add_test(NAME lps_v03_committed_native_cpu
+            COMMAND ars_lps_committed_bridge "${ARS_COMMITTED_FIXTURES}/committed-euler.arschar")
+        set_tests_properties(lps_v03_committed_native_cpu PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE)
+    endif()
     add_executable(ars_committed_pose_tests tests/rendering/committed_pose_tests.cpp src/abi/abi_version.cpp src/abi/cpu_api.cpp)
     target_compile_features(ars_committed_pose_tests PRIVATE cxx_std_20)
     target_link_libraries(ars_committed_pose_tests PRIVATE ars_runtime_components)

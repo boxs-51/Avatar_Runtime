@@ -1,0 +1,69 @@
+name: LPS v0.3 native committed-mesh experiment
+on:
+  push:
+    branches: [exp/layer-physics-studio-v0.3-full-model]
+    paths:
+      - 'experiments/layer-physics-studio-v03/native/**'
+      - 'experiments/layer-physics-studio-v03/tests/native_*.cpp'
+      - 'experiments/layer-physics-studio-v03/README_NATIVE.md'
+      - 'CMakeLists.txt'
+      - '.github/workflows/lps-v03-native-committed.yml'
+  pull_request:
+    branches: [alpha]
+    paths:
+      - 'experiments/layer-physics-studio-v03/native/**'
+      - 'experiments/layer-physics-studio-v03/tests/native_*.cpp'
+      - 'experiments/layer-physics-studio-v03/README_NATIVE.md'
+      - 'CMakeLists.txt'
+      - '.github/workflows/lps-v03-native-committed.yml'
+permissions:
+  contents: read
+jobs:
+  native-mesh:
+    name: Native XPBD prepared mesh (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Configure native CPU bridge
+        shell: pwsh
+        run: |
+          $args = @('-S','experiments/layer-physics-studio-v03/native','-B','build/lps-native')
+          if ($IsWindows) { $args += @('-A','x64') }
+          & cmake @args
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build and run actual PreparedScene2D type-check
+        shell: pwsh
+        run: |
+          cmake --build build/lps-native --config Release --parallel 2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ctest --test-dir build/lps-native -C Release --no-tests=error --output-on-failure
+          exit $LASTEXITCODE
+  committed-model:
+    name: Real committed model + XPBD (Windows WARP profile)
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {fetch-depth: 0}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with: {python-version: '3.12'}
+      - name: Configure experimental native runtime profile
+        shell: pwsh
+        run: |
+          cmake -S . -B build/lps-committed -A x64 -DARS_BUILD_RUNTIME_CORE=ON -DARS_BUILD_ASSET_VALIDATOR=ON -DARS_ENABLE_PUBLIC_CPU_ASSETS=ON -DARS_ENABLE_PUBLIC_D3D11_HOST=ON -DARS_ASSET_FETCH_DEPS=ON -DARS_ENABLE_PREP_TESTS=OFF -DARS_BUILD_LPS_NATIVE_TESTS=ON
+          exit $LASTEXITCODE
+      - name: Build committed-source native test target
+        shell: pwsh
+        run: |
+          cmake --build build/lps-committed --config Release --target ars_lps_committed_bridge --parallel 2
+          exit $LASTEXITCODE
+      - name: Check actual native2D + GLB original projection
+        shell: pwsh
+        run: |
+          ctest --test-dir build/lps-committed -C Release -R '^lps_v03_committed_native_cpu$' --no-tests=error --output-on-failure
+          exit $LASTEXITCODE
