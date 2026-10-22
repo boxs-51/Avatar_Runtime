@@ -10,7 +10,7 @@
   "counts": {
     "reference": 86,
     "completed": 49,
-    "in_progress": 30,
+    "in_progress": 31,
     "obsolete": 4
   },
   "baseline_counts": {
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 169,
+  "total_documents": 170,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -2012,6 +2012,16 @@
       "encoding": "utf-8",
       "document_kind": "json",
       "reviewed_sha256": "44c2c1fe42d1557ed5a5587e0cbc782725a8922b6bbd29e63cbb23f67dd86042"
+    },
+    {
+      "path": "docs/in-progress/INTERACTIVE_STUDIO_DESIGN.md",
+      "category": "in_progress",
+      "lifecycle": "in_progress",
+      "reason": "Interactive local desktop Studio implementation and verification; human hands-on iteration pending, no product gate closure.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "19da99261485a2b2a2a63630d692bfca17e96a4b274e270549751fb8a44a82fb"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
