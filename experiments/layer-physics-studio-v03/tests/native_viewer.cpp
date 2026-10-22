@@ -186,7 +186,7 @@ class NativeViewer {
     WNDCLASSW cls{};cls.lpfnWndProc=wndproc;
     cls.hInstance=GetModuleHandleW(nullptr);
     cls.lpszClassName=L"ARS_LPS_NATIVE_VIEWER_03";
-    cls.hCursor=LoadCursorW(nullptr,IDC_ARROW);
+    cls.hCursor=LoadCursorW(nullptr,MAKEINTRESOURCEW(32512));
     cls.hbrBackground=reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);
     require(RegisterClassW(&cls)||GetLastError()==ERROR_CLASS_ALREADY_EXISTS,"register native viewer");
     RECT rect{0,0,LONG(viewport_w+258),LONG(std::max(510u,viewport_h+30))};
