@@ -155,9 +155,11 @@ class Editor:
     def select(self):
         chosen = tuple(self.listbox.curselection())
         if not 1 <= len(chosen) <= 2:
-            raise ValueError("Select one or two drawable meshes only")
+            self.status.set("Select ONE drawable, or Ctrl+select TWO, before applying XPBD")
+            return
         if any(self.index[i][1] > 2048 for i in chosen):
-            raise ValueError("Selected mesh exceeds the experimental 2048 particle budget")
+            self.status.set("Selection exceeds the experimental 2048-vertex mesh budget")
+            return
         self.command("LPS_SELECT " + " ".join(str(self.index[i][0]) for i in chosen), "LPS_SELECTED")
         self.status.set("XPBD selected: " + ", ".join(self.index[i][2] for i in chosen))
 
@@ -177,6 +179,8 @@ class Editor:
                     self.clock += 6 * STEP_NS
                     candidate = self.physics.prepare(self.clock, manual)
                     manual = dict(candidate.parameters)
+                # Record the exact native reply when F3 frame identity fails.
+                # Do not change the fail-closed frame/epoch verification.
                 self.bridge.frame(manual)
                 if candidate is not None:
                     self.physics.commit(candidate)
