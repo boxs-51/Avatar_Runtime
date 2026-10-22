@@ -243,7 +243,23 @@ int main(int argc,char** argv){
                 std::istringstream parameter(line);ars::moc3::Parameter p;
                 if(!(parameter>>p.id>>p.value)||parameter>>extra)return 2;parameters.push_back(std::move(p));
             }
-            if(session->update_complete(parameters)!=ars::moc3::Result::ok){std::cout<<"ERR parameter"<<std::endl;continue;}
+            const auto parameter_result=session->update_complete(parameters);
+            if(parameter_result!=ars::moc3::Result::ok){
+                // Bounded diagnostics: no model data, paths, or parameter values.
+                // The original evaluator remains the authority; never retry by
+                // relaxing its range/feature/geometry constraints.
+                const char* reason="other";
+                switch(parameter_result){
+                    case ars::moc3::Result::invalid_parameter: reason="invalid_parameter";break;
+                    case ars::moc3::Result::invalid_model: reason="invalid_model";break;
+                    case ars::moc3::Result::unsupported_feature: reason="unsupported_feature";break;
+                    case ars::moc3::Result::out_of_budget: reason="out_of_budget";break;
+                    case ars::moc3::Result::wrong_thread: reason="wrong_thread";break;
+                    case ars::moc3::Result::allocation_failed: reason="allocation_failed";break;
+                    default:break;
+                }
+                std::cout<<"ERR parameter "<<reason<<std::endl;continue;
+            }
             auto snapshot=session->current();ars::moc3::GpuProbe probe;
 #ifdef ARS_LPS_MOC3_BRIDGE
             std::unique_ptr<LpsOverlay::Candidate> prepared_xpbd;
