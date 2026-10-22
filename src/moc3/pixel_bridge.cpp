@@ -1,4 +1,7 @@
 #include "d3d11_renderer.hpp"
+#ifdef ARS_LPS_MOC3_BRIDGE
+#include "../../experiments/layer-physics-studio-v03/native/moc3_xpbd.hpp"
+#endif
 #include "../rendering/d3d11_dual_mode_host.hpp"
 #ifdef ARS_MOC3_PRODUCT_BRIDGE
 #include "core_consumer.hpp"
@@ -72,6 +75,33 @@ int main(int argc,char** argv){
         adapter_file.close();
         ars::rendering::D3D11DualModeHost host(device.Get(),context.Get(),101);
         ars::moc3::AtlasResidency residency;
+#ifdef ARS_LPS_MOC3_BRIDGE
+        using LpsOverlay=ars::experimental::lps::moc3::Overlay;
+        using LpsOptions=ars::experimental::lps::Options;
+        std::unique_ptr<LpsOverlay> xpbd;
+        LpsOptions xpbd_options;
+        xpbd_options.dt=1.0/120.; xpbd_options.gravity_y=-12.;
+        xpbd_options.edge_compliance=1e-7;xpbd_options.iterations=10;
+        std::vector<std::uint32_t> xpbd_selected;
+        bool xpbd_joint=false;
+        auto configure_xpbd=[&]()->bool{
+            if(xpbd_selected.empty())return false;
+            LpsOptions options=xpbd_options;
+            if(xpbd_joint && xpbd_selected.size()==2){
+                const auto &draws=session->current()->drawables;
+                const auto a=xpbd_selected[0],b=xpbd_selected[1];
+                if(a>=draws.size()||b>=draws.size()||
+                   draws[a].vertices.empty()||draws[b].vertices.empty())return false;
+                options.joints.push_back({{a,static_cast<std::uint32_t>(draws[a].vertices.size()-1)},
+                                          {b,static_cast<std::uint32_t>(draws[b].vertices.size()-1)},0});
+            }
+            auto replacement=std::make_unique<LpsOverlay>();
+            if(replacement->bind(*session->current(),xpbd_selected,options,17)!=ars::experimental::lps::Status::ok)
+                return false;
+            xpbd=std::move(replacement);
+            return true;
+        };
+#endif
 #ifdef ARS_MOC3_PRODUCT_BRIDGE
         std::unique_ptr<ars::moc3::CoreConsumer> core;
 #endif
@@ -124,6 +154,62 @@ int main(int argc,char** argv){
                 std::cout<<"CORE_CURRENT "<<generation<<std::endl;continue;
             }
 #endif
+#ifdef ARS_LPS_MOC3_BRIDGE
+            if(line=="LPS_LIST"){
+                auto snap=session->current();
+                if(snap->drawables.size()>4096){std::cout<<"LPS_ERROR too_many_drawables"<<std::endl;continue;}
+                std::cout<<"LPS_LIST "<<snap->drawables.size()<<std::endl;
+                for(std::size_t i=0;i<snap->drawables.size();++i){
+                    const auto &d=snap->drawables[i];
+                    std::cout<<"LPS_DRAWABLE "<<i<<" "<<d.vertices.size()<<" ";
+                    for(unsigned char c:d.id)
+                        std::cout<<std::hex<<std::setw(2)<<std::setfill('0')<<unsigned(c);
+                    std::cout<<std::dec<<std::setfill(' ')<<std::endl;
+                }
+                continue;
+            }
+            if(line=="LPS_CLEAR"){
+                xpbd.reset();xpbd_selected.clear();std::cout<<"LPS_CLEARED"<<std::endl;continue;
+            }
+            if(line.rfind("LPS_SELECT ",0)==0){
+                std::istringstream cmd(line.substr(11));unsigned first=0,second=0;std::string extra;
+                if(!(cmd>>first)||first>=session->current()->drawables.size()){
+                    std::cout<<"LPS_ERROR invalid_selection"<<std::endl;continue;
+                }
+                std::vector<std::uint32_t> chosen{first};
+                if(cmd>>second){
+                    if(second==first||second>=session->current()->drawables.size()||cmd>>extra){
+                        std::cout<<"LPS_ERROR invalid_selection"<<std::endl;continue;
+                    }
+                    chosen.push_back(second);std::sort(chosen.begin(),chosen.end());
+                }else if(!cmd.eof()){
+                    std::cout<<"LPS_ERROR invalid_selection"<<std::endl;continue;
+                }
+                const auto old=xpbd_selected;xpbd_selected=std::move(chosen);
+                if(!configure_xpbd()){
+                    xpbd_selected=old;std::cout<<"LPS_ERROR selection_budget_or_mesh"<<std::endl;continue;
+                }
+                std::cout<<"LPS_SELECTED "<<xpbd_selected.size()<<std::endl;continue;
+            }
+            if(line.rfind("LPS_PARAMS ",0)==0){
+                std::istringstream cmd(line.substr(11));double gravity=0,wind=0,soft=0,radius=0;int joint=0;std::string extra;
+                if(!(cmd>>gravity>>wind>>soft>>radius>>joint)||cmd>>extra||
+                   !std::isfinite(gravity)||!std::isfinite(wind)||!std::isfinite(soft)||
+                   !std::isfinite(radius)||std::abs(gravity)>1000||std::abs(wind)>1000||
+                   soft<0||soft>0.01||radius<0||radius>1||joint<0||joint>1){
+                    std::cout<<"LPS_ERROR invalid_parameters"<<std::endl;continue;
+                }
+                const auto old=xpbd_options;const bool was_joint=xpbd_joint;
+                xpbd_options.gravity_y=gravity;xpbd_options.wind_x=wind;
+                xpbd_options.edge_compliance=soft;xpbd_options.contact_radius=radius;
+                xpbd_joint=joint!=0;
+                if(!xpbd_selected.empty()&&!configure_xpbd()){
+                    xpbd_options=old;xpbd_joint=was_joint;
+                    std::cout<<"LPS_ERROR parameters_rejected"<<std::endl;continue;
+                }
+                std::cout<<"LPS_PARAMS_OK"<<std::endl;continue;
+            }
+#endif
             if(line=="CATALOG"){
                 std::vector<ars::moc3::ParameterInfo> catalog;
                 if(session->parameter_info(catalog)!=ars::moc3::Result::ok)return 8;
@@ -145,7 +231,7 @@ int main(int argc,char** argv){
                 std::cout<<"GEOMETRY "<<hash<<std::endl;continue;
             }
             std::istringstream input(line);std::string command,extra;std::size_t n=0;
-#ifdef ARS_MOC3_PRODUCT_BRIDGE
+#if defined(ARS_MOC3_PRODUCT_BRIDGE) || defined(ARS_LPS_MOC3_BRIDGE)
             constexpr std::uint32_t max_frames=10000;
 #else
             constexpr std::uint32_t max_frames=60;
@@ -157,8 +243,35 @@ int main(int argc,char** argv){
                 std::istringstream parameter(line);ars::moc3::Parameter p;
                 if(!(parameter>>p.id>>p.value)||parameter>>extra)return 2;parameters.push_back(std::move(p));
             }
-            if(session->update_complete(parameters)!=ars::moc3::Result::ok){std::cout<<"ERR parameter"<<std::endl;continue;}
+            const auto parameter_result=session->update_complete(parameters);
+            if(parameter_result!=ars::moc3::Result::ok){
+                // Bounded diagnostics: no model data, paths, or parameter values.
+                // The original evaluator remains the authority; never retry by
+                // relaxing its range/feature/geometry constraints.
+                const char* reason="other";
+                switch(parameter_result){
+                    case ars::moc3::Result::invalid_parameter: reason="invalid_parameter";break;
+                    case ars::moc3::Result::invalid_model: reason="invalid_model";break;
+                    case ars::moc3::Result::unsupported_feature: reason="unsupported_feature";break;
+                    case ars::moc3::Result::out_of_budget: reason="out_of_budget";break;
+                    case ars::moc3::Result::wrong_thread: reason="wrong_thread";break;
+                    case ars::moc3::Result::allocation_failed: reason="allocation_failed";break;
+                    default:break;
+                }
+                std::cout<<"ERR parameter "<<reason<<" "<<session->last_failure_stage()<<std::endl;continue;
+            }
             auto snapshot=session->current();ars::moc3::GpuProbe probe;
+#ifdef ARS_LPS_MOC3_BRIDGE
+            std::unique_ptr<LpsOverlay::Candidate> prepared_xpbd;
+            const std::uint64_t original_generation=snapshot->generation;
+            if(xpbd){
+                prepared_xpbd=std::make_unique<LpsOverlay::Candidate>();
+                if(xpbd->prepare(*snapshot,*prepared_xpbd)!=ars::experimental::lps::Status::ok){
+                    std::cout<<"LPS_ERROR stale_or_unbound"<<std::endl;continue;
+                }
+                snapshot=std::make_shared<ars::moc3::Snapshot>(prepared_xpbd->output);
+            }
+#endif
             auto pass=[&](ars::graphics::d3d11::HostDevice& backend,ID3D11RenderTargetView* target,
                           ars::graphics::TargetInfo info,ars::graphics::d3d11::QueryRetirement& query){
                 return ars::moc3::render_offscreen_moc3(backend,target,info,snapshot,atlases,view,query,&probe,&residency);};
@@ -167,6 +280,11 @@ int main(int argc,char** argv){
             auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(15);result=Result::busy;
             while(result==Result::busy&&std::chrono::steady_clock::now()<deadline){result=host.poll_commit();std::this_thread::yield();}
             if(result!=Result::ok){std::cout<<"ERR query"<<std::endl;std::exit(5);}
+#ifdef ARS_LPS_MOC3_BRIDGE
+            if(prepared_xpbd&&xpbd->accept(std::move(*prepared_xpbd),original_generation)!=ars::experimental::lps::Status::ok){
+                std::cout<<"LPS_ERROR state_commit"<<std::endl;return 8;
+            }
+#endif
             D3D11_TEXTURE2D_DESC desc{};host.texture()->GetDesc(&desc);desc.Usage=D3D11_USAGE_STAGING;
             desc.BindFlags=0;desc.CPUAccessFlags=D3D11_CPU_ACCESS_READ;ComPtr<ID3D11Texture2D> staging;
             if(FAILED(device->CreateTexture2D(&desc,nullptr,&staging)))return 5;
@@ -177,7 +295,7 @@ int main(int argc,char** argv){
                 std::size_t(desc.Width)*4,rgba.data()+std::size_t(y)*desc.Width*4);
             context->Unmap(staging.Get(),0);
             ++frames;
-#ifdef ARS_MOC3_PRODUCT_BRIDGE
+#if defined(ARS_MOC3_PRODUCT_BRIDGE) || defined(ARS_LPS_MOC3_BRIDGE)
             auto stem="slot-"+std::to_string(frames%2);
 #else
             auto stem="frame-"+std::to_string(frames);

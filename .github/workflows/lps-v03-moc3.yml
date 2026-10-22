@@ -1,0 +1,79 @@
+name: LPS v0.3 MOC3 XPBD preview (private, no public ABI)
+on:
+  push:
+    branches: [exp/layer-physics-studio-v0.3-full-model]
+    paths:
+      - 'experiments/layer-physics-studio-v03/**'
+      - 'src/moc3/pixel_bridge.cpp'
+      - 'CMakeLists.txt'
+      - '.github/workflows/lps-v03-moc3.yml'
+  pull_request:
+    branches: [alpha]
+    paths:
+      - 'experiments/layer-physics-studio-v03/**'
+      - 'src/moc3/pixel_bridge.cpp'
+      - 'CMakeLists.txt'
+      - '.github/workflows/lps-v03-moc3.yml'
+permissions:
+  contents: read
+jobs:
+  xpbd-overlay:
+    name: MOC3 snapshot XPBD and Python adapter
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with: {python-version: '3.12'}
+      - name: Build and test MOC3 XPBD overlay
+        run: |
+          cmake -S experiments/layer-physics-studio-v03/native -B build/lps-moc3-header
+          cmake --build build/lps-moc3-header --target lps_moc3_overlay_test --parallel 2
+          ctest --test-dir build/lps-moc3-header -R '^lps_moc3_overlay_test$' --no-tests=error --output-on-failure
+      - name: Model3 validation and native drawable catalog negatives
+        run: |
+          python -m py_compile experiments/layer-physics-studio-v03/moc3_viewer.py
+          python -m unittest discover -s experiments/layer-physics-studio-v03/tests -p test_moc3_editor.py -v
+          python -m unittest discover -s experiments/layer-physics-studio-v03/tests -p test_moc3_bridge_frame.py -v
+      - name: Real Tk 8.6 binary PPM regression and first-frame crash retention
+        run: |
+          if ! command -v xvfb-run >/dev/null 2>&1; then sudo apt-get update && sudo apt-get install -y xvfb xauth; fi
+          xvfb-run -a python -m unittest discover -s experiments/layer-physics-studio-v03/tests -p test_moc3_tk_regression.py -v
+  moc3-windows-native:
+    name: Real private MOC3 evaluator + D3D11 WARP generated pixels (Windows)
+    runs-on: windows-2022
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with: {python-version: '3.12'}
+      - name: Checkout exactly pinned PurismCore
+        shell: pwsh
+        run: |
+          git clone https://github.com/SakuraMotion/PurismCore.git build/lps-purism
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git -C build/lps-purism checkout --detach 1069334965522df5d0b791e97f01e26b19c45456
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $rev = (git -C build/lps-purism rev-parse HEAD).Trim()
+          if ($rev -ne '1069334965522df5d0b791e97f01e26b19c45456') { throw 'PurismCore pin drift' }
+      - name: Configure private MOC3 D3D11 XPBD bridge
+        shell: pwsh
+        run: |
+          $p = (Resolve-Path build/lps-purism).Path
+          cmake -S . -B build/m2-d-private -A x64 -DARS_BUILD_D3D11_SPIKE=ON -DARS_BUILD_ASSET_VALIDATOR=ON -DARS_ASSET_FETCH_DEPS=ON -DARS_BUILD_M2_2D_REFERENCE=ON -DARS_BUILD_M2_D3D11_2D=ON -DARS_BUILD_M2_3D_REFERENCE=ON -DARS_BUILD_M2_D3D11_3D=ON -DARS_BUILD_M2_D3D11_DUAL=ON -DARS_BUILD_MOC3_INDEPENDENT=ON -DARS_BUILD_MOC3_D3D11=ON -DARS_BUILD_LPS_MOC3_BRIDGE=ON "-DARS_PURISM_CORE_ROOT=$p"
+          exit $LASTEXITCODE
+      - name: Build XPBD evaluator bridge and run generated WARP pixel checks
+        shell: pwsh
+        run: |
+          cmake --build build/m2-d-private --config Release --target ars_lps_moc3_bridge ars_moc3_pixel_tests --parallel 2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ctest --test-dir build/m2-d-private -C Release -R '^moc3_f2_warp_pixels$' --no-tests=error --output-on-failure
+          exit $LASTEXITCODE
+      - name: Store native MOC3 bridge executable
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lps-v03-moc3-xpbd-native-windows
+          path: build/m2-d-private/bin/Release/ars_lps_moc3_bridge.exe
+          if-no-files-found: error
+          retention-days: 7

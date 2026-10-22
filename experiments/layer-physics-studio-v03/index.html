@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Layer Physics Studio v0.3 — XPBD Soft Layers</title>
+<style>
+:root{color-scheme:dark;--bg:#090e18;--panel:#141d2b;--panel2:#1a2637;--border:#2c3c51;--fg:#edf3ff;--muted:#9aaec4;--aqua:#7ee8d2;--purple:#aca5f7;--amber:#f7c67c;--danger:#ff8da4}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);font:14px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 38% -18%,#20345c75,transparent 50%);z-index:-1}
+button,input,select{font:inherit}button{cursor:pointer;color:var(--fg);border:1px solid #39516b;border-radius:10px;background:#273951;padding:8px 11px;min-height:34px;transition:.14s}button:hover{background:#365374}button:active{transform:translateY(1px)}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--aqua);outline-offset:1px}button.primary{background:#116f70;border-color:#32b8ae;font-weight:650}button.primary:hover{background:#188482}button.danger{border-color:#82465a;color:#ffc4d2}button:disabled{opacity:.4;cursor:not-allowed}button.active{border-color:#72e7d6;background:#194b56}
+header{border-bottom:1px solid var(--border);padding:16px 21px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#101826ba}.brand{display:flex;gap:12px;align-items:center}.brand-icon{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#286e80,#695e9d);display:grid;place-items:center;font-size:23px;box-shadow:0 0 0 1px #87ead849}.brand h1{font-size:20px;line-height:1.12;letter-spacing:-.04em;margin:0}.brand p{font-size:11px;color:var(--muted);margin:5px 0 0}.ver{color:var(--aqua);font-size:13px}.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.eyebrow{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--aqua);text-transform:uppercase}.badge{font-size:11px;border-radius:50px;padding:4px 9px;border:1px solid #6c5b45;color:var(--amber);background:#372f23}
+.workspace{display:grid;grid-template-columns:250px minmax(450px,1fr) 322px;gap:13px;padding:13px;align-items:start}.panel{border:1px solid var(--border);background:linear-gradient(165deg,#172335f0,#111a29f5);border-radius:15px;overflow:hidden;box-shadow:0 9px 28px #0003;min-width:0}.panel-head{padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:6px;border-bottom:1px solid var(--border);font-weight:700}.panel-body{padding:13px}.muted{color:var(--muted)}.sm{font-size:12px}.xs{font-size:11px}.divider{height:1px;background:var(--border);margin:13px 0}.tree{padding:10px;max-height:56vh;overflow:auto}.tree-node{width:100%;text-align:left;display:flex;align-items:center;gap:8px;border:1px solid transparent;background:transparent;margin-bottom:4px;padding:8px 7px;min-height:41px;border-radius:10px}.tree-node.sel{background:#1b4b54;border-color:#459f9d}.tree-node small{color:var(--muted);font-size:10px;margin-left:auto}.dot{width:8px;height:8px;border-radius:99px;flex:none}.tree-node .label-text{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:116px}.tree-actions{padding:12px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap}.side-note{padding:12px;border-top:1px solid var(--border);color:var(--muted);line-height:1.7;font-size:12px}.legend-line{display:flex;align-items:center;gap:7px;margin:3px 0}
+.scene .panel-head{padding:12px 14px}.toolbar{display:flex;align-items:center;gap:7px;padding:10px 13px;flex-wrap:wrap}.stage-frame{margin:0 12px 10px;position:relative}.stage-frame canvas{display:block;width:100%;aspect-ratio:920/600;background:#101c2b;border-radius:11px;touch-action:none;cursor:crosshair;border:1px solid #32445a}.stage-hud{position:absolute;bottom:12px;left:12px;padding:5px 9px;border:1px solid #496178;background:#0b1929e6;border-radius:7px;font-size:11px;color:#d0e1f4;pointer-events:none}.simstate{font:11px ui-monospace,monospace;color:#9fd7cb;text-align:right}.scene-options{display:flex;gap:13px;flex-wrap:wrap;padding:0 14px 11px;color:#bfccdb;font-size:12px}.scene-options label{display:flex;align-items:center;gap:6px;cursor:pointer}.scene-options input{accent-color:var(--aqua)}.world-controls{padding:10px 14px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.world-controls label{color:#d7e5f4;font-size:11px}.world-controls output{float:right;color:var(--aqua);font-variant-numeric:tabular-nums}.world-controls input{margin-top:8px}.scene-foot{padding:12px 14px;color:var(--muted);font-size:11px;line-height:1.7;border-top:1px solid var(--border)}
+.inspector .scroll{padding:13px;max-height:calc(100vh - 134px);overflow:auto}.sect-head{font-size:11px;letter-spacing:.07em;color:var(--aqua);font-weight:800;text-transform:uppercase;margin:8px 0 9px}.preset-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}.field{display:block;margin:0 0 12px}.field-label{display:flex;align-items:baseline;justify-content:space-between;gap:8px;color:#d8e4f2;font-size:12px}.field-output{font:11px ui-monospace,monospace;color:#8ce7d4}.field input[type=range]{display:block;width:100%;margin:8px 0 0;accent-color:#7de2ce;height:10px;cursor:pointer}.field input[type=text],.field select{display:block;width:100%;border:1px solid #35475d;background:#0f1928;color:var(--fg);border-radius:8px;padding:9px;margin-top:7px}.row{display:flex;gap:9px}.row>label{flex:1;min-width:0}.input-group{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.checkline{display:flex;gap:9px;align-items:center;color:#e3f2f9;font-size:12px;margin:8px 0 13px}.checkline input{accent-color:#77dfcd}.upload{display:block;cursor:pointer;text-align:center;border:1px dashed #597288;padding:10px;border-radius:10px;background:#172c37;margin:8px 0}.upload input{display:none}.code-note{border-radius:10px;padding:11px;background:#212c30;border:1px solid #4a615b;color:#d3e5d5;font-size:11px;line-height:1.6}.stat-row{display:flex;justify-content:space-between;color:#aabccf;font:11px ui-monospace,monospace;margin:6px 0}.stat-row strong{color:#e1f2ff}
+#feedback{min-height:42px;padding:10px 18px;font-size:12px;color:#9be6d5;line-height:1.55}#feedback.error{color:#ffa9ba}.linktext{color:#9cf2e0}.disclaimer{max-width:1150px;margin:0 auto;padding:0 16px 20px;color:var(--muted);font-size:11px;text-align:center}
+@media(max-width:1180px){.workspace{grid-template-columns:220px minmax(400px,1fr)}.inspector{grid-column:1/-1}.inspector .scroll{max-height:none}.inspector .field-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}.world-controls{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:780px){.workspace{display:block;padding:8px}.panel{margin-bottom:10px}.tree{max-height:230px}.inspector .field-groups{display:block}.brand h1{font-size:18px}.world-controls{display:block}.world-controls .field{margin-bottom:14px}.stage-frame{margin:0 6px 8px}.stage-frame canvas{min-height:320px;object-fit:contain}}
+.joint-row{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid #34445b;padding:5px 0;color:#a8e8d0;font-size:11px}.joint-row span{overflow-wrap:anywhere}.joint-row button{font-size:10px;padding:4px}
+</style>
+</head><body>
+<header>
+ <div class="brand"><div class="brand-icon" aria-hidden="true">◈</div><div><h1>Layer Physics Studio <span class="ver">v0.3</span></h1><p>XPBD · collision giữa layer · joint hai chiều · hair / cloth · offline</p></div></div>
+ <div class="header-actions"><span class="badge">APP THỬ NGHIỆM · RUNTIME CHƯA TÍCH HỢP</span><button id="export" class="primary">↓ Xuất JSON</button><label class="upload" style="margin:0;padding:7px 10px">↑ Nhập JSON <input id="import" type="file" accept="application/json,.json"></label></div>
+</header>
+<main class="workspace">
+ <aside class="panel" aria-label="Cây layer">
+  <div class="panel-head">Layer Graph <span class="muted xs" id="layerCount">—</span></div>
+  <div class="tree" id="layerTree"></div>
+  <div class="tree-actions"><button id="addChild" class="primary">+ Layer con</button><button id="duplicate">Nhân bản</button><button class="danger" id="remove">Xóa</button></div>
+  <div class="side-note"><div class="legend-line"><i class="dot" style="background:#76e1cf"></i>Tóc: XPBD chuỗi 1D</div><div class="legend-line"><i class="dot" style="background:#f2ad7a"></i>Vải: XPBD lưới 2D</div><div class="legend-line"><i class="dot" style="background:#8195b0"></i>Tĩnh: vị trí neo cho layer con</div><p>Chọn một layer để chỉnh. Đặt <strong>Gắn vào: đầu mút cha</strong> để nối layer con theo chuyển động của layer cha.</p></div>
+ </aside>
+ <section class="panel scene" aria-label="Mô phỏng XPBD">
+  <div class="panel-head"><span>Live Simulation <span class="muted sm">/ 2D soft-layer preview</span></span><span id="frameStatus" class="simstate">—</span></div>
+  <div class="toolbar"><button id="pause" class="primary">Ⅱ Tạm dừng</button><button id="step">▷ 1 bước</button><button id="reset">↺ Reset</button><button id="shake">↝ Rung layer</button><button id="windPulse">≋ Gió +</button><button id="jointMode">＋ Nối 2 particle</button></div>
+  <div class="stage-frame"><canvas id="stage" width="920" height="600" aria-label="Canvas mô phỏng layer 2D với các particle và ràng buộc XPBD"></canvas><div class="stage-hud" id="stageHelp">Kéo trực tiếp các hạt ○ để kiểm thử biến dạng</div></div>
+  <div class="scene-options"><label><input type="checkbox" id="showPoints" checked> Hạt</label><label><input type="checkbox" id="showLinks" checked> Liên kết</label><label><input type="checkbox" id="showBends"> Bending/shear</label><label><input type="checkbox" id="showLabels" checked> Nhãn</label><label><input type="checkbox" id="showJoints" checked> Joint liên layer</label></div>
+  <div class="world-controls">
+   <label class="checkline"><input type="checkbox" id="collisionWorld" checked> Collision</label><label class="field">Gravity <output id="out-gravity"></output><input id="gravity" type="range" min="0" max="20" step="0.1"></label>
+   <label class="field">Wind <output id="out-windAcceleration"></output><input id="windAcceleration" type="range" min="-30" max="30" step="0.5"></label>
+   <label class="field">XPBD iterations <output id="out-solverIterations"></output><input id="solverIterations" type="range" min="2" max="24" step="1"></label>
+  </div>
+  <div class="scene-foot"><strong class="linktext">120 Hz fixed-step</strong> · XPBD positional constraints (stretch, shear, bend as distance joints), pinned anchors, per-layer mass/damping. Một bước động lực học chỉ được hiển thị sau khi solver hoàn tất; thao tác đổi topology reset preview. Collision particle–particle giữa các layer, joint XPBD hai chiều; chưa phải FEM hoặc Physics3.</div>
+ </section>
+ <aside class="panel inspector" aria-label="Thông số vật lý layer">
+  <div class="panel-head">Physics Inspector <span id="selectedName" class="muted xs"></span></div>
+  <div class="scroll">
+   <div class="sect-head">Presets</div><div class="preset-row"><button data-preset="hair">Tóc mềm</button><button data-preset="cloth">Vải</button><button data-preset="ribbon">Ruy-băng</button><button data-preset="accessory">Phụ kiện</button></div>
+   <div class="sect-head">Layer</div>
+   <label class="field">Tên layer <input id="layerName" type="text" maxlength="100"></label>
+   <label class="field">Loại đối tượng<select id="kind"><option value="static">Tĩnh / Anchor</option><option value="hair">Tóc / Particle Chain</option><option value="cloth">Vải / Particle Grid</option></select></label>
+   <label class="field">Vị trí nối với layer cha<select id="attachment"><option value="origin">Gốc layer cha</option><option value="tip">Đầu mút layer cha (joint)</option></select></label>
+   <label class="checkline"><input type="checkbox" id="enabled" checked> Bật mô phỏng vật lý</label><label class="checkline"><input type="checkbox" id="collisionLayer" checked> Tham gia va chạm liên layer</label>
+   <div class="field-groups">
+    <div><div class="sect-head">Thông số XPBD</div><div id="dynamicsFields"></div></div>
+    <div><div class="sect-head">Hình học & khớp nối</div><div id="geometryFields"></div>
+     <label class="field" id="pinField">Cách cố định vải<select id="pinMode"><option value="corners">Hai góc trên</option><option value="edge">Toàn bộ mép trên</option><option value="center">Một điểm giữa mép trên</option></select></label>
+    </div>
+   </div>
+   <div class="divider"></div>
+   <div class="sect-head">Particle Inspector</div>
+   <div class="stat-row"><span>Particle</span><strong id="selectedParticles">0</strong></div><div class="stat-row"><span>Stretch links</span><strong id="selectedStretch">0</strong></div><div class="stat-row"><span>Shear / bend links</span><strong id="selectedOther">0</strong></div><div class="stat-row"><span>Max stretch error</span><strong id="selectedError">0%</strong></div>
+   <div class="divider"></div><div class="sect-head">Joint giữa các layer</div><div id="jointList"></div><p class="muted xs">Nhấn Nối 2 particle trên Canvas, chọn hai hạt của hai layer khác nhau. Joint truyền lực hai chiều khi cả hai hạt có khối lượng động.</p><div class="divider"></div><div class="sect-head">Texture RGBA</div>
+   <label class="upload">Tải ảnh PNG / JPG / WebP cho layer <input id="upload" type="file" accept="image/png,image/jpeg,image/webp"></label>
+   <div class="row"><button id="clearImage">Xóa ảnh</button><button id="restoreSample">Về scene mẫu</button></div>
+   <p class="muted xs">Ảnh riêng được biến dạng theo tam giác mesh. Tối đa 5 MB / ảnh, 2048×2048 px, lưu chung trong JSON. Không tải asset từ URL.</p>
+   <div class="code-note">**Biên giới runtime:** Cấu hình JSON chỉ dành cho PoC. Muốn đưa vào Avatar_Runtime phải thêm compiler và kiểm chứng ownership / rollback. Preset stiffness/damping là thông số mô phỏng thử nghiệm, không phải số đo vật liệu thật.</div>
+  </div>
+ </aside>
+</main>
+<div id="feedback" role="status" aria-live="polite"></div>
+<p class="disclaimer">Layer Physics Studio v0.3 · offline experimental authoring tool · no libraries loaded from network · source/model files remain local</p>
+<script src="./physics_core.js"></script><script src="./studio_app.js"></script>
+</body></html>

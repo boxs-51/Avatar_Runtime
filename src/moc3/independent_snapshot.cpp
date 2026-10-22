@@ -173,8 +173,9 @@ Result Session::open_blob(std::span<const std::uint8_t> blob,
 }
 
 Result Session::update(const std::vector<Parameter>& parameters) noexcept {
-    if (!impl_ || !impl_->valid || !impl_->model) return Result::invalid_model;
+    if (!impl_ || !impl_->valid || !impl_->model) { last_failure_stage_="invalid_model";return Result::invalid_model; }
     if (std::this_thread::get_id() != impl_->owner) return Result::wrong_thread;
+    last_failure_stage_ = "none";
     std::vector<float> previous;
     bool mutated = false;
     auto rollback = [&] {
@@ -193,33 +194,35 @@ Result Session::update(const std::vector<Parameter>& parameters) noexcept {
         const auto* minimum = csmGetParameterMinimumValues(model);
         const auto* maximum = csmGetParameterMaximumValues(model);
         if (parameter_count && (!values || !ids || !minimum || !maximum))
-            return Result::invalid_model;
+            { last_failure_stage_="invalid_model";return Result::invalid_model; }
         if (parameters.size() > static_cast<std::size_t>(parameter_count))
-            return Result::invalid_parameter;
+            { last_failure_stage_="invalid_parameter";return Result::invalid_parameter; }
         if (parameter_count) previous.assign(values, values + parameter_count);
         std::vector<std::pair<int, float>> changes;
         changes.reserve(parameters.size());
         for (const auto& setting : parameters) {
-            if (!std::isfinite(setting.value)) return Result::invalid_parameter;
+            if (!std::isfinite(setting.value)) { last_failure_stage_="invalid_parameter";return Result::invalid_parameter; }
             int found = -1;
             for (int i = 0; i < parameter_count; ++i) {
                 if (ids[i] && setting.id == ids[i]) { found = i; break; }
             }
             if (found < 0 || setting.value < minimum[found] || setting.value > maximum[found])
-                return Result::invalid_parameter;
+                { last_failure_stage_="invalid_parameter";return Result::invalid_parameter; }
             for (const auto& change : changes) {
-                if (change.first == found) return Result::invalid_parameter;
+                if (change.first == found) { last_failure_stage_="invalid_parameter";return Result::invalid_parameter; }
             }
             changes.emplace_back(found, setting.value);
         }
         for (const auto& [index, value] : changes) values[index] = value;
         mutated = true;
+        last_failure_stage_="native_evaluator";
         csmUpdateModel(model);
         auto restore = rollback;
         if (csmGetLastError(model) != csmError_NoError) {
             restore();
-            return Result::invalid_model;
+            { return Result::invalid_model; }
         }
+        last_failure_stage_="drawable_header";
         const int count = csmGetDrawableCount(model);
         if (count <= 0 || static_cast<std::size_t>(count) > budget_.max_drawables) {
             restore(); return Result::out_of_budget;
@@ -248,7 +251,7 @@ Result Session::update(const std::vector<Parameter>& parameters) noexcept {
             !indices || !mask_counts || !masks || !textures || !draw_orders ||
             !orders || !blends || !flags || !dynamic_flags || !opacities ||
             !multiply || !screen) {
-            restore(); return Result::invalid_model;
+            restore(); { return Result::invalid_model; }
         }
         std::size_t total = sizeof(Snapshot);
         if (!add_bytes(total, count, sizeof(Drawable), budget_.max_snapshot_bytes)) {
@@ -261,6 +264,7 @@ Result Session::update(const std::vector<Parameter>& parameters) noexcept {
         std::unordered_set<std::string_view> seen_ids;
         seen_ids.reserve(count);
         for (int i = 0; i < count; ++i) {
+            last_failure_stage_="drawable_geometry";
             if (fail_after_ == 0) { restore(); return Result::allocation_failed; }
             if (fail_after_ > 0) --fail_after_;
             std::size_t id_size = 0;
@@ -269,10 +273,10 @@ Result Session::update(const std::vector<Parameter>& parameters) noexcept {
                 textures[i] < 0 ||
                 !std::isfinite(opacities[i]) || opacities[i] < 0 || opacities[i] > 1 ||
                 !finite_color(multiply[i]) || !finite_color(screen[i])) {
-                restore(); return Result::invalid_model;
+                restore(); { return Result::invalid_model; }
             }
             if (!seen_ids.emplace(drawable_ids[i], id_size).second) {
-                restore(); return Result::invalid_model;
+                restore(); { return Result::invalid_model; }
             }
             if (blends[i] != csmColorBlendType_Normal &&
                 blends[i] != csmColorBlendType_AddCompatible &&
@@ -318,25 +322,26 @@ Result Session::update(const std::vector<Parameter>& parameters) noexcept {
                 const auto& p = positions[i][j]; const auto& uv = uvs[i][j];
                 if (!std::isfinite(p.X) || !std::isfinite(p.Y) ||
                     !std::isfinite(uv.X) || !std::isfinite(uv.Y)) {
-                    restore(); return Result::invalid_model;
+                    restore(); { return Result::invalid_model; }
                 }
                 drawable.vertices.push_back({p.X, p.Y, uv.X, uv.Y});
             }
             drawable.indices.reserve(ic);
             for (std::size_t j = 0; j < ic; ++j) {
-                if (indices[i][j] >= vc) { restore(); return Result::invalid_model; }
+                if (indices[i][j] >= vc) { restore(); { return Result::invalid_model; } }
                 drawable.indices.push_back(indices[i][j]);
             }
             drawable.masks.reserve(mc);
             for (std::size_t j = 0; j < mc; ++j) {
                 const int mask = masks[i][j];
-                if (mask < 0 || mask >= count) { restore(); return Result::invalid_model; }
+                if (mask < 0 || mask >= count) { restore(); { return Result::invalid_model; } }
                 drawable.masks.push_back(static_cast<std::uint32_t>(mask));
             }
             snapshot->drawables.push_back(std::move(drawable));
         }
         generation_ = snapshot->generation;
         current_.store(std::move(snapshot));
+        last_failure_stage_="none";
         return Result::ok;
     } catch (const std::bad_alloc&) {
         rollback();
@@ -350,6 +355,7 @@ Result Session::update(const std::vector<Parameter>& parameters) noexcept {
 Result Session::update_complete(const std::vector<Parameter>& overrides) noexcept {
     if (!impl_ || !impl_->valid || !impl_->model) return Result::invalid_model;
     if (std::this_thread::get_id() != impl_->owner) return Result::wrong_thread;
+    last_failure_stage_="none";
     try {
         auto* model = impl_->model;
         const int count = csmGetParameterCount(model);
@@ -379,12 +385,12 @@ Result Session::update_complete(const std::vector<Parameter>& overrides) noexcep
         seen.reserve(overrides.size());
         for (const auto& setting : overrides) {
             if (!std::isfinite(setting.value) || !seen.emplace(setting.id).second)
-                return Result::invalid_parameter;
+                { last_failure_stage_="invalid_parameter";return Result::invalid_parameter; }
             const auto found = index.find(setting.id);
-            if (found == index.end()) return Result::invalid_parameter;
+            if (found == index.end()) { last_failure_stage_="invalid_parameter";return Result::invalid_parameter; }
             const auto at = found->second;
             if (setting.value < minimum[at] || setting.value > maximum[at])
-                return Result::invalid_parameter;
+                { last_failure_stage_="invalid_parameter";return Result::invalid_parameter; }
             complete[at].value = setting.value;
         }
         return update(complete);

@@ -97,6 +97,8 @@ public:
     Result update_complete(const std::vector<Parameter>& overrides) noexcept;
     Result parameter_info(std::vector<ParameterInfo>& out) const noexcept;
     std::shared_ptr<const Snapshot> current() const noexcept { return current_.load(); }
+    // Experimental diagnostic only; no public ABI or model data exposure.
+    const char* last_failure_stage() const noexcept { return last_failure_stage_; }
 
     // Deterministic private fault injection; -1 disables it.
     void fail_snapshot_checkpoint_after(int count) noexcept { fail_after_ = count; }
@@ -109,6 +111,7 @@ private:
     std::atomic<std::shared_ptr<const Snapshot>> current_;
     std::uint64_t generation_ = 0;
     int fail_after_ = -1;
+    const char* last_failure_stage_ = "none";
 };
 
 } // namespace ars::moc3

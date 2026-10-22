@@ -1,0 +1,81 @@
+name: LPS v0.3 experimental CI
+
+on:
+  push:
+    branches:
+      - exp/layer-physics-studio-v0.3-full-model
+    paths:
+      - 'experiments/layer-physics-studio-v03/**'
+      - '.github/workflows/lps-v03-experimental.yml'
+  pull_request:
+    branches:
+      - alpha
+    paths:
+      - 'experiments/layer-physics-studio-v03/**'
+      - '.github/workflows/lps-v03-experimental.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lps-v03-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  xpbd-import:
+    name: XPBD + native2D adapter (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022]
+    defaults:
+      run:
+        working-directory: experiments/layer-physics-studio-v03
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install bounded importer dependency
+        run: python -m pip install 'Pillow>=11,<13'
+      - name: Check XPBD and interlayer regressions
+        run: node --test tests/test_xpbd.cjs tests/test_interlayer_red.cjs
+      - name: Check bundle importer negatives and preview packaging
+        run: python -m unittest discover -s tests -p 'test_model_adapter.py' -v
+      - name: Compile Python entrypoints
+        run: python -m py_compile model_to_studio.py run_studio.py tests/test_model_adapter.py
+
+  ui-chromium:
+    name: Offline Chromium Studio UI (Linux)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: experiments/layer-physics-studio-v03
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser test dependencies
+        run: python -m pip install 'Pillow>=11,<13' 'playwright>=1.50,<2'
+      - name: Install Chromium with required OS libraries
+        run: python -m playwright install --with-deps chromium
+      - name: Exercise real canvas, pause/step, editor, import/export
+        run: python tests/ui_smoke.py
+      - name: Preserve synthetic test screenshots if UI fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lps-v03-ui-failure
+          path: |
+            experiments/layer-physics-studio-v03/tests/ui_initial.png
+            experiments/layer-physics-studio-v03/tests/ui_after.png
+          if-no-files-found: ignore
+          retention-days: 7

@@ -61,8 +61,16 @@ class Bridge:
 
     def frame(self,parameters,notify=None,behavior='PHYSICS_ON'):
         self.send('\n'.join([f'FRAME {len(parameters)}',*(f'{k} {v:.9g}' for k,v in parameters.items())]))
+        # Preserve the exact native response before validating the frame fence.
+        # Do not consume a failed frame or silently resynchronize epochs.
+        expected=['FRAME',str(self.frames+1),str(self.frames+2),str(self.frames+1)]
+        actual=self.response()
+        if actual != expected:
+            raise PixelError('F3_FRAME_IDENTITY expected='+repr(expected)+
+                             ' actual='+repr(actual[:8])+
+                             ' native_exit='+repr(self.process.poll())+
+                             ' accepted_frames='+str(self.frames))
         self.frames+=1
-        require(self.response()==['FRAME',str(self.frames),str(self.frames+1),str(self.frames)],'F3_FRAME_IDENTITY')
         meta=json.loads((self.folder/'latest.json').read_text())
         require(meta['frame_generation']==self.frames and meta['target_epoch']==self.frames,'F3_READBACK_IDENTITY')
         rgba=(self.folder/meta['rgba']).read_bytes()
