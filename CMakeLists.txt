@@ -1008,6 +1008,17 @@ endif()
 
 if(ARS_ENABLE_PUBLIC_D3D11_HOST)
     set(ARS_COMMITTED_FIXTURES "${CMAKE_BINARY_DIR}/committed-fixtures")
+    # #41 native observation complements installed-header-only C11 consumers.
+    # The existing renderer probe counts resource creation; no test export ships.
+    add_executable(ars_asset_qualification_upload_probe
+        tests/abi/asset_qualification_consumer.c tests/rendering/public_asset_upload_probe.cpp
+        src/abi/abi_version.cpp src/abi/cpu_api.cpp)
+    target_compile_definitions(ars_asset_qualification_upload_probe PRIVATE ARS_QUALIFICATION_INTERNAL_PROBE=1 NOMINMAX)
+    target_compile_features(ars_asset_qualification_upload_probe PRIVATE cxx_std_20 c_std_11)
+    target_link_libraries(ars_asset_qualification_upload_probe PRIVATE ars_runtime_components d3d11 dxgi)
+    set_target_properties(ars_asset_qualification_upload_probe PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+    add_dependencies(ars_asset_qualification_upload_probe ars_cpu_admission_worker ars_cpu_model_broker)
+    ars_runtime_options(ars_asset_qualification_upload_probe)
     add_custom_target(ars_committed_fixtures
         COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/rendering/generate_committed_fixtures.py"
             "${ARS_ASSET_CORPUS}" "${ARS_COMMITTED_FIXTURES}"

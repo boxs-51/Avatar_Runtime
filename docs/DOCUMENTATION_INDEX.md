@@ -1,5 +1,13 @@
 # Mục lục và phân loại tài liệu
 
+Checkpoint mới nhất **23-10-2026**: **171 tệp** (completed50, reference86,
+in-progress31, obsolete4). #39 đã tích hợp vào alpha006f366 qua PR76.
+#41 đang triển khai: [contract](in-progress/ALPHA_41_ASSET_BUILD_QUALIFICATION.md)
+và [kiểm chứng Windows](completed/audits/ALPHA_41_WINDOWS_ASSET_QUALIFICATION.md).
+G01/G02 vẫn HOLD vì public activation Linux chưa hỗ trợ/chưa chạy và còn thiếu
+chứng cứ bảo toàn pose chuyển động khác neutral. Các checkpoint bên dưới giữ
+nguyên bối cảnh lịch sử; phân loại completed chỉ áp dụng cho thử nghiệm Windows.
+
 Rà soát ngày **21-10-2026, Asia/Bangkok**, nhánh `alpha`. Inventory hiện tại: **166 tệp**, gồm `README.md` và toàn bộ `docs/`. Mốc phân loại ban đầu có 125 tệp; PUB-02-A/B + PUB-04-A/B + alpha audit thêm 41 tài liệu. Xem checkpoint mới nhất ở cuối trang và catalog cho danh sách đầy đủ.
 
 Việc phân loại đánh giá vai trò hiện tại của tài liệu. “Đã hoàn thành” chỉ áp dụng cho phạm vi component/private/test ghi ở từng dòng, không tuyên bố milestone, G00–G11 hay SDK đã hoàn tất. “Tham khảo” gồm cả contract đang áp dụng và chứng cứ lịch sử; “lỗi thời” nghĩa là không còn dùng làm kế hoạch/trạng thái hiện hành. Tài liệu đã được chuyển sang bốn thư mục theo phân loại; raw log và JSON chứng cứ giữ nguyên bytes/pins. Markdown chỉ đổi liên kết tương đối. [Bản đồ đường dẫn](DOCUMENTATION_PATHS.json) lưu legacy → canonical và hash trước/sau. Các đường dẫn trong snapshot Git/JSON lịch sử vẫn mô tả source gốc.
