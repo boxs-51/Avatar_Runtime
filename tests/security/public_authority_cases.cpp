@@ -27,6 +27,11 @@ struct ComponentFixture {
     static void clock(security::SourceAuthority &a,ars_status(*read)(void*,uint64_t*)noexcept,void *user){a.clock_.read_=read;a.clock_.user_=user;a.clock_.init_=ARS_OK;a.clock_.highwater_=0;a.clock_.fault_=false;}
     static void append_failure(security::SourceAuthority &a,ars_source_admin_h h,bool v){queue(a,h).fail_append_=v;}
     static uint32_t issued(security::SourceAuthority &a){return a.ledger_.used_;}
+    static void entropy(security::SourceAuthority &a,security::EntropyRead read,void *user){a.ledger_.entropy_=read;a.ledger_.entropy_user_=user;}
+    static void ledger_limit(security::SourceAuthority &a,uint32_t limit){a.ledger_.limit_=limit;}
+    static unsigned allocated(security::SourceAuthority &a){unsigned n=0;for(auto &s:a.sources_)n+=s.allocated?1:0;return n;}
+    static uint32_t next_generation(ars_runtime_h h,uint32_t generation){auto &r=runtime(h)->registry;std::lock_guard lock(r.mutex_);for(uint32_t i=0;i<r.capacity_;++i){auto &s=r.slots_[i];if(!s.active && !s.retired && !s.pins){s.generation=generation;return i;}}std::exit(3);}
+    static bool retired(ars_runtime_h h,uint32_t slot){auto &r=runtime(h)->registry;std::lock_guard lock(r.mutex_);return r.slots_[slot].retired;}
     static void admitted(security::SourceAuthority &a,unsigned n){auto &g=a.admission_;std::unique_lock lock(g.mutex_);REQUIRE(g.cv_.wait_for(lock,std::chrono::seconds(10),[&]{return g.active_==n;}));}
     static void closing(security::SourceAuthority &a){auto &g=a.admission_;std::unique_lock lock(g.mutex_);REQUIRE(g.cv_.wait_for(lock,std::chrono::seconds(10),[&]{return g.closing_;}));}
 };
@@ -41,7 +46,26 @@ struct Gate {
 };
 struct Clock {
     std::atomic<Gate*> gate{nullptr};
-    static ars_status read(void *p,uint64_t *out)noexcept{auto &c=*static_cast<Clock*>(p);if(auto *g=c.gate.exchange(nullptr))g->pause();*out=100;return ARS_OK;}
+    std::atomic<Gate*> final_gate{nullptr};ars::motion::PublicBatch *batch=nullptr;
+    std::atomic<uint64_t> now{100};std::atomic<bool> fail{false},sample_before_pause{false};std::atomic<unsigned> final_samples{0};
+    static ars_status read(void *p,uint64_t *out)noexcept{
+        auto &c=*static_cast<Clock*>(p);if(auto *g=c.gate.exchange(nullptr))g->pause();
+        // Armed only for a single S-thread update, with coordinator changing only atomics.
+        if(c.final_gate.load() && c.batch && c.batch->count){if(auto *g=c.final_gate.exchange(nullptr)){
+            ++c.final_samples;const auto before=c.now.load();g->pause();*out=c.sample_before_pause?before:c.now.load();return ARS_OK;}}
+        if(c.fail)return ARS_E_CLOCK_FAILURE;*out=c.now;return ARS_OK;
+    }
+};
+struct Entropy {
+    bool fail=false;ars_ingress_cap retired{};bool collision_once=false;uint64_t serial=1;unsigned calls=0;Gate *gate=nullptr;
+    static ars_status read(void *p,std::span<std::byte> bytes)noexcept{
+        auto &e=*static_cast<Entropy*>(p);++e.calls;if(e.gate)e.gate->pause();if(e.fail)return ARS_E_INTERNAL;
+        auto token=e.collision_once && e.calls==1?e.retired:ars_ingress_cap{e.serial++,UINT64_C(0x41343253334e4154)};
+        REQUIRE(bytes.size()==sizeof token);std::memcpy(bytes.data(),&token,sizeof token);return ARS_OK;
+    }
+};
+struct Simulation {
+    uint64_t now=100;static uint64_t ARS_CALL read(void *p){return static_cast<Simulation*>(p)->now;}
 };
 struct Allocator {
     std::mutex mutex;std::map<void*,std::pair<uint64_t,uint32_t>> live;
@@ -53,24 +77,25 @@ struct Frame {
     ars_motion_channel channel{{"mouth.open",10},ARS_VALUE_SCALAR,0,{.75f,0,0,0}};ars_motion_frame frame{};
     explicit Frame(uint64_t seq=1){frame.struct_size=sizeof frame;frame.abi_version=ARS_ABI_VERSION;frame.sequence=seq;frame.timestamp_mode=ARS_TIMESTAMP_HOST_MONOTONIC;frame.timestamp_ns=100;frame.confidence=1;frame.channel_count=1;frame.channels=&channel;}
 };
-struct Pose {uint64_t generation;float mouth,yaw,quat_w;};
+struct Pose {uint64_t generation;float mouth,yaw,quat_w;uint32_t dependencies;};
 struct Fixture {
     Allocator allocator;Clock clock;ars_runtime_h runtime{};ars_model_h model{};ars_character_h character{};
     ars::core::RuntimeLease keepalive;ars::security::SourceAuthority *authority=nullptr;bool begun=false;uint64_t tick=0;
-    explicit Fixture(const std::vector<uint8_t> &bytes){
+    explicit Fixture(const std::vector<uint8_t> &bytes,ars_simulation_now_fn simulation=nullptr,void *clock_data=nullptr){
         ars_runtime_desc d{};d.struct_size=sizeof d;d.abi_version=ARS_ABI_VERSION;d.alloc=Allocator::allocate;d.free_fn=Allocator::release;d.allocator_user_data=&allocator;
+        d.simulation_now_ns=simulation;d.clock_user_data=clock_data;
         REQUIRE(ars_runtime_create(&d,&runtime)==ARS_OK);
         ars_asset_source s{sizeof(s),ARS_ABI_VERSION,ARS_ASSET_MEMORY_BUNDLE,0,bytes.data(),bytes.size()};REQUIRE(ars_model_load(runtime,&s,&model)==ARS_OK);
         character=create();REQUIRE(ars::core::global_router().acquire(runtime,ars::core::LeaseKind::work,&keepalive)==ARS_OK);
-        authority=Probe::runtime(runtime)->authority;REQUIRE(authority);Probe::clock(*authority,Clock::read,&clock);
+        authority=Probe::runtime(runtime)->authority;REQUIRE(authority);Probe::clock(*authority,Clock::read,&clock);clock.batch=&Probe::runtime(runtime)->cpu->batch;
     }
     ars_character_h create(){ars_character_desc d{sizeof(d),ARS_ABI_VERSION,ARS_MODE_AUTO,0};ars_character_h c{};REQUIRE(ars_character_create(runtime,model,&d,&c)==ARS_OK);return c;}
-    Binding bind(ars_character_h c,ars_utf8_view id={"mouth.open",10}){ars_source_desc d{};d.struct_size=sizeof d;d.abi_version=ARS_ABI_VERSION;d.allowed_channel_ids=&id;d.allowed_channel_count=1;d.max_channels_per_frame=1;d.max_frames_per_second=240;d.lease_ttl_ns=ars::security::max_ttl;d.diagnostic_label={"same-label",10};Binding b;REQUIRE(ars_source_register(runtime,c,&d,&b.admin,&b.cap)==ARS_OK);return b;}
+    Binding bind(ars_character_h c,ars_utf8_view id={"mouth.open",10},uint64_t ttl=ars::security::max_ttl,ars_status expected=ARS_OK){ars_source_desc d{};d.struct_size=sizeof d;d.abi_version=ARS_ABI_VERSION;d.allowed_channel_ids=&id;d.allowed_channel_count=1;d.max_channels_per_frame=1;d.max_frames_per_second=240;d.lease_ttl_ns=ttl;d.diagnostic_label={"same-label",10};Binding b{{{9,9,9}},{9,9}};REQUIRE(ars_source_register(runtime,c,&d,&b.admin,&b.cap)==expected);return b;}
     ars_status submit(ars_ingress_cap cap,Frame &f){return ars_motion_submit(runtime,cap,&f.frame);}
     void update(){REQUIRE(ars_runtime_update(runtime,++tick)==ARS_OK);}
     Pose pose(ars_character_h c){
         ars::core::SnapshotLease pin;REQUIRE(ars::core::global_router().read_cpu(runtime,c,&pin)==ARS_OK);
-        const auto *snapshot=pin.get();Pose out{snapshot->generation,0,0,0};bool mouth=false,yaw=false;
+        const auto *snapshot=pin.get();Pose out{snapshot->generation,0,0,0,snapshot->state.provenance.count};bool mouth=false,yaw=false;
         for(const auto &record:Probe::runtime(runtime)->cpu->characters)if(record.live && ars::security::same(record.id.id,c.id)){
             const auto &sem=record.model->semantics();REQUIRE(sem.size()==snapshot->channel_count);
             for(size_t i=0;i<sem.size();++i){if(sem[i].id=="mouth.open"){out.mouth=snapshot->outputs[i].scalar;mouth=true;}if(sem[i].id=="head.yaw_rad"){out.yaw=snapshot->outputs[i].scalar;yaw=true;}if(sem[i].id=="extra.quat")out.quat_w=snapshot->outputs[i].tail[2];}
@@ -83,10 +108,120 @@ struct Fixture {
         REQUIRE(result==ARS_OK);REQUIRE(allocator.live.empty());
     }
 };
+void retirement_diagnostic(const std::string &id,const std::vector<uint8_t> &bytes){
+    unsigned live=0;ars_status after=ARS_E_INTERNAL;
+    {Fixture trial(bytes);const auto slot=Probe::next_generation(trial.runtime,UINT32_MAX);
+        if(id=="DIAG-MODEL"){
+            ars_asset_source source{sizeof(source),ARS_ABI_VERSION,ARS_ASSET_MEMORY_BUNDLE,0,bytes.data(),bytes.size()};ars_model_h model{};
+            REQUIRE(ars_model_load(trial.runtime,&source,&model)==ARS_OK);REQUIRE(model.id.slot==slot && model.id.generation==UINT32_MAX);
+            REQUIRE(ars_model_release(trial.runtime,model)==ARS_E_HANDLE_EXHAUSTED);REQUIRE(ars_model_release(trial.runtime,model)==ARS_E_STALE_HANDLE);
+            for(const auto &record:Probe::runtime(trial.runtime)->cpu->models)live+=record.live?1:0;
+            after=ars_runtime_update(trial.runtime,1);std::printf("TRACE model terminal release: live_models=%u expected1; update=%d\n",live,after);
+        }else{
+            auto b=trial.bind(trial.character);REQUIRE(b.admin.id.slot==slot && b.admin.id.generation==UINT32_MAX);Frame frame;
+            REQUIRE(trial.submit(b.cap,frame)==ARS_OK);trial.update();REQUIRE(ars_source_admin_release(trial.runtime,b.admin)==ARS_E_HANDLE_EXHAUSTED);
+            REQUIRE(ars_source_admin_release(trial.runtime,b.admin)==ARS_E_STALE_HANDLE);REQUIRE(trial.submit(b.cap,frame)==ARS_E_SCOPE_DENIED);
+            for(const auto &record:Probe::runtime(trial.runtime)->cpu->sources)live+=record.live?1:0;
+            after=ars_runtime_update(trial.runtime,++trial.tick);REQUIRE(after==ARS_OK && trial.pose(trial.character).mouth==0);
+            std::printf("TRACE admin terminal release: live_sources=%u expected0; neutral update=%d\n",live,after);
+        }REQUIRE(Probe::retired(trial.runtime,slot));
+    }
+    REQUIRE(after==ARS_OK && live==(id=="DIAG-MODEL"?1u:0u));
+}
 void cases(const std::string &id,const std::vector<uint8_t> &bytes){
-    Fixture f(bytes);auto b=f.bind(f.character);auto &s=Probe::source(*f.authority,b.admin);
+    if(id=="HDL-005"){
+        ars_status after=ARS_E_INTERNAL;unsigned live=0;
+        {Fixture trial(bytes);auto source=trial.bind(trial.character);Frame frame;REQUIRE(trial.submit(source.cap,frame)==ARS_OK);trial.update();
+            const auto slot=Probe::next_generation(trial.runtime,UINT32_MAX);auto terminal=trial.create();REQUIRE(terminal.id.slot==slot && terminal.id.generation==UINT32_MAX);
+            trial.update();REQUIRE(trial.pose(trial.character).mouth==.75f);
+            REQUIRE(ars_character_destroy(trial.runtime,terminal)==ARS_E_HANDLE_EXHAUSTED);REQUIRE(Probe::retired(trial.runtime,slot));
+            REQUIRE(ars_character_destroy(trial.runtime,terminal)==ARS_E_STALE_HANDLE);REQUIRE(ars_character_set_mode(trial.runtime,terminal,ARS_MODE_2D)==ARS_E_STALE_HANDLE);
+            auto next=trial.create();REQUIRE(next.id.slot!=slot);
+            for(const auto &c:Probe::runtime(trial.runtime)->cpu->characters)live+=c.live?1:0;
+            after=ars_runtime_update(trial.runtime,++trial.tick);
+            std::printf("TRACE max-generation destroy retires slot%u, stale old handle denied, newslot=%u; live_cpu=%u expected2; update_after=%d expected0\n",slot,next.id.slot,live,after);
+        } // Actual final close/allocator-zero is checked before reporting a regression.
+        REQUIRE(live==2 && after==ARS_OK);return;
+    }
+    const bool short_ttl=id=="SRC-012" || id=="SRC-025" || id=="SRC-036" || id=="SRC-037" || id=="SRC-038" || id=="SRC-042";
+    Fixture f(bytes);auto b=f.bind(f.character,{"mouth.open",10},short_ttl?100:ars::security::max_ttl);auto &s=Probe::source(*f.authority,b.admin);
     auto &queue=Probe::queue(*f.authority,b.admin);
-    if(id=="SRC-001" || id=="SRC-005" || id=="SRC-008"){
+    if(id=="SRC-004"){
+        Entropy error;error.fail=true;Probe::entropy(*f.authority,Entropy::read,&error);
+        const auto allocated=Probe::allocated(*f.authority),issued=Probe::issued(*f.authority);
+        auto failed=f.bind(f.character,{"mouth.open",10},ars::security::max_ttl,ARS_E_INTERNAL);
+        REQUIRE(!failed.admin.id.runtime_uid && !failed.admin.id.slot && !failed.admin.id.generation && !failed.cap.lo && !failed.cap.hi);
+        REQUIRE(Probe::allocated(*f.authority)==allocated && Probe::issued(*f.authority)==issued && error.calls==1);
+        Frame old;REQUIRE(f.submit(b.cap,old)==ARS_OK);f.update();REQUIRE(f.pose(f.character).mouth==.75f);
+        ars_ingress_cap replacement{9,9};REQUIRE(ars_source_rotate(f.runtime,b.admin,&replacement)==ARS_E_INTERNAL);
+        REQUIRE(!replacement.lo && !replacement.hi && error.calls==2);REQUIRE(f.submit(b.cap,old)==ARS_E_SCOPE_DENIED);f.update();REQUIRE(f.pose(f.character).mouth==0);
+        std::puts("TRACE injected RNG register/rotate failure: typed INTERNAL, zero outputs/no source activation/no weak fallback; old authority denied and neutral fallback");
+    }else if(id=="SRC-012"){
+        for(unsigned i=1;i<=3;++i){Frame frame(i);REQUIRE(f.submit(b.cap,frame)==ARS_OK);}f.update();REQUIRE(queue.size()==2 && f.pose(f.character).mouth==.75f);
+        f.clock.now=s.expiry;f.update();auto pose=f.pose(f.character);REQUIRE(pose.mouth==0 && pose.dependencies==0 && queue.size()==0);
+        Frame late(4);REQUIRE(f.submit(b.cap,late)==ARS_E_SCOPE_DENIED);REQUIRE(s.state==ars::security::SourceState::expired);
+        std::puts("TRACE TTL expires with two queued frames; queue cleared, terminal expired, next committed pose neutral with zero provenance");
+    }else if(id=="SRC-020"){
+        Frame frame;REQUIRE(f.submit(b.cap,frame)==ARS_OK);f.update();const auto before=f.pose(f.character);f.clock.fail=true;frame.frame.sequence=2;
+        REQUIRE(f.submit(b.cap,frame)==ARS_E_CLOCK_FAILURE);REQUIRE(ars_runtime_update(f.runtime,2)==ARS_E_SECURITY_CLOCK_FAULT);f.clock.fail=false;
+        REQUIRE(f.submit(b.cap,frame)==ARS_E_SECURITY_CLOCK_FAULT);REQUIRE(f.pose(f.character).generation==before.generation);
+        {Fixture other(bytes);auto source=other.bind(other.character);other.clock.now=99;Frame next;
+         REQUIRE(other.submit(source.cap,next)==ARS_E_CLOCK_REGRESSION);other.clock.now=101;REQUIRE(other.submit(source.cap,next)==ARS_E_SECURITY_CLOCK_FAULT);}
+        {Simulation time;Fixture sim(bytes,Simulation::read,&time);auto source=sim.bind(sim.character);Frame input;REQUIRE(sim.submit(source.cap,input)==ARS_OK);
+         REQUIRE(ars_runtime_update(sim.runtime,0)==ARS_OK);auto accepted=sim.pose(sim.character);const auto expiry=Probe::source(*sim.authority,source.admin).expiry;
+         time.now=99;REQUIRE(ars_runtime_update(sim.runtime,0)==ARS_E_CLOCK_REGRESSION);REQUIRE(sim.pose(sim.character).generation==accepted.generation && Probe::source(*sim.authority,source.admin).expiry==expiry);}
+        std::puts("TRACE security unavailable/regression is sticky and blocks new publication; simulation callback regression rejects update without pose/lease renewal");
+    }else if(id=="SRC-022"){
+        REQUIRE(ars_source_revoke(f.runtime,b.admin)==ARS_OK);Entropy entropy;entropy.retired=b.cap;entropy.collision_once=true;Probe::entropy(*f.authority,Entropy::read,&entropy);
+        const auto issued=Probe::issued(*f.authority);auto fresh=f.bind(f.character);REQUIRE(entropy.calls==2 && Probe::issued(*f.authority)==issued+1);
+        REQUIRE(fresh.cap.lo!=b.cap.lo || fresh.cap.hi!=b.cap.hi);Frame frame;REQUIRE(f.submit(b.cap,frame)==ARS_E_SCOPE_DENIED);REQUIRE(f.submit(fresh.cap,frame)==ARS_OK);f.update();
+        Probe::ledger_limit(*f.authority,Probe::issued(*f.authority));ars_ingress_cap out{9,9};REQUIRE(ars_source_rotate(f.runtime,fresh.admin,&out)==ARS_E_HANDLE_EXHAUSTED);
+        REQUIRE(!out.lo && !out.hi && entropy.calls==2);REQUIRE(f.submit(fresh.cap,frame)==ARS_E_SCOPE_DENIED);REQUIRE(f.submit(b.cap,frame)==ARS_E_SCOPE_DENIED);
+        std::puts("TRACE retired-token collision retried to fresh token; injected issuance limit fails closed and never resurrects either retired token");
+    }else if(id=="SRC-025" || id=="SRC-036" || id=="SRC-037"){
+        Frame first;REQUIRE(f.submit(b.cap,first)==ARS_OK);f.update();const auto before=f.pose(f.character);
+        f.clock.now=199;Frame next(2);next.channel.value[0]=.25f;REQUIRE(f.submit(b.cap,next)==ARS_OK);
+        Gate cut;f.clock.final_gate=&cut;f.clock.sample_before_pause=id=="SRC-037";
+        std::thread coordinator([&]{cut.wait();f.clock.now=200;cut.release();});
+        const auto result=ars_runtime_update(f.runtime,++f.tick);coordinator.join();REQUIRE(f.clock.final_samples==1);
+        auto after=f.pose(f.character);
+        if(id=="SRC-037"){REQUIRE(result==ARS_OK && after.generation==before.generation+1 && after.mouth==.25f);}
+        else REQUIRE(result==ARS_E_SOURCE_EXPIRED && after.generation==before.generation && after.mouth==before.mouth);
+        f.update();after=f.pose(f.character);REQUIRE(after.mouth==0 && after.dependencies==0 && s.state==ars::security::SourceState::expired);
+        std::printf("TRACE final-public-batch security sample cut; sample_before_pause=%d result=%d; next sample expires source and commits neutral/no lineage\n",id=="SRC-037",result);
+    }else if(id=="SRC-026"){
+        for(unsigned mode=0;mode<2;++mode){Fixture trial(bytes);auto source=trial.bind(trial.character);Frame frame;REQUIRE(trial.submit(source.cap,frame)==ARS_OK);trial.update();
+            Entropy failure;failure.fail=true;if(mode==0)Probe::entropy(*trial.authority,Entropy::read,&failure);else Probe::ledger_limit(*trial.authority,Probe::issued(*trial.authority));
+            ars_ingress_cap out{9,9};REQUIRE(ars_source_rotate(trial.runtime,source.admin,&out)==(mode==0?ARS_E_INTERNAL:ARS_E_HANDLE_EXHAUSTED));
+            REQUIRE(!out.lo && !out.hi);REQUIRE(trial.submit(source.cap,frame)==ARS_E_SCOPE_DENIED);trial.update();REQUIRE(trial.pose(trial.character).mouth==0);
+        }std::puts("TRACE rotation RNG/issuance exhaustion after old-token retirement: zero cap, old token permanently denied, no rollback, neutral fresh pose");
+    }else if(id=="SRC-035" || id=="SRC-040"){
+        Frame first;REQUIRE(f.submit(b.cap,first)==ARS_OK);f.update();const auto before=f.pose(f.character);const auto credit=s.credit;
+        if(id=="SRC-035"){f.clock.now=99;Frame next(2);REQUIRE(f.submit(b.cap,next)==ARS_E_CLOCK_REGRESSION);REQUIRE(s.credit==credit && s.sequence==1 && queue.size()==0);}
+        else{f.clock.now=180;Frame next(2);REQUIRE(f.submit(b.cap,next)==ARS_OK);f.clock.now=170;REQUIRE(ars_runtime_update(f.runtime,2)==ARS_E_CLOCK_REGRESSION);}
+        f.clock.now=200;Frame retry(3);REQUIRE(f.submit(b.cap,retry)==ARS_E_SECURITY_CLOCK_FAULT);REQUIRE(ars_runtime_update(f.runtime,3)==ARS_E_SECURITY_CLOCK_FAULT);REQUIRE(f.pose(f.character).generation==before.generation);
+        std::puts("TRACE backwards ingress/publisher security sample faults global clock permanently, no unauthorized quota/sequence/publish advance");
+    }else if(id=="SRC-038"){
+        f.clock.now=150;Frame accepted;REQUIRE(f.submit(b.cap,accepted)==ARS_OK);f.update();const auto before=f.pose(f.character);const auto epoch=s.epoch;
+        f.clock.now=200;Frame late(2);REQUIRE(f.submit(b.cap,late)==ARS_E_SOURCE_EXPIRED);REQUIRE(s.state==ars::security::SourceState::expired && s.epoch>epoch);
+        f.clock.now=120;REQUIRE(ars_runtime_update(f.runtime,2)==ARS_E_CLOCK_REGRESSION);f.clock.now=201;REQUIRE(ars_runtime_update(f.runtime,3)==ARS_E_SECURITY_CLOCK_FAULT);
+        REQUIRE(f.submit(b.cap,late)==ARS_E_SCOPE_DENIED);REQUIRE(f.pose(f.character).generation==before.generation);
+        std::puts("TRACE accepted150 expires200 then regresses120: terminal EXPIRED/epoch invalidation, sticky clock fault, no old-token renewal or fresh pose");
+    }else if(id=="SRC-042"){
+        Frame accepted;REQUIRE(f.submit(b.cap,accepted)==ARS_OK);f.update();Entropy entropy;Gate minted;entropy.gate=&minted;Probe::entropy(*f.authority,Entropy::read,&entropy);
+        std::thread coordinator([&]{minted.wait();f.clock.now=200;minted.release();});ars_ingress_cap out{9,9};const auto result=ars_source_rotate(f.runtime,b.admin,&out);coordinator.join();
+        REQUIRE(result==ARS_E_SOURCE_EXPIRED && !out.lo && !out.hi && s.state==ars::security::SourceState::expired);
+        REQUIRE(ars_source_rotate(f.runtime,b.admin,&out)==ARS_E_SOURCE_EXPIRED);REQUIRE(entropy.calls==1);REQUIRE(f.submit(b.cap,accepted)==ARS_E_SCOPE_DENIED);f.update();REQUIRE(f.pose(f.character).mouth==0);
+        std::puts("TRACE rotation paused at mint phase B, TTL passes; phase C terminally EXPIRED, zero output, subsequent rotate denied, no lease renewal");
+    }else if(id=="SRC-044"){
+        for(unsigned mode=0;mode<3;++mode){Fixture trial(bytes);auto source=trial.bind(trial.character,{"mouth.open",10},100);auto &record=Probe::source(*trial.authority,source.admin);Frame frame;REQUIRE(trial.submit(source.cap,frame)==ARS_OK);trial.update();
+            ars_ingress_cap out{9,9};ars_status result;
+            if(mode==0){record.epoch=UINT64_MAX;result=ars_source_revoke(trial.runtime,source.admin);REQUIRE(record.epoch==UINT64_MAX);}
+            else if(mode==1){record.control=UINT64_MAX;trial.clock.now=200;frame.frame.sequence=2;result=trial.submit(source.cap,frame);REQUIRE(record.control==UINT64_MAX);}
+            else{record.ticket=UINT64_MAX;result=ars_source_rotate(trial.runtime,source.admin,&out);REQUIRE(record.ticket==UINT64_MAX && !out.lo && !out.hi);}
+            REQUIRE(result==ARS_E_HANDLE_EXHAUSTED && record.state==ars::security::SourceState::exhausted);REQUIRE(trial.submit(source.cap,frame)==ARS_E_SCOPE_DENIED);trial.update();REQUIRE(trial.pose(trial.character).mouth==0);
+        }std::puts("TRACE forced epoch/control/ticket UINT64_MAX: terminal EXHAUSTED, no wrap/token ABA, no assertion crash, fresh neutral pose");
+    }else if(id=="SRC-001" || id=="SRC-005" || id=="SRC-008"){
         Frame valid(10);REQUIRE(f.submit(b.cap,valid)==ARS_OK);f.update();const auto old=f.pose(f.character);REQUIRE(old.mouth==.75f);
         const auto credit=s.credit,ordinal=s.ordinal;
         if(id=="SRC-001"){Frame bad(11);bad.channel.value[0]=.1f;REQUIRE(f.submit({},bad)==ARS_E_SCOPE_DENIED);}
@@ -183,7 +318,11 @@ void cases(const std::string &id,const std::vector<uint8_t> &bytes){
 }
 int main(int argc,char **argv){
     if(argc!=3)return 2;const std::string id=argv[1];
-    const std::array<std::string,15> ids{"SRC-001","SRC-005","SRC-008","SRC-009","SRC-010","SRC-011","SRC-013","SRC-016","SRC-018","SRC-021","SRC-027","SRC-028","SRC-029","SRC-039","SRC-045"};
+    if(id=="DIAG-MODEL" || id=="DIAG-ADMIN"){
+        std::ifstream input(argv[2],std::ios::binary);REQUIRE(input.good());std::vector<uint8_t> bytes{std::istreambuf_iterator<char>(input),std::istreambuf_iterator<char>()};REQUIRE(!bytes.empty());
+        retirement_diagnostic(id,bytes);std::printf("RETIREMENT_DIAGNOSTIC %s PASS live=0\n",id.c_str());return 0;
+    }
+    const std::array<std::string,29> ids{"SRC-001","SRC-005","SRC-008","SRC-009","SRC-010","SRC-011","SRC-013","SRC-016","SRC-018","SRC-021","SRC-027","SRC-028","SRC-029","SRC-039","SRC-045","SRC-004","SRC-012","SRC-020","SRC-022","SRC-025","SRC-026","SRC-035","SRC-036","SRC-037","SRC-038","SRC-040","SRC-042","SRC-044","HDL-005"};
     if(std::find(ids.begin(),ids.end(),id)==ids.end())return 2;
     std::ifstream input(argv[2],std::ios::binary);REQUIRE(input.good());std::vector<uint8_t> bytes{std::istreambuf_iterator<char>(input),std::istreambuf_iterator<char>()};REQUIRE(!bytes.empty());
     cases(id,bytes);std::printf("SECURITY_CASE %s PASS seed=42 live=0\n",id.c_str());return 0;

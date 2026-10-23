@@ -102,8 +102,9 @@ ars_status RuntimeRouter::cpu_load(ars_runtime_h handle,const ars_asset_source *
 ars_status RuntimeRouter::cpu_release(ars_runtime_h handle,ars_model_h id) {
     RuntimeLease lease;CpuOperation operation;CpuContext *c=nullptr;auto status=cpu_enter(handle,false,&lease,&operation,&c);if(status!=ARS_OK)return status;
     RegistryLease pin;status=lease.runtime_->registry.pin(id.id,ObjectType::model,&pin);if(status!=ARS_OK)return status;
-    auto *m=static_cast<CpuContext::Model *>(pin.payload());status=lease.runtime_->registry.invalidate(id.id,ObjectType::model);if(status!=ARS_OK)return status;
-    auto retired=std::move(m->value);m->live=false;return ARS_OK;
+    auto *m=static_cast<CpuContext::Model *>(pin.payload());status=lease.runtime_->registry.invalidate(id.id,ObjectType::model);
+    if(status!=ARS_OK && status!=ARS_E_HANDLE_EXHAUSTED)return status;
+    auto retired=std::move(m->value);m->live=false;return status;
 }
 ars_status RuntimeRouter::cpu_create_character(ars_runtime_h handle,ars_model_h id,const ars_character_desc *desc,ars_character_h *out) {
     if(out)*out={};if(!out || !ars::abi::valid(desc))return ARS_E_INVALID_ARGUMENT;
@@ -126,10 +127,14 @@ ars_status RuntimeRouter::cpu_destroy_character(ars_runtime_h handle,ars_charact
     RuntimeLease lease;CpuOperation operation;CpuContext *c=nullptr;auto status=cpu_enter(handle,false,&lease,&operation,&c);if(status!=ARS_OK)return status;
     status=lease.runtime_->registry.check(id.id,ObjectType::character);if(status!=ARS_OK)return status;
     auto *ch=find_character(*c,id);if(!ch)return ARS_E_STALE_HANDLE;
-    status=destroy_character(handle,id);if(status!=ARS_OK)return status;
+    status=destroy_character(handle,id);
+    // Terminal generation retirement still completed logical destruction.
+    // Preserve its typed result while retiring the CPU record and owned model.
+    if(status!=ARS_OK && status!=ARS_E_HANDLE_EXHAUSTED)return status;
+    const auto destroy_status=status;
     ch->live=false;auto retired=std::move(ch->model);
     for(auto &s:c->sources)if(s.live && security::same(s.character.id,id.id))s.cache={};
-    if(auto *a=authority_for(lease))a->collect_retired();return ARS_OK;
+    if(auto *a=authority_for(lease))a->collect_retired();return destroy_status;
 }
 ars_status RuntimeRouter::cpu_mode(ars_runtime_h handle,ars_character_h id,std::uint32_t requested) {
     RuntimeLease lease;CpuOperation operation;CpuContext *c=nullptr;auto status=cpu_enter(handle,false,&lease,&operation,&c);if(status!=ARS_OK)return status;
@@ -164,7 +169,9 @@ ars_status RuntimeRouter::cpu_source_control(ars_runtime_h handle,ars_source_adm
     status=lease.runtime_->registry.check(id.id,ObjectType::source_admin);if(status!=ARS_OK)return status;
     CpuContext::Source *record=nullptr;for(auto &s:c->sources)if(s.live && security::same(s.id.id,id.id)){record=&s;break;}if(!record)return ARS_E_STALE_HANDLE;
     status=command==0?rotate_source(handle,id,out):command==1?revoke_source(handle,id):release_source(handle,id);
-    if(status==ARS_OK){record->cache={};if(command==2)record->live=false;}return status;
+    if(status==ARS_OK || (command==2 && status==ARS_E_HANDLE_EXHAUSTED)){
+        record->cache={};if(command==2)record->live=false;
+    }return status;
 }
 ars_status RuntimeRouter::capture_render(ars_runtime_h handle,ars_character_h id,RenderFrameLease *out) {
     if(!out || out->valid() || out->model_ || out->pose_.get())return ARS_E_INVALID_ARGUMENT;

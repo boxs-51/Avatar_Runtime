@@ -54,3 +54,41 @@ and sanitizer obligations remain unchanged and NOT_RUN. Source-stable Release,
 Debug link/execution, existing regressions and independent review are required.
 The [stage2 evidence](../completed/audits/ALPHA_42_AUTHORITY_STAGE2_QUALIFICATION.md)
 records23 cumulative local observations, not whole-case or gate closure.
+
+## A42 stage3 continuation
+
+Owner requested continuing repository issues after374b3a3. Extend the existing
+native-observer tier with SRC004/012/020/022/025/026/035/036/037/038/040/042/044.
+Use deterministic entropy/clock, bounded ledger/counter injection and a pause at
+the actual public CPU batch's final security sample; preserve public mutations,
+real validated models, all earlier cases and full source/binary custody.
+Observe snapshot generation/provenance and source terminal state, not only
+return codes. Release/Debug, existing regression, negative verifier tests and
+independent review remain required. No security backend or production cap is
+changed. These injected observations are not physical RNG/clock/OOM proof.
+Concurrent management cuts that public single-H ownership rejects remain a
+specific compatibility/proof gap; no private management mutation substitutes
+for the requested public interleaving. No gate or issue closes by count alone.
+
+HDL005 fault-matrix extension: inject the next free registry slot generation at
+UINT32_MAX, create a real character, destroy via public ABI, require permanent
+slot retirement/old-handle denial/new-slot nonaliasing and unaffected other
+characters/update. Baseline374b3a3 production source reproduced live CPU ghost
+record3 vs expected2 and update STALE_HANDLE after terminal destruction; ordinary
+update/stale-handle/retirement/close controls passed. Fix must finish CPU
+bookkeeping on completed terminal retirement while preserving HANDLE_EXHAUSTED.
+The unchanged RED oracle must pass after correction with relevant lifecycle,
+allocator, public GPU/default profile and security regressions. No status/ABI
+waiver or retired-slot reuse is allowed. RED evidence is pinned locally before
+the production edit. This necessary repair is within continuing issue42 scope.
+
+Adjacent-case extension: standalone DIAG-MODEL/DIAG-ADMIN reproduced terminal
+model record2 vs expected1 and source record1 vs expected0 despite successful
+logical release/old-handle denial/final cleanup. Treat these as extra regressions,
+not two additional inventory cases. Complete the same CPU bookkeeping for model
+release and admin-release terminal retirement; keep rotate/revoke error ownership
+unchanged. Each RED diagnostic and its test/source/binary/log pins is retained
+before those production edits. No other mutation is implied by this finding.
+See [stage3 evidence](../completed/audits/ALPHA_42_FAULT_STAGE3_QUALIFICATION.md)
+for the three RED/GREEN repairs,37 local observations and remaining-case entry
+criteria; whole87-case qualification and release remain separate.

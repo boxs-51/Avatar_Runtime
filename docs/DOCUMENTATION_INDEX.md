@@ -1,6 +1,11 @@
 # Mục lục và phân loại tài liệu
 
-Checkpoint #42 stage2 **23-10-2026**: **174 tệp** (completed52, reference86,
+Checkpoint #42 stage3 **23-10-2026**: **175 tệp** (completed53, reference86,
+in-progress32, obsolete4). [Fault/terminal-retirement](completed/audits/ALPHA_42_FAULT_STAGE3_QUALIFICATION.md)
+ghi ba lỗi runtime đã có RED/GREEN,37 quan sát canonical local và2 diagnostic
+riêng;50 case chưa chạy. Platform/sanitizer và G07/G08 vẫn HOLD.
+
+Checkpoint #42 stage2 trước đó **23-10-2026**: **174 tệp** (completed52, reference86,
 in-progress32, obsolete4). [Authority/replay/close local](completed/audits/ALPHA_42_AUTHORITY_STAGE2_QUALIFICATION.md)
 ghi23 quan sát Release/Debug (8 linked ABI +15 native observer),64 case chưa
 chạy; toàn bộ87 qualification/platform/sanitizer và G07/G08 vẫn HOLD.

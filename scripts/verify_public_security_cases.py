@@ -13,7 +13,8 @@ import zipfile
 
 ROOT=Path(__file__).resolve().parents[1]
 PUBLIC_CASES=("HDL-001","HDL-002","HDL-003","HDL-004","HDL-012","HDL-014","SRC-017","SRC-019")
-NATIVE_CASES=("SRC-001","SRC-005","SRC-008","SRC-009","SRC-010","SRC-011","SRC-013","SRC-016","SRC-018","SRC-021","SRC-027","SRC-028","SRC-029","SRC-039","SRC-045")
+NATIVE_CASES=("SRC-001","SRC-005","SRC-008","SRC-009","SRC-010","SRC-011","SRC-013","SRC-016","SRC-018","SRC-021","SRC-027","SRC-028","SRC-029","SRC-039","SRC-045",
+    "SRC-004","SRC-012","SRC-020","SRC-022","SRC-025","SRC-026","SRC-035","SRC-036","SRC-037","SRC-038","SRC-040","SRC-042","SRC-044","HDL-005")
 CASES=PUBLIC_CASES+NATIVE_CASES
 INVENTORY=Path("docs/reference/G00_SECURITY_87_CASE_INVENTORY.json")
 AUTHORITY_SHA="d7e6061db9e6d42c33d9fd0b738e192b5f45c992d9098e7e767726ac741cf1f1"
@@ -130,7 +131,7 @@ def main():
         receipt['open_requirements']=[f'{87-len(CASES)} unexecuted cases','Required windows-2022 and Ubuntu GCC/Clang environments',
             'Separate required sanitizer builds','Full deterministic race/GPU/remote adapter proof','Unmerged issue41 dependency/platform gaps']
         receipt['proof_limits']=['Native observer cases use existing friend seams for snapshots/queue/credit/epoch and deterministic injected security clock',
-            'Append failure is injected; not physical OS clock or host allocation failure proof',
+            'Append/RNG/clock/issuance/counter failures are injected; not physical OS backend or host allocation failure proof',
             'Eight original cases retain header-only linked ABI scope; native observer is a separate test executable, no shipping export']
     except BaseException as error:
         receipt['result']='FAIL';receipt['error']={"class":type(error).__name__,"message":str(error)};raise
