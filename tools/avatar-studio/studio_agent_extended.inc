@@ -41,6 +41,98 @@ static int studio_agent_from_hex(const char *hex,char *out,size_t cap){
 static int studio_agent_extended(FILE *f,const char *op,char *receipt,size_t cap){
  int a=0,b=0,c=0;float x=0,y=0;
  char name[48]={0};
+ /* Rig revision is scoped to the live editor, not to a render frame.
+    The caller samples it before and after its bounded Native read sequence. */
+ /* Target vertex count requires no triangle indices or topology.
+    This owner-thread read is epoch-fenced with strict EOF. */
+ if(!strcmp(op,"G4_MESH_VERTEX_COUNT")){
+  unsigned long long epoch=0;int d=-1;
+  if(fscanf(f,"%llu %d",&epoch,&d)!=2||!studio_agent_eof(f)||
+     !epoch||epoch!=s.model_generation||!s.core.model)return 0;
+  const int n=csmGetDrawableCount(s.core.model);
+  const int *vc=csmGetDrawableVertexCounts(s.core.model);
+  if(!vc||d<0||d>=n||vc[d]<3||vc[d]>2048)return 0;
+  int printed=snprintf(receipt,cap,"drawable=%d vertices=%d",d,vc[d]);
+  return printed>0&&(size_t)printed<cap;
+ }
+ if(!strcmp(op,"G4_RIG_REV")){
+  unsigned long long epoch=0;int drawable=-1;
+  if(fscanf(f,"%llu %d",&epoch,&drawable)!=2||!studio_agent_eof(f)||
+     !epoch||epoch!=s.model_generation||!s.core.model||
+     s.rig_revision>=UINT64_C(0x7fffffffffffffff))return 0;
+  const int *vc=csmGetDrawableVertexCounts(s.core.model);
+  int n=csmGetDrawableCount(s.core.model);
+  if(!vc||drawable<0||drawable>=n||s.rig.drawable!=drawable||
+     s.rig.vertex_count!=vc[drawable]||
+     s.rig.model_signature!=signature())return 0;
+  int printed=snprintf(receipt,cap,"revision=%llu",
+                      (unsigned long long)s.rig_revision);
+  return printed>0&&(size_t)printed<cap;
+ }
+  if(!strcmp(op,"G4_MESH_META")||!strcmp(op,"G4_MESH_VERTEX")||
+     !strcmp(op,"G4_MESH_TRI")||!strcmp(op,"G4_RIG_META")||
+     !strcmp(op,"G4_RIG_ENTRY")){
+   unsigned long long epoch=0;int d=-1,i=-1;char kind[16]={0};
+   int meshmeta=!strcmp(op,"G4_MESH_META"), rigmeta=!strcmp(op,"G4_RIG_META");
+   int vertex=!strcmp(op,"G4_MESH_VERTEX"),triangle=!strcmp(op,"G4_MESH_TRI");
+   int entry=!strcmp(op,"G4_RIG_ENTRY");
+   if(entry){
+    if(fscanf(f,"%llu %d %15s %d",&epoch,&d,kind,&i)!=4)return 0;
+   }else if(vertex||triangle){
+    if(fscanf(f,"%llu %d %d",&epoch,&d,&i)!=3)return 0;
+   }else if(fscanf(f,"%llu %d",&epoch,&d)!=2)return 0;
+   if(!studio_agent_eof(f)||!epoch||epoch!=s.model_generation||!s.core.model)return 0;
+   int count=csmGetDrawableCount(s.core.model);
+   if(d<0||d>=count)return 0;
+   const int *vc=csmGetDrawableVertexCounts(s.core.model);
+   const int *ic=csmGetDrawableIndexCounts(s.core.model);
+   const unsigned short **indices=csmGetDrawableIndices(s.core.model);
+   const csmVector2 **positions=csmGetDrawableVertexPositions(s.core.model);
+   if(!vc||!ic||!indices||!positions||vc[d]<3||vc[d]>2048||
+      ic[d]<3||ic[d]>65535||ic[d]%3||!indices[d]||!positions[d])return 0;
+   int n=0;
+   if(meshmeta){
+    StudioLayerTopology top={0};
+    if(!studio_layer_components(indices[d],ic[d],vc[d],&top))return 0;
+    n=snprintf(receipt,cap,"drawable=%d vertices=%d triangles=%d islands=%d used=%d loose=%d largest=%d",
+        d,vc[d],ic[d]/3,top.islands,top.used,top.isolated,top.largest);
+   }else if(vertex){
+    if(i<0||i>=vc[d]||!isfinite(positions[d][i].X)||!isfinite(positions[d][i].Y))return 0;
+    n=snprintf(receipt,cap,"drawable=%d index=%d x=%.9g y=%.9g",
+      d,i,positions[d][i].X,positions[d][i].Y);
+   }else if(triangle){
+    if(i<0||i>=ic[d]/3)return 0;
+    int a=indices[d][i*3],b=indices[d][i*3+1],c=indices[d][i*3+2];
+    if(a>=vc[d]||b>=vc[d]||c>=vc[d]||a==b||b==c||a==c)return 0;
+    n=snprintf(receipt,cap,"drawable=%d index=%d a=%d b=%d c=%d",d,i,a,b,c);
+   }else{
+    if(s.rig.vertex_count!=vc[d]||s.rig.drawable!=d||
+       s.rig.model_signature!=signature())return 0;
+    if(rigmeta){
+     n=snprintf(receipt,cap,"drawable=%d vertices=%d role=%d anchors=%d beams=%d parents=%d weights=%d cross=%d",
+      d,s.rig.vertex_count,s.rig.role,s.rig.anchor_count,s.rig.beam_count,
+      s.rig.parent_count,s.rig.weight_count,s.rig.cross_count);
+    }else if(entry){
+     if(i<0)return 0;
+     if(!strcmp(kind,"anchor")&&i<s.rig.anchor_count)
+      n=snprintf(receipt,cap,"kind=anchor index=%d vertex=%d",i,s.rig.anchors[i]);
+     else if(!strcmp(kind,"beam")&&i<s.rig.beam_count)
+      n=snprintf(receipt,cap,"kind=beam index=%d a=%d b=%d",i,s.rig.beams[i].a,s.rig.beams[i].b);
+     else if(!strcmp(kind,"parent")&&i<s.rig.parent_count)
+      n=snprintf(receipt,cap,"kind=parent index=%d parent=%d child=%d stiffness=%.7g",
+        i,s.rig.parents[i].parent,s.rig.parents[i].child,s.rig.parents[i].stiffness);
+     else if(!strcmp(kind,"weight")&&i<s.rig.weight_count)
+      n=snprintf(receipt,cap,"kind=weight index=%d vertex=%d weight=%.7g",
+        i,s.rig.weights[i].vertex,s.rig.weights[i].weight);
+     else if(!strcmp(kind,"cross")&&i<s.rig.cross_count)
+      n=snprintf(receipt,cap,"kind=cross index=%d parent=%d target=%d child=%d stiffness=%.7g",
+        i,s.rig.cross_links[i].parent,s.rig.cross_links[i].drawable,
+        s.rig.cross_links[i].child,s.rig.cross_links[i].stiffness);
+     else return 0;
+    }
+   }
+   return n>0&&(size_t)n<cap;
+  }
  if(!strcmp(op,"STUDIO_EPOCH")){
   if(!studio_agent_eof(f)||!s.core.model||!s.model_generation)return 0;
   snprintf(receipt,cap,"generation=%llu",

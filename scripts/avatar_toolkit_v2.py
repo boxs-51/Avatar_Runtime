@@ -4,7 +4,7 @@ import json,re,math
 API_VERSION=2
 MAX_REQUEST_BYTES=65536
 SUPPORTED=("avatar.capabilities","avatar.schema")
-LOCAL_READONLY=("studio.local.status","catalog.parameters.page","catalog.parts.page","catalog.parameter.lookup","catalog.part.lookup")
+LOCAL_READONLY=("mesh.topology.inspect","mesh.vertices.page","mesh.triangles.page","rig.local.inspect","rig.entries.page","studio.local.status","catalog.parameters.page","catalog.parts.page","catalog.parameter.lookup","catalog.part.lookup")
 FIELDS=frozenset(("api_version","request_id","session_id",
  "expected_model_generation","expected_edit_revision","operation",
  "arguments","mode"))
@@ -81,12 +81,20 @@ def _read(req,local_enabled=False):
  if set(args)!={"operation"} or type(args["operation"]) is not str:
   raise ToolkitV2Error()
  if args["operation"] in LOCAL_READONLY and local_enabled:
-  schema_args=({"start":"int 0..2047","limit":"int 1..4"} if args["operation"].endswith(".page")
-                 else {"id":"UTF-8 ID 1..96 bytes; no controls or slash"} if args["operation"].endswith(".lookup") else {})
+  requested=args["operation"]
+  schema_args=(
+    {"drawable":"index","start":"int 0..2047","limit":"int 1..4",
+     "kind":"anchor|beam|parent|weight|cross"} if requested=="rig.entries.page"
+    else {"drawable":"index","start":"int 0..2047","limit":"int 1..4"}
+      if requested in ("mesh.vertices.page","mesh.triangles.page")
+    else {"drawable":"index"} if requested in ("mesh.topology.inspect","rig.local.inspect")
+    else {"start":"int 0..2047","limit":"int 1..4"} if requested.endswith(".page")
+    else {"id":"UTF-8 ID 1..96 bytes; no controls or slash"} if requested.endswith(".lookup")
+    else {})
   return {"operation":args["operation"],"effect":"read",
     "arguments":schema_args,"result_classification":"LOCAL_PRIVATE",
     "transport":"trusted-local-V1-read-adapter",
-    "generation_fence":True,"editor_revision_fence":False}
+    "generation_fence":True,"editor_revision_fence":args["operation"] in ("rig.local.inspect","rig.entries.page")}
  if args["operation"] not in SUPPORTED:raise ToolkitV2Error("UNSUPPORTED")
  return _schema(args["operation"])
 

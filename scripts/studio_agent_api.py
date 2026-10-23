@@ -14,6 +14,13 @@ def validate_command(cmd:dict)->str:
     fields={
         "studio.status":{"op"}, "studio.metrics":{"op"},
         "studio.epoch":{"op"},
+        "g4.mesh.meta":{"op","generation","drawable"},
+        "g4.mesh.vertex_count":{"op","generation","drawable"},
+        "g4.mesh.vertex":{"op","generation","drawable","index"},
+        "g4.mesh.triangle":{"op","generation","drawable","index"},
+        "g4.rig.meta":{"op","generation","drawable"},
+        "g4.rig.revision":{"op","generation","drawable"},
+        "g4.rig.entry":{"op","generation","drawable","kind","index"},
         "param.id.at":{"op","generation","index"},
         "part.id.at":{"op","generation","index"},
         "param.find.at":{"op","generation","id"},
@@ -75,6 +82,21 @@ def validate_command(cmd:dict)->str:
              "studio.reset":"STUDIO_RESET","studio.metrics":"STUDIO_METRICS",
              "param.reset":"PARAM_RESET","xpbd.apply":"XPBD_APPLY",
              "xpbd.disable":"XPBD_DISABLE","xpbd.inspect":"XPBD_INSPECT"}
+    if op.startswith("g4."):
+        gen=cmd["generation"]
+        if type(gen) is not int or not 0<gen<2**63:raise ValueError("generation")
+        drawable=integer("drawable")
+        if op=="g4.mesh.meta":return f"G4_MESH_META {gen} {drawable}"
+        if op=="g4.mesh.vertex_count":return f"G4_MESH_VERTEX_COUNT {gen} {drawable}"
+        if op=="g4.rig.meta":return f"G4_RIG_META {gen} {drawable}"
+        if op=="g4.rig.revision":return f"G4_RIG_REV {gen} {drawable}"
+        index=integer("index")
+        if op=="g4.mesh.vertex":return f"G4_MESH_VERTEX {gen} {drawable} {index}"
+        if op=="g4.mesh.triangle":return f"G4_MESH_TRI {gen} {drawable} {index}"
+        kind=cmd["kind"]
+        if type(kind) is not str or kind not in ("anchor","beam","parent","weight","cross"):
+            raise ValueError("kind")
+        return f"G4_RIG_ENTRY {gen} {drawable} {kind} {index}"
     if op in singles:return singles[op]
     if op in ("param.id.at","part.id.at","param.find.at","part.find.at"):
         gen=cmd["generation"]

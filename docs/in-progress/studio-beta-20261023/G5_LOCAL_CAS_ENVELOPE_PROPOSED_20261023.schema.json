@@ -1,0 +1,649 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:avatar-runtime:g5:cas-envelope:proposed:2026-10-23",
+  "title": "G5 local CAS request/response schema — PROPOSED, not enabled",
+  "description": "Closed envelope for opt-in Local-only G5; no Native writer authorization.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/request"
+    },
+    {
+      "$ref": "#/$defs/response"
+    }
+  ],
+  "$defs": {
+    "empty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "begin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "drawable"
+      ],
+      "properties": {
+        "drawable": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2047
+        }
+      }
+    },
+    "draft": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "draft_id"
+      ],
+      "properties": {
+        "draft_id": {
+          "type": "string",
+          "pattern": "^draft-[A-Za-z0-9_-]{1,96}$"
+        }
+      }
+    },
+    "status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "request_id"
+      ],
+      "properties": {
+        "request_id": {
+          "type": "string",
+          "pattern": "^req-[A-Za-z0-9_-]{1,48}$"
+        }
+      }
+    },
+    "apply": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document_revision"
+      ],
+      "properties": {
+        "document_revision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "request": {
+      "title": "G5 request PROPOSED",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "api_version",
+        "request_id",
+        "session_id",
+        "expected_model_generation",
+        "expected_edit_revision",
+        "operation",
+        "mode",
+        "arguments"
+      ],
+      "properties": {
+        "api_version": {
+          "const": 2
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^req-[A-Za-z0-9_-]{1,48}$"
+        },
+        "session_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128
+        },
+        "expected_model_generation": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expected_edit_revision": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operation": {
+          "enum": [
+            "editor.state.inspect",
+            "draft.begin",
+            "draft.validate",
+            "draft.diff",
+            "draft.commit",
+            "draft.abort",
+            "draft.undo",
+            "draft.redo",
+            "draft.status",
+            "physics.apply",
+            "physics.status"
+          ]
+        },
+        "mode": {
+          "enum": [
+            "read",
+            "stage",
+            "edit"
+          ]
+        },
+        "arguments": {
+          "type": "object"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "editor.state.inspect"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "const": "read"
+              },
+              "arguments": {
+                "$ref": "#/$defs/empty"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "draft.begin"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "const": "stage"
+              },
+              "arguments": {
+                "$ref": "#/$defs/begin"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "draft.validate"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "const": "stage"
+              },
+              "arguments": {
+                "$ref": "#/$defs/draft"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "draft.diff"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "const": "read"
+              },
+              "arguments": {
+                "$ref": "#/$defs/draft"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "draft.commit"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "const": "edit"
+              },
+              "arguments": {
+                "$ref": "#/$defs/draft"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "draft.abort"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "const": "edit"
+              },
+              "arguments": {
+                "$ref": "#/$defs/draft"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "draft.undo"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "const": "edit"
+              },
+              "arguments": {
+                "$ref": "#/$defs/empty"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "draft.redo"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "const": "edit"
+              },
+              "arguments": {
+                "$ref": "#/$defs/empty"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "draft.status"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "const": "read"
+              },
+              "arguments": {
+                "$ref": "#/$defs/status"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "physics.apply"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "const": "edit"
+              },
+              "arguments": {
+                "$ref": "#/$defs/apply"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "operation": {
+                "const": "physics.status"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mode": {
+                "const": "read"
+              },
+              "arguments": {
+                "$ref": "#/$defs/empty"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "enum": [
+                  "stage",
+                  "edit"
+                ]
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "expected_model_generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "expected_edit_revision": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "read"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "expected_edit_revision": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "response": {
+      "title": "G5 response PROPOSED",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "api_version",
+        "request_id",
+        "state",
+        "result",
+        "error"
+      ],
+      "properties": {
+        "api_version": {
+          "const": 2
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^req-[A-Za-z0-9_-]{1,48}$"
+        },
+        "state": {
+          "enum": [
+            "COMPLETED_READ",
+            "STAGED",
+            "VALIDATED",
+            "COMMITTED",
+            "ABORTED",
+            "APPLIED",
+            "REJECTED",
+            "UNKNOWN_OUTCOME"
+          ]
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "code"
+              ],
+              "properties": {
+                "code": {
+                  "enum": [
+                    "INVALID_ARGUMENT",
+                    "UNKNOWN_OPERATION",
+                    "UNSUPPORTED",
+                    "BUSY",
+                    "TIMEOUT_UNKNOWN",
+                    "STALE_SESSION",
+                    "STALE_MODEL",
+                    "REVISION_CONFLICT",
+                    "OUT_OF_BUDGET",
+                    "PERMISSION_DENIED",
+                    "INVALID_DRAFT",
+                    "COMMIT_FAILED",
+                    "PERSIST_FAILED",
+                    "PRIVATE_OUTPUT_DENIED",
+                    "STALE_REVISION"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "REJECTED",
+                  "UNKNOWN_OUTCOME"
+                ]
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "result": {
+                "type": "null"
+              },
+              "error": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "COMPLETED_READ",
+                  "STAGED",
+                  "VALIDATED",
+                  "COMMITTED",
+                  "ABORTED",
+                  "APPLIED"
+                ]
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "result": {
+                "type": "object"
+              },
+              "error": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "COMMITTED"
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "result": {
+                "type": "object",
+                "required": [
+                  "document_revision",
+                  "applied"
+                ],
+                "properties": {
+                  "document_revision": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "applied": {
+                    "const": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "APPLIED"
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "result": {
+                "type": "object",
+                "required": [
+                  "document_revision",
+                  "accepted_frame_generation",
+                  "solver_revision",
+                  "applied"
+                ],
+                "properties": {
+                  "document_revision": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "accepted_frame_generation": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "solver_revision": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "applied": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

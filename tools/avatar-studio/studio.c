@@ -33,10 +33,15 @@ typedef struct {
     void *xpbd;int xpbd_first,xpbd_second,xpbd_joint,xpbd_page,rig_selected,rig_beam_start,rig_overlay,rig_parent_start,rig_advanced,rig_cross_child;float rig_brush_radius,rig_brush_target;StudioRig rig;StudioRigBank rig_bank;StudioLayerSuggestion layer_proposal;StudioLayerTopology layer_topology;int layer_topology_valid;
      int layer_proposal_valid,layer_proposal_drawable;uint64_t layer_proposal_signature;float xpbd_gravity,xpbd_wind,xpbd_compliance,xpbd_collision,xpbd_mass,xpbd_damping,xpbd_contact_compliance,xpbd_step,xpbd_iters,xpbd_pin,xpbd_substeps,xpbd_pose_compliance,xpbd_source_transfer,xpbd_bending,xpbd_surface,xpbd_anchors;
     uint64_t model_generation; /* fresh OS random 63-bit tag per successful load */
+    uint64_t rig_revision; /* monotonic within model generation; owner thread only */
     Settings settings;RenderTexture2D target;Rectangle viewport;
 } Studio;
 static Studio s;
 static void verify(int pass,const char *name);
+static void studio_note_rig_revision(const StudioRig *before){
+    if(memcmp(before,&s.rig,sizeof s.rig)!=0&&
+       s.rig_revision<UINT64_C(0x7fffffffffffffff))++s.rig_revision;
+}
 static float bound(float v,float a,float b){return fminf(b,fmaxf(a,v));}
 static float mix(float a,float b,float t){return a+(b-a)*t;}
 static int hit(Rectangle r){return CheckCollisionPointRec(GetMousePosition(),r);}
@@ -114,7 +119,7 @@ static int load_model(const char *path){
          toast("Model generation unavailable; previous model kept.");return 0;
     }
     free_model();s.core=core;s.renderer=renderer;s.sorted=sorted;s.manual=manual;s.pins=pins;s.part_values=part_values;
-    s.model_generation=generation;
+    s.model_generation=generation;s.rig_revision=0;
     s.part_defaults=part_defaults;s.count=count;s.parts=parts;s.linked=physics;memcpy(manual,csmGetParameterDefaultValues(core.model),(size_t)count*sizeof(float));
     memcpy(part_values,csmGetPartOpacities(core.model),(size_t)parts*sizeof(float));
     memcpy(part_defaults,part_values,(size_t)parts*sizeof(float));
@@ -1012,7 +1017,11 @@ static void frame(void){
         RenderTexture2D next=LoadRenderTexture(rw,rh);if(next.id){if(s.target.id)UnloadRenderTexture(s.target);s.target=next;
             float ratio=s.view.sw?(float)rw/s.view.sw:1;s.view.sw=rw;s.view.sh=rh;s.base_zoom*=ratio;RendererResize(&s.renderer,rw,rh);SetTextureFilter(s.target.texture,TEXTURE_FILTER_BILINEAR);}
     }
-    process_agent_request();if(!s.smoke)input(dt);update(dt);s.view.zoom=s.base_zoom*s.settings.zoom;
+    StudioRig agent_rig_before=s.rig;
+    process_agent_request();
+    studio_note_rig_revision(&agent_rig_before);
+    StudioRig ui_rig_before=s.rig;
+    if(!s.smoke)input(dt);update(dt);s.view.zoom=s.base_zoom*s.settings.zoom;
     if(s.xpbd_smoke&&s.frame==12){int count=csmGetDrawableCount(s.core.model);const int *vertices=csmGetDrawableVertexCounts(s.core.model);
       for(int d=0;d<count;++d)if(vertices[d]>=3&&vertices[d]<=2048){StudioXpbdOptions o={d,-1,0,-12,3,.0000001f,0,1,.995f,0,1.f/120,8,0,3,.004f,.08f,.00001f,.02f,2};
         s.xpbd=studio_xpbd_bind(s.core.model,o);if(s.xpbd)break;}
@@ -1056,6 +1065,9 @@ static void frame(void){
     for(int i=1;i<120;++i){float a=s.fps_history[(s.history+i-1)%120],b=s.fps_history[(s.history+i)%120];
         DrawLine((int)(s.viewport.x+150+(i-1)*(s.viewport.width-150)/120),(int)(y+20-bound(a,0,50)*.4f),(int)(s.viewport.x+150+i*(s.viewport.width-150)/120),(int)(y+20-bound(b,0,50)*.4f),Fade(ACCENT,.6f));}
     left_ui();inspector();
+    /* UI and viewport edit paths run on this owner thread; record their
+       completed Rig transaction before admitting the next IPC request. */
+    studio_note_rig_revision(&ui_rig_before);
     DrawRectangle(0,h-34,w,34,CARD);label("LMB pull   /   RMB pan   /   Wheel zoom   /   Space pause   /   P physics   /   1-9 expression",20,(float)h-24,12,MUTED);
     label("Local preview",(float)w-120,(float)h-24,12,ACCENT);
     if(GetTime()<s.notice_until){Vector2 size=MeasureTextEx(s.font,s.notice,15,.5f);Rectangle r={s.viewport.x+12,s.viewport.y+s.viewport.height-42,size.x+24,30};DrawRectangleRounded(r,.25f,6,(Color){30,65,67,245});label(s.notice,r.x+12,r.y+7,15,TEXT);}
