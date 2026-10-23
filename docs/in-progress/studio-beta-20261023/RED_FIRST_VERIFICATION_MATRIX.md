@@ -67,3 +67,19 @@ complete newline/type/receipt validation. Foreign ACK quarantine GREEN.
 Not run: V2 Native named-pipe integration, journal, session generation,
 real read snapshots, CAS transactions, GUI, cross-OS, production perf.
 Privacy and release gates remain HOLD.
+
+## G4 Local-only v1 adapter verification, 2026-10-23
+
+G4-LOCAL-01: absent local bridge or private opt-in -> REJECTED (GREEN).
+G4-LOCAL-02: strict typed status and metadata -> GREEN synthetic/live.
+G4-LOCAL-03: max-four parameter and part page -> GREEN synthetic/live.
+G4-LOCAL-04: invalid page, malformed native receipt, timeout -> fail
+closed / TIMEOUT_UNKNOWN (GREEN synthetic).
+G4-LOCAL-05: aggregate counts change while reading a page -> STALE_MODEL
+and no partial result (RED before change, GREEN after).
+G4-LOCAL-06: capabilities/schema advertise added reads only when local
+private adapter is explicitly bound (RED before change, GREEN after).
+
+All results above are development scoped. Same-count model replacement,
+native generation/revision fences, ID lookup, geometry coverage,
+UI/Agent accepted-frame parity, and V5 transaction tests remain NOT RUN.

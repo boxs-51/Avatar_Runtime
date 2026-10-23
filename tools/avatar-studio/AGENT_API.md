@@ -229,3 +229,36 @@ The decoder validates at most 65536 bytes, exact envelope fields,
 UTF-8, duplicate-key rejection, finite numbers, request ID and
 operation schemas. Do not interpret discovery success as Native session
 authorization. Beta release gate remains HOLD.
+
+## Local-only Studio reads (ADR-002 G4 partial, 2026-10-23)
+
+The updated Local-only ADR-002 supersedes mandatory named pipes,
+distributed journaling and Computer Bridge tool registration.
+The V2 library can access existing Native V1 read commands ONLY when
+a trusted local caller injects an already-created AgentBridge and sets
+allow_local_private=True. No arbitrary model or IPC path is accepted
+inside V2 JSON. Offline CLI remains discovery-only.
+
+Supported conditional read calls:
+- studio.local.status: frame/playing/XPBD flags and aggregate counts.
+- catalog.parameters.page: start index 0..2047, limit 1..4;
+  returns bounded index, numeric value/range and pin state.
+- catalog.parts.page: same pagination; returns index and opacity.
+
+These operations return classification LOCAL_PRIVATE, backend
+legacy-v1-read-only and generation_available=false. Page reads
+check aggregate counts before and after the page and fail if changed,
+but are NOT atomic snapshots: a same-count model reload can remain
+invisible until a Native model-generation fence is implemented.
+Do not publish local geometry, model IDs or numeric model observations
+in public reports; keep all private readback in ignored local storage.
+
+Python in-process use:
+    from scripts.avatar_toolkit_v2 import execute_request
+    # local_bridge is an existing AgentBridge for an Owner-launched Studio.
+    response = execute_request(request_json_bytes,
+        local_bridge=local_bridge, allow_local_private=True)
+
+Local readback is NOT an authentication layer against same-user
+processes. Mutating V2 opcodes, Native V2 dispatch and model lifecycle
+are not implemented. G4 and release remain HOLD/PARTIAL.

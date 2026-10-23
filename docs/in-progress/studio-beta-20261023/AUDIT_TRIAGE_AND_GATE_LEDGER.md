@@ -61,3 +61,21 @@ journal cases remain open; F02 stays PARTIAL.
 F01 PROVISIONAL GREEN; F02 PARTIAL; F03 HOLD; F04 PARTIAL; F05
 PROVISIONAL GREEN; F06 OPEN; F07 PARTIAL. Product RELEASE HOLD.
 See ADR002_G4_DISCOVERY_IMPLEMENTATION_20261023.md.
+
+## 2026-10-23 Local-only G4 scope correction
+
+The updated 11:08 ADR-002/ADR-003 Local-only appendices supersede the
+earlier suggestion that named pipes, an external broker, a distributed
+journal or mandatory Computer Bridge/H5 registration are required.
+F02 still requires local input ownership, no false ACK, crash/timeout
+recovery and frame/revision distinction; it does NOT require a
+distributed journal. F04 permits authorized model/geometry inspection
+on Host but still forbids exporting private data to Git, CI or reports.
+F01 provisional GREEN; F02 PARTIAL; F03 HOLD; F04 PARTIAL; F05 provisional
+GREEN; F06 OPEN; F07 PARTIAL. Product RELEASE HOLD.
+
+G4 implemented only a bounded LOCAL_PRIVATE legacy V1 read adapter:
+studio.local.status, catalog.parameters.page, catalog.parts.page with
+up to four values per page and count-drift rejection. It cannot detect
+same-count model reload and does not replace the Native generation
+fence or complete feature parity. See ADR002_LOCAL_ONLY_G4_READBACK_20261023.md.

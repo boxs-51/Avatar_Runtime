@@ -42,3 +42,14 @@ the client no longer accepts an unfinished OK frame or clears a foreign ACK.
 See ADR002_G4_DISCOVERY_IMPLEMENTATION_20261023.md for evidence and limits.
 
 No independent auditor has re-reviewed these changes. Release gate HOLD.
+
+## Local-only G4 bounded readback update (2026-10-23)
+
+ADR-002 and ADR-003 appendices now explicitly choose one-host Local-only
+Studio API; mandatory distributed journal, broker, named pipe, remote
+capability system and H5 registration are superseded. Development implemented
+bounded LOCAL_PRIVATE status/parameter/part readback from an explicitly
+injected existing V1 bridge. This is NOT a generation-fenced V2 Native API.
+Synthetic RED-first (including count drift) and Windows model E2E GREEN.
+Release gate HOLD and all pending security finding states unchanged.
+See ADR002_LOCAL_ONLY_G4_READBACK_20261023.md.
