@@ -38,3 +38,14 @@
 Distinguish **AUDIT-OBSERVED**, **SOURCE-CONFIRMED**, **EXECUTED** and **PROPOSED**. Historical green API/XPBD tests are limited regressions, not IPC/parser clearance. Every future run needs: case ID, git baseline, OS/compiler/config, fixture classification, expected/actual, mutation oracle, generic error class, private evidence location and rollback outcome. Do not print raw receipts or model-derived metrics in versioned Markdown. Put detailed logs under ignored `build/studio-user/`; no CI/issue upload without privacy authorization.
 
 **STOP:** invalid native command is accepted, request ownership ambiguous, private material in public artifact, or unapproved source/release action.
+## 2026-10-23 implementation verification checkpoint
+
+- `IPC-P01`: initial eight Windows Native grammar RED cases, now 48/48 scoped malformed grammar cases GREEN after native EOF and bounded request changes.
+- `IPC-Q01`: synthetic multi-process exclusive writer admission PASS with OS lock.
+- `IPC-Q02`: killed Python writer frees OS ownership but leaves any unfinished request **quarantined**; complete Native restart and idempotent replay remain NOT_RUN.
+- `PRIV-01`: categorical reporter input validation synthetic PASS; artifact promotion enforcement NOT_RUN.
+- `RIG-IO-01`: injected after-flush save failure preserves previous-good rig, subsequent save/load PASS.
+- `RIG-IO-02`: real crash/power-loss and forced Windows replacement fault NOT_RUN.
+- `BONE/SKIN/FRAME/PERF gates`: proposed only; development of new skeletal skinning remains on HOLD pending security gates.
+
+Source-gated local regression ran successfully, but does not replace independent reviewer re-execution. See `FINDINGS_REMEDIATION_20261023.md` and ignored Host evidence.
