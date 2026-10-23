@@ -8,6 +8,8 @@ extern __declspec(dllimport) unsigned int __stdcall glGetError(void);
 #define GL_NO_ERROR 0
 #include <math.h>
 #include <stdint.h>
+/* Windows CNG import without windows.h (raylib uses Rectangle/CloseWindow). */
+extern __declspec(dllimport) long __stdcall BCryptGenRandom(void *,unsigned char *,unsigned long,unsigned long);
 
 #define MAX_ITEMS 4096
 #define STUDIO_RENDER_SCALE 1.5f
@@ -28,6 +30,7 @@ typedef struct {
     int failures,checks,physics_expected,xpbd_smoke,xpbd_smoke_frames,xpbd_motion_case,xpbd_motion_rebinds;float paused_time;double paused_checksum;
     void *xpbd;int xpbd_first,xpbd_second,xpbd_joint,xpbd_page,rig_selected,rig_beam_start,rig_overlay,rig_parent_start,rig_advanced,rig_cross_child;float rig_brush_radius,rig_brush_target;StudioRig rig;StudioRigBank rig_bank;StudioLayerSuggestion layer_proposal;StudioLayerTopology layer_topology;int layer_topology_valid;
      int layer_proposal_valid,layer_proposal_drawable;uint64_t layer_proposal_signature;float xpbd_gravity,xpbd_wind,xpbd_compliance,xpbd_collision,xpbd_mass,xpbd_damping,xpbd_contact_compliance,xpbd_step,xpbd_iters,xpbd_pin,xpbd_substeps,xpbd_pose_compliance,xpbd_source_transfer,xpbd_bending,xpbd_surface,xpbd_anchors;
+    uint64_t model_generation; /* fresh OS random 63-bit tag per successful load */
     Settings settings;RenderTexture2D target;Rectangle viewport;
 } Studio;
 static Studio s;
@@ -99,7 +102,17 @@ static int load_model(const char *path){
     }
     void *physics=input.physics[0]?studio_physics_create(input.physics,core.model):NULL;
     if(s.smoke&&physics)verify(studio_physics_probe(input.physics,core.model),"physics maximum-speed boundary and epoch continuity");
+    uint64_t generation=0;
+    if(BCryptGenRandom(NULL,(unsigned char*)&generation,sizeof generation,
+          2u /* BCRYPT_USE_SYSTEM_PREFERRED_RNG */)<0 ||
+       (generation &= UINT64_C(0x7fffffffffffffff))==0){
+        RendererFree(&renderer);FreeCore(&core);
+        free(sorted);free(manual);free(pins);free(part_values);free(part_defaults);
+        if(physics)studio_physics_free(physics);
+         toast("Model generation unavailable; previous model kept.");return 0;
+    }
     free_model();s.core=core;s.renderer=renderer;s.sorted=sorted;s.manual=manual;s.pins=pins;s.part_values=part_values;
+    s.model_generation=generation;
     s.part_defaults=part_defaults;s.count=count;s.parts=parts;s.linked=physics;memcpy(manual,csmGetParameterDefaultValues(core.model),(size_t)count*sizeof(float));
     memcpy(part_values,csmGetPartOpacities(core.model),(size_t)parts*sizeof(float));
     memcpy(part_defaults,part_values,(size_t)parts*sizeof(float));

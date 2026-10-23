@@ -48,8 +48,19 @@ def _call(bridge,command):
   raise ToolkitV2Error("INVALID_DRAFT")
  return answer.get("receipt")
 
+def _read_epoch(bridge):
+ parsed=_parse_receipt(_call(bridge,{"op":"studio.epoch"}),("generation",))
+ value=parsed["generation"]
+ if not re.fullmatch(r"[0-9]{1,19}",value):
+  raise ToolkitV2Error("INVALID_DRAFT")
+ generation=int(value)
+ if not 0<generation<2**63:raise ToolkitV2Error("INVALID_DRAFT")
+ return generation
+
 def read_status(bridge):
+ before=_read_epoch(bridge)
  parts=_parse_receipt(_call(bridge,{"op":"studio.status"}),STATUS_FIELDS)
+ if _read_epoch(bridge)!=before:raise ToolkitV2Error("STALE_MODEL")
  data={k:_integer(parts[k]) for k in STATUS_FIELDS}
  if data["playing"] not in (0,1) or data["xpbd"] not in (0,1):
   raise ToolkitV2Error("INVALID_DRAFT")
@@ -58,9 +69,10 @@ def read_status(bridge):
    "tab":data["tab"],"counts":{
     "params":data["params"],"parts":data["parts"],"drawables":data["drawables"]},
    "classification":"LOCAL_PRIVATE",
-   "backend":"legacy-v1-read-only","generation_available":False}
+   "backend":"legacy-v1-read-only","generation_available":True,
+   "model_generation":before,"editor_revision_available":False}
 
-def read_page(bridge,operation,args):
+def read_page(bridge,operation,args,expected=None):
  if type(args) is not dict or set(args)!={"start","limit"}:
   raise ToolkitV2Error()
  start,limit=args["start"],args["limit"]
@@ -68,6 +80,7 @@ def read_page(bridge,operation,args):
    not 0<=start<MAX_ITEMS or not 1<=limit<=MAX_PAGE):
   raise ToolkitV2Error()
  state=read_status(bridge)
+ if expected is not None and state["model_generation"]!=expected:raise ToolkitV2Error("STALE_MODEL")
  field="params" if operation=="catalog.parameters.page" else "parts"
  total=state["counts"][field]
  if total>MAX_ITEMS:raise ToolkitV2Error("OUT_OF_BUDGET")
@@ -75,7 +88,11 @@ def read_page(bridge,operation,args):
  items=[]
  for index in range(start,min(total,start+limit)):
   if operation=="catalog.parameters.page":
-   raw=_call(bridge,{"op":"param.inspect","index":index})
+   try:raw=_call(bridge,{"op":"param.inspect.at","index":index,
+                             "generation":state["model_generation"]})
+   except ToolkitV2Error as exc:
+    if exc.code=="INVALID_DRAFT":raise ToolkitV2Error("STALE_MODEL") from exc
+    raise
    values=_parse_receipt(raw,("index","value","low","high","pin"))
    if _integer(values["index"])!=index:raise ToolkitV2Error("INVALID_DRAFT")
    value,low,high=(_floating(values[k]) for k in ("value","low","high"))
@@ -84,23 +101,31 @@ def read_page(bridge,operation,args):
    items.append({"index":index,"value":value,"low":low,
                 "high":high,"pinned":bool(pin)})
   else:
-   raw=_call(bridge,{"op":"part.inspect","index":index})
+   try:raw=_call(bridge,{"op":"part.inspect.at","index":index,
+                            "generation":state["model_generation"]})
+   except ToolkitV2Error as exc:
+    if exc.code=="INVALID_DRAFT":raise ToolkitV2Error("STALE_MODEL") from exc
+    raise
    values=_parse_receipt(raw,("index","opacity"))
    if _integer(values["index"])!=index:raise ToolkitV2Error("INVALID_DRAFT")
    opacity=_floating(values["opacity"])
    if not 0<=opacity<=1:raise ToolkitV2Error("INVALID_DRAFT")
    items.append({"index":index,"opacity":opacity})
  after=read_status(bridge)
- if after["counts"]!=state["counts"]:raise ToolkitV2Error("STALE_MODEL")
+ if after["counts"]!=state["counts"] or after["model_generation"]!=state["model_generation"]:raise ToolkitV2Error("STALE_MODEL")
  next_index=start+len(items)
  return {"classification":"LOCAL_PRIVATE","backend":"legacy-v1-read-only",
          "items":items,"next_start":next_index if next_index<total else None,
-         "total":total,"generation_available":False,"consistency":"best_effort_unfenced_v1"}
+         "total":total,"generation_available":True,"model_generation":state["model_generation"],
+         "editor_revision_available":False,"consistency":"model_epoch_guarded_editor_unfenced"}
 
-def execute_local(op,args,bridge):
+def execute_local(op,args,bridge,expected=None):
  if op=="studio.local.status":
   if args:raise ToolkitV2Error()
-  return read_status(bridge)
+  state=read_status(bridge)
+  if expected is not None and state["model_generation"]!=expected:
+   raise ToolkitV2Error("STALE_MODEL")
+  return state
  if op in ("catalog.parameters.page","catalog.parts.page"):
-  return read_page(bridge,op,args)
+  return read_page(bridge,op,args,expected)
  raise ToolkitV2Error("UNKNOWN_OPERATION")

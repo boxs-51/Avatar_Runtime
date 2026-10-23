@@ -5,6 +5,27 @@ static int studio_agent_eof(FILE *f){
 static int studio_agent_extended(FILE *f,const char *op,char *receipt,size_t cap){
  int a=0,b=0,c=0;float x=0,y=0;
  char name[48]={0};
+ if(!strcmp(op,"STUDIO_EPOCH")){
+  if(!studio_agent_eof(f)||!s.core.model||!s.model_generation)return 0;
+  snprintf(receipt,cap,"generation=%llu",
+           (unsigned long long)s.model_generation);return 1;
+ }
+ if(!strcmp(op,"PARAM_INSPECT_AT")||!strcmp(op,"PART_INSPECT_AT")){
+  unsigned long long generation=0;int index=-1;
+  if(fscanf(f,"%llu %d",&generation,&index)!=2||!studio_agent_eof(f)||
+     !generation||generation!=s.model_generation||!s.core.model)return 0;
+  if(!strcmp(op,"PARAM_INSPECT_AT")){
+   if(index<0||index>=s.count)return 0;
+   const float *lo=csmGetParameterMinimumValues(s.core.model);
+   const float *hi=csmGetParameterMaximumValues(s.core.model);
+   float *v=csmGetParameterValues(s.core.model);
+   if(!lo||!hi||!v)return 0;
+   snprintf(receipt,cap,"index=%d value=%.7g low=%.7g high=%.7g pin=%d",
+       index,v[index],lo[index],hi[index],s.pins[index]);return 1;
+  }
+  if(index<0||index>=s.parts)return 0;
+  snprintf(receipt,cap,"index=%d opacity=%.7g",index,s.part_values[index]);return 1;
+ }
  if(!strcmp(op,"STUDIO_TAB")||!strcmp(op,"STUDIO_BACKGROUND")){
   if(fscanf(f,"%d",&a)!=1||!studio_agent_eof(f)||a<0||a>3)return 0;
   if(!strcmp(op,"STUDIO_TAB")){s.tab=a;s.scroll=0;}

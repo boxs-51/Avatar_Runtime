@@ -1,5 +1,5 @@
 """Private model E2E for ADR-002 local read-only V2 adapter, no asset export."""
-import json,subprocess,sys
+import json,subprocess,sys,os
 from pathlib import Path
 from datetime import datetime
 ROOT=Path(__file__).resolve().parents[1]
@@ -9,15 +9,15 @@ from moc3_local_replay import _private_manifest
 from studio_agent_api import AgentBridge
 from scripts.avatar_toolkit_v2 import execute_request
 
-def msg(op,args=None):
+def msg(op,args=None,expected=None):
  return json.dumps({"api_version":2,"request_id":"req-physical-local-01",
- "session_id":None,"expected_model_generation":None,"expected_edit_revision":None,
+ "session_id":None,"expected_model_generation":expected,"expected_edit_revision":None,
  "operation":op,"arguments":args or {},"mode":"read"}).encode("utf-8")
 
 def run():
  folder=ROOT/"build/studio-user"/("v2-local-read-"+datetime.now().strftime("%Y%m%d-%H%M%S-%f"))
  (folder/"api").mkdir(parents=True)
- exe=ROOT/"build/avatar-studio/Release/avatar_studio.exe"
+ exe=Path(os.environ.get("AVATAR_STUDIO_E2E_EXE",str(ROOT/"build/avatar-studio/Release/avatar_studio.exe")))
  gates=[]
  with (folder/"native-private.log").open("wb") as log:
   proc=subprocess.Popen([str(exe),"--model",str(_private_manifest()),
@@ -33,6 +33,25 @@ def run():
    status=read("studio.local.status")
    assert status["counts"]["params"]>0 and status["counts"]["parts"]>0
    assert status["classification"]=="LOCAL_PRIVATE"
+   assert status["generation_available"] is True
+   generation=status["model_generation"]
+   assert type(generation) is int and 0<generation<2**63
+   current=bridge.call({"op":"param.inspect.at","generation":generation,"index":0})
+   assert current["ok"]
+   wrong=generation-1 if generation>1 else generation+1
+   stale=bridge.call({"op":"param.inspect.at","generation":wrong,"index":0})
+   assert not stale["ok"]
+   fenced=json.loads(execute_request(msg("catalog.parameters.page",
+        {"start":0,"limit":1},expected=generation),local_bridge=bridge,
+        allow_local_private=True))
+   assert fenced["state"]=="COMPLETED_READ"
+   denied_stale=json.loads(execute_request(msg("catalog.parameters.page",
+        {"start":0,"limit":1},expected=wrong),local_bridge=bridge,
+        allow_local_private=True))
+   assert denied_stale["state"]=="REJECTED"
+   assert denied_stale["error"]["code"]=="STALE_MODEL"
+   gates.append("native_generation_cas")
+
    gates.append("status_live")
    a=read("catalog.parameters.page",{"start":0,"limit":2})
    b=read("catalog.parts.page",{"start":0,"limit":2})

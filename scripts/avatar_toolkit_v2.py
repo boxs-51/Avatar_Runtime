@@ -50,9 +50,11 @@ def decode_request(data:bytes)->dict:
   raise ToolkitV2Error("UNSUPPORTED")
  if type(req["request_id"]) is not str or not ID.fullmatch(req["request_id"]):
   raise ToolkitV2Error()
- if any(req[k] is not None for k in
-   ("session_id","expected_model_generation","expected_edit_revision")):
+ if req["session_id"] is not None or req["expected_edit_revision"] is not None:
   raise ToolkitV2Error("UNSUPPORTED")
+ gen=req["expected_model_generation"]
+ if gen is not None and (type(gen) is not int or not 0<gen<2**63):
+  raise ToolkitV2Error("INVALID_ARGUMENT")
  if type(req["mode"]) is not str or req["mode"]!="read":
   raise ToolkitV2Error("UNSUPPORTED")
  if type(req["operation"]) is not str or len(req["operation"])>64:
@@ -83,7 +85,7 @@ def _read(req,local_enabled=False):
   return {"operation":args["operation"],"effect":"read",
     "arguments":schema_args,"result_classification":"LOCAL_PRIVATE",
     "transport":"trusted-local-V1-read-adapter",
-    "generation_fence":False}
+    "generation_fence":True,"editor_revision_fence":False}
  if args["operation"] not in SUPPORTED:raise ToolkitV2Error("UNSUPPORTED")
  return _schema(args["operation"])
 
@@ -96,8 +98,10 @@ def execute_request(data:bytes,*,local_bridge=None,allow_local_private=False)->s
    if local_bridge is None or allow_local_private is not True:
     raise ToolkitV2Error("PERMISSION_DENIED")
    from scripts.avatar_toolkit_v2_local import execute_local
-   result=execute_local(req["operation"],req["arguments"],local_bridge)
+   result=execute_local(req["operation"],req["arguments"],local_bridge,req["expected_model_generation"])
   else:
+   if req["expected_model_generation"] is not None:
+    raise ToolkitV2Error("UNSUPPORTED")
    result=_read(req,local_bridge is not None and allow_local_private is True)
   response={"api_version":2,"request_id":request_id,
             "state":"COMPLETED_READ","result":result,"error":None}

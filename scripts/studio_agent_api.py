@@ -1,4 +1,4 @@
-﻿"""Local-only agent command API for Native Studio. No network or model export."""
+"""Local-only agent command API for Native Studio. No network or model export."""
 from __future__ import annotations
 import math
 import os
@@ -12,6 +12,8 @@ def validate_command(cmd:dict)->str:
     op=cmd["op"]
     fields={
         "studio.status":{"op"}, "studio.metrics":{"op"},
+        "studio.epoch":{"op"},
+        "param.inspect.at":{"op","generation","index"}, "part.inspect.at":{"op","generation","index"},
         "studio.tab":{"op","index"}, "studio.background":{"op","index"},
         "param.inspect":{"op","index"}, "part.inspect":{"op","index"},
         "xpbd.read":{"op","name"},
@@ -64,11 +66,18 @@ def validate_command(cmd:dict)->str:
     def boolean(k):
         if type(cmd[k]) is not bool:raise ValueError("expected bool")
         return int(cmd[k])
-    singles={"studio.status":"STUDIO_STATUS","studio.step":"STUDIO_STEP",
+    singles={"studio.epoch":"STUDIO_EPOCH","studio.status":"STUDIO_STATUS","studio.step":"STUDIO_STEP",
              "studio.reset":"STUDIO_RESET","studio.metrics":"STUDIO_METRICS",
              "param.reset":"PARAM_RESET","xpbd.apply":"XPBD_APPLY",
              "xpbd.disable":"XPBD_DISABLE","xpbd.inspect":"XPBD_INSPECT"}
     if op in singles:return singles[op]
+    if op in ("param.inspect.at","part.inspect.at"):
+        generation=cmd["generation"]
+        if type(generation) is not int or not 0<generation<2**63:
+            raise ValueError("invalid model generation")
+        index=integer("index")
+        return ("PARAM_INSPECT_AT" if op=="param.inspect.at"
+                else "PART_INSPECT_AT")+f" {generation} {index}"
     if op in ("studio.tab","studio.background"):
         index=integer("index")
         if index>3:raise ValueError("invalid UI index")

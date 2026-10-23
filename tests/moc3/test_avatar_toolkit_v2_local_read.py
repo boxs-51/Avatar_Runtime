@@ -11,12 +11,14 @@ class FakeBridge:
  def call(self,command):
   self.calls.append(command)
   op=command["op"]
+  if op=="studio.epoch":
+   return {"ok":True,"receipt":"generation=100"}
   if op=="studio.status":
    return {"ok":True,"receipt":"frame=8 playing=1 expression=0 tab=2 xpbd=1 params=5 parts=3 drawables=4"}
-  if op=="param.inspect":
+  if op=="param.inspect.at":
    i=command["index"]
    return {"ok":True,"receipt":f"index={i} value=.5 low=0 high=1 pin=0"}
-  if op=="part.inspect":
+  if op=="part.inspect.at":
    i=command["index"]
    return {"ok":True,"receipt":f"index={i} opacity=.75"}
   return {"ok":False,"receipt":"rejected"}
@@ -51,7 +53,7 @@ class LocalReadTests(unittest.TestCase):
   b=FakeBridge()
   out=json.loads(execute_request(req("catalog.parameters.page",{"start":1,"limit":2}),local_bridge=b,allow_local_private=True))
   self.assertEqual([i["index"] for i in out["result"]["items"]],[1,2])
-  self.assertEqual(len(b.calls),4)
+  self.assertEqual(len(b.calls),8)
  def test_page_model_count_changes_fail_closed(self):
   class Changed(FakeBridge):
    def __init__(self):

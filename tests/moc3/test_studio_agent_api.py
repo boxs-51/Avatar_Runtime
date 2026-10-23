@@ -1,4 +1,4 @@
-﻿"""RED-first contract for local agent API; no private model in these fixtures."""
+"""RED-first contract for local agent API; no private model in these fixtures."""
 from __future__ import annotations
 import tempfile
 import threading
@@ -16,6 +16,11 @@ class AgentApiContract(unittest.TestCase):
     def test_public_command_contract_and_bounds(self):
         self.assertEqual(VERSION, "1.0")
         self.assertEqual(validate_command({"op": "rig.select", "drawable": 7}), "RIG_SELECT 7")
+        self.assertEqual(validate_command({"op":"studio.epoch"}),"STUDIO_EPOCH")
+        self.assertEqual(validate_command({"op":"param.inspect.at","generation":123,"index":4}),
+                         "PARAM_INSPECT_AT 123 4")
+        self.assertEqual(validate_command({"op":"part.inspect.at","generation":123,"index":0}),
+                         "PART_INSPECT_AT 123 0")
         self.assertEqual(validate_command({"op": "rig.anchor", "vertex": 12, "enabled": True}), "RIG_ANCHOR 12 1")
         self.assertEqual(validate_command({"op": "rig.beam", "a": 2, "b": 9, "enabled": False}), "RIG_BEAM 2 9 0")
         self.assertEqual(validate_command({"op": "rig.apply"}), "RIG_APPLY")
@@ -28,6 +33,11 @@ class AgentApiContract(unittest.TestCase):
         self.assertEqual(validate_command({"op": "action.trigger", "kind": "pull", "strength": .6}), "ACTION pull 0.6")
         for invalid in (
             {"op":"unknown"},
+            {"op":"param.inspect.at","generation":0,"index":0},
+            {"op":"param.inspect.at","generation":True,"index":0},
+            {"op":"param.inspect.at","generation":2**63,"index":0},
+            {"op":"param.inspect.at","generation":123,"index":2048},
+            {"op":"part.inspect.at","generation":123,"index":-1},
             {"op":"rig.cross","target":1,"parent":0,"child":2,"stiffness":.5,"enabled":1},
             {"op":"rig.cross","target":1,"parent":0,"child":2,"stiffness":1.2,"enabled":True},
             {"op":"rig.brush","radius":0,"weight":.5},
