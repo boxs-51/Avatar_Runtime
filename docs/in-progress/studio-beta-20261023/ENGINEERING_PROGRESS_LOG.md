@@ -117,3 +117,20 @@ passed. Current coverage intentionally accepts ASCII identifiers
 of length 1..59 with a restricted character set, not all UTF-8
 model identifiers. No editor revision, frame acceptance or V5
 mutation is enabled. See ADR002_G4_LOCAL_MODEL_IDS_20261023.md.
+
+## F02 Native ACK preservation and owner handoff, 2026-10-23
+
+Physical RED-first verified that an exclusive Windows file handle
+could make Native response replacement fail after command execution,
+dropping the ACK. Native now retains the complete reply and retries
+publication on subsequent frames without re-executing the command.
+A second physical RED demonstrated that request B could overwrite
+the unconsumed ACK A. A native unread-response gate now delays B
+until the caller removes A.
+
+Five repeated Windows ownership E2E runs and current Release native
+regressions PASS. The test's old fixture pre-created an unread ACK,
+which the new guard deliberately blocks; the fixture was updated
+to verify strict handoff rather than weakening the guard.
+Crash-after-mutation UNKNOWN_OUTCOME remains OPEN. F02 PARTIAL,
+product RELEASE HOLD. See F02_ACK_OWNERSHIP_AND_DEFERRED_PUBLISH_20261023.md.

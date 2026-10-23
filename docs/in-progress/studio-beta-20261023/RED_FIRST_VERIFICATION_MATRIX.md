@@ -158,3 +158,20 @@ and release HOLD.
 Pending: non-ASCII IDs, duplicate-ID full-model adversarial
 fixtures, same-count reload under live lookup, editor revision
 CAS and frame acceptance. F02/F07 remain PARTIAL.
+
+## F02-ACK ownership matrix, 2026-10-23
+
+- F02-ACK-01: Win32 sharing-denial causes discarded response after
+  Native command, physical RED before fix.
+- F02-ACK-02: retain completed response.tmp and publish after file
+  becomes replaceable, physical GREEN; no command re-execution.
+- F02-ACK-03: Native B overwrites A when A's response is unconsumed,
+  physical RED before unread-response guard.
+- F02-ACK-04: existing unread reply blocks request B; B only
+  admitted after A is acknowledged/removed: GREEN, 5/5 repeats.
+- F02-ACK-05: Release build, strict grammar, V1/V2, model restart
+  and IPC writer-race tests: PASS in tested matrix.
+
+Remaining NOT_RUN: crash in post-mutation ACK-publish interval,
+durable replay journal, hostile same-user IPC and accepted-frame
+transactional ownership. F02 PARTIAL and RELEASE HOLD.

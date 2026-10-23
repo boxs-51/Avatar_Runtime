@@ -140,3 +140,21 @@ output filename and failed before V2 executed; corrected naming
 produced a PASS. G4 remains PARTIAL because arbitrary Unicode ID
 coverage and atomic editor-revision/frame snapshots are absent.
 F02 remains PARTIAL; RELEASE HOLD.
+
+## F02 native deferred ACK and owner readback, 2026-10-23
+
+Native response.tmp is retained after a Windows sharing-denial on
+response.txt and published in a later frame, never by re-running
+the command. A response.txt that is still present blocks admission
+of the next command. Unexpected file status fails closed.
+This is a local same-user ordering invariant, not an OS sandbox.
+
+Two physical RED-first witnesses: dropped ACK during Windows file
+sharing denial, and B overwriting unread ACK A. Deferred retry and
+unread-ACK guard now PASS. Five owner-handoff runs and Release Native
+regressions PASS. The former sharing fixture had to change because
+a preexisting reply now intentionally blocks request admission.
+
+Still OPEN: post-mutation crash, ACK-loss UNKNOWN_OUTCOME,
+malicious same-user file mutation, interrupted restart/recovery and
+full frame acceptance. F02 remains PARTIAL; release HOLD.

@@ -317,3 +317,13 @@ authorization, frame acceptance or an editor revision fence.
 The default CLI stays discovery-only without an explicitly supplied
 trusted-local bridge and private read opt-in. G4 and RELEASE remain
 partial/HOLD.
+
+## F02 — ACK owner fence and retry (2026-10-23)
+
+Native Studio retains a completed response file across temporary
+Win32 replacement denial and attempts publication on later frames.
+It refuses to admit a new request while a prior response exists.
+The command is never re-applied to retry publishing an ACK.
+This guards ordinary local-client ownership ordering; it does NOT
+provide authentication or crash-durable exactly-once semantics.
+See F02_ACK_OWNERSHIP_AND_DEFERRED_PUBLISH_20261023.md.
