@@ -9,7 +9,7 @@
   "classification_is_gate_approval": false,
   "counts": {
     "reference": 86,
-    "completed": 53,
+    "completed": 54,
     "in_progress": 32,
     "obsolete": 4
   },
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 175,
+  "total_documents": 176,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -125,7 +125,7 @@
       "reason": "Mục lục/phân loại và review notes được tạo trong lần rà soát này.",
       "lifecycle": "navigation",
       "related_paths": [],
-      "reviewed_sha256": "7ca74d070d83addfd9676c5d9960e0f19b9a122f95e23099580286742ecfa7a1",
+      "reviewed_sha256": "81ca17466bbb419fc40ed23be7566087c7d21b6eafa83098d8b14116ba9a77c2",
       "hash_note": "Generated navigation artifacts omit self/cross hashes to avoid cyclic provenance.",
       "document_kind": "markdown",
       "legacy_path": "docs/DOCUMENTATION_INDEX.md"
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "f8b78c2f2c7f691acc02fa3e233c9344d2951cd2a6c282dc2db97d83e3d31428"
+      "reviewed_sha256": "1a6d05d90c535489373c6561d65fd9cd1c31c108eed976ebaa2e46b11863a8a8"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -2041,7 +2041,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "05899b61beb1dcf7e371b26f03a974aba56d49947984e40b8bf7738c31343e0e"
+      "reviewed_sha256": "a5881e27f656258a376488ec689b3175f8132acbd5677f1b6cdaccb09031ffcf"
     },
     {
       "path": "docs/completed/audits/ALPHA_42_WINDOWS_SECURITY_QUALIFICATION.md",
@@ -2072,6 +2072,16 @@
       "encoding": "utf-8",
       "document_kind": "markdown",
       "reviewed_sha256": "b46897fc7ad76cb31f001288ac11ea6e90156b46b6dfd9c365266d7a453dc9e5"
+    },
+    {
+      "path": "docs/completed/audits/ALPHA_42_PRESSURE_STAGE4_QUALIFICATION.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Bounded stage4 sustained public ingress/close observation;38 local canonical cases and3 extra diagnostics; SRC014 runtime drop-counter oracle and all87/platform/sanitizer qualification remain unresolved/HOLD.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "d812728fa0158e05c6ae82cbdfe8d6b8a2ed63880b5c653ab1bc65ca6b8d6867"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -2082,6 +2092,6 @@
     "new_documents": 4,
     "classification_is_gate_approval": false
   },
-  "latest_checkpoint": "Alpha42 stage3: three terminal-retirement CPU fixes with RED/GREEN;37 local canonical cases plus2 extra diagnostics;50 NOT_RUN; all87/platform/sanitizer qualification HOLD. No merge/activation/Actions retry.",
+  "latest_checkpoint": "Alpha42 stage4: sustained public ingress/close;38 canonical local observations,49 NOT_RUN;3 separate diagnostics. SRC014 runtime drop-counter oracle missing; all87/platform/sanitizer qualification HOLD. No production change/merge/activation/Actions retry.",
   "date": "2026-10-23"
 }

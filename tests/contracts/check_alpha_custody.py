@@ -43,6 +43,7 @@ PR_SCOPES = {
             "docs/completed/audits/ALPHA_42_WINDOWS_SECURITY_QUALIFICATION.md",
             "docs/completed/audits/ALPHA_42_AUTHORITY_STAGE2_QUALIFICATION.md",
             "docs/completed/audits/ALPHA_42_FAULT_STAGE3_QUALIFICATION.md",
+            "docs/completed/audits/ALPHA_42_PRESSURE_STAGE4_QUALIFICATION.md",
             "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
             "docs/DOCUMENTATION_INDEX.md"))),
     "dev/alpha-41-asset-build-qualification": (

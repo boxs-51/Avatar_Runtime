@@ -21,6 +21,10 @@ class SecurityEvidence(unittest.TestCase):
             with self.subTest(text=text),self.assertRaises(RuntimeError):a42.inspect_case(text,'HDL-001')
     def test_unknown_case_rejected(self):
         with self.assertRaises(RuntimeError):a42.inspect_case(self.output,'RACE-999')
+    def test_pressure_diagnostic_cannot_qualify_canonical_counter_oracle(self):
+        output='TRACE pressure harness totals only\nPRESSURE_DIAGNOSTIC PASS live=0 SRC014_COUNTER_ORACLE_UNVERIFIED\n'
+        for case in ('DIAG-PRESSURE','SRC-014'):
+            with self.subTest(case=case),self.assertRaisesRegex(RuntimeError,'UNKNOWN_CASE'):a42.inspect_case(output,case)
     def test_all87_preserved_with_platform_and_sanitizer_holds(self):
         data=json.loads((ROOT/a42.INVENTORY).read_text())
         rows=a42.inventory_rows(data)

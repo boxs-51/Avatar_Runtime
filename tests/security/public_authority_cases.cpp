@@ -34,6 +34,7 @@ struct ComponentFixture {
     static bool retired(ars_runtime_h h,uint32_t slot){auto &r=runtime(h)->registry;std::lock_guard lock(r.mutex_);return r.slots_[slot].retired;}
     static void admitted(security::SourceAuthority &a,unsigned n){auto &g=a.admission_;std::unique_lock lock(g.mutex_);REQUIRE(g.cv_.wait_for(lock,std::chrono::seconds(10),[&]{return g.active_==n;}));}
     static void closing(security::SourceAuthority &a){auto &g=a.admission_;std::unique_lock lock(g.mutex_);REQUIRE(g.cv_.wait_for(lock,std::chrono::seconds(10),[&]{return g.closing_;}));}
+    static unsigned active(security::SourceAuthority &a){return a.admission_.active();}
 };
 }
 namespace {
@@ -90,7 +91,7 @@ struct Fixture {
         authority=Probe::runtime(runtime)->authority;REQUIRE(authority);Probe::clock(*authority,Clock::read,&clock);clock.batch=&Probe::runtime(runtime)->cpu->batch;
     }
     ars_character_h create(){ars_character_desc d{sizeof(d),ARS_ABI_VERSION,ARS_MODE_AUTO,0};ars_character_h c{};REQUIRE(ars_character_create(runtime,model,&d,&c)==ARS_OK);return c;}
-    Binding bind(ars_character_h c,ars_utf8_view id={"mouth.open",10},uint64_t ttl=ars::security::max_ttl,ars_status expected=ARS_OK){ars_source_desc d{};d.struct_size=sizeof d;d.abi_version=ARS_ABI_VERSION;d.allowed_channel_ids=&id;d.allowed_channel_count=1;d.max_channels_per_frame=1;d.max_frames_per_second=240;d.lease_ttl_ns=ttl;d.diagnostic_label={"same-label",10};Binding b{{{9,9,9}},{9,9}};REQUIRE(ars_source_register(runtime,c,&d,&b.admin,&b.cap)==expected);return b;}
+    Binding bind(ars_character_h c,ars_utf8_view id={"mouth.open",10},uint64_t ttl=ars::security::max_ttl,ars_status expected=ARS_OK,uint32_t rate=240){ars_source_desc d{};d.struct_size=sizeof d;d.abi_version=ARS_ABI_VERSION;d.allowed_channel_ids=&id;d.allowed_channel_count=1;d.max_channels_per_frame=1;d.max_frames_per_second=rate;d.lease_ttl_ns=ttl;d.diagnostic_label={"same-label",10};Binding b{{{9,9,9}},{9,9}};REQUIRE(ars_source_register(runtime,c,&d,&b.admin,&b.cap)==expected);return b;}
     ars_status submit(ars_ingress_cap cap,Frame &f){return ars_motion_submit(runtime,cap,&f.frame);}
     void update(){REQUIRE(ars_runtime_update(runtime,++tick)==ARS_OK);}
     Pose pose(ars_character_h c){
@@ -128,7 +129,70 @@ void retirement_diagnostic(const std::string &id,const std::vector<uint8_t> &byt
     }
     REQUIRE(after==ARS_OK && live==(id=="DIAG-MODEL"?1u:0u));
 }
+void pressure_diagnostic(const std::vector<uint8_t> &bytes){
+    Fixture f(bytes);std::array<Binding,16> bindings{};
+    for(auto &b:bindings)b=f.bind(f.character,{"mouth.open",10},ars::security::max_ttl,ARS_OK,1);
+    uint64_t accepted=0,limited=0;
+    for(unsigned round=0;round<8;++round){
+        f.clock.now=100+uint64_t(round)*ars::security::credit_unit;
+        for(unsigned i=0;i<bindings.size();++i){
+            auto &record=Probe::source(*f.authority,bindings[i].admin);auto &q=Probe::queue(*f.authority,bindings[i].admin);
+            const auto before=record.ordinal;
+            for(unsigned attempt=1;attempt<=100;++attempt){
+                Frame frame(uint64_t(round)*100+attempt);const auto result=f.submit(bindings[i].cap,frame);
+                REQUIRE(result==(attempt==1?ARS_OK:ARS_E_RATE_LIMIT));
+                accepted+=result==ARS_OK;limited+=result==ARS_E_RATE_LIMIT;
+                REQUIRE(q.size()==1 && record.ordinal==before+1 && record.sequence==uint64_t(round)*100+1 && record.credit==0);
+            }
+        }
+        f.update();REQUIRE(f.pose(f.character).mouth==.75f);
+        for(const auto &b:bindings)REQUIRE(Probe::queue(*f.authority,b.admin).size()==0);
+    }
+    REQUIRE(accepted==128 && limited==12672);
+    std::printf("TRACE pressure rate1 16 sources 8 refill rounds 100x attempts: accepted=%llu rate_denied=%llu; exact per-source charge/sequence, queue1 then drain0; totals are harness-owned, runtime drop counters unavailable\n",static_cast<unsigned long long>(accepted),static_cast<unsigned long long>(limited));
+    {Fixture full(bytes);std::array<Binding,16> sources{};unsigned queued=0,dropped=0;
+        for(auto &b:sources)b=full.bind(full.character);
+        for(const auto &b:sources){for(unsigned attempt=1;attempt<=100;++attempt){Frame frame(attempt);const auto result=full.submit(b.cap,frame);
+            REQUIRE(result==(attempt<=16?ARS_OK:ARS_E_QUEUE_FULL));queued+=result==ARS_OK;dropped+=result==ARS_E_QUEUE_FULL;}
+            auto &record=Probe::source(*full.authority,b.admin);REQUIRE(Probe::queue(*full.authority,b.admin).size()==16 && record.sequence==16 && record.ordinal==16 && record.credit==224*ars::security::credit_unit);
+        }REQUIRE(queued==256 && dropped==1344);full.update();
+        for(const auto &b:sources)REQUIRE(Probe::queue(*full.authority,b.admin).size()==15);
+        std::puts("TRACE pressure queue saturation16x16: accepted256 queue_full1344; full denial preserves highwater/credit, update drains one each");
+    }
+}
+void close_flood(const std::vector<uint8_t> &bytes){
+    Fixture f(bytes);std::array<Binding,16> bindings{};for(auto &b:bindings)b=f.bind(f.character);
+    // Queue storage is fixed and pinned by keepalive; terminal() invalidates source.data.
+    std::array<ars::security::IngressQueue*,16> queues{};for(unsigned i=0;i<bindings.size();++i)queues[i]=&Probe::queue(*f.authority,bindings[i].admin);
+    std::array<std::atomic<unsigned>,8> rounds{};std::array<uint64_t,8> accepted{},full{},closed{};
+    std::barrier start(9);std::vector<std::thread> workers;Gate pause;
+    for(unsigned i=0;i<8;++i)workers.emplace_back([&,i]{
+        start.arrive_and_wait();uint64_t sequence=0;
+        for(;;){Frame frame(++sequence);const auto result=f.submit(bindings[2*i+(sequence%2)].cap,frame);
+            if(result==ARS_OK)++accepted[i];else if(result==ARS_E_QUEUE_FULL)++full[i];else if(result==ARS_E_CLOSED){++closed[i];break;}else REQUIRE(false);
+            rounds[i].fetch_add(1);
+        }
+    });
+    start.arrive_and_wait();const auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(10);
+    while(!std::all_of(rounds.begin(),rounds.end(),[](const auto &n){return n.load()>=100;})){
+        REQUIRE(std::chrono::steady_clock::now()<deadline);std::this_thread::yield();
+    }
+    // All16 queues saturated under ongoing calls; park8 actual admitted readers.
+    f.clock.gate=&pause;pause.wait();Probe::admitted(*f.authority,8);
+    std::thread coordinator([&]{Probe::closing(*f.authority);
+        for(unsigned round=0;round<100;++round)for(const auto &b:bindings){Frame frame(UINT64_C(1000000000)+round);REQUIRE(f.submit(b.cap,frame)==ARS_E_CLOSED);}
+        REQUIRE(Probe::active(*f.authority)==8);pause.release();
+    });
+    const auto begin=std::chrono::steady_clock::now();REQUIRE(ars_runtime_begin_close(f.runtime)==ARS_OK);f.begun=true;
+    coordinator.join();for(auto &worker:workers)worker.join();
+    REQUIRE(std::chrono::steady_clock::now()-begin<std::chrono::seconds(10) && Probe::active(*f.authority)==0);
+    uint64_t total=0,denied=0;for(unsigned i=0;i<8;++i){REQUIRE(accepted[i]==32 && full[i]>=68 && closed[i]==1);total+=accepted[i];denied+=full[i];}
+    for(unsigned i=0;i<bindings.size();++i){const auto &b=bindings[i];auto &record=Probe::source(*f.authority,b.admin);REQUIRE(record.state==ars::security::SourceState::closed && record.data==ars::security::max_sources && queues[i]->size()==0);Frame late;REQUIRE(f.submit(b.cap,late)==ARS_E_CLOSED);}
+    REQUIRE(total==256 && denied>=544 && ars_runtime_update(f.runtime,1)==ARS_E_CLOSED);
+    std::printf("TRACE sustained flood 8 workers/16 sources: accepted=%llu queue_full=%llu; 8 real readers admitted at writer intent, 1600 later attempts CLOSED, all8 readers drain, queues0/admissions0, begin_close completes under10sec with workers still issuing until CLOSED\n",static_cast<unsigned long long>(total),static_cast<unsigned long long>(denied));
+}
 void cases(const std::string &id,const std::vector<uint8_t> &bytes){
+    if(id=="SRC-041"){close_flood(bytes);return;}
     if(id=="HDL-005"){
         ars_status after=ARS_E_INTERNAL;unsigned live=0;
         {Fixture trial(bytes);auto source=trial.bind(trial.character);Frame frame;REQUIRE(trial.submit(source.cap,frame)==ARS_OK);trial.update();
@@ -318,11 +382,15 @@ void cases(const std::string &id,const std::vector<uint8_t> &bytes){
 }
 int main(int argc,char **argv){
     if(argc!=3)return 2;const std::string id=argv[1];
+    if(id=="DIAG-PRESSURE"){
+        std::ifstream input(argv[2],std::ios::binary);REQUIRE(input.good());std::vector<uint8_t> bytes{std::istreambuf_iterator<char>(input),std::istreambuf_iterator<char>()};REQUIRE(!bytes.empty());
+        pressure_diagnostic(bytes);std::puts("PRESSURE_DIAGNOSTIC PASS live=0 SRC014_COUNTER_ORACLE_UNVERIFIED");return 0;
+    }
     if(id=="DIAG-MODEL" || id=="DIAG-ADMIN"){
         std::ifstream input(argv[2],std::ios::binary);REQUIRE(input.good());std::vector<uint8_t> bytes{std::istreambuf_iterator<char>(input),std::istreambuf_iterator<char>()};REQUIRE(!bytes.empty());
         retirement_diagnostic(id,bytes);std::printf("RETIREMENT_DIAGNOSTIC %s PASS live=0\n",id.c_str());return 0;
     }
-    const std::array<std::string,29> ids{"SRC-001","SRC-005","SRC-008","SRC-009","SRC-010","SRC-011","SRC-013","SRC-016","SRC-018","SRC-021","SRC-027","SRC-028","SRC-029","SRC-039","SRC-045","SRC-004","SRC-012","SRC-020","SRC-022","SRC-025","SRC-026","SRC-035","SRC-036","SRC-037","SRC-038","SRC-040","SRC-042","SRC-044","HDL-005"};
+    const std::array<std::string,30> ids{"SRC-001","SRC-005","SRC-008","SRC-009","SRC-010","SRC-011","SRC-013","SRC-016","SRC-018","SRC-021","SRC-027","SRC-028","SRC-029","SRC-039","SRC-045","SRC-004","SRC-012","SRC-020","SRC-022","SRC-025","SRC-026","SRC-035","SRC-036","SRC-037","SRC-038","SRC-040","SRC-042","SRC-044","HDL-005","SRC-041"};
     if(std::find(ids.begin(),ids.end(),id)==ids.end())return 2;
     std::ifstream input(argv[2],std::ios::binary);REQUIRE(input.good());std::vector<uint8_t> bytes{std::istreambuf_iterator<char>(input),std::istreambuf_iterator<char>()};REQUIRE(!bytes.empty());
     cases(id,bytes);std::printf("SECURITY_CASE %s PASS seed=42 live=0\n",id.c_str());return 0;

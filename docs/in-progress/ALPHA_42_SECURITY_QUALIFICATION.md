@@ -92,3 +92,21 @@ before those production edits. No other mutation is implied by this finding.
 See [stage3 evidence](../completed/audits/ALPHA_42_FAULT_STAGE3_QUALIFICATION.md)
 for the three RED/GREEN repairs,37 local observations and remaining-case entry
 criteria; whole87-case qualification and release remain separate.
+
+## A42 stage4 continuation
+
+Continue A42-1..6 at35e9734 with sustained public ingress during close (SRC041).
+Eight workers alternate all16 sources, saturate queues before the real admission
+cut, continue attempts across writer intent, and drain before final close.
+Require exact accepted/denied accounting, bounded completion and allocator-zero
+cleanup; no private method substitutes for public begin_close or submit.
+Native observers inspect only safe cuts and counters owned by the harness.
+SRC014 also gets a separate pressure diagnostic:100x the configured rate for
+each of16 sources, repeated refill rounds and queue-capacity/charge assertions.
+Its original "drops visible in counters" oracle has no current runtime counter
+API/storage: test-owned totals cannot discharge that portion, so SRC014 remains
+NOT_RUN in the canonical runner. Do not add a shipping API to manufacture proof.
+Release source-pinned receipt, Debug, affected regression, verifier negatives,
+independent review and documentation/custody checks precede commit/push.
+No production change is planned; failures require a new attributable RED before
+any repair. All prior platform/sanitizer/gate/HOLD restrictions stay intact.

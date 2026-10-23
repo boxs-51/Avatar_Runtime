@@ -1,5 +1,12 @@
 # Mục lục và phân loại tài liệu
 
+Checkpoint #42 stage4 **23-10-2026**: **176 files** (completed54, reference86,
+in-progress32, obsolete4). [Sustained ingress/close](completed/audits/ALPHA_42_PRESSURE_STAGE4_QUALIFICATION.md)
+records38 canonical local observations and49 NOT_RUN. Pressure diagnostics do
+not qualify SRC014 runtime drop counters. Platform/sanitizer and G07/G08 HOLD.
+
+Earlier stage3 checkpoint follows with its historical source/counts.
+
 Checkpoint #42 stage3 **23-10-2026**: **175 tệp** (completed53, reference86,
 in-progress32, obsolete4). [Fault/terminal-retirement](completed/audits/ALPHA_42_FAULT_STAGE3_QUALIFICATION.md)
 ghi ba lỗi runtime đã có RED/GREEN,37 quan sát canonical local và2 diagnostic
