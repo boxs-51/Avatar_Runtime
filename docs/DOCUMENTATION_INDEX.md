@@ -1,6 +1,29 @@
 # Mục lục và phân loại tài liệu
 
-Checkpoint mới nhất **23-10-2026**: **171 tệp** (completed50, reference86,
+Checkpoint #42 stage4 **23-10-2026**: **176 files** (completed54, reference86,
+in-progress32, obsolete4). [Sustained ingress/close](completed/audits/ALPHA_42_PRESSURE_STAGE4_QUALIFICATION.md)
+records38 canonical local observations and49 NOT_RUN. Pressure diagnostics do
+not qualify SRC014 runtime drop counters. Platform/sanitizer and G07/G08 HOLD.
+
+Earlier stage3 checkpoint follows with its historical source/counts.
+
+Checkpoint #42 stage3 **23-10-2026**: **175 tệp** (completed53, reference86,
+in-progress32, obsolete4). [Fault/terminal-retirement](completed/audits/ALPHA_42_FAULT_STAGE3_QUALIFICATION.md)
+ghi ba lỗi runtime đã có RED/GREEN,37 quan sát canonical local và2 diagnostic
+riêng;50 case chưa chạy. Platform/sanitizer và G07/G08 vẫn HOLD.
+
+Checkpoint #42 stage2 trước đó **23-10-2026**: **174 tệp** (completed52, reference86,
+in-progress32, obsolete4). [Authority/replay/close local](completed/audits/ALPHA_42_AUTHORITY_STAGE2_QUALIFICATION.md)
+ghi23 quan sát Release/Debug (8 linked ABI +15 native observer),64 case chưa
+chạy; toàn bộ87 qualification/platform/sanitizer và G07/G08 vẫn HOLD.
+
+Checkpoint #42 stage1 trước đó **23-10-2026**: **173 tệp** (completed51, reference86,
+in-progress32, obsolete4). [Contract bảo mật](in-progress/ALPHA_42_SECURITY_QUALIFICATION.md)
+và [quan sát Windows local](completed/audits/ALPHA_42_WINDOWS_SECURITY_QUALIFICATION.md)
+ghi8 case public ABI đã chạy; toàn bộ87 case/platform/sanitizer và G07/G08 vẫn
+HOLD. Nhánh nối tiếp PR79 chưa merge; GitHub Actions tạm bỏ qua theo chủ repo.
+
+Checkpoint #41 trước đó **23-10-2026**: **171 tệp** (completed50, reference86,
 in-progress31, obsolete4). #39 đã tích hợp vào alpha006f366 qua PR76.
 #41 đang triển khai: [contract](in-progress/ALPHA_41_ASSET_BUILD_QUALIFICATION.md)
 và [kiểm chứng Windows](completed/audits/ALPHA_41_WINDOWS_ASSET_QUALIFICATION.md).
