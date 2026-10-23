@@ -1,4 +1,4 @@
-# Native Studio Beta A��'A+�?TA��?�A��,��,�A��'A��,���A��?sA,A�A��'A+�?TA��?sA,A�A��'A,A�A�A�A��,���A,A�A��?�A,A�A��'A��,���A��?sA,A�A��'A+�?TA��?sA,A�A��'A,A�A�A�A��?sA�A.A�A��?sA,A�A��'A��,���A��?sA,A? architecture and evidence dossier
+# Native Studio Beta A??'A+??TA????A??,??,?A??'A??,???A???sA,A?A??'A+??TA???sA,A?A??'A,A?A?A?A??,???A,A?A????A,A?A??'A??,???A???sA,A?A??'A+??TA???sA,A?A??'A,A?A?A?A???sA?A.A?A???sA,A?A??'A??,???A???sA,A? architecture and evidence dossier
 
 - **Artifact ID:** STUDIO-BETA-DOSSIER-20261023
 - **Version / date:** 0.1 / 2026-10-23
@@ -17,6 +17,8 @@
 | AUD-001 | `AUDIT_TRIAGE_AND_GATE_LEDGER.md` | Severity-ranked findings and required evidence before further implementation or release |
 | VER-001 | `RED_FIRST_VERIFICATION_MATRIX.md` | Adversarial and functional RED-first test definitions, status and gate ownership |
 | LOG-001 | `EVIDENCE_AND_LOG_POLICY.md` | Privacy-safe report formats, private log retention, naming and recovery procedures |
+| ADR002-G4-UTF8 | ADR002_G4_UTF8_ID_TRANSPORT_20261023.md | UTF-8 hex-encoded local model IDs, bounded and generation-fenced |
+| DEFERRED-GATES | DEFERRED_GATES_AND_G4_SCOPE_20261023.md | Unverified fault/security gates explicitly held |
 | F02-UO-INTENT | F02_UNKNOWN_OUTCOME_LOCAL_INTENT_20261023.md | Windows client crash, UNKNOWN_OUTCOME quarantine and RED-first evidence |
 | F02-ACK-OWNERSHIP | F02_ACK_OWNERSHIP_AND_DEFERRED_PUBLISH_20261023.md | Windows native response ownership and deferred ACK publication |
 | ADR002-G4-IDS | ADR002_G4_LOCAL_MODEL_IDS_20261023.md | Native generation-fenced parameter/part ID pages and exact lookup |

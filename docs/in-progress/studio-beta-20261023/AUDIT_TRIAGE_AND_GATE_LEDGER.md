@@ -1,4 +1,4 @@
-# AUD-001 — Beta audit triage and release gate ledger
+# AUD-001 - Beta audit triage and release gate ledger
 
 - **Version:** 0.1, 2026-10-23
 - **Status:** TRIAGED / OPEN; reviewed subject BLOCKED / REVISE
@@ -8,13 +8,13 @@
 
 | Finding | Severity | Observed audit outcome | Next required gate | Status |
 |---|---|---|---|---|
-| F01 — Native parser suffix acceptance | **P1** | Physical Native RED: extra nonnumeric suffix accepted by some state-changing opcodes | Strict per-opcode exact EOF before mutation; adversarial physical RED -> GREEN with state readback | **OPEN / BLOCKER** |
-| F02 — Non-exclusive single-file IPC | P2 | Two-caller synthetic admission race; no real consumer exactly-once proof | Atomic exclusive owner claim, per-client ACK, cleanup/restart matrix | OPEN |
-| F03 — Private unreachable Git blobs | P2 | Local unreachable binary signatures; **no public/remote exposure proved** | Authorized offline origin/distribution investigation; preserve objects, no gc/prune/history rewrite | OPEN / PRIVATE |
-| F04 — Report/log privacy leakage risk | P2 | Model-derived data can be written locally; no automatic public upload shown | Public-safe allowlist, artifact redaction tests, private/public output separation | OPEN |
-| F05 — Direct rig overwrite | P2 | Target file opened in truncate/write mode; crash safety unproved | Temp sibling + flush + atomic Windows replace + rollback/fault injection | OPEN |
-| F06 — Coupled controller/warnings | P3 | Controller coupling and compiler warning debt | Parser extraction and warning baseline after P1 is fixed | OPEN |
-| F07 — E2E coverage gaps | P3 | Current command receipts do not certify full correctness, crash behavior or images | Native malformed grammar matrix, effect/readback, crash, fuzz, GUI and cross-platform tests | OPEN |
+| F01 - Native parser suffix acceptance | **P1** | Physical Native RED: extra nonnumeric suffix accepted by some state-changing opcodes | Strict per-opcode exact EOF before mutation; adversarial physical RED -> GREEN with state readback | **OPEN / BLOCKER** |
+| F02 - Non-exclusive single-file IPC | P2 | Two-caller synthetic admission race; no real consumer exactly-once proof | Atomic exclusive owner claim, per-client ACK, cleanup/restart matrix | OPEN |
+| F03 - Private unreachable Git blobs | P2 | Local unreachable binary signatures; **no public/remote exposure proved** | Authorized offline origin/distribution investigation; preserve objects, no gc/prune/history rewrite | OPEN / PRIVATE |
+| F04 - Report/log privacy leakage risk | P2 | Model-derived data can be written locally; no automatic public upload shown | Public-safe allowlist, artifact redaction tests, private/public output separation | OPEN |
+| F05 - Direct rig overwrite | P2 | Target file opened in truncate/write mode; crash safety unproved | Temp sibling + flush + atomic Windows replace + rollback/fault injection | OPEN |
+| F06 - Coupled controller/warnings | P3 | Controller coupling and compiler warning debt | Parser extraction and warning baseline after P1 is fixed | OPEN |
+| F07 - E2E coverage gaps | P3 | Current command receipts do not certify full correctness, crash behavior or images | Native malformed grammar matrix, effect/readback, crash, fuzz, GUI and cross-platform tests | OPEN |
 
 ## Gate order
 
@@ -30,20 +30,20 @@
 For each bug: record reproduction in isolated synthetic/local evidence, matrix of normal/adversarial cases, unmodified oracle, bounded implementation authorization, code changes on a separate scoped commit, physical GREEN, rollback demonstration and reviewer sign-off. Never turn an advisory idea into a P1 without evidence. Never delete or rewrite Git object history while provenance is unresolved.
 
 **Decisions not granted by this report:** source security patch, publishing model evidence, GitHub write, merge, release, driver/system intervention or history cleanup. **Current release gate:** HOLD.
-## Development remediation delta — 2026-10-23
+## Development remediation delta - 2026-10-23
 
 Scoped code and test commits now present in local branch:
-- F01 parser: `eb2b292` — 48 native malformed command cases GREEN, original eight RED reproduced before patch.
-- F02 IPC writer: `ccfa9b9` — OS-backed cooperative writer lock, process race GREEN, killed-owner OS lock release GREEN; stale request still requires safe recovery.
-- F05 rig durability: `80251d7` — sibling temporary rig file + flush/commit/replace; after-flush fault injection preserves prior rig.
-- F04 reporter guard: `6f4076c` — categorical allowlist, private/path/model-measurement inputs rejected.
-- Documentation evidence: `e1399c1` — privacy-safe remediation report.
+- F01 parser: `eb2b292` - 48 native malformed command cases GREEN, original eight RED reproduced before patch.
+- F02 IPC writer: `ccfa9b9` - OS-backed cooperative writer lock, process race GREEN, killed-owner OS lock release GREEN; stale request still requires safe recovery.
+- F05 rig durability: `80251d7` - sibling temporary rig file + flush/commit/replace; after-flush fault injection preserves prior rig.
+- F04 reporter guard: `6f4076c` - categorical allowlist, private/path/model-measurement inputs rejected.
+- Documentation evidence: `e1399c1` - privacy-safe remediation report.
 
 **Current decisions:** F01 PROVISIONAL GREEN pending independent native grammar audit; F02 PARTIAL (direct native IPC writing, replay/ACK lifecycle and restart ownership); F03 HOLD (private local Git object custody, no prune); F04 PARTIAL (new safe reporter not yet mandatory for all uploads); F05 PROVISIONAL GREEN (power-loss and filesystem fault matrix unrun); F06 OPEN (native-controller coupling and warning baselines); F07 PARTIAL (expanded local adversarial tests; fuzz/visual/cross-OS outstanding).
 
 The prior auditor findings remain historically valid for the pinned pre-remediation source. This development update does not alter auditor files or represent independent approval. The **release gate remains HOLD**.
 
-## ADR-002 Toolkit V2 follow-up — 2026-10-23
+## ADR-002 Toolkit V2 follow-up - 2026-10-23
 
 At the current implementation checkpoint, only offline schema discovery
 and capability negotiation are callable. Native Studio V2 and H5 Avatar
@@ -158,3 +158,14 @@ a preexisting reply now intentionally blocks request admission.
 Still OPEN: post-mutation crash, ACK-loss UNKNOWN_OUTCOME,
 malicious same-user file mutation, interrupted restart/recovery and
 full frame acceptance. F02 remains PARTIAL; release HOLD.
+## G4 local Unicode support, 2026-10-23
+
+Old 1..59 ASCII ID transport is superseded by generation-fenced
+read-only hex-encoded UTF-8 bytes, bounded to 96 bytes. Syntax,
+hex, UTF-8, controls, slash and oversized fields fail closed.
+Physical Windows Release build and private local-model E2E PASS;
+synthetic Unicode 6/6 and Native grammar 64/64 PASS. Physical
+Unicode-ID-bearing MOC3 fixture NOT_RUN; status UNVERIFIED.
+F02 PARTIAL; F03 HOLD; F04 PARTIAL; F05 PROVISIONAL GREEN;
+F06 OPEN; F07 PARTIAL; Studio RELEASE HOLD. Independent
+auditor approval not claimed. Deferred items tracked separately.

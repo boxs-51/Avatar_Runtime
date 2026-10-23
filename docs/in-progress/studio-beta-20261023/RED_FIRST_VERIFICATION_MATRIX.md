@@ -175,7 +175,7 @@ CAS and frame acceptance. F02/F07 remain PARTIAL.
 Remaining NOT_RUN: crash in post-mutation ACK-publish interval,
 durable replay journal, hostile same-user IPC and accepted-frame
 transactional ownership. F02 PARTIAL and RELEASE HOLD.
-## F02-UO / Windows client process crash — 2026-10-23
+## F02-UO / Windows client process crash - 2026-10-23
 
 - F02-UO-01: worker applies synthetic sentinel then crashes before
   ACK; prior client timeout leaves no quarantine -> BASELINE_RED.
@@ -196,3 +196,24 @@ Still NOT_RUN: Native XPBD mutation with real crash exactly between
 commit and ACK; hostile same-user alteration, durable power-loss
 ordering and recovery decision/readback. Marker is not exactly-once
 or authentication; F02 PARTIAL, RELEASE HOLD.
+## G4-UTF8 transport verification matrix — 2026-10-23
+
+- G4-UTF8-01: prior ASCII-only implementation rejects Unicode
+  page and exact lookup: observed BASELINE_RED. A source-fixture
+  encoding error was HARNESS_ERROR, separately corrected using
+  Python Unicode escape notation.
+- G4-UTF8-02: 6/6 synthetic Unicode, malformed hex, privacy and
+  byte budget tests: PASS after implementation.
+- G4-UTF8-03: Native Studio RelWithDebInfo and Release builds PASS.
+- G4-UTF8-04: 64/64 Native malformed grammar cases PASS, including
+  6 new bounded-hex negative cases at valid generation.
+- G4-UTF8-05: real local-model readback/lookup, Agent API, IPC
+  race and restart: PASS (no private model identifier logged).
+- G4-UTF8-06: physically load nonprivate MOC3 containing Unicode
+  IDs and verify end-to-end Native UTF-8 byte parity: NOT_RUN,
+  requires a valid synthetic model fixture. Keep UNVERIFIED.
+- G4-UTF8-07: same-user hostile IPC, Native owner crash, power
+  loss, editor-revision CAS and frame-acceptance: DEFERRED/HOLD.
+
+Do not treat unit success or a local Release build as approval to
+publish model data or complete the product release.

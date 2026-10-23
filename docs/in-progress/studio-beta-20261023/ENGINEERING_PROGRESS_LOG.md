@@ -149,3 +149,18 @@ PASS; Agent API, V2, native grammar, real model readback, restart,
 writer race and rig durability PASS. Client crash is physical Windows
 but mutation was a synthetic sentinel, not Native XPBD. F02 PARTIAL,
 release HOLD. See F02_UNKNOWN_OUTCOME_LOCAL_INTENT_20261023.md.
+## G4 UTF-8 ID transport and deferred gates — 2026-10-23
+
+Unverified destructive Native crash, ACK reconciliation and power-loss
+cases were recorded as DEFERRED/UNVERIFIED, NOT as waived PASS.
+Continued independent G4 ID readback: UTF-8 bytes now cross Native
+IPC as lower-case hex tokens. V2 strictly validates UTF-8, bounds
+(1..96 bytes), private read opt-in and model generation. This
+supersedes the earlier ASCII-only 1..59 ID transport in the historical
+G4 checkpoint without changing any SDK ABI.
+
+Synthetic Unicode suite: BASELINE_RED (with separate encoding-harness
+fault), POSTFIX 6/6 PASS. Native RelWithDebInfo and Release builds
+PASS; current local model E2E PASS; Native malformed grammar 64/64
+PASS. A real model with Unicode MOC3 IDs is NOT yet tested.
+G4 PARTIAL; F02 PARTIAL; release HOLD.

@@ -341,3 +341,23 @@ without independent Native state reconciliation. It is not a Native
 commit journal and does not protect IPC files against processes
 running with the same Windows identity. Native accepted frames and
 editor revisions still have separate gates; Studio release HOLD.
+## UTF-8 model ID transport update (G4, 2026-10-23)
+
+The historical ASCII 1..59 ID limit is superseded for the current
+development branch. Local parameter and part read operations now
+transport ID bytes using lowercase hexadecimal tokens. Native
+PARAM_ID_AT and PART_ID_AT reply with index and idhex; Native
+PARAM_FIND_AT and PART_FIND_AT accept a hex UTF-8 ID. The trusted
+local V2 adapter accepts a decoded Unicode ID and serializes it
+to hex via the V1 AgentBridge.
+
+Identifier constraints: UTF-8 1..96 bytes; slash, backslash,
+C0/C1 controls, NUL, invalid UTF-8 and overlong bytes are rejected.
+No normalization is performed; lookups are exact. Unknown and
+duplicate matches fail closed. The result classification is
+LOCAL_PRIVATE; do not publish IDs or model geometry. Existing
+generation fences and private-access guards remain mandatory.
+
+Unicode unit fixtures passed, as did Native Release grammar and
+current physical model E2E. A true Unicode-ID MOC3 physical fixture
+is NOT_RUN, so G4 remains PARTIAL and product release stays HOLD.
