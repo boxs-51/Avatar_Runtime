@@ -7,6 +7,26 @@ sys.path.insert(0,str(ROOT/"scripts"))
 from moc3_local_replay import _private_manifest
 from studio_agent_api import AgentBridge
 
+def _poll_reply(api,token,timeout=4):
+    """Strict complete-frame oracle; tolerate transient Win32 sharing denial."""
+    path=api/"response.txt"
+    end=time.monotonic()+timeout
+    while time.monotonic()<end:
+        try:
+            if path.exists():
+                data=path.read_text(encoding="ascii")
+                if data.startswith(token+" ") and data.endswith("\n") and data.count("\n")==1:
+                    parts=data[:-1].split(" ",2)
+                    if len(parts)==3 and parts[1] in ("OK","ERR") and parts[2]:
+                        path.unlink()
+                        return parts[1]
+        except OSError:
+            # A simultaneous Windows replacement can briefly deny reads.
+            # No ACK is counted until the full typed frame is observed.
+            pass
+        time.sleep(.015)
+    return "TIMEOUT"
+
 def main():
  base=ROOT/"build/studio-user"/("f01-native-"+datetime.now().strftime("%Y%m%d-%H%M%S-%f"))
  api=base/"api";api.mkdir(parents=True)
@@ -21,17 +41,7 @@ def main():
    def raw(wire,index):
     token=f"{index:024x}"
     (api/"request.txt").write_text(token+" "+wire+"\n",encoding="ascii")
-    end=time.monotonic()+4
-    while time.monotonic()<end:
-     path=api/"response.txt"
-     if path.exists():
-      data=path.read_text(encoding="ascii")
-      if data.startswith(token+" ") and data.endswith("\n") and data.count("\n")==1:
-       parts=data[:-1].split(" ",2)
-       if len(parts)==3 and parts[1] in ("OK","ERR") and parts[2]:
-        path.unlink();return parts[1]
-     time.sleep(.015)
-    return "TIMEOUT"
+    return _poll_reply(api,token,4)
    cases=[
     ("RIG_SELECT 0 invalid",lambda: "drawable=1" in bridge.call({"op":"rig.inspect"})["receipt"]),
     ("RIG_WEIGHT 3 .25 invalid",lambda:"weights=0" in bridge.call({"op":"rig.inspect"})["receipt"]),
@@ -67,9 +77,12 @@ def main():
    ])
    for i,(wire,check) in enumerate(cases,1):
     status=raw(wire,i)
-    if status!="ERR" or not check():failures.append(f"F01-{i:02d}")
+    if status!="ERR":
+     failures.append((f"F01-{i:02d}",status))
+    elif not check():
+     failures.append((f"F01-{i:02d}","MUTATION_CHECK_FAILED"))
    print("F01_NATIVE_CASES",len(cases),"FAIL_COUNT",len(failures))
-   for code in failures:print("RED_CASE",code)
+   for code,kind in failures:print("RED_CASE",code,"STATUS",kind)
    return 1 if failures else 0
   finally:
    if proc.poll() is None:
