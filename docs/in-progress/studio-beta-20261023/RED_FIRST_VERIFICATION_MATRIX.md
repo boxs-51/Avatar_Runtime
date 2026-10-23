@@ -49,3 +49,21 @@ Distinguish **AUDIT-OBSERVED**, **SOURCE-CONFIRMED**, **EXECUTED** and **PROPOSE
 - `BONE/SKIN/FRAME/PERF gates`: proposed only; development of new skeletal skinning remains on HOLD pending security gates.
 
 Source-gated local regression ran successfully, but does not replace independent reviewer re-execution. See `FINDINGS_REMEDIATION_20261023.md` and ignored Host evidence.
+
+## ADR-002 V2 discovery contract — 2026-10-23
+
+V2-RED-01: import/probe of absent module: RED before implementation.
+V2-SCHEMA-01: only capabilities/schema advertised; editing and real model
+access denied: GREEN (synthetic).
+V2-JSON-01: exact field set, version, UTF-8, duplicate key, finite
+numbers, 64KiB input budget and request identifiers: GREEN (synthetic).
+V2-FUZZ-01: 256 deterministic mutated JSON payloads: GREEN as a bounded
+test, not a complete fuzzer certification.
+V2-CLI-01: capabilities/schema and invalid/mutating request rejection:
+GREEN (Windows local CLI).
+IPC-Q04: own truncated ACK falsely successful: RED, then GREEN with
+complete newline/type/receipt validation. Foreign ACK quarantine GREEN.
+
+Not run: V2 Native named-pipe integration, journal, session generation,
+real read snapshots, CAS transactions, GUI, cross-OS, production perf.
+Privacy and release gates remain HOLD.

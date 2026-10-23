@@ -30,3 +30,15 @@ Observed scope: F01 exact Native wire grammar, F02 cooperative OS writer-lock ad
 RED-first: 8 invalid native suffix cases reproduced on the Windows Host and a synthetic interrupted rig save failed against old source. GREEN: native syntax 48-case matrix, concurrent callers, abrupt writer termination, rig fault injection, API/rig/XPBD/local-model E2E and strict public-report schema. No new independent auditor sign-off is claimed.
 
 Detailed local-only stdout, toolchain outputs and evidence remain under ignored build/studio-user. Read `FINDINGS_REMEDIATION_20261023.md` for exact gate distinctions: F01/F05 provisional GREEN, F02/F04/F07 partial, F03 HOLD, F06 OPEN. Product release remains HOLD.
+
+## Checkpoint ADR002-G4-DISCOVERY — 2026-10-23
+
+A new isolated Avatar Toolkit V2 decoder, read-only capabilities/schema
+catalog and local CLI were implemented with RED-first Python tests.
+V2 Native IPC, session manager, named pipe, transaction journal and edit
+operations remain DISABLED while Beta G2/G3 are outstanding.
+F02 added a real synthetic regression for incomplete ACK false success:
+the client no longer accepts an unfinished OK frame or clears a foreign ACK.
+See ADR002_G4_DISCOVERY_IMPLEMENTATION_20261023.md for evidence and limits.
+
+No independent auditor has re-reviewed these changes. Release gate HOLD.

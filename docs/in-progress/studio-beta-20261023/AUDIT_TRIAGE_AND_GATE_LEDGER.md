@@ -42,3 +42,22 @@ Scoped code and test commits now present in local branch:
 **Current decisions:** F01 PROVISIONAL GREEN pending independent native grammar audit; F02 PARTIAL (direct native IPC writing, replay/ACK lifecycle and restart ownership); F03 HOLD (private local Git object custody, no prune); F04 PARTIAL (new safe reporter not yet mandatory for all uploads); F05 PROVISIONAL GREEN (power-loss and filesystem fault matrix unrun); F06 OPEN (native-controller coupling and warning baselines); F07 PARTIAL (expanded local adversarial tests; fuzz/visual/cross-OS outstanding).
 
 The prior auditor findings remain historically valid for the pinned pre-remediation source. This development update does not alter auditor files or represent independent approval. The **release gate remains HOLD**.
+
+## ADR-002 Toolkit V2 follow-up — 2026-10-23
+
+At the current implementation checkpoint, only offline schema discovery
+and capability negotiation are callable. Native Studio V2 and H5 Avatar
+tool registration are explicitly disabled. RED-first strict JSON grammar,
+duplicate fields, nonfinite values, size caps and 256 synthetic mutated
+payload checks are GREEN. This does not complete ADR-002 G4 live snapshots.
+
+F02 received a new negative test for an incomplete native response. A
+truncated token-plus-OK frame was previously accepted as success. The
+V1 Python adapter now requires a complete bounded newline-terminated
+response with a recognized status and nonempty receipt. Foreign-token ACK
+records still remain isolated. The native direct-writer and restart
+journal cases remain open; F02 stays PARTIAL.
+
+F01 PROVISIONAL GREEN; F02 PARTIAL; F03 HOLD; F04 PARTIAL; F05
+PROVISIONAL GREEN; F06 OPEN; F07 PARTIAL. Product RELEASE HOLD.
+See ADR002_G4_DISCOVERY_IMPLEMENTATION_20261023.md.

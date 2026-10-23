@@ -1,4 +1,4 @@
-﻿# Native Studio Local Agent API (experimental)
+# Native Studio Local Agent API (experimental)
 
 This API is public to trusted local agents inside the enrolled Avatar_Runtime
 Windows workspace. It does not extend SDK ABI20 or register new Computer Bridge
@@ -207,3 +207,25 @@ Beta Auditor session remains read-only; its findings are pending.
 Only `safe_case` / `safe_json` from `scripts/studio_public_report.py` may encode a public-safe categorical Studio test result for this workflow. Unknown keys, raw receipts, per-model numeric measurements, paths and images fail validation. This is an opt-in reporter primitive; until every artifact promotion path enforces it, finding F04 remains PARTIAL.
 
 Native Agent IPC now uses bounded wire input and strict trailing-token checks. Python cooperating writers use a cross-process Windows file lock; the lock file is not an ownership marker and remains on disk after release. An orphaned request must be quarantined and examined with the Native session stopped before manual cleanup. This is not an OS access-control sandbox or a proven exactly-once queue; finding F02 remains PARTIAL.
+
+## Agent Toolkit V2 discovery prototype (ADR-002, local only)
+
+V2 is **not** a Native Studio API or Computer Bridge Avatar plugin yet.
+It is an isolated, non-mutating discovery interface with two supported
+operations and no direct model or filesystem access:
+
+    py scripts/avatar_toolkit_v2_cli.py capabilities
+    py scripts/avatar_toolkit_v2_cli.py schema avatar.capabilities
+    py scripts/avatar_toolkit_v2_cli.py --stdin
+
+The stdin form expects a complete V2 JSON envelope and always returns a
+bounded JSON response. Only avatar.capabilities and avatar.schema may
+return COMPLETED_READ. Session ID, model generation and edit revision
+must currently be null; mode must be read. Editing, private inspection,
+session.open, real Native V2 and registration as an H5 Avatar tool-group
+remain disabled by design, pending ADR-002 G2/G3.
+
+The decoder validates at most 65536 bytes, exact envelope fields,
+UTF-8, duplicate-key rejection, finite numbers, request ID and
+operation schemas. Do not interpret discovery success as Native session
+authorization. Beta release gate remains HOLD.
