@@ -16,9 +16,9 @@ class FakeBridge:
   if op=="studio.status":
    return {"ok":True,"receipt":"frame=8 playing=1 expression=0 tab=2 xpbd=1 params=5 parts=3 drawables=4"}
   if op=="param.id.at":
-   return {"ok":True,"receipt":f"index={command['index']} id=ParamSynthetic{command['index']}"}
+   return {"ok":True,"receipt":f"index={command['index']} idhex="+("ParamSynthetic"+str(command['index'])).encode("utf-8").hex()}
   if op=="part.id.at":
-   return {"ok":True,"receipt":f"index={command['index']} id=PartSynthetic{command['index']}"}
+   return {"ok":True,"receipt":f"index={command['index']} idhex="+("PartSynthetic"+str(command['index'])).encode("utf-8").hex()}
   if op=="param.inspect.at":
    i=command["index"]
    return {"ok":True,"receipt":f"index={i} value=.5 low=0 high=1 pin=0"}

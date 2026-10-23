@@ -84,9 +84,17 @@ def validate_command(cmd:dict)->str:
         if op.endswith("id.at"):
             return f"{prefix}ID_AT {gen} {integer('index')}"
         value=cmd["id"]
-        if type(value) is not str or re.fullmatch(r"[A-Za-z0-9_.:-]{1,59}",value,re.ASCII) is None:
+        if type(value) is not str or "/" in value or "\\" in value or any(
+            ord(ch)<32 or 127<=ord(ch)<=159 for ch in value
+        ):
             raise ValueError("invalid model ID")
-        return f"{prefix}FIND_AT {gen} {value}"
+        try:
+            encoded=value.encode("utf-8",errors="strict")
+        except UnicodeError as exc:
+            raise ValueError("invalid UTF-8 model ID") from exc
+        if not 1<=len(encoded)<=96:
+            raise ValueError("invalid model ID size")
+        return f"{prefix}FIND_AT {gen} {encoded.hex()}"
     if op in ("param.inspect.at","part.inspect.at"):
         generation=cmd["generation"]
         if type(generation) is not int or not 0<generation<2**63:

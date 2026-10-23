@@ -9,7 +9,29 @@ from scripts.avatar_toolkit_v2 import ToolkitV2Error
 
 STATUS_FIELDS=("frame","playing","expression","tab","xpbd","params","parts","drawables")
 MAX_PAGE=4
-MODEL_ID=re.compile(r"[A-Za-z0-9_.:-]{1,59}\Z",re.ASCII)
+MODEL_ID_HEX=re.compile(r"(?:[0-9a-f]{2}){1,96}\Z",re.ASCII)
+
+def _valid_model_id(value):
+ if type(value) is not str or "/" in value or "\\" in value:
+  return False
+ if any(ord(c)<32 or 127<=ord(c)<=159 for c in value):
+  return False
+ try:
+  encoded=value.encode("utf-8",errors="strict")
+ except UnicodeError:
+  return False
+ return 1<=len(encoded)<=96
+
+def _decode_model_id(raw):
+ if type(raw) is not str or MODEL_ID_HEX.fullmatch(raw) is None:
+  raise ToolkitV2Error("INVALID_DRAFT")
+ try:
+  text=bytes.fromhex(raw).decode("utf-8",errors="strict")
+ except (UnicodeError,ValueError) as exc:
+  raise ToolkitV2Error("INVALID_DRAFT") from exc
+ if not _valid_model_id(text):raise ToolkitV2Error("INVALID_DRAFT")
+ return text
+
 MAX_ITEMS=2048
 NUM=re.compile(r"[0-9]{1,10}\Z")
 FLOAT=re.compile(r"-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d{1,3})?\Z")
@@ -115,10 +137,10 @@ def read_page(bridge,operation,args,expected=None):
   try:
    id_op="param.id.at" if operation=="catalog.parameters.page" else "part.id.at"
    ident=_parse_receipt(_call(bridge,{"op":id_op,"generation":state["model_generation"],
-                     "index":index}),("index","id"))
-   if _integer(ident["index"])!=index or MODEL_ID.fullmatch(ident["id"]) is None:
+                     "index":index}),("index","idhex"))
+   if _integer(ident["index"])!=index:
     raise ToolkitV2Error("INVALID_DRAFT")
-   items[-1]["id"]=ident["id"]
+   items[-1]["id"]=_decode_model_id(ident["idhex"])
   except ToolkitV2Error as exc:
    if exc.code=="INVALID_DRAFT":raise ToolkitV2Error("STALE_MODEL") from exc
    raise
@@ -133,7 +155,7 @@ def read_page(bridge,operation,args,expected=None):
 def read_lookup(bridge,op,args,expected=None):
  if type(args) is not dict or set(args)!={"id"} or type(args["id"]) is not str:
   raise ToolkitV2Error()
- if MODEL_ID.fullmatch(args["id"]) is None:raise ToolkitV2Error()
+ if not _valid_model_id(args["id"]):raise ToolkitV2Error()
  state=read_status(bridge)
  epoch=state["model_generation"]
  if expected is not None and expected!=epoch:raise ToolkitV2Error("STALE_MODEL")
@@ -144,8 +166,8 @@ def read_lookup(bridge,op,args,expected=None):
  idx=_integer(_parse_receipt(raw,("index",))["index"])
  if idx>=total:raise ToolkitV2Error("INVALID_DRAFT")
  found=_parse_receipt(_call(bridge,{"op":prefix+".id.at",
-                           "generation":epoch,"index":idx}),("index","id"))
- if _integer(found["index"])!=idx or found["id"]!=args["id"]:
+                           "generation":epoch,"index":idx}),("index","idhex"))
+ if _integer(found["index"])!=idx or _decode_model_id(found["idhex"])!=args["id"]:
   raise ToolkitV2Error("STALE_MODEL")
  after=read_status(bridge)
  if after["model_generation"]!=epoch or after["counts"]!=state["counts"]:

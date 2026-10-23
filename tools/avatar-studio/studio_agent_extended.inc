@@ -2,15 +2,41 @@
 static int studio_agent_eof(FILE *f){
  char extra;return fscanf(f," %c",&extra)==EOF;
 }
-static int studio_agent_safe_id(const char *p){
- if(!p)return 0;
- for(int i=0;i<60;i++){
-  unsigned char c=(unsigned char)p[i];
-  if(!c)return i>0;
-  if(!((c>='A'&&c<='Z')||(c>='a'&&c<='z')||
-       (c>='0'&&c<='9')||c=='_'||c=='-'||c=='.'||c==':'))return 0;
+/* Local-only bounded ID encoding: model IDs are UTF-8 byte strings.
+   Hex tokens avoid whitespace/injection and never print raw model IDs. */
+#define STUDIO_ID_MAX_BYTES 96
+static int studio_agent_id_length(const char *id){
+ if(!id)return 0;
+ int n=0;
+ while(n<=STUDIO_ID_MAX_BYTES && id[n])n++;
+ return n>0&&n<=STUDIO_ID_MAX_BYTES?n:0;
+}
+static int studio_agent_id_hex(const char *id,char *out,size_t cap){
+ static const char table[]="0123456789abcdef";
+ int n=studio_agent_id_length(id);
+ if(!n||cap<(size_t)(2*n+1))return 0;
+ for(int i=0;i<n;i++){
+  unsigned char b=(unsigned char)id[i];
+  out[2*i]=table[b>>4];out[2*i+1]=table[b&15];
  }
- return 0;
+ out[2*n]=0;return 1;
+}
+static int studio_agent_from_hex(const char *hex,char *out,size_t cap){
+ size_t n=strlen(hex);
+ if(n<2||n>2*STUDIO_ID_MAX_BYTES||(n&1)||cap<=n/2)return 0;
+ for(size_t i=0;i<n;i+=2){
+  int v[2];
+  for(int j=0;j<2;j++){
+   unsigned char x=(unsigned char)hex[i+j];
+   if(x>='0'&&x<='9')v[j]=x-'0';
+   else if(x>='a'&&x<='f')v[j]=x-'a'+10;
+   else return 0;
+  }
+  unsigned char byte=(unsigned char)((v[0]<<4)|v[1]);
+  if(!byte)return 0;
+  out[i/2]=(char)byte;
+ }
+ out[n/2]=0;return 1;
 }
 static int studio_agent_extended(FILE *f,const char *op,char *receipt,size_t cap){
  int a=0,b=0,c=0;float x=0,y=0;
@@ -38,35 +64,40 @@ static int studio_agent_extended(FILE *f,const char *op,char *receipt,size_t cap
  }
  if(!strcmp(op,"PARAM_ID_AT")||!strcmp(op,"PART_ID_AT")||
     !strcmp(op,"PARAM_FIND_AT")||!strcmp(op,"PART_FIND_AT")){
-  int is_param=!strncmp(op,"PARAM_",6);
-  int is_lookup=strstr(op,"_FIND_AT")!=NULL;
+  const int is_param=!strncmp(op,"PARAM_",6);
+  const int is_lookup=strstr(op,"_FIND_AT")!=NULL;
   unsigned long long epoch=0;
   int index=-1;
-  char key[64]={0};
+  char key[STUDIO_ID_MAX_BYTES+1]={0};
+  char hextoken[STUDIO_ID_MAX_BYTES*2+1]={0};
   if(is_lookup){
-   if(fscanf(f,"%llu %63s",&epoch,key)!=2||!studio_agent_eof(f)||
-      !studio_agent_safe_id(key))return 0;
+   if(fscanf(f,"%llu %192s",&epoch,hextoken)!=2||
+      !studio_agent_eof(f)||
+      !studio_agent_from_hex(hextoken,key,sizeof key))return 0;
   }else{
    if(fscanf(f,"%llu %d",&epoch,&index)!=2||!studio_agent_eof(f))return 0;
   }
   if(!epoch||epoch!=s.model_generation||!s.core.model)return 0;
-  int count=is_param?s.count:s.parts;
+  const int count=is_param?s.count:s.parts;
   const char **ids=is_param?csmGetParameterIds(s.core.model):
                               csmGetPartIds(s.core.model);
   if(!ids)return 0;
   if(is_lookup){
    int found=-1;
    for(int i=0;i<count;i++){
-    if(studio_agent_safe_id(ids[i])&&!strcmp(ids[i],key)){
-     if(found>=0)return 0; /* ambiguous duplicates fail closed */
+    if(studio_agent_id_length(ids[i])&&!strcmp(ids[i],key)){
+     if(found>=0)return 0; /* Ambiguous exact match: reject. */
      found=i;
     }
    }
    if(found<0)return 0;
    snprintf(receipt,cap,"index=%d",found);return 1;
   }
-  if(index<0||index>=count||!studio_agent_safe_id(ids[index]))return 0;
-  snprintf(receipt,cap,"index=%d id=%s",index,ids[index]);return 1;
+  if(index<0||index>=count)return 0;
+  char encoded[STUDIO_ID_MAX_BYTES*2+1]={0};
+  if(!studio_agent_id_hex(ids[index],encoded,sizeof encoded))return 0;
+  int n=snprintf(receipt,cap,"index=%d idhex=%s",index,encoded);
+  return n>0&&(size_t)n<cap;
  }
  if(!strcmp(op,"STUDIO_TAB")||!strcmp(op,"STUDIO_BACKGROUND")){
   if(fscanf(f,"%d",&a)!=1||!studio_agent_eof(f)||a<0||a>3)return 0;

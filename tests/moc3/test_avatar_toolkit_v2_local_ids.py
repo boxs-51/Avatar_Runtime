@@ -20,7 +20,7 @@ class Fake:
    found=[i for i,n in enumerate(names) if n==c["id"]]
    return {"ok":len(found)==1,"receipt":f"index={found[0]}" if len(found)==1 else "rejected"}
   i=c["index"]
-  if op.endswith("id.at"):return {"ok":True,"receipt":f"index={i} id={names[i]}"}
+  if op.endswith("id.at"):return {"ok":True,"receipt":f"index={i} idhex={names[i].encode('utf-8').hex()}"}
   if op=="param.inspect.at":return {"ok":True,"receipt":f"index={i} value=0 low=-1 high=1 pin=0"}
   return {"ok":True,"receipt":f"index={i} opacity=.5"}
 
@@ -39,7 +39,7 @@ class IDTests(unittest.TestCase):
  def test_reject_ambiguous_unknown_and_unsafe(self):
   f=Fake();f.p[1]="ParamAngleX"
   self.assertEqual(ask("catalog.parameter.lookup",{"id":"ParamAngleX"},f)["state"],"REJECTED")
-  for bad in ("../private","Name With Spaces","é","", "X"*70,True):
+  for bad in ("../private", "", "X"*97, True, "a\\nnext", "\\ud800"):
    f=Fake();r=ask("catalog.parameter.lookup",{"id":bad},f)
    self.assertEqual(r["state"],"REJECTED")
    self.assertFalse(f.calls)

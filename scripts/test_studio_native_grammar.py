@@ -81,6 +81,18 @@ def main():
      ("PARAM_FIND_AT 1 ../private",lambda:True),
      ("PARAM_FIND_AT nan ParamAngleX",lambda:True),
    ])
+   epoch_reply=bridge.call({"op":"studio.epoch"})
+   if not epoch_reply["ok"]:
+    raise RuntimeError("native model epoch unavailable")
+   epoch=int(epoch_reply["receipt"].split("=",1)[1])
+   cases.extend([
+     (f"PARAM_FIND_AT {epoch} 0",lambda:True),
+     (f"PARAM_FIND_AT {epoch} 00",lambda:True),
+     (f"PART_FIND_AT {epoch} xx",lambda:True),
+     (f"PART_FIND_AT {epoch} abc",lambda:True),
+     (f"PARAM_FIND_AT {epoch} "+"a"*194,lambda:True),
+     (f"PARAM_FIND_AT {epoch} 4142 INVALID",lambda:True),
+   ])
    for i,(wire,check) in enumerate(cases,1):
     status=raw(wire,i)
     if status!="ERR":

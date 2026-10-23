@@ -82,7 +82,7 @@ def _read(req,local_enabled=False):
   raise ToolkitV2Error()
  if args["operation"] in LOCAL_READONLY and local_enabled:
   schema_args=({"start":"int 0..2047","limit":"int 1..4"} if args["operation"].endswith(".page")
-                 else {"id":"ASCII model ID 1..59"} if args["operation"].endswith(".lookup") else {})
+                 else {"id":"UTF-8 ID 1..96 bytes; no controls or slash"} if args["operation"].endswith(".lookup") else {})
   return {"operation":args["operation"],"effect":"read",
     "arguments":schema_args,"result_classification":"LOCAL_PRIVATE",
     "transport":"trusted-local-V1-read-adapter",
