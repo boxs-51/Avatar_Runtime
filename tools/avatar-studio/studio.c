@@ -8,6 +8,8 @@ extern __declspec(dllimport) unsigned int __stdcall glGetError(void);
 #define GL_NO_ERROR 0
 #include <math.h>
 #include <stdint.h>
+#include <sys/stat.h>
+#include <errno.h>
 /* Windows CNG import without windows.h (raylib uses Rectangle/CloseWindow). */
 extern __declspec(dllimport) long __stdcall BCryptGenRandom(void *,unsigned char *,unsigned long,unsigned long);
 
@@ -672,6 +674,23 @@ static void verify(int pass,const char *name){
 }
 #include "studio_agent_extended.inc"
 static void process_agent_request(void){
+ /* Do not admit another command until the complete prior ACK is published.
+    Retrying publication never retries or re-applies the command itself. */
+ static int pending_ack=0;
+ static char pending_source[1200],pending_destination[1200];
+ if(pending_ack){
+  if(studio_replace_file(pending_source,pending_destination))pending_ack=0;
+  return;
+ }
+ /* A published reply belongs to the previous request until the
+    reader removes it. Direct writers cannot preempt this ACK. */
+ char active_reply[1200];
+ int reply_len=snprintf(active_reply,sizeof active_reply,
+                        "%s/api/response.txt",s.folder);
+ if(reply_len<=0||reply_len>=(int)sizeof active_reply)return;
+ struct _stat reply_info;
+ errno=0;
+ if(_stat(active_reply,&reply_info)==0 || errno!=ENOENT)return;
  char path[1200],out[1200],token[48]={0},op[48]={0};
  snprintf(path,sizeof path,"%s/api/request.txt",s.folder);
  FILE *f=fopen(path,"r");if(!f)return;
@@ -973,7 +992,13 @@ finish_request:
    int flushed=fflush(w);
    int closed=fclose(w);
    if(wrote>0&&flushed==0&&closed==0){
-    if(!studio_replace_file(temp_reply,out))remove(temp_reply);
+    if(!studio_replace_file(temp_reply,out)){
+     /* Win32 sharing denial: retain complete reply for the next frame.
+        Do not resend, redo, or acknowledge this request prematurely. */
+     snprintf(pending_source,sizeof pending_source,"%s",temp_reply);
+     snprintf(pending_destination,sizeof pending_destination,"%s",out);
+     pending_ack=1;
+    }
    }else remove(temp_reply);
   }
  }
