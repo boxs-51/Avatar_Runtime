@@ -2,6 +2,16 @@
 static int studio_agent_eof(FILE *f){
  char extra;return fscanf(f," %c",&extra)==EOF;
 }
+static int studio_agent_safe_id(const char *p){
+ if(!p)return 0;
+ for(int i=0;i<60;i++){
+  unsigned char c=(unsigned char)p[i];
+  if(!c)return i>0;
+  if(!((c>='A'&&c<='Z')||(c>='a'&&c<='z')||
+       (c>='0'&&c<='9')||c=='_'||c=='-'||c=='.'||c==':'))return 0;
+ }
+ return 0;
+}
 static int studio_agent_extended(FILE *f,const char *op,char *receipt,size_t cap){
  int a=0,b=0,c=0;float x=0,y=0;
  char name[48]={0};
@@ -25,6 +35,38 @@ static int studio_agent_extended(FILE *f,const char *op,char *receipt,size_t cap
   }
   if(index<0||index>=s.parts)return 0;
   snprintf(receipt,cap,"index=%d opacity=%.7g",index,s.part_values[index]);return 1;
+ }
+ if(!strcmp(op,"PARAM_ID_AT")||!strcmp(op,"PART_ID_AT")||
+    !strcmp(op,"PARAM_FIND_AT")||!strcmp(op,"PART_FIND_AT")){
+  int is_param=!strncmp(op,"PARAM_",6);
+  int is_lookup=strstr(op,"_FIND_AT")!=NULL;
+  unsigned long long epoch=0;
+  int index=-1;
+  char key[64]={0};
+  if(is_lookup){
+   if(fscanf(f,"%llu %63s",&epoch,key)!=2||!studio_agent_eof(f)||
+      !studio_agent_safe_id(key))return 0;
+  }else{
+   if(fscanf(f,"%llu %d",&epoch,&index)!=2||!studio_agent_eof(f))return 0;
+  }
+  if(!epoch||epoch!=s.model_generation||!s.core.model)return 0;
+  int count=is_param?s.count:s.parts;
+  const char **ids=is_param?csmGetParameterIds(s.core.model):
+                              csmGetPartIds(s.core.model);
+  if(!ids)return 0;
+  if(is_lookup){
+   int found=-1;
+   for(int i=0;i<count;i++){
+    if(studio_agent_safe_id(ids[i])&&!strcmp(ids[i],key)){
+     if(found>=0)return 0; /* ambiguous duplicates fail closed */
+     found=i;
+    }
+   }
+   if(found<0)return 0;
+   snprintf(receipt,cap,"index=%d",found);return 1;
+  }
+  if(index<0||index>=count||!studio_agent_safe_id(ids[index]))return 0;
+  snprintf(receipt,cap,"index=%d id=%s",index,ids[index]);return 1;
  }
  if(!strcmp(op,"STUDIO_TAB")||!strcmp(op,"STUDIO_BACKGROUND")){
   if(fscanf(f,"%d",&a)!=1||!studio_agent_eof(f)||a<0||a>3)return 0;

@@ -74,6 +74,12 @@ def main():
      ("PARAM_INSPECT_AT 1 0 unexpected",lambda:True),
      ("PART_INSPECT_AT 1 0 unexpected",lambda:True),
      ("PARAM_INSPECT_AT notanumber 0",lambda:True),
+     ("PARAM_ID_AT 1 0 unexpected",lambda:True),
+     ("PART_ID_AT 1 0 unexpected",lambda:True),
+     ("PARAM_FIND_AT 1 ParamAngleX unexpected",lambda:True),
+     ("PART_FIND_AT 1 PartHair unexpected",lambda:True),
+     ("PARAM_FIND_AT 1 ../private",lambda:True),
+     ("PARAM_FIND_AT nan ParamAngleX",lambda:True),
    ])
    for i,(wire,check) in enumerate(cases,1):
     status=raw(wire,i)

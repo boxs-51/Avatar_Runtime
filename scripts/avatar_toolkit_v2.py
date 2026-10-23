@@ -4,7 +4,7 @@ import json,re,math
 API_VERSION=2
 MAX_REQUEST_BYTES=65536
 SUPPORTED=("avatar.capabilities","avatar.schema")
-LOCAL_READONLY=("studio.local.status","catalog.parameters.page","catalog.parts.page")
+LOCAL_READONLY=("studio.local.status","catalog.parameters.page","catalog.parts.page","catalog.parameter.lookup","catalog.part.lookup")
 FIELDS=frozenset(("api_version","request_id","session_id",
  "expected_model_generation","expected_edit_revision","operation",
  "arguments","mode"))
@@ -81,7 +81,8 @@ def _read(req,local_enabled=False):
  if set(args)!={"operation"} or type(args["operation"]) is not str:
   raise ToolkitV2Error()
  if args["operation"] in LOCAL_READONLY and local_enabled:
-  schema_args={"start":"int 0..2047","limit":"int 1..4"} if args["operation"].endswith(".page") else {}
+  schema_args=({"start":"int 0..2047","limit":"int 1..4"} if args["operation"].endswith(".page")
+                 else {"id":"ASCII model ID 1..59"} if args["operation"].endswith(".lookup") else {})
   return {"operation":args["operation"],"effect":"read",
     "arguments":schema_args,"result_classification":"LOCAL_PRIVATE",
     "transport":"trusted-local-V1-read-adapter",

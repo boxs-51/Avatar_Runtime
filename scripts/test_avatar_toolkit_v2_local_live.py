@@ -56,6 +56,12 @@ def run():
    a=read("catalog.parameters.page",{"start":0,"limit":2})
    b=read("catalog.parts.page",{"start":0,"limit":2})
    assert len(a["items"])==2 and len(b["items"])==2
+   assert all(isinstance(i["id"],str) and i["id"] for i in a["items"]+b["items"])
+   found_parameter=read("catalog.parameter.lookup",{"id":a["items"][0]["id"]})
+   found_part=read("catalog.part.lookup",{"id":b["items"][0]["id"]})
+   assert found_parameter["index"]==a["items"][0]["index"]
+   assert found_part["index"]==b["items"][0]["index"]
+   gates.append("native_parameter_part_id_lookup")
    assert all(item["index"]==i for i,item in enumerate(a["items"]))
    assert all(item["index"]==i for i,item in enumerate(b["items"]))
    gates.append("paged_native_parameter_part")

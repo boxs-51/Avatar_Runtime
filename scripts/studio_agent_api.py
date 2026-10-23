@@ -4,6 +4,7 @@ import math
 import os
 from pathlib import Path
 import secrets
+import re
 import time
 VERSION="1.0"
 def validate_command(cmd:dict)->str:
@@ -13,6 +14,10 @@ def validate_command(cmd:dict)->str:
     fields={
         "studio.status":{"op"}, "studio.metrics":{"op"},
         "studio.epoch":{"op"},
+        "param.id.at":{"op","generation","index"},
+        "part.id.at":{"op","generation","index"},
+        "param.find.at":{"op","generation","id"},
+        "part.find.at":{"op","generation","id"},
         "param.inspect.at":{"op","generation","index"}, "part.inspect.at":{"op","generation","index"},
         "studio.tab":{"op","index"}, "studio.background":{"op","index"},
         "param.inspect":{"op","index"}, "part.inspect":{"op","index"},
@@ -71,6 +76,17 @@ def validate_command(cmd:dict)->str:
              "param.reset":"PARAM_RESET","xpbd.apply":"XPBD_APPLY",
              "xpbd.disable":"XPBD_DISABLE","xpbd.inspect":"XPBD_INSPECT"}
     if op in singles:return singles[op]
+    if op in ("param.id.at","part.id.at","param.find.at","part.find.at"):
+        gen=cmd["generation"]
+        if type(gen) is not int or not 0<gen<2**63:
+            raise ValueError("invalid generation")
+        prefix="PARAM_" if op.startswith("param.") else "PART_"
+        if op.endswith("id.at"):
+            return f"{prefix}ID_AT {gen} {integer('index')}"
+        value=cmd["id"]
+        if type(value) is not str or re.fullmatch(r"[A-Za-z0-9_.:-]{1,59}",value,re.ASCII) is None:
+            raise ValueError("invalid model ID")
+        return f"{prefix}FIND_AT {gen} {value}"
     if op in ("param.inspect.at","part.inspect.at"):
         generation=cmd["generation"]
         if type(generation) is not int or not 0<generation<2**63:

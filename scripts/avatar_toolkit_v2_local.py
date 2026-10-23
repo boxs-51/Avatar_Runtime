@@ -9,6 +9,7 @@ from scripts.avatar_toolkit_v2 import ToolkitV2Error
 
 STATUS_FIELDS=("frame","playing","expression","tab","xpbd","params","parts","drawables")
 MAX_PAGE=4
+MODEL_ID=re.compile(r"[A-Za-z0-9_.:-]{1,59}\Z",re.ASCII)
 MAX_ITEMS=2048
 NUM=re.compile(r"[0-9]{1,10}\Z")
 FLOAT=re.compile(r"-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d{1,3})?\Z")
@@ -111,6 +112,16 @@ def read_page(bridge,operation,args,expected=None):
    opacity=_floating(values["opacity"])
    if not 0<=opacity<=1:raise ToolkitV2Error("INVALID_DRAFT")
    items.append({"index":index,"opacity":opacity})
+  try:
+   id_op="param.id.at" if operation=="catalog.parameters.page" else "part.id.at"
+   ident=_parse_receipt(_call(bridge,{"op":id_op,"generation":state["model_generation"],
+                     "index":index}),("index","id"))
+   if _integer(ident["index"])!=index or MODEL_ID.fullmatch(ident["id"]) is None:
+    raise ToolkitV2Error("INVALID_DRAFT")
+   items[-1]["id"]=ident["id"]
+  except ToolkitV2Error as exc:
+   if exc.code=="INVALID_DRAFT":raise ToolkitV2Error("STALE_MODEL") from exc
+   raise
  after=read_status(bridge)
  if after["counts"]!=state["counts"] or after["model_generation"]!=state["model_generation"]:raise ToolkitV2Error("STALE_MODEL")
  next_index=start+len(items)
@@ -118,6 +129,30 @@ def read_page(bridge,operation,args,expected=None):
          "items":items,"next_start":next_index if next_index<total else None,
          "total":total,"generation_available":True,"model_generation":state["model_generation"],
          "editor_revision_available":False,"consistency":"model_epoch_guarded_editor_unfenced"}
+
+def read_lookup(bridge,op,args,expected=None):
+ if type(args) is not dict or set(args)!={"id"} or type(args["id"]) is not str:
+  raise ToolkitV2Error()
+ if MODEL_ID.fullmatch(args["id"]) is None:raise ToolkitV2Error()
+ state=read_status(bridge)
+ epoch=state["model_generation"]
+ if expected is not None and expected!=epoch:raise ToolkitV2Error("STALE_MODEL")
+ is_parameter=op=="catalog.parameter.lookup"
+ prefix="param" if is_parameter else "part"
+ total=state["counts"]["params" if is_parameter else "parts"]
+ raw=_call(bridge,{"op":prefix+".find.at","generation":epoch,"id":args["id"]})
+ idx=_integer(_parse_receipt(raw,("index",))["index"])
+ if idx>=total:raise ToolkitV2Error("INVALID_DRAFT")
+ found=_parse_receipt(_call(bridge,{"op":prefix+".id.at",
+                           "generation":epoch,"index":idx}),("index","id"))
+ if _integer(found["index"])!=idx or found["id"]!=args["id"]:
+  raise ToolkitV2Error("STALE_MODEL")
+ after=read_status(bridge)
+ if after["model_generation"]!=epoch or after["counts"]!=state["counts"]:
+  raise ToolkitV2Error("STALE_MODEL")
+ return {"index":idx,"id":args["id"],"model_generation":epoch,
+   "classification":"LOCAL_PRIVATE","generation_available":True,
+   "editor_revision_available":False}
 
 def execute_local(op,args,bridge,expected=None):
  if op=="studio.local.status":
@@ -128,4 +163,6 @@ def execute_local(op,args,bridge,expected=None):
   return state
  if op in ("catalog.parameters.page","catalog.parts.page"):
   return read_page(bridge,op,args,expected)
+ if op in ("catalog.parameter.lookup","catalog.part.lookup"):
+  return read_lookup(bridge,op,args,expected)
  raise ToolkitV2Error("UNKNOWN_OPERATION")

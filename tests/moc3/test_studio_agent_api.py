@@ -17,6 +17,10 @@ class AgentApiContract(unittest.TestCase):
         self.assertEqual(VERSION, "1.0")
         self.assertEqual(validate_command({"op": "rig.select", "drawable": 7}), "RIG_SELECT 7")
         self.assertEqual(validate_command({"op":"studio.epoch"}),"STUDIO_EPOCH")
+        self.assertEqual(validate_command({"op":"param.id.at","generation":123,"index":1}),"PARAM_ID_AT 123 1")
+        self.assertEqual(validate_command({"op":"part.id.at","generation":123,"index":1}),"PART_ID_AT 123 1")
+        self.assertEqual(validate_command({"op":"param.find.at","generation":123,"id":"ParamAngleX"}),"PARAM_FIND_AT 123 ParamAngleX")
+        self.assertEqual(validate_command({"op":"part.find.at","generation":123,"id":"PartHair"}),"PART_FIND_AT 123 PartHair")
         self.assertEqual(validate_command({"op":"param.inspect.at","generation":123,"index":4}),
                          "PARAM_INSPECT_AT 123 4")
         self.assertEqual(validate_command({"op":"part.inspect.at","generation":123,"index":0}),
@@ -34,6 +38,12 @@ class AgentApiContract(unittest.TestCase):
         for invalid in (
             {"op":"unknown"},
             {"op":"param.inspect.at","generation":0,"index":0},
+            {"op":"param.id.at","generation":0,"index":0},
+            {"op":"part.id.at","generation":True,"index":0},
+            {"op":"param.find.at","generation":123,"id":"../private"},
+            {"op":"part.find.at","generation":123,"id":"A"*70},
+            {"op":"param.find.at","generation":123,"id":"contains spaces"},
+            {"op":"part.find.at","generation":123,"id":True},
             {"op":"param.inspect.at","generation":True,"index":0},
             {"op":"param.inspect.at","generation":2**63,"index":0},
             {"op":"param.inspect.at","generation":123,"index":2048},
