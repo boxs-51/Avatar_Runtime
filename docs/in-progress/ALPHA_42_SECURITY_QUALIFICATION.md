@@ -37,3 +37,20 @@ See the [local observation report](../completed/audits/ALPHA_42_WINDOWS_SECURITY
 for exact results, failures/corrections, source/binary/log pins and outstanding
 work. Its completed classification is for the bounded experiment, not87-case
 qualification, issue closure or G07/G08 acceptance.
+
+## A42 stage2 continuation
+
+Owner requested continuing remaining problems after PR80 at69d90e1. Preserve
+A42-1..6 and extend the local observations with SRC001/005/008/009/010/011/013/
+016/018/021/027/028/029/039/045. A separate native test executable performs real
+public ABI operations on the validated bundle and uses existing test-only friend
+seams to observe committed CPU snapshots, queue/credit/sequence/epochs and to
+schedule the security clock/admission cut. This is PUBLIC_ABI_NATIVE_OBSERVER,
+distinct from the original header-only linked consumer. No new runtime exports,
+production logic or synthetic catalog/model is introduced. Injected deterministic
+clock/append failure is not real OS-clock/allocator-failure proof. Stage2 records
+both8 original public-only cases and15 observer cases; original required-platform
+and sanitizer obligations remain unchanged and NOT_RUN. Source-stable Release,
+Debug link/execution, existing regressions and independent review are required.
+The [stage2 evidence](../completed/audits/ALPHA_42_AUTHORITY_STAGE2_QUALIFICATION.md)
+records23 cumulative local observations, not whole-case or gate closure.

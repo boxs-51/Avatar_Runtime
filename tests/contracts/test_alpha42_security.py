@@ -3,6 +3,9 @@ import importlib.util
 import json
 from pathlib import Path
 import unittest
+import subprocess
+import sys
+import tempfile
 
 ROOT=Path(__file__).resolve().parents[2]
 spec=importlib.util.spec_from_file_location('a42',ROOT/'scripts/verify_public_security_cases.py')
@@ -34,3 +37,16 @@ class SecurityEvidence(unittest.TestCase):
             elif mode=='duplicate':data['cases'][-1]=data['cases'][0]
             else:data['cases'][-1]['id']='RACE-999'
             with self.subTest(mode=mode),self.assertRaises(RuntimeError):a42.inventory_rows(data)
+
+    def test_quaternion_fixture_is_pinned_and_rejects_same_size_base_tamper(self):
+        parent=ROOT/'build';parent.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=parent) as directory:
+            corpus=Path(directory)/'corpus';output=Path(directory)/'authority.arschar'
+            subprocess.run([sys.executable,str(ROOT/'tests/assets/fixtures/generate_fixtures.py'),str(corpus),
+                str(ROOT/'tests/assets/fixtures/manifest.json'),'--reference-schema'],check=True,capture_output=True)
+            base=corpus/'positive-dual-full.arschar'
+            a42.generate_quaternion_fixture(base,output)
+            self.assertEqual(output.stat().st_size,5100);self.assertEqual(a42.digest(output),a42.AUTHORITY_SHA)
+            accepted=output.read_bytes();data=bytearray(base.read_bytes());data[-1]^=1;base.write_bytes(data)
+            with self.assertRaisesRegex(RuntimeError,'BASE_FIXTURE_DRIFT'):a42.generate_quaternion_fixture(base,output)
+            self.assertEqual(output.read_bytes(),accepted)

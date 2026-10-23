@@ -36,9 +36,11 @@ PR_SCOPES = {
         frozenset((
             "CMakeLists.txt", "scripts/verify_public_security_cases.py",
             "tests/security/public_security_cases.cpp", "tests/contracts/test_alpha42_security.py",
+            "tests/security/public_authority_cases.cpp",
             "tests/contracts/check_alpha_custody.py",
             "docs/in-progress/ALPHA_42_SECURITY_QUALIFICATION.md",
             "docs/completed/audits/ALPHA_42_WINDOWS_SECURITY_QUALIFICATION.md",
+            "docs/completed/audits/ALPHA_42_AUTHORITY_STAGE2_QUALIFICATION.md",
             "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
             "docs/DOCUMENTATION_INDEX.md"))),
     "dev/alpha-41-asset-build-qualification": (

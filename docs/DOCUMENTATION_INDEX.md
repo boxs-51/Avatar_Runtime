@@ -1,6 +1,11 @@
 # Mục lục và phân loại tài liệu
 
-Checkpoint #42 **23-10-2026**: **173 tệp** (completed51, reference86,
+Checkpoint #42 stage2 **23-10-2026**: **174 tệp** (completed52, reference86,
+in-progress32, obsolete4). [Authority/replay/close local](completed/audits/ALPHA_42_AUTHORITY_STAGE2_QUALIFICATION.md)
+ghi23 quan sát Release/Debug (8 linked ABI +15 native observer),64 case chưa
+chạy; toàn bộ87 qualification/platform/sanitizer và G07/G08 vẫn HOLD.
+
+Checkpoint #42 stage1 trước đó **23-10-2026**: **173 tệp** (completed51, reference86,
 in-progress32, obsolete4). [Contract bảo mật](in-progress/ALPHA_42_SECURITY_QUALIFICATION.md)
 và [quan sát Windows local](completed/audits/ALPHA_42_WINDOWS_SECURITY_QUALIFICATION.md)
 ghi8 case public ABI đã chạy; toàn bộ87 case/platform/sanitizer và G07/G08 vẫn
