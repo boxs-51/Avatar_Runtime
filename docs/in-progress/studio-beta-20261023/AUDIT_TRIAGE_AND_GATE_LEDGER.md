@@ -112,3 +112,12 @@ alternate-build runs and Release regression GREEN. V1 Agent, V2
 generation-fenced read, model-restart and writer-race E2E GREEN.
 F02 remains PARTIAL pending direct-writer, crash/lost-ACK and
 UNKNOWN_OUTCOME readback proof; RELEASE HOLD remains unchanged.
+
+## F02 and F07 reliability follow-up, 2026-10-23
+
+An exact Windows file-sharing denial was observed at the Native
+grammar harness read of response.txt. Read-only bounded retry now
+tolerates this transient error while preserving complete-frame,
+request-token, no-false-success and no-replay requirements.
+Synthetic and 14 x 52 physical regression checks passed.
+Independent auditor review has not yet approved closure.

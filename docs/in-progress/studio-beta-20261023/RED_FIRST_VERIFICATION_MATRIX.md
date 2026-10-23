@@ -125,3 +125,17 @@ replay, exactly-once mutation, or an independent audit.
 Historical single red post-commit regression had no preserved case
 details and cannot be definitively attributed. F02 is still PARTIAL
 and release HOLD.
+
+## F02-RSP-06 / F07-HARNESS-01 — Win32 read-sharing race
+
+- RED observed: transient PermissionError in Native grammar
+  harness path.read_text during receipt-file replacement.
+- GREEN synthetic: first-read sharing error, partial OK rejection,
+  foreign-token isolation and completed ACK cleanup.
+- GREEN physical: 14 successive runs x 52 invalid Native grammar
+  cases, zero reported failures after bounded read-only retry.
+- The command is NEVER retried following ambiguous ACK; only
+  reading the existing response is retried. The test timeout and
+  mutation/grammar oracles are unchanged.
+- Missing proof: native ACK-loss/crash state reconciliation and
+  direct same-user writer collisions; F02 and F07 remain PARTIAL.

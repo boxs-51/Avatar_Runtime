@@ -53,3 +53,30 @@ Next test matrix: crash before publish, after publish before read,
 stale reply on restart, direct native-writer collision, and
 idempotent state inspection after UNKNOWN_OUTCOME. Never interpret
 file receipt OK as an accepted XPBD frame.
+
+## Follow-up: Windows native receipt-sharing diagnostic
+
+A later stress campaign reproduced a Win32 PermissionError at
+scripts/test_studio_native_grammar.py inside path.read_text while
+Native Studio concurrently published the response. That is a
+test-harness file-sharing race, not evidence that PARAM_SET accepts
+an invalid suffix. The earlier post-commit unexplained RED cannot
+be retrospectively assigned the same cause without its raw trace.
+
+The grammar test now uses a bounded strict-frame polling helper:
+on transient OSError/PermissionError it retries within the original
+deadline; only full newline-terminated responses with the expected
+request token, OK/ERR code and nonempty receipt can be accepted.
+Partial or foreign ACKs remain rejected/not deleted. It never retries
+a Native command after an ambiguous outcome, only the read operation.
+
+Synthetic tests in test_studio_native_reply_harness.py cover:
+1. first read PermissionError then complete ERR;
+2. incomplete OK never considered success;
+3. foreign-token ACK neither accepted nor deleted;
+4. valid complete OK accepted and cleaned up.
+
+After the harness fix, 14 consecutive physical Native grammar matrix
+runs each passed 52/52 with no unhandled access error. This supports
+F07 test reliability improvement only; it does not prove physical
+lost-ACK replay, exactly-once semantics or close F02.

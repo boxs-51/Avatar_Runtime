@@ -86,3 +86,19 @@ Studio, grammar, V1 Agent E2E, V2 Native read, two-process restart and
 IPC race passed. This improves F02 but does not close its lost-ACK,
 native crash/restart or untrusted same-user-writer cases.
 See F02_NATIVE_REPLY_ATOMIC_20261023.md.
+
+## F02/F07 strict ACK harness follow-up, 2026-10-23
+
+A stress trace confirmed one Windows file-sharing PermissionError in
+the security harness while reading response.txt after a Native
+replacement. The incomplete/stale ACK oracles were left unchanged.
+The harness now retries transient read errors only, does not resend
+commands or convert timeout into PASS. New pure synthetic tests verify
+sharing-denial recovery, incomplete frame timeout, foreign reply
+isolation and valid ACK cleanup.
+
+Post-fix: 14 consecutive physical Native grammar invocations, 52/52
+cases each, PASS. The earlier isolated post-commit RED remains
+historically unresolved without raw evidence; the new sharing-denial
+incident is independently classified. F02 PARTIAL, F07 PARTIAL,
+RELEASE HOLD. Refer to F02_NATIVE_REPLY_ATOMIC_20261023.md.
