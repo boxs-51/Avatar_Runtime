@@ -121,3 +121,22 @@ tolerates this transient error while preserving complete-frame,
 request-token, no-false-success and no-replay requirements.
 Synthetic and 14 x 52 physical regression checks passed.
 Independent auditor review has not yet approved closure.
+
+## 2026-10-23 G4 model-ID readback checkpoint
+
+Native owner exposes model-generation-fenced ID_AT and exact FIND_AT
+read-only operations for parameter and part catalogs. The V2
+trusted-local adapter uses bounded pages and direct lookup, never
+accepts arbitrary files or source paths. Native duplicate-ID
+matches return ERR rather than an arbitrary first result. Unknown,
+unsafe and stale-generation requests fail closed.
+
+Synthetic RED-first was reproduced before implementation and all
+bounded synthetic cases passed after the patch. Native Studio
+RelWithDebInfo and Release builds, 58/58 malformed command grammar,
+private local model reverse ID readback and V1/V2 regression PASS.
+One initial aggregate harness execution used a wildcard in a Windows
+output filename and failed before V2 executed; corrected naming
+produced a PASS. G4 remains PARTIAL because arbitrary Unicode ID
+coverage and atomic editor-revision/frame snapshots are absent.
+F02 remains PARTIAL; RELEASE HOLD.

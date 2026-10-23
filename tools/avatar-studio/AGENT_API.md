@@ -295,3 +295,25 @@ complete-frame V1 client oracle is retained. Source and test evidence
 are described in F02_NATIVE_REPLY_ATOMIC_20261023.md. F02 remains
 PARTIAL because direct-writer ownership, crash/restart and ACK-loss
 semantic tests are not complete. Public SDK ABI20 is unchanged.
+
+## G4 local model ID catalog and lookup (2026-10-23)
+
+Trusted-local V2 readback now supports catalog.parameter.lookup and
+catalog.part.lookup with arguments containing exactly one model ID.
+Bounded catalog.parameters.page/catalog.parts.page results include
+an ID string with each numeric record. Native read opcodes:
+PARAM_ID_AT, PART_ID_AT, PARAM_FIND_AT and PART_FIND_AT. All verify
+the model generation on the Native owner thread; FIND_AT returns
+an index only for a unique exact match. Duplicates and unknown IDs
+fail closed.
+
+Local-only ID acceptance for this initial slice: ASCII letters,
+digits, underscore, hyphen, dot and colon, length 1..59 bytes.
+Other IDs fail closed rather than being truncated or serialized
+unsafely. The return data is LOCAL_PRIVATE and must not be placed
+in public reports/CI/Git. A successful lookup is not an edit
+authorization, frame acceptance or an editor revision fence.
+
+The default CLI stays discovery-only without an explicitly supplied
+trusted-local bridge and private read opt-in. G4 and RELEASE remain
+partial/HOLD.

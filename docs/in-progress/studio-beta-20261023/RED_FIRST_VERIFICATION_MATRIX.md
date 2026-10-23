@@ -139,3 +139,22 @@ and release HOLD.
   mutation/grammar oracles are unchanged.
 - Missing proof: native ACK-loss/crash state reconciliation and
   direct same-user writer collisions; F02 and F07 remain PARTIAL.
+
+## G4-ID RED-first verification, 2026-10-23
+
+- G4-ID-01: ID page values absent before implementation => RED;
+  Native generation-guarded ID page values => GREEN synthetic.
+- G4-ID-02: exact param/part lookup absent => RED; direct guarded
+  Native unique-match lookup => GREEN synthetic and physical.
+- G4-ID-03: unknown ID and duplicate matching IDs => REJECTED.
+- G4-ID-04: traversal, whitespace, Unicode, oversized or Boolean
+  ID input => fail before Native IPC, without reflecting payload.
+- G4-ID-05: expected_model_generation stale => STALE_MODEL.
+- G4-ID-06: Release Native + local private model E2E,
+  reverse ID lookup and pagination => PASS; model names not logged.
+- G4-ID-07: 58 malformed Native grammar cases => PASS.
+- G4-ID-08: fixed Windows output log filename => V2 suite PASS.
+
+Pending: non-ASCII IDs, duplicate-ID full-model adversarial
+fixtures, same-count reload under live lookup, editor revision
+CAS and frame acceptance. F02/F07 remain PARTIAL.

@@ -102,3 +102,18 @@ cases each, PASS. The earlier isolated post-commit RED remains
 historically unresolved without raw evidence; the new sharing-denial
 incident is independently classified. F02 PARTIAL, F07 PARTIAL,
 RELEASE HOLD. Refer to F02_NATIVE_REPLY_ATOMIC_20261023.md.
+
+## G4 Local-only ID enumeration and exact lookup, 2026-10-23
+
+The Native owner now supports generation-bound PARAM_ID_AT,
+PART_ID_AT, PARAM_FIND_AT and PART_FIND_AT read-only operations.
+The trusted-local V2 adapter adds model-local parameter/part IDs
+to bounded pages and supports exact lookup via the Native owner.
+Duplicate/unknown/unsafe IDs and stale generations fail closed.
+Private identifiers never appear in the public-safe evidence.
+
+RED-first synthetic, Release Native and private-model E2E tests
+passed. Current coverage intentionally accepts ASCII identifiers
+of length 1..59 with a restricted character set, not all UTF-8
+model identifiers. No editor revision, frame acceptance or V5
+mutation is enabled. See ADR002_G4_LOCAL_MODEL_IDS_20261023.md.
