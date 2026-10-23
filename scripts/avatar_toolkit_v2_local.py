@@ -226,7 +226,14 @@ def _g4_metadata(bridge,op,epoch,drawable):
       not max(3,(used+islands-1)//islands)<=largest<=used-3*(islands-1)):
    raise ToolkitV2Error("INVALID_DRAFT")
  else:
-  if values["role"]>3 or any(values[k]>limit for k,limit in (("anchors",64),("beams",128),("parents",64),("weights",256),("cross",16))):
+  vertices=values["vertices"]
+  max_beam_pairs=vertices*(vertices-1)//2
+  limits=(("anchors",min(64,vertices)),
+          ("beams",min(128,max_beam_pairs)),
+          ("parents",min(64,vertices-1)),
+          ("weights",min(256,vertices)),
+          ("cross",16))
+  if values["role"]>3 or any(values[k]>limit for k,limit in limits):
    raise ToolkitV2Error("INVALID_DRAFT")
  return values
 

@@ -225,7 +225,19 @@ def finish(folder):
     data=read_json(folder,"result.json")
     print("STATE=FINISHED verdict="+data["verdict"]+
           " actor="+data.get("actor","UNKNOWN")+" edit_verified="+str(data.get("edit_verified",False)))
-    return 0
+    if data["verdict"] in ("BLOCKED", "HARNESS_FAILURE", "HARNESS_OR_ENV_FAILURE"):
+        return 3
+    success=data["verdict"] in (
+        "REJECTED_AFTER_EDITOR_CHANGE", "REJECTED_ABA_STALE_REVISION"
+    )
+    verified=(
+        data.get("actor")=="UI_DESKTOP" and
+        data.get("edit_verified") is True and
+        data.get("revision_increased") is True and
+        data.get("native_process") is True and
+        data.get("agent_finished") is True
+    )
+    return 0 if success and verified else 2
 
 if __name__=="__main__":
     mode=sys.argv[1]

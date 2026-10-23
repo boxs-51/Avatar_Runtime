@@ -42,6 +42,15 @@ static void studio_note_rig_revision(const StudioRig *before){
     if(memcmp(before,&s.rig,sizeof s.rig)!=0&&
        s.rig_revision<UINT64_C(0x7fffffffffffffff))++s.rig_revision;
 }
+/* The UI owner thread increments per accepted edit rather than from the
+   net byte difference at end of a frame (which misses two inverse edits). */
+static StudioRig *ui_rig_checkpoint=NULL;
+static void studio_note_ui_rig_edit(void){
+    if(ui_rig_checkpoint){
+        studio_note_rig_revision(ui_rig_checkpoint);
+        *ui_rig_checkpoint=s.rig;
+    }
+}
 static float bound(float v,float a,float b){return fminf(b,fmaxf(a,v));}
 static float mix(float a,float b,float t){return a+(b-a)*t;}
 static int hit(Rectangle r){return CheckCollisionPointRec(GetMousePosition(),r);}
@@ -279,8 +288,10 @@ static void rig_overlay_ui(void){
  const csmVector2 **vertices=csmGetDrawableVertexPositions(s.core.model);
  if(!counts||!vertices||!vertices[d]||counts[d]<1)return;
  int n=counts[d];
- if(s.rig.vertex_count!=n||s.rig.drawable!=d)
+ if(s.rig.vertex_count!=n||s.rig.drawable!=d){
    if(!studio_rig_bank_select(&s.rig_bank,&s.rig,d,signature(),n))return;
+   studio_note_ui_rig_edit();
+ }
  Vector2 mouse=GetMousePosition();
  float best=18.f*18.f;int nearest=-1;
  for(int j=0;j<n;++j){
@@ -296,10 +307,10 @@ static void rig_overlay_ui(void){
  if(CheckCollisionPointRec(mouse,s.viewport)&&nearest>=0&&IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
   s.rig_selected=nearest;
   if(IsKeyDown(KEY_LEFT_SHIFT)||IsKeyDown(KEY_RIGHT_SHIFT))
-   studio_rig_toggle_anchor(&s.rig,nearest);
+   {studio_rig_toggle_anchor(&s.rig,nearest);studio_note_ui_rig_edit();}
   else if(IsKeyDown(KEY_LEFT_CONTROL)||IsKeyDown(KEY_RIGHT_CONTROL)){
    if(s.rig_beam_start<0)s.rig_beam_start=nearest;
-   else {studio_rig_toggle_beam(&s.rig,s.rig_beam_start,nearest);s.rig_beam_start=-1;}
+   else {studio_rig_toggle_beam(&s.rig,s.rig_beam_start,nearest);studio_note_ui_rig_edit();s.rig_beam_start=-1;}
   }
  }
  const Color rigAnchor={252,166,76,240},rigBeam={104,222,190,230};
@@ -423,6 +434,7 @@ static void rig_ui(float x){
  const int *vc=csmGetDrawableVertexCounts(s.core.model);
  if(s.rig.vertex_count!=vc[d]||s.rig.drawable!=d){
      if(!studio_rig_bank_select(&s.rig_bank,&s.rig,d,signature(),vc[d]))return;
+   studio_note_ui_rig_edit();
    s.rig_selected=0;s.rig_beam_start=-1;s.rig_parent_start=-1;
  }
  label("LAYER RIG EDITOR",x,190,16,ACCENT);
@@ -437,10 +449,11 @@ static void rig_ui(float x){
  if(button((Rectangle){x+226,260,40,27},"+",0))s.rig_selected=(s.rig_selected+1)%vc[d];
  if(button((Rectangle){x,315,280,33},"Toggle anchor",0)){
    studio_rig_toggle_anchor(&s.rig,s.rig_selected);
+   studio_note_ui_rig_edit();
  }
  if(button((Rectangle){x,358,280,33},s.rig_beam_start<0?"Start support beam":"Finish support beam",0)){
    if(s.rig_beam_start<0)s.rig_beam_start=s.rig_selected;
-   else {studio_rig_toggle_beam(&s.rig,s.rig_beam_start,s.rig_selected);s.rig_beam_start=-1;}
+   else {studio_rig_toggle_beam(&s.rig,s.rig_beam_start,s.rig_selected);studio_note_ui_rig_edit();s.rig_beam_start=-1;}
  }
  label(TextFormat("Anchors %d / Support beams %d",s.rig.anchor_count,s.rig.beam_count),x,410,14,ACCENT);
  if(button((Rectangle){x,454,132,31},"Save rig",0)){
@@ -449,7 +462,9 @@ static void rig_ui(float x){
  }
  if(button((Rectangle){x+144,454,136,31},"Load rig",0)){
   char path[1200];snprintf(path,sizeof path,"%s/rig-layer-%d.txt",s.folder,d);
-  toast(studio_rig_load(&s.rig,path,signature(),vc[d])?"Rig loaded.":"Rig signature mismatch.");
+  int loaded=studio_rig_load(&s.rig,path,signature(),vc[d]);
+  studio_note_ui_rig_edit();
+  toast(loaded?"Rig loaded.":"Rig signature mismatch.");
  }
  if(button((Rectangle){x,505,280,34},"Apply rig to XPBD",0)){
   StudioXpbdOptions o={d,
@@ -473,6 +488,7 @@ static void rig_ui(float x){
    if(button((Rectangle){x+145,660,135,32},"Attach child",0)){
      int ok=s.rig_parent_start>=0&&
        studio_rig_parent(&s.rig,s.rig_parent_start,s.rig_selected,.85f,1);
+     studio_note_ui_rig_edit();
      toast(ok?"Parent added; Apply rig separately.":"Parent rejected: invalid/cycle.");
      s.rig_parent_start=-1;
    }
@@ -483,12 +499,15 @@ static void rig_ui(float x){
          done=studio_rig_parent(&s.rig,s.rig.parents[i].parent,
              s.rig_selected,s.rig.parents[i].stiffness,0);break;
        }
+     studio_note_ui_rig_edit();
      toast(done?"Parent removed.":"Selected vertex has no parent.");
    }
    float influence=studio_rig_weight_get(&s.rig,s.rig_selected);
    label(TextFormat("Selected vertex weight: %.2f",influence),x,753,14,TEXT);
-   if(slider(7701,(Rectangle){x,786,270,7},&influence,0,1))
+   if(slider(7701,(Rectangle){x,786,270,7},&influence,0,1)){
      studio_rig_weight(&s.rig,s.rig_selected,influence);
+     studio_note_ui_rig_edit();
+   }
    label("0=fixed; 1=full motion. Apply rig separately.",x,822,12,MUTED);
     label(TextFormat("Brush radius %.2f",s.rig_brush_radius),x,841,12,TEXT);
     label(TextFormat("Target %.2f",s.rig_brush_target),x+148,841,12,TEXT);
@@ -505,6 +524,7 @@ static void rig_ui(float x){
           s.rig_brush_radius,s.rig_brush_target,&touched)?
           "Region painted; Apply rig separately.":
           "Weight brush rejected: geometry or capacity.");
+         studio_note_ui_rig_edit();
       }
     }
  }else if(s.rig_advanced==2){
@@ -527,6 +547,7 @@ static void rig_ui(float x){
         toast(studio_rig_cross(&s.rig,s.rig_selected,target,
           s.rig_cross_child,count,.85f,1)?
           "Cross link added; Apply rig.":"Cross link rejected.");
+        studio_note_ui_rig_edit();
     }else label("Choose a second drawable first.",x,713,12,MUTED);
     label("Two drawable limit; no auto-linking.",x,838,12,MUTED);
   }else{
@@ -536,6 +557,7 @@ static void rig_ui(float x){
   if(button((Rectangle){x+145,640,135,32},"Adopt anchors",0)){
     toast(studio_adopt_proposal()?"Suggested anchors added (not applied to XPBD).":
       "No confident layer proposal. Rig unchanged.");
+    studio_note_ui_rig_edit();
   }
   if(s.layer_proposal_valid&&s.layer_proposal_drawable==d&&
       s.layer_proposal_signature==signature()){
@@ -1021,6 +1043,7 @@ static void frame(void){
     process_agent_request();
     studio_note_rig_revision(&agent_rig_before);
     StudioRig ui_rig_before=s.rig;
+    ui_rig_checkpoint=&ui_rig_before;
     if(!s.smoke)input(dt);update(dt);s.view.zoom=s.base_zoom*s.settings.zoom;
     if(s.xpbd_smoke&&s.frame==12){int count=csmGetDrawableCount(s.core.model);const int *vertices=csmGetDrawableVertexCounts(s.core.model);
       for(int d=0;d<count;++d)if(vertices[d]>=3&&vertices[d]<=2048){StudioXpbdOptions o={d,-1,0,-12,3,.0000001f,0,1,.995f,0,1.f/120,8,0,3,.004f,.08f,.00001f,.02f,2};
@@ -1067,7 +1090,8 @@ static void frame(void){
     left_ui();inspector();
     /* UI and viewport edit paths run on this owner thread; record their
        completed Rig transaction before admitting the next IPC request. */
-    studio_note_rig_revision(&ui_rig_before);
+    studio_note_ui_rig_edit();
+    ui_rig_checkpoint=NULL;
     DrawRectangle(0,h-34,w,34,CARD);label("LMB pull   /   RMB pan   /   Wheel zoom   /   Space pause   /   P physics   /   1-9 expression",20,(float)h-24,12,MUTED);
     label("Local preview",(float)w-120,(float)h-24,12,ACCENT);
     if(GetTime()<s.notice_until){Vector2 size=MeasureTextEx(s.font,s.notice,15,.5f);Rectangle r={s.viewport.x+12,s.viewport.y+s.viewport.height-42,size.x+24,30};DrawRectangleRounded(r,.25f,6,(Color){30,65,67,245});label(s.notice,r.x+12,r.y+7,15,TEXT);}
