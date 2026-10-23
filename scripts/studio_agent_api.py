@@ -237,14 +237,18 @@ class AgentBridge:
             while time.monotonic()<deadline:
                 if response.exists():
                     try:
-                        line=response.read_text(encoding="ascii").strip()
+                        with response.open("rb") as handle:
+                            frame=handle.read(513)
+                        if len(frame)>512:
+                            raise RuntimeError("Studio receipt exceeds fixed bound")
+                        line=frame.decode("ascii")
                     except (OSError,UnicodeError):
                         line=""
-                    if line.startswith(token+" "):
-                        _,status,*remainder=line.split(" ")
-                        if status not in ("OK","ERR"):
-                            raise RuntimeError("Invalid Studio response status")
-                        return {"ok":status=="OK","receipt":" ".join(remainder)}
+                    if line.startswith(token+" ") and line.endswith("\n") and line.count("\n")==1:
+                        fields=line[:-1].removesuffix("\r").split(" ",2)
+                        if len(fields)!=3 or fields[1] not in ("OK","ERR") or not fields[2]:
+                            raise RuntimeError("Invalid Studio receipt frame")
+                        return {"ok":fields[1]=="OK","receipt":fields[2]}
                 time.sleep(.015)
             raise TimeoutError("Native Studio did not acknowledge command")
         finally:

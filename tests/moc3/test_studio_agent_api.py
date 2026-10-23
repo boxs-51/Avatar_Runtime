@@ -152,6 +152,43 @@ class AgentApiContract(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 AgentBridge(folder,timeout=.05).call({"op":"studio.status"})
             self.assertTrue((folder/"writer.lock").is_dir())
+    def test_partial_native_ack_is_not_success(self):
+        with tempfile.TemporaryDirectory() as base:
+            folder=Path(base)
+            def inject():
+                request=folder/"request.txt"
+                until=time.monotonic()+1
+                while not request.exists() and time.monotonic()<until:
+                    time.sleep(.004)
+                if not request.exists():return
+                token=request.read_text(encoding="ascii").split(" ",1)[0]
+                (folder/"response.txt").write_text(token+" OK",encoding="ascii")
+            sender=threading.Thread(target=inject)
+            sender.start()
+            with self.assertRaises(TimeoutError):
+                AgentBridge(folder,timeout=.18).call({"op":"studio.status"})
+            sender.join(timeout=1)
+            self.assertFalse(sender.is_alive())
+
+    def test_stale_ack_does_not_clear_foreign_receipt(self):
+        with tempfile.TemporaryDirectory() as base:
+            folder=Path(base)
+            def inject():
+                request=folder/"request.txt"
+                until=time.monotonic()+1
+                while not request.exists() and time.monotonic()<until:
+                    time.sleep(.004)
+                if request.exists():
+                    (folder/"response.txt").write_text(
+                      "000000000000000000000000 OK stale\n",encoding="ascii")
+            sender=threading.Thread(target=inject)
+            sender.start()
+            with self.assertRaises(TimeoutError):
+                AgentBridge(folder,timeout=.18).call({"op":"studio.status"})
+            sender.join(timeout=1)
+            self.assertTrue((folder/"response.txt").exists())
+            with self.assertRaises(RuntimeError):
+                AgentBridge(folder,timeout=.05).call({"op":"studio.status"})
     def test_no_studio_is_not_false_success(self):
         with tempfile.TemporaryDirectory() as root:
             bridge=AgentBridge(Path(root),timeout=.09)
