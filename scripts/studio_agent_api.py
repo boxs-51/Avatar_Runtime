@@ -1,4 +1,4 @@
-"""Local-only agent command API for Native Studio. No network or model export."""
+﻿"""Local-only agent command API for Native Studio. No network or model export."""
 from __future__ import annotations
 import math
 import os
@@ -182,6 +182,42 @@ def validate_command(cmd:dict)->str:
         return "PHYSICS_SET "+" ".join((finite("gravity",-80,80),finite("wind",-60,60),finite("damping",0,1)))
     if cmd["kind"] not in ("pull","release","shake","settle"):raise ValueError("invalid action")
     return f"ACTION {cmd['kind']} {finite('strength',0,1)}"
+def _writer_claim(folder:Path)->int:
+    """Exclusive cross-process byte-range lock, OS-released after a crash.
+
+    The lock file is deliberately retained. Its presence is not ownership.
+    """
+    import sys
+    path=folder/"writer.lock"
+    try:
+        fd=os.open(path,os.O_CREAT|os.O_RDWR,0o600)
+        if os.fstat(fd).st_size==0:
+            os.write(fd,bytes([0]))
+        os.lseek(fd,0,os.SEEK_SET)
+        if sys.platform=="win32":
+            import msvcrt
+            msvcrt.locking(fd,msvcrt.LK_NBLCK,1)
+        else:
+            import fcntl
+            fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        return fd
+    except OSError as exc:
+        if "fd" in locals():os.close(fd)
+        raise RuntimeError("Studio queue busy: writer claim unavailable") from exc
+
+def _writer_release(fd:int)->None:
+    import sys
+    try:
+        os.lseek(fd,0,os.SEEK_SET)
+        if sys.platform=="win32":
+            import msvcrt
+            msvcrt.locking(fd,msvcrt.LK_UNLCK,1)
+        else:
+            import fcntl
+            fcntl.flock(fd,fcntl.LOCK_UN)
+    finally:
+        os.close(fd)
+
 class AgentBridge:
     def __init__(self,folder:Path,timeout:float=5):
         self.folder=Path(folder);self.timeout=timeout
@@ -189,23 +225,42 @@ class AgentBridge:
         wire=validate_command(command)
         self.folder.mkdir(parents=True,exist_ok=True)
         request=self.folder/"request.txt";response=self.folder/"response.txt"
-        if request.exists():raise RuntimeError("Studio queue busy")
+        writer_fd=_writer_claim(self.folder)
         token=secrets.token_hex(12)
         temporary=self.folder/("request-"+token+".tmp")
-        temporary.write_text(token+" "+wire+"\n",encoding="ascii")
-        os.replace(temporary,request)
-        deadline=time.monotonic()+self.timeout
         try:
+            if request.exists() or response.exists():
+                raise RuntimeError("Studio queue not empty; recovery inspection required")
+            temporary.write_text(token+" "+wire+"\n",encoding="ascii")
+            os.replace(temporary,request)
+            deadline=time.monotonic()+self.timeout
             while time.monotonic()<deadline:
                 if response.exists():
-                    line=response.read_text(encoding="ascii").strip()
+                    try:
+                        line=response.read_text(encoding="ascii").strip()
+                    except (OSError,UnicodeError):
+                        line=""
                     if line.startswith(token+" "):
                         _,status,*remainder=line.split(" ")
+                        if status not in ("OK","ERR"):
+                            raise RuntimeError("Invalid Studio response status")
                         return {"ok":status=="OK","receipt":" ".join(remainder)}
                 time.sleep(.015)
             raise TimeoutError("Native Studio did not acknowledge command")
         finally:
-            request.unlink(missing_ok=True)
+            temporary.unlink(missing_ok=True)
+            if request.exists():
+                try:
+                    line=request.read_text(encoding="ascii")
+                    if line.startswith(token+" "):
+                        request.unlink(missing_ok=True)
+                except (OSError,UnicodeError):
+                    pass
             if response.exists():
-                line=response.read_text(encoding="ascii").strip()
-                if line.startswith(token+" "):response.unlink(missing_ok=True)
+                try:
+                    line=response.read_text(encoding="ascii")
+                    if line.startswith(token+" "):
+                        response.unlink(missing_ok=True)
+                except (OSError,UnicodeError):
+                    pass
+            _writer_release(writer_fd)

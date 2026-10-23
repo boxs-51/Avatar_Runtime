@@ -119,6 +119,39 @@ class AgentApiContract(unittest.TestCase):
             self.assertFalse((folder/"request.txt").exists())
             self.assertFalse((folder/"response.txt").exists())
 
+    def test_concurrent_agent_writer_is_exclusive(self):
+        with tempfile.TemporaryDirectory() as root:
+            folder=Path(root)
+            first=AgentBridge(folder,timeout=.3)
+            second=AgentBridge(folder,timeout=.05)
+            initial=threading.Event()
+            result=[]
+            def hold():
+                initial.set()
+                try:first.call({"op":"studio.status"})
+                except TimeoutError:result.append("timeout")
+            t=threading.Thread(target=hold)
+            t.start()
+            initial.wait(timeout=1)
+            deadline=time.monotonic()+1
+            while not (folder/"request.txt").exists() and time.monotonic()<deadline:
+                time.sleep(.005)
+            self.assertTrue((folder/"request.txt").exists())
+            with self.assertRaises(RuntimeError):
+                second.call({"op":"studio.metrics"})
+            self.assertTrue((folder/"request.txt").exists())
+            t.join(timeout=2)
+            self.assertFalse(t.is_alive())
+            self.assertEqual(result,["timeout"])
+            self.assertFalse((folder/"request.txt").exists())
+
+    def test_preexisting_owner_lock_denied_without_cleanup(self):
+        with tempfile.TemporaryDirectory() as root:
+            folder=Path(root)
+            (folder/"writer.lock").mkdir()
+            with self.assertRaises(RuntimeError):
+                AgentBridge(folder,timeout=.05).call({"op":"studio.status"})
+            self.assertTrue((folder/"writer.lock").is_dir())
     def test_no_studio_is_not_false_success(self):
         with tempfile.TemporaryDirectory() as root:
             bridge=AgentBridge(Path(root),timeout=.09)
