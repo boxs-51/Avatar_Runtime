@@ -253,9 +253,17 @@ class AgentBridge:
         writer_fd=_writer_claim(self.folder)
         token=secrets.token_hex(12)
         temporary=self.folder/("request-"+token+".tmp")
+        intent=self.folder/"uncertain_outcome"
+        acknowledged=False
         try:
-            if request.exists() or response.exists():
+            if (request.exists() or response.exists() or intent.exists() or
+                    (self.folder/"response.tmp").exists()):
                 raise RuntimeError("Studio queue not empty; recovery inspection required")
+            # Durable local intent before request publication: a timeout is UNKNOWN_OUTCOME.
+            with intent.open("x",encoding="ascii") as marker:
+                marker.write(token+"\n")
+                marker.flush()
+                os.fsync(marker.fileno())
             temporary.write_text(token+" "+wire+"\n",encoding="ascii")
             os.replace(temporary,request)
             deadline=time.monotonic()+self.timeout
@@ -273,6 +281,7 @@ class AgentBridge:
                         fields=line[:-1].removesuffix("\r").split(" ",2)
                         if len(fields)!=3 or fields[1] not in ("OK","ERR") or not fields[2]:
                             raise RuntimeError("Invalid Studio receipt frame")
+                        acknowledged=True
                         return {"ok":fields[1]=="OK","receipt":fields[2]}
                 time.sleep(.015)
             raise TimeoutError("Native Studio did not acknowledge command")
@@ -292,4 +301,7 @@ class AgentBridge:
                         response.unlink(missing_ok=True)
                 except (OSError,UnicodeError):
                     pass
+            # Keep the intent on crash/timeout or incomplete cleanup: no blind replay.
+            if acknowledged and not request.exists() and not response.exists():
+                intent.unlink(missing_ok=True)
             _writer_release(writer_fd)
