@@ -1,4 +1,4 @@
-# VER-001 — RED-first test and experiment matrix
+# VER-001 - RED-first test and experiment matrix
 
 - **Version/date:** 0.1 / 2026-10-23
 - **Status:** PLAN plus auditor findings; **no new test execution**
@@ -9,16 +9,16 @@
 
 | ID | Synthetic/physical scenario | PASS oracle | Evidence |
 |---|---|---|---|
-| IPC-P01 | Valid command with alphabetic suffix | ERR, no state mutation | **RED** — auditor Windows physical |
+| IPC-P01 | Valid command with alphabetic suffix | ERR, no state mutation | **RED** - auditor Windows physical |
 | IPC-P02 | Extra numeric token, trailing whitespace, truncated/oversized command | Exact grammar, bounded EOF | PLANNED full opcode matrix |
 | IPC-P03 | NaN/Inf, negative/out-of-range, overflow | ERR, zero mutation | PARTIAL historical tests |
-| IPC-Q01 | Two writers race for same request | Exactly one admitted owner | **RED** — auditor synthetic two-caller |
+| IPC-Q01 | Two writers race for same request | Exactly one admitted owner | **RED** - auditor synthetic two-caller |
 | IPC-Q02 | Crash after claim, stale reply, restart | No loss/false ACK; bounded cleanup | PLANNED |
 | IPC-Q03 | Windows sharing and concurrent cleanup | Ownership-safe recovery | PLANNED |
 | PRIV-01 | Public-safe reporter fed model path/receipt/image-derived values | Reject/scrub to case ID + PASS/FAIL + class | PLANNED |
 | PRIV-02 | Offline Git-object provenance/distribution check | Preserve custody; no public-exposure guess | OPEN; no prune |
 | RIG-IO-01 | Short write, flush failure, failed atomic rename | Previous-good rig intact | PLANNED |
-| RIG-IO-02 | Crash before/after replace; legacy V1–V4 | Complete load or previous-good; typed invalid rejection | PLANNED |
+| RIG-IO-02 | Crash before/after replace; legacy V1-V4 | Complete load or previous-good; typed invalid rejection | PLANNED |
 
 ## Proposed bone and skinning gates
 
@@ -50,7 +50,7 @@ Distinguish **AUDIT-OBSERVED**, **SOURCE-CONFIRMED**, **EXECUTED** and **PROPOSE
 
 Source-gated local regression ran successfully, but does not replace independent reviewer re-execution. See `FINDINGS_REMEDIATION_20261023.md` and ignored Host evidence.
 
-## ADR-002 V2 discovery contract — 2026-10-23
+## ADR-002 V2 discovery contract - 2026-10-23
 
 V2-RED-01: import/probe of absent module: RED before implementation.
 V2-SCHEMA-01: only capabilities/schema advertised; editing and real model
@@ -126,7 +126,7 @@ Historical single red post-commit regression had no preserved case
 details and cannot be definitively attributed. F02 is still PARTIAL
 and release HOLD.
 
-## F02-RSP-06 / F07-HARNESS-01 — Win32 read-sharing race
+## F02-RSP-06 / F07-HARNESS-01 - Win32 read-sharing race
 
 - RED observed: transient PermissionError in Native grammar
   harness path.read_text during receipt-file replacement.
@@ -175,3 +175,24 @@ CAS and frame acceptance. F02/F07 remain PARTIAL.
 Remaining NOT_RUN: crash in post-mutation ACK-publish interval,
 durable replay journal, hostile same-user IPC and accepted-frame
 transactional ownership. F02 PARTIAL and RELEASE HOLD.
+## F02-UO / Windows client process crash — 2026-10-23
+
+- F02-UO-01: worker applies synthetic sentinel then crashes before
+  ACK; prior client timeout leaves no quarantine -> BASELINE_RED.
+  Post-fix UNKNOWN_OUTCOME marker persists and blocks replay: PASS.
+- F02-UO-02: unprocessed request times out and future admission
+  must remain blocked -> BASELINE_RED then GREEN.
+- F02-UO-03: preexisting marker in empty queue blocks a new
+  request -> BASELINE_RED then GREEN.
+- F02-UO-04: complete typed ACK clears quarantine; next valid
+  request can proceed -> CONTROL_PASS before and after fix.
+- F02-UO-05: Windows physical child process terminated after
+  synthetic side effect and before ACK; five independent runs PASS
+  after OS lock release.
+- F02-UO-06: Native Studio E2E, restart, IPC race, V2, grammar,
+  public-safe reports and rig test PASS after client change.
+
+Still NOT_RUN: Native XPBD mutation with real crash exactly between
+commit and ACK; hostile same-user alteration, durable power-loss
+ordering and recovery decision/readback. Marker is not exactly-once
+or authentication; F02 PARTIAL, RELEASE HOLD.

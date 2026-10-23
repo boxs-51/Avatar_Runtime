@@ -1,4 +1,4 @@
-# LOG-002 — Engineering progress and decision log (public-safe)
+# LOG-002 - Engineering progress and decision log (public-safe)
 
 - **Date:** 2026-10-23, Asia/Ho_Chi_Minh
 - **Repository branch:** `exp/layer-physics-native-studio-local`
@@ -12,7 +12,7 @@
 
 **Read/compared:** New Beta expanded audit report, auditor session authority marker, current Native Studio source/API and Studio design material. Current HEAD matched the auditor's pin. Verified static presence of numeric-tail native parse pattern, file IPC nonexclusive admission sequence and direct rig overwrite. Did **not** re-run the auditor's physical reproducer.
 
-**Findings carried forward:** F01 P1 OPEN; F02–F05 P2 OPEN; F06–F07 P3 OPEN. Native Studio write-path integrity and privacy/release gates remain HOLD. Successful historic regression evidence is scoped and does not close these findings.
+**Findings carried forward:** F01 P1 OPEN; F02-F05 P2 OPEN; F06-F07 P3 OPEN. Native Studio write-path integrity and privacy/release gates remain HOLD. Successful historic regression evidence is scoped and does not close these findings.
 
 **Artifacts produced:** SYS-001, ADR-001, AUD-001, VER-001, LOG-001, this progress log and the dossier index. All are source-only Markdown. A session manifest is retained under the Git-ignored private log location described in LOG-001.
 
@@ -23,7 +23,7 @@
 **Work remaining before implementation:** Owner design review, P1 strict native parser RED-first remediation authorization, IPC lifecycle design and test, evidence privacy gate, atomic rig-save design, then synthetic skinning spec and tests.
 
 **Safety/custody:** No model/texture/screenshot/raw native log has been added to these documents. Auditor files and IPC remain untouched; no GitHub write/push, history rewrite, deployment or merge undertaken as part of documentation.
-## Checkpoint STUDIO-BETA-REMED-001 — 2026-10-23
+## Checkpoint STUDIO-BETA-REMED-001 - 2026-10-23
 
 Observed scope: F01 exact Native wire grammar, F02 cooperative OS writer-lock admission, F04 privacy-safe verdict reporter, F05 durable temp-and-replace rig save, and F07 regression extensions. F03 local Git-object custody is preserved without garbage collection or history rewriting. F06 extraction/optimization remains pending.
 
@@ -31,7 +31,7 @@ RED-first: 8 invalid native suffix cases reproduced on the Windows Host and a sy
 
 Detailed local-only stdout, toolchain outputs and evidence remain under ignored build/studio-user. Read `FINDINGS_REMEDIATION_20261023.md` for exact gate distinctions: F01/F05 provisional GREEN, F02/F04/F07 partial, F03 HOLD, F06 OPEN. Product release remains HOLD.
 
-## Checkpoint ADR002-G4-DISCOVERY — 2026-10-23
+## Checkpoint ADR002-G4-DISCOVERY - 2026-10-23
 
 A new isolated Avatar Toolkit V2 decoder, read-only capabilities/schema
 catalog and local CLI were implemented with RED-first Python tests.
@@ -54,7 +54,7 @@ Synthetic RED-first (including count drift) and Windows model E2E GREEN.
 Release gate HOLD and all pending security finding states unchanged.
 See ADR002_LOCAL_ONLY_G4_READBACK_20261023.md.
 
-## Native G4 model-generation fence — 2026-10-23
+## Native G4 model-generation fence - 2026-10-23
 
 A Windows-CNG-generated opaque generation is allocated for each
 successful Native model load. The new read-only STUDIO_EPOCH and
@@ -134,3 +134,18 @@ which the new guard deliberately blocks; the fixture was updated
 to verify strict handoff rather than weakening the guard.
 Crash-after-mutation UNKNOWN_OUTCOME remains OPEN. F02 PARTIAL,
 product RELEASE HOLD. See F02_ACK_OWNERSHIP_AND_DEFERRED_PUBLISH_20261023.md.
+## 2026-10-23 F02 local UNKNOWN_OUTCOME quarantine
+
+Followed the Computer Bridge Host workspace-backup/SHA API and the
+Codex RED-first, security and delivery gates. A synthetic apply-before-
+ACK fixture reproduced the absent durable intent marker on exact
+baseline 86f351efcb48520ff2b559ffa5e487febabdf7f4 (three RED,
+one healthy ACK control PASS). The local Python AgentBridge now fsyncs
+uncertain_outcome before publishing a request. Timeout preserves it;
+future cooperating writers reject new work until recovery inspection.
+
+Post-fix: four synthetic tests PASS; five Windows process-kill checks
+PASS; Agent API, V2, native grammar, real model readback, restart,
+writer race and rig durability PASS. Client crash is physical Windows
+but mutation was a synthetic sentinel, not Native XPBD. F02 PARTIAL,
+release HOLD. See F02_UNKNOWN_OUTCOME_LOCAL_INTENT_20261023.md.

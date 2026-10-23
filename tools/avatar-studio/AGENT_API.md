@@ -160,7 +160,7 @@ session, with pending findings and separate temporary IPC. This
 implementation does not modify the auditor marker or IPC and does
 not claim independent auditor approval.
 
-## Cross-drawable constraints and radial weight brush — experimental V4
+## Cross-drawable constraints and radial weight brush - experimental V4
 
 Native Rig Editor has three panels: Basic, Hierarchy and Cross.
 Hierarchy lets a user pick a vertex, select Brush radius and Target
@@ -318,7 +318,7 @@ The default CLI stays discovery-only without an explicitly supplied
 trusted-local bridge and private read opt-in. G4 and RELEASE remain
 partial/HOLD.
 
-## F02 — ACK owner fence and retry (2026-10-23)
+## F02 - ACK owner fence and retry (2026-10-23)
 
 Native Studio retains a completed response file across temporary
 Win32 replacement denial and attempts publication on later frames.
@@ -327,3 +327,17 @@ The command is never re-applied to retry publishing an ACK.
 This guards ordinary local-client ownership ordering; it does NOT
 provide authentication or crash-durable exactly-once semantics.
 See F02_ACK_OWNERSHIP_AND_DEFERRED_PUBLISH_20261023.md.
+## F02 client-side uncertain-outcome admission (2026-10-23)
+
+The Python AgentBridge now creates a local uncertain_outcome marker
+with a random request token, flushes and fsyncs it before publishing
+request.txt. A full own-token typed ACK permits cleanup; on timeout
+or incomplete ACK the marker is kept and subsequent cooperating
+calls fail closed rather than silently retry a potentially applied
+mutation. A stale orphan response.tmp also blocks submission.
+
+Do not delete this marker or repeat non-idempotent write operations
+without independent Native state reconciliation. It is not a Native
+commit journal and does not protect IPC files against processes
+running with the same Windows identity. Native accepted frames and
+editor revisions still have separate gates; Studio release HOLD.
