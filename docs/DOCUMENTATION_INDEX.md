@@ -1,6 +1,12 @@
 # Mục lục và phân loại tài liệu
 
-Checkpoint mới nhất **23-10-2026**: **171 tệp** (completed50, reference86,
+Checkpoint #42 **23-10-2026**: **173 tệp** (completed51, reference86,
+in-progress32, obsolete4). [Contract bảo mật](in-progress/ALPHA_42_SECURITY_QUALIFICATION.md)
+và [quan sát Windows local](completed/audits/ALPHA_42_WINDOWS_SECURITY_QUALIFICATION.md)
+ghi8 case public ABI đã chạy; toàn bộ87 case/platform/sanitizer và G07/G08 vẫn
+HOLD. Nhánh nối tiếp PR79 chưa merge; GitHub Actions tạm bỏ qua theo chủ repo.
+
+Checkpoint #41 trước đó **23-10-2026**: **171 tệp** (completed50, reference86,
 in-progress31, obsolete4). #39 đã tích hợp vào alpha006f366 qua PR76.
 #41 đang triển khai: [contract](in-progress/ALPHA_41_ASSET_BUILD_QUALIFICATION.md)
 và [kiểm chứng Windows](completed/audits/ALPHA_41_WINDOWS_ASSET_QUALIFICATION.md).

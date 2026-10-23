@@ -9,8 +9,8 @@
   "classification_is_gate_approval": false,
   "counts": {
     "reference": 86,
-    "completed": 50,
-    "in_progress": 31,
+    "completed": 51,
+    "in_progress": 32,
     "obsolete": 4
   },
   "baseline_counts": {
@@ -21,7 +21,7 @@
   },
   "baseline_documents_reviewed": 122,
   "navigation_artifacts_added": 3,
-  "total_documents": 171,
+  "total_documents": 173,
   "validation_scope": {
     "original_relative_markdown_links_broken": 0,
     "raw_log_hash_pairs_checked": 22,
@@ -125,7 +125,7 @@
       "reason": "Mục lục/phân loại và review notes được tạo trong lần rà soát này.",
       "lifecycle": "navigation",
       "related_paths": [],
-      "reviewed_sha256": "a4cbe33cd915393b5cbe985abdbece4742321f113143773d9ceb57b96f053acb",
+      "reviewed_sha256": "95f31d631c429471e3363af17cf00f2f5205359f3fdb98113cb9fbcc2e7f5d9e",
       "hash_note": "Generated navigation artifacts omit self/cross hashes to avoid cyclic provenance.",
       "document_kind": "markdown",
       "legacy_path": "docs/DOCUMENTATION_INDEX.md"
@@ -1751,7 +1751,7 @@
       "related_paths": [],
       "encoding": "utf-8",
       "document_kind": "markdown",
-      "reviewed_sha256": "1f9ff9bc7ef2eac0c0cb611cb7411e414a215bc71315a41e6170a0914288f1fe"
+      "reviewed_sha256": "4198dfb401a4bd2b3d3b8daaeb87ddd164f9618ffb501ae45b1b9db5a6bd4bcd"
     },
     {
       "path": "docs/completed/audits/ALPHA_INTEGRATION_AND_ARCHITECTURE_AUDIT_20261019.md",
@@ -2032,6 +2032,26 @@
       "encoding": "utf-8",
       "document_kind": "markdown",
       "reviewed_sha256": "ef52f79eb6486c54fbcc4a7765e56c40c8ac2a4fadd2033c8504ed10afee0489"
+    },
+    {
+      "path": "docs/in-progress/ALPHA_42_SECURITY_QUALIFICATION.md",
+      "category": "in_progress",
+      "lifecycle": "in_progress",
+      "reason": "Active87-case production security contract; bounded8 public CPU local observations, full platform/sanitizer qualification HOLD.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "7bb1e4705c1a2933cabd330312c04a5d7b3ebf4be0f77d497b4c74be2a092995"
+    },
+    {
+      "path": "docs/completed/audits/ALPHA_42_WINDOWS_SECURITY_QUALIFICATION.md",
+      "category": "completed",
+      "lifecycle": "completed",
+      "reason": "Bounded Windows public-security experiment; eight Release/Debug cases, independent review and partial evidence, not G07/G08 closure.",
+      "related_paths": [],
+      "encoding": "utf-8",
+      "document_kind": "markdown",
+      "reviewed_sha256": "f6052460e647c8ef3591cf7938e7bd2b2d1d07f28fac4d807152fb7e14b54d47"
     }
   ],
   "layout": "Four category folders; index/catalog/path map at docs root; README at repository root",
@@ -2042,6 +2062,6 @@
     "new_documents": 4,
     "classification_is_gate_approval": false
   },
-  "latest_checkpoint": "Alpha39 integrated PR76/alpha006f366; Alpha41 Windows slice qualified; G01/G02 HOLD for Linux public activation and nonneutral pose proof.",
+  "latest_checkpoint": "Alpha42 partial Windows public security observations;8 local Release/Debug PASS,79 NOT_RUN, G07/G08 and required platform/sanitizer qualification HOLD; stacked on unmerged PR79; Actions temporarily excluded.",
   "date": "2026-10-23"
 }

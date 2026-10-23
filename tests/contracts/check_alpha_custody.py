@@ -31,6 +31,16 @@ HELD_PATHS = (
 
 # Reviewed issue scopes only. This is not an alpha/* wildcard or approval source.
 PR_SCOPES = {
+    "dev/alpha-42-public-security-qualification": (
+        "d75fd268cea9880a5224403e69c010357fbb3580",
+        frozenset((
+            "CMakeLists.txt", "scripts/verify_public_security_cases.py",
+            "tests/security/public_security_cases.cpp", "tests/contracts/test_alpha42_security.py",
+            "tests/contracts/check_alpha_custody.py",
+            "docs/in-progress/ALPHA_42_SECURITY_QUALIFICATION.md",
+            "docs/completed/audits/ALPHA_42_WINDOWS_SECURITY_QUALIFICATION.md",
+            "docs/in-progress/ALPHA_LINEAR_BACKLOG.md", "docs/DOCUMENTATION_CATALOG.json",
+            "docs/DOCUMENTATION_INDEX.md"))),
     "dev/alpha-41-asset-build-qualification": (
         "006f36689d1c432659925ea2f9abe865a7825831",
         frozenset((
