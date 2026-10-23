@@ -201,3 +201,9 @@ coordinates are exported by these commands. Computer Bridge still
 uses inherited Windows user permissions and the local file IPC is
 not an independently authenticated security boundary. The separate
 Beta Auditor session remains read-only; its findings are pending.
+
+## 2026-10-23 remediation evidence gate
+
+Only `safe_case` / `safe_json` from `scripts/studio_public_report.py` may encode a public-safe categorical Studio test result for this workflow. Unknown keys, raw receipts, per-model numeric measurements, paths and images fail validation. This is an opt-in reporter primitive; until every artifact promotion path enforces it, finding F04 remains PARTIAL.
+
+Native Agent IPC now uses bounded wire input and strict trailing-token checks. Python cooperating writers use a cross-process Windows file lock; the lock file is not an ownership marker and remains on disk after release. An orphaned request must be quarantined and examined with the Native session stopped before manual cleanup. This is not an OS access-control sandbox or a proven exactly-once queue; finding F02 remains PARTIAL.

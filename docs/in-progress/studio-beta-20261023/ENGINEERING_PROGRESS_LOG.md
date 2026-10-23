@@ -23,3 +23,10 @@
 **Work remaining before implementation:** Owner design review, P1 strict native parser RED-first remediation authorization, IPC lifecycle design and test, evidence privacy gate, atomic rig-save design, then synthetic skinning spec and tests.
 
 **Safety/custody:** No model/texture/screenshot/raw native log has been added to these documents. Auditor files and IPC remain untouched; no GitHub write/push, history rewrite, deployment or merge undertaken as part of documentation.
+## Checkpoint STUDIO-BETA-REMED-001 — 2026-10-23
+
+Observed scope: F01 exact Native wire grammar, F02 cooperative OS writer-lock admission, F04 privacy-safe verdict reporter, F05 durable temp-and-replace rig save, and F07 regression extensions. F03 local Git-object custody is preserved without garbage collection or history rewriting. F06 extraction/optimization remains pending.
+
+RED-first: 8 invalid native suffix cases reproduced on the Windows Host and a synthetic interrupted rig save failed against old source. GREEN: native syntax 48-case matrix, concurrent callers, abrupt writer termination, rig fault injection, API/rig/XPBD/local-model E2E and strict public-report schema. No new independent auditor sign-off is claimed.
+
+Detailed local-only stdout, toolchain outputs and evidence remain under ignored build/studio-user. Read `FINDINGS_REMEDIATION_20261023.md` for exact gate distinctions: F01/F05 provisional GREEN, F02/F04/F07 partial, F03 HOLD, F06 OPEN. Product release remains HOLD.
