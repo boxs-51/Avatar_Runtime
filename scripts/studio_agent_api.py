@@ -1,4 +1,4 @@
-﻿"""Local-only agent command API for Native Studio. No network or model export."""
+"""Local-only agent command API for Native Studio. No network or model export."""
 from __future__ import annotations
 import math
 import os
@@ -36,6 +36,9 @@ def validate_command(cmd:dict)->str:
         "rig.beam":{"op","a","b","enabled"},
         "rig.parent":{"op","parent","child","stiffness","enabled"},
         "rig.parent.inspect":{"op","child"},
+        "rig.cross":{"op","target","parent","child","stiffness","enabled"},
+        "rig.cross.inspect":{"op"},
+        "rig.brush":{"op","radius","weight"},
         "rig.weight":{"op","vertex","weight"},
         "rig.weight.inspect":{"op","vertex"},
         "layer.component.relation":{"op","first","second"},
@@ -144,6 +147,13 @@ def validate_command(cmd:dict)->str:
         a,b=integer("a"),integer("b")
         if a==b or type(cmd["enabled"]) is not bool:raise ValueError("invalid beam")
         return f"RIG_BEAM {a} {b} {int(cmd['enabled'])}"
+    if op=="rig.cross.inspect":return "RIG_CROSS_INSPECT"
+    if op=="rig.cross":
+        parent,child,target=integer("parent"),integer("child"),integer("target")
+        if type(cmd["enabled"]) is not bool:raise ValueError("cross enabled bool")
+        return f"RIG_CROSS {target} {parent} {child} {finite('stiffness',0,1)} {int(cmd['enabled'])}"
+    if op=="rig.brush":
+        return "RIG_BRUSH "+finite("radius",.00001,1000)+" "+finite("weight",0,1)
     if op=="rig.parent.inspect":
         return f"RIG_PARENT_INSPECT {integer('child')}"
     if op=="rig.parent":

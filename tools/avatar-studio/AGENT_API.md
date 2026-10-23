@@ -159,3 +159,45 @@ The Beta Auditor session marker describes a different review-only
 session, with pending findings and separate temporary IPC. This
 implementation does not modify the auditor marker or IPC and does
 not claim independent auditor approval.
+
+## Cross-drawable constraints and radial weight brush — experimental V4
+
+Native Rig Editor has three panels: Basic, Hierarchy and Cross.
+Hierarchy lets a user pick a vertex, select Brush radius and Target
+weight, then paint a radial region with smoothstep falloff. The source
+geometry is never edited. Painting affects only the editable rig and
+requires a separate Apply rig command for XPBD. Invalid input or a full
+256-entry sparse weight table leaves the previous rig unchanged.
+
+The Cross panel selects a second drawable and a child vertex, and
+offers an explicit Attach to selected parent action. Geometric
+proximity, layer names or rendering order do not authorize automatic
+attachment. XPBD currently supports at most TWO drawables with at most
+2048 vertices combined. Up to 16 links can target ONE other drawable
+in the current source rig; a different target is rejected. Links are
+distance constraints, not skeletal transform parenting.
+
+Agent API additions:
+- rig.cross: target drawable, parent source vertex, child target
+  vertex, stiffness 0..1, enabled boolean.
+- rig.cross.inspect: returns numeric link count and target.
+- rig.brush: radius >0 and <=1000 model-coordinate units, weight 0..1;
+  centered on the selected rig.vertex.
+- rig.inspect: now includes cross-link count.
+
+Local STUDIO_RIG_4 presets save cross constraints, parent links
+and sparse weights. Readers still accept V1, V2 and V3. A corrupted
+or conflicting link file is rejected without mutating the rig.
+Target vertex counts are checked against the actual model on apply.
+Sparse RigBank retains edited cross links across drawable navigation.
+
+Regression:
+  py scripts/test_studio_cross_brush_live.py
+  build/avatar-studio/Release/studio_rig_tests.exe
+  build/avatar-studio/Release/studio_xpbd_parameter_tests.exe
+
+No private models, textures, names, screenshots or raw vertex
+coordinates are exported by these commands. Computer Bridge still
+uses inherited Windows user permissions and the local file IPC is
+not an independently authenticated security boundary. The separate
+Beta Auditor session remains read-only; its findings are pending.

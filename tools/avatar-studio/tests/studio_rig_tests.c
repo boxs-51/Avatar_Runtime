@@ -91,6 +91,54 @@ int main(void){
   assert(studio_rig_bank_select(&browsing,&visitor,i,4000,12));
  assert(browsing.count==0);
  puts("RIG_NAVIGATION_PASS empty_rigs_not_cached=130");
+ StudioRig cross={0},cross_saved={0};
+ assert(studio_rig_init(&cross,7,9000,10));
+ assert(studio_rig_cross(&cross,0,9,2,8,.85f,1));
+ assert(!studio_rig_cross(&cross,0,7,2,8,.7f,1)); /* self drawable */
+ assert(!studio_rig_cross(&cross,0,9,2,8,1.5f,1));
+ assert(!studio_rig_cross(&cross,3,9,2,8,.85f,1)); /* second parent */
+ assert(!studio_rig_cross(&cross,0,10,2,8,.85f,1)); /* target count */
+ assert(studio_rig_cross(&cross,1,9,3,8,.75f,1));
+ assert(cross.cross_count==2);
+ assert(studio_rig_save(&cross,"build/studio-user/rig-cross-v4-test.txt"));
+ assert(studio_rig_load(&cross_saved,"build/studio-user/rig-cross-v4-test.txt",9000,10));
+ assert(cross_saved.cross_count==2&&cross_saved.cross_links[1].child==3);
+ assert(studio_rig_cross(&cross,0,9,2,8,.85f,0)&&cross.cross_count==1);
+ const StudioRigPoint points[]={{0,0},{1,0},{2,0},{3,0}};
+ StudioRig brush={0};assert(studio_rig_init(&brush,0,1234,4));
+ int touched=0;
+ assert(studio_rig_brush(&brush,points,4,0,2.f,0.f,&touched)&&touched==3);
+ assert(studio_rig_weight_get(&brush,0)==0.f);
+ assert(studio_rig_weight_get(&brush,1)>0.f&&studio_rig_weight_get(&brush,1)<1.f);
+ assert(studio_rig_weight_get(&brush,2)==1.f);
+ StudioRig stable=brush;
+ assert(!studio_rig_brush(&brush,points,4,0,-1.f,.5f,&touched));
+ assert(!studio_rig_brush(&brush,points,4,0,2.f,1.2f,&touched));
+ assert(brush.weight_count==stable.weight_count);
+ StudioRigBank edited_cross_bank={0};
+ StudioRig switching={0};
+ assert(studio_rig_bank_select(&edited_cross_bank,&switching,0,9900,10));
+ assert(studio_rig_cross(&switching,1,1,2,10,.9f,1));
+ assert(studio_rig_bank_select(&edited_cross_bank,&switching,1,9900,10));
+ assert(studio_rig_bank_select(&edited_cross_bank,&switching,0,9900,10));
+ assert(switching.cross_count==1&&switching.cross_links[0].drawable==1);
+ puts("CROSS_BANK_RETENTION_PASS cross_link_persisted=1");
+ FILE *v3=fopen("build/studio-user/rig-valid-v3.txt","w");
+ assert(v3!=NULL);
+ assert(fprintf(v3,"STUDIO_RIG_3 9000 7 10 0 0 0 1 1\nP 0 2 0.9\nW 3 0.25\n")>0);
+ assert(fclose(v3)==0);
+ StudioRig old3={0};
+ assert(studio_rig_load(&old3,"build/studio-user/rig-valid-v3.txt",9000,10));
+ assert(old3.parent_count==1&&old3.weight_count==1&&old3.cross_count==0);
+ FILE *bad4=fopen("build/studio-user/rig-bad-v4.txt","w");
+ assert(bad4!=NULL);
+ assert(fprintf(bad4,"STUDIO_RIG_4 9000 7 10 0 0 0 0 0 2\nC 0 1 1 0.8\nC 0 2 1 0.8\n")>0);
+ assert(fclose(bad4)==0);
+ StudioRig keep=cross_saved;
+ assert(!studio_rig_load(&cross_saved,"build/studio-user/rig-bad-v4.txt",9000,10));
+ assert(cross_saved.cross_count==keep.cross_count);
+ puts("RIG_V4_NEGATIVE_PASS old_v3=read conflicting_targets=reject");
+ puts("CROSS_BRUSH_TEST_PASS cross_v4=1 radial_weight=1 rejection=atomic");
  puts("RIG_EDITOR_TEST_PASS anchors=2 beams=1 duplicate=guard signature=guard undo=toggle");
  return 0;
 }

@@ -119,6 +119,37 @@ static void interaction_force_oracle(){
  if(!(peak>.001))throw 115;  // distinct from baseline
  if(!(std::abs(b-a)<peak))throw 116;  // settles after release
 }
+static void cross_drawable_joint_oracle(){
+ Scene pose=mesh();
+ Mesh other{1,{{2,0},{3,0},{2,1},{3,1}},{{0,0},{1,0},{0,1},{1,1}},
+            {{0,1,2},{1,3,2}}};
+ pose.draws.push_back(other);
+ xp::Options base;
+ base.gravity_y=0;base.wind_x=0;base.damping=.99;base.edge_compliance=.02;
+ base.pose_compliance=.08;base.source_motion_transfer=0;
+ base.substeps=4;base.dynamic_parts={{0,0,1}};
+ auto linked=base;
+ linked.joints.push_back({{0,3},{1,1},0.});
+ xp::Session<Scene> free_solver,linked_solver;
+ if(free_solver.bind(pose,base,810)!=xp::Status::ok||
+    linked_solver.bind(pose,linked,811)!=xp::Status::ok)throw 240;
+ double free_gap=0,constrained_gap=0;
+ const double rest=std::sqrt(5.);
+ for(int k=0;k<24;++k){
+  xp::Session<Scene>::Candidate f,l;
+  if(free_solver.prepare(pose,810,f,220,0)!=xp::Status::ok||
+     linked_solver.prepare(pose,811,l,220,0)!=xp::Status::ok)throw 241;
+  auto gap=[&](const Scene &s){
+   const auto &a=s.draws[0].vertices[3],&b=s.draws[1].vertices[1];
+   return std::abs(std::hypot(double(a.x-b.x),double(a.y-b.y))-rest);
+  };
+  free_gap=gap(f.scene);constrained_gap=gap(l.scene);
+  if(free_solver.accept(std::move(f),810)!=xp::Status::ok||
+     linked_solver.accept(std::move(l),811)!=xp::Status::ok)throw 242;
+ }
+ if(!(free_gap>.001&&constrained_gap<free_gap*.5))throw 243;
+ std::cout<<"CROSS_DRAWABLE_SOLVER_PASS ratio="<<constrained_gap/free_gap<<"\n";
+}
 static void influence_parent_solver_oracle(){
  auto pose=mesh();xp::Options o;
  o.gravity_y=0;o.wind_x=0;o.damping=.995;o.edge_compliance=.02;
@@ -244,6 +275,7 @@ int main(){
   }
   interaction_force_oracle();
   influence_parent_solver_oracle();
+  cross_drawable_joint_oracle();
   display_smoothing_oracle();
   inertia_oracle();
   std::cout<<"XPBD_PARAMETER_MATRIX_PASS idle=1 gravity=1 damping=1 timestep=1 iterations=1 invalid=3 pin=1 stale=1\n";

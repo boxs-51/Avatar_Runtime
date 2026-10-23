@@ -28,6 +28,11 @@ class AgentApiContract(unittest.TestCase):
         self.assertEqual(validate_command({"op": "action.trigger", "kind": "pull", "strength": .6}), "ACTION pull 0.6")
         for invalid in (
             {"op":"unknown"},
+            {"op":"rig.cross","target":1,"parent":0,"child":2,"stiffness":.5,"enabled":1},
+            {"op":"rig.cross","target":1,"parent":0,"child":2,"stiffness":1.2,"enabled":True},
+            {"op":"rig.brush","radius":0,"weight":.5},
+            {"op":"rig.brush","radius":.5,"weight":float("nan")},
+            {"op":"rig.brush","radius":float("inf"),"weight":.5},
             {"op":"layer.component.adopt","component":-1},
             {"op":"layer.component.inspect","component":2048},
             {"op":"studio.play","enabled":1},
@@ -55,6 +60,10 @@ class AgentApiContract(unittest.TestCase):
             ({"op":"rig.weight","vertex":3,"weight":.25},"RIG_WEIGHT 3 0.25"),
             ({"op":"rig.weight.inspect","vertex":3},"RIG_WEIGHT_INSPECT 3"),
             ({"op":"rig.parent.inspect","child":2},"RIG_PARENT_INSPECT 2"),
+            ({"op":"rig.cross","target":1,"parent":0,"child":2,"stiffness":0.8,"enabled":True},
+             "RIG_CROSS 1 0 2 0.8 1"),
+            ({"op":"rig.cross.inspect"},"RIG_CROSS_INSPECT"),
+            ({"op":"rig.brush","radius":1.25,"weight":0.4},"RIG_BRUSH 1.25 0.4"),
             ({"op":"layer.topology.scan"},"LAYER_TOPOLOGY_SCAN"),
             ({"op":"layer.component.inspect","component":0},"LAYER_COMPONENT_INSPECT 0"),
             ({"op":"layer.component.adopt","component":0},"LAYER_COMPONENT_ADOPT 0"),

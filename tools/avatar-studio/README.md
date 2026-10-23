@@ -291,7 +291,7 @@ labels.
 confidence >=80, and changes the editable rig only; **Apply rig to XPBD**
 remains a separate deliberate action. Users can explicitly confirm a
 drawable's role as Unknown, Hair, Skirt or Strap using the rig controls.
-That role is stored with the local rig in STUDIO_RIG_3 format, with
+That role is stored with the local rig in STUDIO_RIG_4 format, with
 backward-compatible read of STUDIO_RIG_1. A per-drawable rig cache keeps
 the manual label while switching layers.
 

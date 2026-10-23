@@ -79,6 +79,18 @@ extern "C" void *studio_xpbd_bind_rig(csmModel *model,StudioXpbdOptions opt,cons
    if(!std::isfinite(weight.weight)||weight.weight<0||weight.weight>1)return nullptr;
    o.influences.push_back({{(uint32_t)rig->drawable,(uint32_t)weight.vertex},weight.weight});
   }
+  if(rig->cross_count>0){
+   if(opt.second<0||rig->drawable!=opt.first)return nullptr;
+   for(int j=0;j<rig->cross_count;++j){
+    const auto &link=rig->cross_links[j];
+    if(link.drawable!=opt.second||link.parent<0||link.parent>=rig->vertex_count||
+       link.child<0||!std::isfinite(link.stiffness)||
+       link.stiffness<0||link.stiffness>1)return nullptr;
+    o.joints.push_back({{(uint32_t)rig->drawable,(uint32_t)link.parent},
+       {(uint32_t)link.drawable,(uint32_t)link.child},
+       (1.0-double(link.stiffness))*.0001});
+   }
+  }
  }
  if(r->solver.bind(scene,o,r->identity)!=xp::Status::ok)return nullptr;
  for(const auto &part:scene.draws)for(size_t j=0;j<part.vertices.size();++j){

@@ -1,6 +1,7 @@
 ﻿"""Physical local Agent API test using the real Native Studio; no data leaves Host."""
 from __future__ import annotations
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -17,7 +18,8 @@ def main()->int:
     if not model or not model.is_file():raise RuntimeError("Local model fixture absent")
     base=ROOT/"build/studio-user"/("agent-api-"+datetime.now().strftime("%Y%m%d-%H%M%S-%f"))
     (base/"api").mkdir(parents=True)
-    binary=ROOT/"build/avatar-studio/Release/avatar_studio.exe"
+    binary=Path(os.environ.get("AVATAR_STUDIO_E2E_EXE",
+        str(ROOT/"build/avatar-studio/Release/avatar_studio.exe")))
     with (base/"native.log").open("wb") as log:
         process=subprocess.Popen([str(binary),"--model",str(model),"--frames","1300",
             "--evidence",str(base)],cwd=ROOT,stdout=log,stderr=subprocess.STDOUT)
@@ -94,6 +96,8 @@ def main()->int:
                     "STUDIO_PLAY 2","STUDIO_STATUS extra",
                     "RIG_PARENT 2 2 .5 1","RIG_PARENT 0 2 nan 1",
                     "RIG_WEIGHT 3 nan","RIG_WEIGHT -1 .5",
+                    "RIG_CROSS 0 1 1 .5 1","RIG_CROSS 5000 1 1 .5 1",
+                    "RIG_BRUSH nan .5","RIG_BRUSH 1 -1",
                     "UNKNOWN_EXEC powershell"]
             for index,wire in enumerate(denied):
                 token=f"{index+1:024x}"
