@@ -59,3 +59,37 @@ target_compile_definitions(studio_rig_tests PRIVATE STUDIO_RIG_TEST_FAULT_INJECT
 # Pure C deterministic layer analysis: synthetic mesh only.
 add_executable(studio_layer_analysis_tests tests/studio_layer_analysis_tests.c studio_layer_analysis.c)
 target_compile_features(studio_layer_analysis_tests PRIVATE c_std_11)
+
+# G5 T1 Native in-memory transaction RED-first; no Studio ingress or model data.
+add_executable(studio_g5_txn_tests tests/studio_g5_txn_tests.c studio_g5_txn.c studio_rig.c)
+target_compile_features(studio_g5_txn_tests PRIVATE c_std_11)
+
+# Additional fault, ABA and capacity oracles; synthetic input only.
+add_executable(studio_g5_txn_adversarial tests/studio_g5_txn_adversarial.c studio_g5_txn.c studio_rig.c)
+target_compile_features(studio_g5_txn_adversarial PRIVATE c_std_11)
+
+# Exact typed G5 draft edit operations; no public editor writer enabled.
+add_executable(studio_g5_txn_edit_ops tests/studio_g5_txn_edit_ops.c studio_g5_txn.c studio_rig.c)
+target_compile_features(studio_g5_txn_edit_ops PRIVATE c_std_11)
+
+# Local-only G5 synthetic Native tests; no model fixtures or GUI required.
+enable_testing()
+add_test(NAME g5_txn_core COMMAND studio_g5_txn_tests)
+add_test(NAME g5_txn_adversarial COMMAND studio_g5_txn_adversarial)
+add_test(NAME g5_txn_edit_ops COMMAND studio_g5_txn_edit_ops)
+
+if(MSVC)
+  foreach(target IN ITEMS studio_g5_txn_tests studio_g5_txn_adversarial studio_g5_txn_edit_ops)
+    target_compile_options(${target} PRIVATE /W4)
+  endforeach()
+endif()
+
+# Experimental G5 unified owner routing and recovery semantics, test only.
+add_executable(studio_g5_bus_recovery_tests tests/studio_g5_bus_recovery_tests.c studio_g5_bus.c studio_g5_txn.c studio_rig.c)
+target_compile_features(studio_g5_bus_recovery_tests PRIVATE c_std_11)
+add_test(NAME g5_bus_recovery COMMAND studio_g5_bus_recovery_tests)
+
+# Fixed read-only recovery message decoder, not connected to Studio IPC.
+add_executable(studio_g5_recovery_wire_tests tests/studio_g5_recovery_wire_tests.c studio_g5_recovery_wire.c studio_g5_bus.c studio_g5_txn.c studio_rig.c)
+target_compile_features(studio_g5_recovery_wire_tests PRIVATE c_std_11)
+add_test(NAME g5_recovery_wire COMMAND studio_g5_recovery_wire_tests)
