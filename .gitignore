@@ -3,3 +3,18 @@ __pycache__/
 *.py[cod]
 .venv/
 /local-assets/
+# raylib's legacy F12 diagnostic capture can contain private model pixels.
+/screenshot*.png
+
+# Local/private Cubism model inputs must not be committed accidentally.
+# Deliberate public fixtures require a reviewed explicit force-add.
+*.moc3
+*.model3.json
+*.physics3.json
+*.exp3.json
+*.motion3.json
+*.pose3.json
+*.userdata3.json
+/private-models/
+/private-assets/
+/captures-private/

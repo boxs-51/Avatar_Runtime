@@ -1,0 +1,219 @@
+# VER-001 - RED-first test and experiment matrix
+
+- **Version/date:** 0.1 / 2026-10-23
+- **Status:** PLAN plus auditor findings; **no new test execution**
+- **Source:** SYS-001, ADR-001, Beta QSA audit
+- **Release:** HOLD while F01 is open
+
+## Parser, IPC and storage
+
+| ID | Synthetic/physical scenario | PASS oracle | Evidence |
+|---|---|---|---|
+| IPC-P01 | Valid command with alphabetic suffix | ERR, no state mutation | **RED** - auditor Windows physical |
+| IPC-P02 | Extra numeric token, trailing whitespace, truncated/oversized command | Exact grammar, bounded EOF | PLANNED full opcode matrix |
+| IPC-P03 | NaN/Inf, negative/out-of-range, overflow | ERR, zero mutation | PARTIAL historical tests |
+| IPC-Q01 | Two writers race for same request | Exactly one admitted owner | **RED** - auditor synthetic two-caller |
+| IPC-Q02 | Crash after claim, stale reply, restart | No loss/false ACK; bounded cleanup | PLANNED |
+| IPC-Q03 | Windows sharing and concurrent cleanup | Ownership-safe recovery | PLANNED |
+| PRIV-01 | Public-safe reporter fed model path/receipt/image-derived values | Reject/scrub to case ID + PASS/FAIL + class | PLANNED |
+| PRIV-02 | Offline Git-object provenance/distribution check | Preserve custody; no public-exposure guess | OPEN; no prune |
+| RIG-IO-01 | Short write, flush failure, failed atomic rename | Previous-good rig intact | PLANNED |
+| RIG-IO-02 | Crash before/after replace; legacy V1-V4 | Complete load or previous-good; typed invalid rejection | PLANNED |
+
+## Proposed bone and skinning gates
+
+| ID | RED-first case | Expected invariant |
+|---|---|---|
+| BONE-01 | Known parent rotation and bind pivot | Deterministic world/local matrix composition |
+| BONE-02 | Cycle, self-parent, missing parent, duplicate ID | No graph mutation |
+| SKIN-01 | One-bone identity and known two-bone blend | Closed-form LBS numerical parity |
+| SKIN-02 | Nonfinite/negative/duplicate weights or over 4 influences | Strict reject or documented identity policy |
+| FRAME-01 | Replace model during frame solve | Generation fence; no stale publish |
+| FRAME-02 | Animation/skin/XPBD with rejected candidate | One authoritative committed frame |
+| UI-01 | Brush, pose, undo/redo, save/reload | State readback; original geometry immutable |
+| PERF-01 | Controlled synthetic workload, same build | Frame pacing/allocations/CPU evidence before optimization claim |
+
+## Evidence and reporting rules
+
+Distinguish **AUDIT-OBSERVED**, **SOURCE-CONFIRMED**, **EXECUTED** and **PROPOSED**. Historical green API/XPBD tests are limited regressions, not IPC/parser clearance. Every future run needs: case ID, git baseline, OS/compiler/config, fixture classification, expected/actual, mutation oracle, generic error class, private evidence location and rollback outcome. Do not print raw receipts or model-derived metrics in versioned Markdown. Put detailed logs under ignored `build/studio-user/`; no CI/issue upload without privacy authorization.
+
+**STOP:** invalid native command is accepted, request ownership ambiguous, private material in public artifact, or unapproved source/release action.
+## 2026-10-23 implementation verification checkpoint
+
+- `IPC-P01`: initial eight Windows Native grammar RED cases, now 48/48 scoped malformed grammar cases GREEN after native EOF and bounded request changes.
+- `IPC-Q01`: synthetic multi-process exclusive writer admission PASS with OS lock.
+- `IPC-Q02`: killed Python writer frees OS ownership but leaves any unfinished request **quarantined**; complete Native restart and idempotent replay remain NOT_RUN.
+- `PRIV-01`: categorical reporter input validation synthetic PASS; artifact promotion enforcement NOT_RUN.
+- `RIG-IO-01`: injected after-flush save failure preserves previous-good rig, subsequent save/load PASS.
+- `RIG-IO-02`: real crash/power-loss and forced Windows replacement fault NOT_RUN.
+- `BONE/SKIN/FRAME/PERF gates`: proposed only; development of new skeletal skinning remains on HOLD pending security gates.
+
+Source-gated local regression ran successfully, but does not replace independent reviewer re-execution. See `FINDINGS_REMEDIATION_20261023.md` and ignored Host evidence.
+
+## ADR-002 V2 discovery contract - 2026-10-23
+
+V2-RED-01: import/probe of absent module: RED before implementation.
+V2-SCHEMA-01: only capabilities/schema advertised; editing and real model
+access denied: GREEN (synthetic).
+V2-JSON-01: exact field set, version, UTF-8, duplicate key, finite
+numbers, 64KiB input budget and request identifiers: GREEN (synthetic).
+V2-FUZZ-01: 256 deterministic mutated JSON payloads: GREEN as a bounded
+test, not a complete fuzzer certification.
+V2-CLI-01: capabilities/schema and invalid/mutating request rejection:
+GREEN (Windows local CLI).
+IPC-Q04: own truncated ACK falsely successful: RED, then GREEN with
+complete newline/type/receipt validation. Foreign ACK quarantine GREEN.
+
+Not run: V2 Native named-pipe integration, journal, session generation,
+real read snapshots, CAS transactions, GUI, cross-OS, production perf.
+Privacy and release gates remain HOLD.
+
+## G4 Local-only v1 adapter verification, 2026-10-23
+
+G4-LOCAL-01: absent local bridge or private opt-in -> REJECTED (GREEN).
+G4-LOCAL-02: strict typed status and metadata -> GREEN synthetic/live.
+G4-LOCAL-03: max-four parameter and part page -> GREEN synthetic/live.
+G4-LOCAL-04: invalid page, malformed native receipt, timeout -> fail
+closed / TIMEOUT_UNKNOWN (GREEN synthetic).
+G4-LOCAL-05: aggregate counts change while reading a page -> STALE_MODEL
+and no partial result (RED before change, GREEN after).
+G4-LOCAL-06: capabilities/schema advertise added reads only when local
+private adapter is explicitly bound (RED before change, GREEN after).
+
+All results above are development scoped. Same-count model replacement,
+native generation/revision fences, ID lookup, geometry coverage,
+UI/Agent accepted-frame parity, and V5 transaction tests remain NOT RUN.
+
+## G4-EPOCH matrix results, 2026-10-23
+
+- G4-EPOCH-01: missing epoch and unguarded V1 reads: synthetic
+  RED, then native-generation guarded GREEN.
+- G4-EPOCH-02: same-count model replacement during paging:
+  synthetic RED, then STALE_MODEL GREEN.
+- G4-EPOCH-03: absent epoch and stale generation: reject, no fallback.
+- G4-EPOCH-04: caller expected_model_generation compare: RED then GREEN.
+- G4-EPOCH-05: Windows physical Native stale generation: reject;
+  matching generation: read-only receipt PASS.
+- G4-EPOCH-06: rebuilt Studio Release + private local model E2E PASS.
+- G4-EPOCH-07: existing Native grammar/API, V2 contracts, IPC race,
+  rig durability and XPBD regression PASS.
+
+NOT RUN: edit-revision fencing, snapshot across animation frame,
+UI-vs-Agent CAS, interrupted model load, long-run generation churn,
+independent audit, cross-OS port. G4 and RELEASE HOLD.
+
+G4-EPOCH-08: sequential Native Studio restart with the same model,
+old generation rejected by the replacement process and current
+generation accepted. Windows physical PASS. Does not certify lost-ACK
+replay, exactly-once mutation, or an independent audit.
+
+## F02 response file atomicity and grammar quality, 2026-10-23
+
+- F02-RSP-01: Native write destination visible before close: observed
+  in source prior to remediation; now publishes sibling temporary via
+  atomic Windows replacement after checked write/flush/close.
+- F02-RSP-02: synthetically malformed partial ACK: Python V1 client
+  remains fail-closed; Native grammar polling now requires complete
+  typed newline-terminated response.
+- F02-RSP-03: 52 Native grammar malformed cases, four repeated
+  alternate-build runs: GREEN (52/52 each); Release test GREEN.
+- F02-RSP-04: Release Agent E2E, V2 model-generation read,
+  restart and writer race tests: GREEN.
+- F02-RSP-05: restart/crash in ACK-publish window, direct writer
+  collision and non-idempotent UNKNOWN_OUTCOME recovery: NOT RUN.
+
+Historical single red post-commit regression had no preserved case
+details and cannot be definitively attributed. F02 is still PARTIAL
+and release HOLD.
+
+## F02-RSP-06 / F07-HARNESS-01 - Win32 read-sharing race
+
+- RED observed: transient PermissionError in Native grammar
+  harness path.read_text during receipt-file replacement.
+- GREEN synthetic: first-read sharing error, partial OK rejection,
+  foreign-token isolation and completed ACK cleanup.
+- GREEN physical: 14 successive runs x 52 invalid Native grammar
+  cases, zero reported failures after bounded read-only retry.
+- The command is NEVER retried following ambiguous ACK; only
+  reading the existing response is retried. The test timeout and
+  mutation/grammar oracles are unchanged.
+- Missing proof: native ACK-loss/crash state reconciliation and
+  direct same-user writer collisions; F02 and F07 remain PARTIAL.
+
+## G4-ID RED-first verification, 2026-10-23
+
+- G4-ID-01: ID page values absent before implementation => RED;
+  Native generation-guarded ID page values => GREEN synthetic.
+- G4-ID-02: exact param/part lookup absent => RED; direct guarded
+  Native unique-match lookup => GREEN synthetic and physical.
+- G4-ID-03: unknown ID and duplicate matching IDs => REJECTED.
+- G4-ID-04: traversal, whitespace, Unicode, oversized or Boolean
+  ID input => fail before Native IPC, without reflecting payload.
+- G4-ID-05: expected_model_generation stale => STALE_MODEL.
+- G4-ID-06: Release Native + local private model E2E,
+  reverse ID lookup and pagination => PASS; model names not logged.
+- G4-ID-07: 58 malformed Native grammar cases => PASS.
+- G4-ID-08: fixed Windows output log filename => V2 suite PASS.
+
+Pending: non-ASCII IDs, duplicate-ID full-model adversarial
+fixtures, same-count reload under live lookup, editor revision
+CAS and frame acceptance. F02/F07 remain PARTIAL.
+
+## F02-ACK ownership matrix, 2026-10-23
+
+- F02-ACK-01: Win32 sharing-denial causes discarded response after
+  Native command, physical RED before fix.
+- F02-ACK-02: retain completed response.tmp and publish after file
+  becomes replaceable, physical GREEN; no command re-execution.
+- F02-ACK-03: Native B overwrites A when A's response is unconsumed,
+  physical RED before unread-response guard.
+- F02-ACK-04: existing unread reply blocks request B; B only
+  admitted after A is acknowledged/removed: GREEN, 5/5 repeats.
+- F02-ACK-05: Release build, strict grammar, V1/V2, model restart
+  and IPC writer-race tests: PASS in tested matrix.
+
+Remaining NOT_RUN: crash in post-mutation ACK-publish interval,
+durable replay journal, hostile same-user IPC and accepted-frame
+transactional ownership. F02 PARTIAL and RELEASE HOLD.
+## F02-UO / Windows client process crash - 2026-10-23
+
+- F02-UO-01: worker applies synthetic sentinel then crashes before
+  ACK; prior client timeout leaves no quarantine -> BASELINE_RED.
+  Post-fix UNKNOWN_OUTCOME marker persists and blocks replay: PASS.
+- F02-UO-02: unprocessed request times out and future admission
+  must remain blocked -> BASELINE_RED then GREEN.
+- F02-UO-03: preexisting marker in empty queue blocks a new
+  request -> BASELINE_RED then GREEN.
+- F02-UO-04: complete typed ACK clears quarantine; next valid
+  request can proceed -> CONTROL_PASS before and after fix.
+- F02-UO-05: Windows physical child process terminated after
+  synthetic side effect and before ACK; five independent runs PASS
+  after OS lock release.
+- F02-UO-06: Native Studio E2E, restart, IPC race, V2, grammar,
+  public-safe reports and rig test PASS after client change.
+
+Still NOT_RUN: Native XPBD mutation with real crash exactly between
+commit and ACK; hostile same-user alteration, durable power-loss
+ordering and recovery decision/readback. Marker is not exactly-once
+or authentication; F02 PARTIAL, RELEASE HOLD.
+## G4-UTF8 transport verification matrix — 2026-10-23
+
+- G4-UTF8-01: prior ASCII-only implementation rejects Unicode
+  page and exact lookup: observed BASELINE_RED. A source-fixture
+  encoding error was HARNESS_ERROR, separately corrected using
+  Python Unicode escape notation.
+- G4-UTF8-02: 6/6 synthetic Unicode, malformed hex, privacy and
+  byte budget tests: PASS after implementation.
+- G4-UTF8-03: Native Studio RelWithDebInfo and Release builds PASS.
+- G4-UTF8-04: 64/64 Native malformed grammar cases PASS, including
+  6 new bounded-hex negative cases at valid generation.
+- G4-UTF8-05: real local-model readback/lookup, Agent API, IPC
+  race and restart: PASS (no private model identifier logged).
+- G4-UTF8-06: physically load nonprivate MOC3 containing Unicode
+  IDs and verify end-to-end Native UTF-8 byte parity: NOT_RUN,
+  requires a valid synthetic model fixture. Keep UNVERIFIED.
+- G4-UTF8-07: same-user hostile IPC, Native owner crash, power
+  loss, editor-revision CAS and frame-acceptance: DEFERRED/HOLD.
+
+Do not treat unit success or a local Release build as approval to
+publish model data or complete the product release.
