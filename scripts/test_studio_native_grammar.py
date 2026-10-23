@@ -1,4 +1,4 @@
-﻿"""Native parser suffix security oracle. Local-only disposable Studio session."""
+"""Native parser suffix security oracle. Local-only disposable Studio session."""
 import os,sys,time,subprocess,ast
 from pathlib import Path
 from datetime import datetime
@@ -26,8 +26,10 @@ def main():
      path=api/"response.txt"
      if path.exists():
       data=path.read_text(encoding="ascii")
-      if data.startswith(token+" "):
-       path.unlink();return data.split()[1]
+      if data.startswith(token+" ") and data.endswith("\n") and data.count("\n")==1:
+       parts=data[:-1].split(" ",2)
+       if len(parts)==3 and parts[1] in ("OK","ERR") and parts[2]:
+        path.unlink();return parts[1]
      time.sleep(.015)
     return "TIMEOUT"
    cases=[
@@ -56,6 +58,12 @@ def main():
        ("RIG_SELECT 0 "+"X"*800,lambda:True),
        ("RIG_APPLY 1",lambda:True),
        ("STUDIO_STATUS 999",lambda:True),
+   ])
+   cases.extend([
+     ("STUDIO_EPOCH unexpected",lambda:True),
+     ("PARAM_INSPECT_AT 1 0 unexpected",lambda:True),
+     ("PART_INSPECT_AT 1 0 unexpected",lambda:True),
+     ("PARAM_INSPECT_AT notanumber 0",lambda:True),
    ])
    for i,(wire,check) in enumerate(cases,1):
     status=raw(wire,i)

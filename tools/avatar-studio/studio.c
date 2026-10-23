@@ -963,9 +963,20 @@ static void process_agent_request(void){
  if(!ok){int extra=studio_agent_extended(f,op,receipt,sizeof receipt);if(extra>=0)ok=extra;}
 finish_request:
  fclose(f);remove(path);
- snprintf(out,sizeof out,"%s/api/response.txt",s.folder);
- FILE *w=fopen(out,"w");
- if(w){fprintf(w,"%s %s %s\n",token,ok?"OK":"ERR",receipt);fclose(w);}
+ char temp_reply[1200];
+ int nout=snprintf(out,sizeof out,"%s/api/response.txt",s.folder);
+ int ntmp=snprintf(temp_reply,sizeof temp_reply,"%s/api/response.tmp",s.folder);
+ if(nout>0&&nout<(int)sizeof out&&ntmp>0&&ntmp<(int)sizeof temp_reply){
+  FILE *w=fopen(temp_reply,"wb");
+  if(w){
+   int wrote=fprintf(w,"%s %s %s\n",token,ok?"OK":"ERR",receipt);
+   int flushed=fflush(w);
+   int closed=fclose(w);
+   if(wrote>0&&flushed==0&&closed==0){
+    if(!studio_replace_file(temp_reply,out))remove(temp_reply);
+   }else remove(temp_reply);
+  }
+ }
 }
 static void frame(void){
     float dt=bound(GetFrameTime(),.001f,.05f);int w=GetScreenWidth(),h=GetScreenHeight();
