@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+﻿cmake_minimum_required(VERSION 3.22)
 project(AvatarStudio LANGUAGES C CXX)
 if(NOT WIN32)
   message(FATAL_ERROR "Avatar Studio currently uses the Windows desktop file picker")
@@ -54,6 +54,7 @@ target_compile_features(studio_xpbd_parameter_tests PRIVATE cxx_std_20)
 # Pure local rig editor regression, no model / raylib required.
 add_executable(studio_rig_tests tests/studio_rig_tests.c studio_rig.c)
 target_compile_features(studio_rig_tests PRIVATE c_std_11)
+target_compile_definitions(studio_rig_tests PRIVATE STUDIO_RIG_TEST_FAULT_INJECTION=1)
 
 # Pure C deterministic layer analysis: synthetic mesh only.
 add_executable(studio_layer_analysis_tests tests/studio_layer_analysis_tests.c studio_layer_analysis.c)

@@ -139,6 +139,20 @@ int main(void){
  assert(cross_saved.cross_count==keep.cross_count);
  puts("RIG_V4_NEGATIVE_PASS old_v3=read conflicting_targets=reject");
  puts("CROSS_BRUSH_TEST_PASS cross_v4=1 radial_weight=1 rejection=atomic");
+ StudioRig durable={0},original={0};
+ assert(studio_rig_init(&durable,1,7777,8));
+ assert(studio_rig_toggle_anchor(&durable,2));
+ assert(studio_rig_save(&durable,"build/studio-user/rig-durable-test.txt"));
+ assert(_putenv_s("STUDIO_RIG_TEST_FAIL_STAGE","after_flush")==0);
+ assert(studio_rig_toggle_anchor(&durable,3));
+ assert(!studio_rig_save(&durable,"build/studio-user/rig-durable-test.txt"));
+ assert(_putenv_s("STUDIO_RIG_TEST_FAIL_STAGE","")==0);
+ assert(studio_rig_load(&original,"build/studio-user/rig-durable-test.txt",7777,8));
+ assert(original.anchor_count==1&&original.anchors[0]==2);
+ assert(studio_rig_save(&durable,"build/studio-user/rig-durable-test.txt"));
+ assert(studio_rig_load(&original,"build/studio-user/rig-durable-test.txt",7777,8));
+ assert(original.anchor_count==2);
+ puts("RIG_DURABILITY_PASS injected_abort_preserved_old=1 committed_new=1");
  puts("RIG_EDITOR_TEST_PASS anchors=2 beams=1 duplicate=guard signature=guard undo=toggle");
  return 0;
 }

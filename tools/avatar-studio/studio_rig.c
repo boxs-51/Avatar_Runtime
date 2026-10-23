@@ -2,6 +2,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <stdlib.h>
+#ifdef _WIN32
+#include <windows.h>
+#include <io.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#else
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#endif
+
 static int valid(const StudioRig *r,int i){return r&&i>=0&&i<r->vertex_count;}
 int studio_rig_init(StudioRig *r,int d,uint64_t sig,int v){
  if(!r||d<0||!sig||v<1||v>2048)return 0;
@@ -146,7 +158,36 @@ int studio_rig_save(const StudioRig *r,const char *path){
     r->parent_count<0||r->parent_count>STUDIO_RIG_MAX_PARENTS||
     r->weight_count<0||r->weight_count>STUDIO_RIG_MAX_WEIGHTS||
     r->cross_count<0||r->cross_count>STUDIO_RIG_MAX_CROSS)return 0;
- FILE *f=fopen(path,"w");if(!f)return 0;
+ char pending[1600];
+ static unsigned long save_sequence=0;
+#ifdef _WIN32
+ const unsigned long process=(unsigned long)GetCurrentProcessId();
+#else
+ const unsigned long process=(unsigned long)getpid();
+#endif
+ if(snprintf(pending,sizeof pending,"%s.pending.%lu.%lu",
+       path,process,++save_sequence)>=(int)sizeof pending)return 0;
+#ifdef _WIN32
+ int fd=_open(pending,_O_WRONLY|_O_CREAT|_O_EXCL|_O_BINARY,
+              _S_IREAD|_S_IWRITE);
+#else
+ int fd=open(pending,O_WRONLY|O_CREAT|O_EXCL,0600);
+#endif
+ if(fd<0)return 0;
+#ifdef _WIN32
+ FILE *f=_fdopen(fd,"w");
+#else
+ FILE *f=fdopen(fd,"w");
+#endif
+ if(!f){
+#ifdef _WIN32
+  _close(fd);
+#else
+  close(fd);
+#endif
+  remove(pending);return 0;
+ }
+
  int ok=fprintf(f,"STUDIO_RIG_4 %llu %d %d %d %d %d %d %d %d\n",
     (unsigned long long)r->model_signature,r->drawable,r->vertex_count,
     r->anchor_count,r->beam_count,r->role,
@@ -165,7 +206,26 @@ int studio_rig_save(const StudioRig *r,const char *path){
     r->cross_links[i].drawable,r->cross_links[i].child,
     r->cross_links[i].stiffness)>0;
  if(ferror(f))ok=0;
+ if(fflush(f))ok=0;
+#ifdef _WIN32
+ if(ok&&_commit(fd))ok=0;
+#else
+ if(ok&&fsync(fd))ok=0;
+#endif
  if(fclose(f))ok=0;
+#ifdef STUDIO_RIG_TEST_FAULT_INJECTION
+ const char *fail=getenv("STUDIO_RIG_TEST_FAIL_STAGE");
+ if(fail&&!strcmp(fail,"after_flush"))ok=0;
+#endif
+ if(ok){
+#ifdef _WIN32
+  if(!MoveFileExA(pending,path,MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH))
+   ok=0;
+#else
+  if(rename(pending,path))ok=0;
+#endif
+ }
+ if(!ok)remove(pending);
  return ok;
 }
 int studio_rig_load(StudioRig *r,const char *path,uint64_t sig,int vertices){
