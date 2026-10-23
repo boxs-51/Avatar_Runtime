@@ -4,6 +4,7 @@ import json,re,math
 API_VERSION=2
 MAX_REQUEST_BYTES=65536
 SUPPORTED=("avatar.capabilities","avatar.schema")
+LOCAL_READONLY=("studio.local.status","catalog.parameters.page","catalog.parts.page")
 FIELDS=frozenset(("api_version","request_id","session_id",
  "expected_model_generation","expected_edit_revision","operation",
  "arguments","mode"))
@@ -64,28 +65,40 @@ def _schema(op):
          "result_classification":"PUBLIC_SAFE",
          "transport":"offline-discovery-only"}
 
-def _read(req):
+def _read(req,local_enabled=False):
  op=req["operation"]
  if op not in SUPPORTED:raise ToolkitV2Error("UNKNOWN_OPERATION")
  args=req["arguments"]
  if op=="avatar.capabilities":
   if args:raise ToolkitV2Error()
-  return {"supported_operations":list(SUPPORTED),"native_v2_enabled":False,
+  return {"supported_operations":list(SUPPORTED)+(list(LOCAL_READONLY) if local_enabled else []),"local_private_read_enabled":local_enabled,"native_v2_enabled":False,
    "mutating_commands_enabled":False,
    "computer_bridge_avatar_group_registered":False,
    "release_gate":"HOLD","transport":"offline-discovery-only",
    "max_request_bytes":MAX_REQUEST_BYTES}
  if set(args)!={"operation"} or type(args["operation"]) is not str:
   raise ToolkitV2Error()
+ if args["operation"] in LOCAL_READONLY and local_enabled:
+  schema_args={"start":"int 0..2047","limit":"int 1..4"} if args["operation"].endswith(".page") else {}
+  return {"operation":args["operation"],"effect":"read",
+    "arguments":schema_args,"result_classification":"LOCAL_PRIVATE",
+    "transport":"trusted-local-V1-read-adapter",
+    "generation_fence":False}
  if args["operation"] not in SUPPORTED:raise ToolkitV2Error("UNSUPPORTED")
  return _schema(args["operation"])
 
-def execute_request(data:bytes)->str:
+def execute_request(data:bytes,*,local_bridge=None,allow_local_private=False)->str:
  request_id=None
  try:
   req=decode_request(data)
   request_id=req["request_id"]
-  result=_read(req)
+  if req["operation"] in LOCAL_READONLY:
+   if local_bridge is None or allow_local_private is not True:
+    raise ToolkitV2Error("PERMISSION_DENIED")
+   from scripts.avatar_toolkit_v2_local import execute_local
+   result=execute_local(req["operation"],req["arguments"],local_bridge)
+  else:
+   result=_read(req,local_bridge is not None and allow_local_private is True)
   response={"api_version":2,"request_id":request_id,
             "state":"COMPLETED_READ","result":result,"error":None}
  except ToolkitV2Error as exc:
