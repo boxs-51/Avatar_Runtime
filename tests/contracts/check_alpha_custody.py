@@ -31,6 +31,21 @@ HELD_PATHS = (
 
 # Reviewed issue scopes only. This is not an alpha/* wildcard or approval source.
 PR_SCOPES = {
+    "dev/alpha-41-asset-build-qualification": (
+        "006f36689d1c432659925ea2f9abe865a7825831",
+        frozenset((
+            "CMakeLists.txt",
+            "scripts/verify_asset_runtime_qualification.py",
+            "tests/abi/asset_qualification_consumer.c",
+            "tests/rendering/public_asset_upload_probe.cpp",
+            "tests/contracts/test_alpha41_qualification.py",
+            "tests/contracts/check_alpha_custody.py",
+            "docs/in-progress/ALPHA_41_ASSET_BUILD_QUALIFICATION.md",
+            "docs/completed/audits/ALPHA_41_WINDOWS_ASSET_QUALIFICATION.md",
+            "docs/in-progress/ALPHA_LINEAR_BACKLOG.md",
+            "docs/DOCUMENTATION_CATALOG.json",
+            "docs/DOCUMENTATION_INDEX.md",
+        ))),
     "dev/alpha-39-committed-render": (
         "83938df825d8a1618d907fc15d72904fb0d3b39f",
         frozenset((
