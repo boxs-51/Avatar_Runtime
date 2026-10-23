@@ -595,6 +595,9 @@
                   },
                   "applied": {
                     "const": false
+                  },
+                  "accepted_frame_generation": {
+                    "type": "null"
                   }
                 }
               }
@@ -639,6 +642,140 @@
                     "const": true
                   }
                 }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "UNKNOWN_OUTCOME"
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "error": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "const": "TIMEOUT_UNKNOWN"
+                  }
+                },
+                "required": [
+                  "code"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "COMPLETED_READ"
+              },
+              "result": {
+                "type": "object",
+                "required": [
+                  "outcome"
+                ]
+              }
+            },
+            "required": [
+              "state",
+              "result"
+            ]
+          },
+          "then": {
+            "properties": {
+              "result": {
+                "$ref": "#/$defs/statusResult"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "statusResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "original_request_id",
+        "outcome",
+        "document_revision",
+        "applied",
+        "applied_document_revision",
+        "accepted_frame_generation"
+      ],
+      "properties": {
+        "original_request_id": {
+          "$ref": "#/$defs/request/properties/request_id"
+        },
+        "outcome": {
+          "enum": [
+            "PENDING",
+            "COMMITTED",
+            "REJECTED",
+            "ABORTED",
+            "UNKNOWN"
+          ]
+        },
+        "document_revision": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "applied": {
+          "type": "boolean"
+        },
+        "applied_document_revision": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accepted_frame_generation": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "COMMITTED"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "document_revision": {
+                "type": "integer",
+                "minimum": 1
               }
             }
           }
