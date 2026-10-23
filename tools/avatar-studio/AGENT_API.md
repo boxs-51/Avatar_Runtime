@@ -262,3 +262,26 @@ Python in-process use:
 Local readback is NOT an authentication layer against same-user
 processes. Mutating V2 opcodes, Native V2 dispatch and model lifecycle
 are not implemented. G4 and release remain HOLD/PARTIAL.
+
+## Update: Native G4 model-generation fence (2026-10-23)
+
+The earlier Local-only V1 adapter section described best-effort
+count-only paging. That description is superseded for the current
+Native Studio Release and RelWithDebInfo binaries.
+
+Native STUDIO_EPOCH supplies an opaque, locally generated model
+generation. PARAM_INSPECT_AT and PART_INSPECT_AT accept a
+positive generation and index, rejecting mismatched loads on the
+model-owning thread. V2 local read results now report
+generation_available=true, model_generation (LOCAL_PRIVATE),
+and editor_revision_available=false. Bounded pages use guarded
+Native item reads and post-read generation verification.
+
+V2 LOCAL_PRIVATE request envelopes may set expected_model_generation
+to the generation returned by an earlier authorized local read.
+Mismatched generations yield REJECTED/STALE_MODEL. This field
+remains unsupported on public/offline discovery, and it does NOT
+enable expected_edit_revision, mutating commands or session leases.
+A page is model-generation-safe but not an atomic animation-frame
+snapshot; editor-revision CAS and accepted XPBD frame fences
+are still pending. Studio RELEASE HOLD remains in effect.

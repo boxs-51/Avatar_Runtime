@@ -1,4 +1,4 @@
-# Native Studio Beta Ã¢â‚¬â€ architecture and evidence dossier
+# Native Studio Beta ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â architecture and evidence dossier
 
 - **Artifact ID:** STUDIO-BETA-DOSSIER-20261023
 - **Version / date:** 0.1 / 2026-10-23
@@ -17,6 +17,7 @@
 | AUD-001 | `AUDIT_TRIAGE_AND_GATE_LEDGER.md` | Severity-ranked findings and required evidence before further implementation or release |
 | VER-001 | `RED_FIRST_VERIFICATION_MATRIX.md` | Adversarial and functional RED-first test definitions, status and gate ownership |
 | LOG-001 | `EVIDENCE_AND_LOG_POLICY.md` | Privacy-safe report formats, private log retention, naming and recovery procedures |
+| ADR002-EPOCH-G4 | ADR002_G4_NATIVE_GENERATION_FENCE_20261023.md | Native epoch and generation-guarded local read receipts |
 | ADR002-LOCAL-G4 | ADR002_LOCAL_ONLY_G4_READBACK_20261023.md | Updated Local-only scope and bounded V1 read adapter |
 | ADR002-G4 | ADR002_G4_DISCOVERY_IMPLEMENTATION_20261023.md | Implemented offline-only V2 schema/capabilities prototype and remaining gates |
 | REMED-001 | `FINDINGS_REMEDIATION_20261023.md` | Scoped code remediation verdicts, evidence and remaining gates |

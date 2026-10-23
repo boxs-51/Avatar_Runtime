@@ -53,3 +53,19 @@ injected existing V1 bridge. This is NOT a generation-fenced V2 Native API.
 Synthetic RED-first (including count drift) and Windows model E2E GREEN.
 Release gate HOLD and all pending security finding states unchanged.
 See ADR002_LOCAL_ONLY_G4_READBACK_20261023.md.
+
+## Native G4 model-generation fence — 2026-10-23
+
+A Windows-CNG-generated opaque generation is allocated for each
+successful Native model load. The new read-only STUDIO_EPOCH and
+PARAM_INSPECT_AT/PART_INSPECT_AT handlers bind local page reads to the
+specific loaded model. V2 accepts optional expected_model_generation
+for these expressly authorized LOCAL_PRIVATE reads; mismatches return
+STALE_MODEL without publishing data.
+
+Initial generation-fence oracles were RED, then GREEN in unit/synthetic
+and Windows physical E2E. A fresh Studio Release build and physical
+model test were both PASS. This does not add an editor edit revision,
+frame-acceptance fence, native V2 service or V5 mutation. F02 remains
+PARTIAL and G4 remains incomplete. See the new ADR002_G4_NATIVE
+GENERATION_FENCE checkpoint for implementation details and limits.

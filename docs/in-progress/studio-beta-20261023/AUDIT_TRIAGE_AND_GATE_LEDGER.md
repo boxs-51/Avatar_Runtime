@@ -79,3 +79,19 @@ studio.local.status, catalog.parameters.page, catalog.parts.page with
 up to four values per page and count-drift rejection. It cannot detect
 same-count model reload and does not replace the Native generation
 fence or complete feature parity. See ADR002_LOCAL_ONLY_G4_READBACK_20261023.md.
+
+## G4 epoch-fenced readback, development checkpoint (2026-10-23)
+
+Native model generation is a locally generated opaque value which
+changes at each successful model load, independent of model ID/hash.
+Guarded inspect commands reject stale generations on the Native
+owner thread. The local V2 read adapter uses generation before/after
+status and per-item Native guard; optional expected_model_generation
+is supported on authorized LOCAL_PRIVATE reads. Model-swap with
+unchanged parameter counts now has a negative security oracle.
+
+Unit and physical private-model E2E, alternate and Release builds
+were GREEN on tested source. This only closes the limited
+cross-model-readback gap, not the independent F02 race/restart
+security finding: F02 PARTIAL; F01/F05 provisional GREEN;
+F03 HOLD; F04/F07 PARTIAL; F06 OPEN. RELEASE HOLD.

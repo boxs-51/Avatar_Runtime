@@ -83,3 +83,26 @@ private adapter is explicitly bound (RED before change, GREEN after).
 All results above are development scoped. Same-count model replacement,
 native generation/revision fences, ID lookup, geometry coverage,
 UI/Agent accepted-frame parity, and V5 transaction tests remain NOT RUN.
+
+## G4-EPOCH matrix results, 2026-10-23
+
+- G4-EPOCH-01: missing epoch and unguarded V1 reads: synthetic
+  RED, then native-generation guarded GREEN.
+- G4-EPOCH-02: same-count model replacement during paging:
+  synthetic RED, then STALE_MODEL GREEN.
+- G4-EPOCH-03: absent epoch and stale generation: reject, no fallback.
+- G4-EPOCH-04: caller expected_model_generation compare: RED then GREEN.
+- G4-EPOCH-05: Windows physical Native stale generation: reject;
+  matching generation: read-only receipt PASS.
+- G4-EPOCH-06: rebuilt Studio Release + private local model E2E PASS.
+- G4-EPOCH-07: existing Native grammar/API, V2 contracts, IPC race,
+  rig durability and XPBD regression PASS.
+
+NOT RUN: edit-revision fencing, snapshot across animation frame,
+UI-vs-Agent CAS, interrupted model load, long-run generation churn,
+independent audit, cross-OS port. G4 and RELEASE HOLD.
+
+G4-EPOCH-08: sequential Native Studio restart with the same model,
+old generation rejected by the replacement process and current
+generation accepted. Windows physical PASS. Does not certify lost-ACK
+replay, exactly-once mutation, or an independent audit.
