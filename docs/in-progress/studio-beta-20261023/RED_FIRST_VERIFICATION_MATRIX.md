@@ -106,3 +106,22 @@ G4-EPOCH-08: sequential Native Studio restart with the same model,
 old generation rejected by the replacement process and current
 generation accepted. Windows physical PASS. Does not certify lost-ACK
 replay, exactly-once mutation, or an independent audit.
+
+## F02 response file atomicity and grammar quality, 2026-10-23
+
+- F02-RSP-01: Native write destination visible before close: observed
+  in source prior to remediation; now publishes sibling temporary via
+  atomic Windows replacement after checked write/flush/close.
+- F02-RSP-02: synthetically malformed partial ACK: Python V1 client
+  remains fail-closed; Native grammar polling now requires complete
+  typed newline-terminated response.
+- F02-RSP-03: 52 Native grammar malformed cases, four repeated
+  alternate-build runs: GREEN (52/52 each); Release test GREEN.
+- F02-RSP-04: Release Agent E2E, V2 model-generation read,
+  restart and writer race tests: GREEN.
+- F02-RSP-05: restart/crash in ACK-publish window, direct writer
+  collision and non-idempotent UNKNOWN_OUTCOME recovery: NOT RUN.
+
+Historical single red post-commit regression had no preserved case
+details and cannot be definitively attributed. F02 is still PARTIAL
+and release HOLD.

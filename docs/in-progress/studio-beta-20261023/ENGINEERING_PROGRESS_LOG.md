@@ -69,3 +69,20 @@ model test were both PASS. This does not add an editor edit revision,
 frame-acceptance fence, native V2 service or V5 mutation. F02 remains
 PARTIAL and G4 remains incomplete. See the new ADR002_G4_NATIVE
 GENERATION_FENCE checkpoint for implementation details and limits.
+
+## F02 Native response atomic publication, 2026-10-23
+
+After the G4 model-generation work, one post-commit Native grammar
+regression was RED with no complete case detail retained. Direct rerun
+passed, so the transient root cause remains unknown. Review separately
+confirmed that Native Studio wrote directly to the observable
+response.txt file. New implementation first writes and closes a
+sibling temporary response before atomic Windows replacement.
+
+The Native grammar harness now requires a complete, typed reply
+instead of accepting a partially written status. 52 invalid grammar
+cases passed in four repeated alternate-build runs; rebuilt Release
+Studio, grammar, V1 Agent E2E, V2 Native read, two-process restart and
+IPC race passed. This improves F02 but does not close its lost-ACK,
+native crash/restart or untrusted same-user-writer cases.
+See F02_NATIVE_REPLY_ATOMIC_20261023.md.

@@ -95,3 +95,20 @@ were GREEN on tested source. This only closes the limited
 cross-model-readback gap, not the independent F02 race/restart
 security finding: F02 PARTIAL; F01/F05 provisional GREEN;
 F03 HOLD; F04/F07 PARTIAL; F06 OPEN. RELEASE HOLD.
+
+## F02 atomic Native receipt visibility, 2026-10-23
+
+Source readback demonstrated Native response.txt was opened in
+truncate/write mode before the full ACK was available to readers.
+It now uses a complete sibling temporary file plus Windows atomic
+replacement after successful write, flush and close. The Python
+client and security grammar harness reject incomplete reply frames.
+One earlier intermittent grammar RED cannot be conclusively
+attributed to this root cause because its detailed output was not
+captured; do not erase that uncertainty.
+
+Scoped physical checks: 52/52 malformed grammar cases in four
+alternate-build runs and Release regression GREEN. V1 Agent, V2
+generation-fenced read, model-restart and writer-race E2E GREEN.
+F02 remains PARTIAL pending direct-writer, crash/lost-ACK and
+UNKNOWN_OUTCOME readback proof; RELEASE HOLD remains unchanged.

@@ -285,3 +285,13 @@ enable expected_edit_revision, mutating commands or session leases.
 A page is model-generation-safe but not an atomic animation-frame
 snapshot; editor-revision CAS and accepted XPBD frame fences
 are still pending. Studio RELEASE HOLD remains in effect.
+
+## F02 Native ACK publication update (2026-10-23)
+
+An existing Native ACK file was previously visible while incomplete.
+The latest Native Studio creates a temporary response and atomically
+publishes it only after checking write, flush and close. The
+complete-frame V1 client oracle is retained. Source and test evidence
+are described in F02_NATIVE_REPLY_ATOMIC_20261023.md. F02 remains
+PARTIAL because direct-writer ownership, crash/restart and ACK-loss
+semantic tests are not complete. Public SDK ABI20 is unchanged.
