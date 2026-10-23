@@ -662,11 +662,18 @@ static void process_agent_request(void){
  char path[1200],out[1200],token[48]={0},op[48]={0};
  snprintf(path,sizeof path,"%s/api/request.txt",s.folder);
  FILE *f=fopen(path,"r");if(!f)return;
+ long wire_bytes=-1;
+ if(fseek(f,0,SEEK_END)==0){wire_bytes=ftell(f);rewind(f);}
  if(fscanf(f,"%47s %47s",token,op)!=2){fclose(f);remove(path);return;}
  int ok=0;char receipt[96]="rejected";
+ int header_valid=strlen(token)==24;
+ for(int k=0;k<24&&header_valid;++k)
+  if(!((token[k]>='0'&&token[k]<='9')||
+       (token[k]>='a'&&token[k]<='f')))header_valid=0;
+ if(wire_bytes<27||wire_bytes>512||!header_valid)goto finish_request;
  int d=s.xpbd_first,n=csmGetDrawableCount(s.core.model);
  if(!strcmp(op,"RIG_SELECT")){
-  int v,tail;if(fscanf(f,"%d",&v)==1&&fscanf(f,"%d",&tail)!=1&&v>=0&&v<n){
+  int v,tail;if(fscanf(f,"%d",&v)==1&&studio_agent_eof(f)&&v>=0&&v<n){
     const int *vc=csmGetDrawableVertexCounts(s.core.model);
     ok=studio_rig_bank_select(&s.rig_bank,&s.rig,v,signature(),vc[v]);
     if(ok){s.xpbd_first=v;s.tab=3;s.rig_selected=0;s.rig_beam_start=-1;s.rig_parent_start=-1;
@@ -674,7 +681,7 @@ static void process_agent_request(void){
   }
  }else if(!strcmp(op,"RIG_INSPECT")){
   int tail;
-  if(fscanf(f,"%d",&tail)!=1&&s.rig.vertex_count>0){
+  if(studio_agent_eof(f)&&s.rig.vertex_count>0){
    ok=1;
    snprintf(receipt,sizeof receipt,"drawable=%d anchors=%d beams=%d role=%s parents=%d weights=%d cross=%d",
        s.rig.drawable,s.rig.anchor_count,s.rig.beam_count,
@@ -732,7 +739,7 @@ static void process_agent_request(void){
  }else if(!strcmp(op,"LAYER_SCAN")){
   double scan_started=GetTime();
    int tail;const int count=csmGetDrawableCount(s.core.model);float low,high;
-  if(fscanf(f,"%d",&tail)!=1&&count>=0&&count<=4096&&studio_model_y_bounds(&low,&high)){
+  if(studio_agent_eof(f)&&count>=0&&count<=4096&&studio_model_y_bounds(&low,&high)){
     const int *counts=csmGetDrawableVertexCounts(s.core.model);
     const csmVector2 **positions=csmGetDrawableVertexPositions(s.core.model);
     const char **ids=csmGetDrawableIds(s.core.model);
@@ -758,7 +765,7 @@ static void process_agent_request(void){
    }
  }else if(!strcmp(op,"LAYER_SUGGEST")){
   int tail;
-  if(fscanf(f,"%d",&tail)!=1&&studio_propose_layer(s.xpbd_first)){
+  if(studio_agent_eof(f)&&studio_propose_layer(s.xpbd_first)){
    ok=1;
    snprintf(receipt,sizeof receipt,
       "kind=%s confidence=%d anchors=%d region=%s shape=%s",
@@ -769,14 +776,14 @@ static void process_agent_request(void){
   }
  }else if(!strcmp(op,"LAYER_ADOPT")){
   int tail;
-  if(fscanf(f,"%d",&tail)!=1&&studio_adopt_proposal()){
+  if(studio_agent_eof(f)&&studio_adopt_proposal()){
    ok=1;
    snprintf(receipt,sizeof receipt,"anchors=%d pending_rig_apply=1",
      s.rig.anchor_count);
   }
  }else if(!strcmp(op,"LAYER_LABEL")){
   char name[16];int tail;
-  if(fscanf(f,"%15s",name)==1&&fscanf(f,"%d",&tail)!=1&&s.rig.vertex_count>0){
+  if(fscanf(f,"%15s",name)==1&&studio_agent_eof(f)&&s.rig.vertex_count>0){
    int role=-1;
    if(!strcmp(name,"unknown"))role=0;
    if(!strcmp(name,"hair"))role=1;
@@ -833,7 +840,7 @@ static void process_agent_request(void){
    }
  }else if(!strcmp(op,"RIG_PARENT_INSPECT")){
    int child,tail;
-   if(fscanf(f,"%d",&child)==1&&fscanf(f,"%d",&tail)!=1&&
+   if(fscanf(f,"%d",&child)==1&&studio_agent_eof(f)&&
       child>=0&&child<s.rig.vertex_count){
      ok=1;int parent=-1;float stiffness=0;
      for(int i=0;i<s.rig.parent_count;++i)
@@ -847,7 +854,7 @@ static void process_agent_request(void){
    }
  }else if(!strcmp(op,"RIG_WEIGHT_INSPECT")){
    int vertex,tail;
-   if(fscanf(f,"%d",&vertex)==1&&fscanf(f,"%d",&tail)!=1&&
+   if(fscanf(f,"%d",&vertex)==1&&studio_agent_eof(f)&&
       vertex>=0&&vertex<s.rig.vertex_count){
      const float weight=studio_rig_weight_get(&s.rig,vertex);
      if(weight>=0){ok=1;snprintf(receipt,sizeof receipt,
@@ -856,7 +863,7 @@ static void process_agent_request(void){
  }else if(!strcmp(op,"RIG_WEIGHT")){
    int vertex,tail;float weight;
    if(fscanf(f,"%d %f",&vertex,&weight)==2&&
-      fscanf(f,"%d",&tail)!=1&&s.rig.vertex_count>0){
+      studio_agent_eof(f)&&s.rig.vertex_count>0){
      StudioRig candidate=s.rig;
      if(studio_rig_weight(&candidate,vertex,weight)){
        s.rig=candidate;ok=1;
@@ -867,7 +874,7 @@ static void process_agent_request(void){
  }else if(!strcmp(op,"RIG_PARENT")){
    int parent,child,enabled,tail;float stiffness;
    if(fscanf(f,"%d %d %f %d",&parent,&child,&stiffness,&enabled)==4&&
-      fscanf(f,"%d",&tail)!=1&&s.rig.vertex_count>0){
+      studio_agent_eof(f)&&s.rig.vertex_count>0){
      StudioRig candidate=s.rig;
      if(studio_rig_parent(&candidate,parent,child,stiffness,enabled)){
        s.rig=candidate;ok=1;
@@ -878,7 +885,7 @@ static void process_agent_request(void){
  }else if(!strcmp(op,"LAYER_COMPONENT_RELATION")){
    int first,second,tail;
    if(fscanf(f,"%d %d",&first,&second)==2&&
-      fscanf(f,"%d",&tail)!=1&&first>=0&&second>=0&&
+      studio_agent_eof(f)&&first>=0&&second>=0&&
       first!=second&&first<2048&&second<2048){
      const int d=s.xpbd_first,n=csmGetDrawableCount(s.core.model);
      const int *vc=csmGetDrawableVertexCounts(s.core.model);
@@ -903,7 +910,7 @@ static void process_agent_request(void){
  }else if(!strcmp(op,"RIG_ANCHOR")||!strcmp(op,"RIG_BEAM")){
   int a,b,e,tail;int beam=!strcmp(op,"RIG_BEAM");
   int parsed=beam?fscanf(f,"%d %d %d",&a,&b,&e):fscanf(f,"%d %d",&a,&e);
-  if(parsed==(beam?3:2)&&fscanf(f,"%d",&tail)!=1&&e>=0&&e<=1&&s.rig.vertex_count>0){
+  if(parsed==(beam?3:2)&&studio_agent_eof(f)&&e>=0&&e<=1&&s.rig.vertex_count>0){
    if(beam){
     int exists=0;for(int i=0;i<s.rig.beam_count;++i)
       if(s.rig.beams[i].a==(a<b?a:b)&&s.rig.beams[i].b==(a<b?b:a))exists=1;
@@ -917,21 +924,21 @@ static void process_agent_request(void){
   }
  }else if(!strcmp(op,"PHYSICS_SET")){
   float g,w,dec;int tail;
-  if(fscanf(f,"%f %f %f",&g,&w,&dec)==3&&fscanf(f,"%d",&tail)!=1&&isfinite(g)&&isfinite(w)&&isfinite(dec)&&
+  if(fscanf(f,"%f %f %f",&g,&w,&dec)==3&&studio_agent_eof(f)&&isfinite(g)&&isfinite(w)&&isfinite(dec)&&
    g>=-80&&g<=80&&w>=-60&&w<=60&&dec>=0&&dec<=1){
    s.xpbd_gravity=g;s.xpbd_wind=w;s.xpbd_damping=dec;ok=1;
    snprintf(receipt,sizeof receipt,"settings=updated");
   }
  }else if(!strcmp(op,"ACTION")){
   char kind[24];float strength;int tail;
-  if(fscanf(f,"%23s %f",kind,&strength)==2&&fscanf(f,"%d",&tail)!=1&&isfinite(strength)&&strength>=0&&strength<=1){
+  if(fscanf(f,"%23s %f",kind,&strength)==2&&studio_agent_eof(f)&&isfinite(strength)&&strength>=0&&strength<=1){
    if(!strcmp(kind,"pull")){s.pull_x=bound(s.pull_x+strength*12,-35,35);ok=1;}
    if(!strcmp(kind,"release")){s.dragging=0;s.pull_x=0;s.pull_y=0;ok=1;}
    if(!strcmp(kind,"shake")){s.pull_x=bound(s.pull_x-strength*15,-35,35);ok=1;}
    if(!strcmp(kind,"settle")){s.pull_x=0;s.pull_y=0;ok=1;}
    if(ok)snprintf(receipt,sizeof receipt,"action=%s",kind);
   }
- }else if(!strcmp(op,"RIG_APPLY")&&s.rig.vertex_count>0){
+ }else if(!strcmp(op,"RIG_APPLY")&&studio_agent_eof(f)&&s.rig.vertex_count>0){
   StudioXpbdOptions opt={s.rig.drawable,
      s.rig.cross_count?s.rig.cross_links[0].drawable:-1,0,s.xpbd_gravity,s.xpbd_wind,
     s.xpbd_compliance,s.xpbd_collision,s.xpbd_mass,s.xpbd_damping,s.xpbd_contact_compliance,
@@ -941,6 +948,7 @@ static void process_agent_request(void){
   if(next){studio_xpbd_disable(s.xpbd);s.xpbd=next;ok=1;snprintf(receipt,sizeof receipt,"rig=applied");}
  }
  if(!ok){int extra=studio_agent_extended(f,op,receipt,sizeof receipt);if(extra>=0)ok=extra;}
+finish_request:
  fclose(f);remove(path);
  snprintf(out,sizeof out,"%s/api/response.txt",s.folder);
  FILE *w=fopen(out,"w");
