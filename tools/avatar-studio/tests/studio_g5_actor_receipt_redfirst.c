@@ -70,6 +70,11 @@ int main(void){
  /* Timeout is post-effect: look up immutable owner + operation + payload. */
  REQUIRE(g5_bus_mark_unknown_trusted(&bus,&alice,700)==G5_OK);
  REQUIRE(g5_bus_recover_trusted(&bus,&bob,99,700,&receipt)==G5_STALE_SESSION);
+ /* Foreign lookup must scrub previously populated receipt output. */
+ REQUIRE(receipt.owner==0&&receipt.request_id==0&&receipt.revision==0);
+ REQUIRE(receipt.operation==0&&receipt.outcome==0);
+ for(unsigned i=0;i<sizeof receipt.payload_sha256;i++)
+  REQUIRE(receipt.payload_sha256[i]==0);
  REQUIRE(g5_bus_recover_trusted(&bus,&alice,99,700,&receipt)==G5_OK);
  REQUIRE(receipt.outcome==G5_COMMITTED);
  REQUIRE(receipt.revision==8);
