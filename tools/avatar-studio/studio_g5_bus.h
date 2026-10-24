@@ -29,6 +29,8 @@ typedef struct {
 } G5Bus;
 G5Code g5_bus_init(G5Bus*,const StudioRig*,uint64_t session,
                    uint64_t generation,uint64_t revision);
+#ifdef G5_TEST_ONLY_UNBOUND_BUS
+/* Existing standalone v0 tests only: never export in trusted builds. */
 G5Code g5_bus_submit(G5Bus*,const G5BusCommand*,G5BusResult*);
 /* Transport injects uncertainty; absence of a receipt can never clear this. */
 G5Code g5_bus_mark_unknown(G5Bus*,G5Ingress,uint64_t original_request);
@@ -38,6 +40,7 @@ G5Code g5_bus_recover(const G5Bus*,G5Ingress,uint64_t session,
 /* Explicit reconciliation requires immutable owner receipt; not on timeout. */
 G5Code g5_bus_reconcile(G5Bus*,G5Ingress,uint64_t session,
                         uint64_t original_request);
+#endif /* G5_TEST_ONLY_UNBOUND_BUS */
 /* G5 T2 trusted-owner API: new integrations MUST use these calls.
    The legacy unbound methods above exist solely for existing standalone tests
    and MUST NOT be connected to Studio IPC, UI or V2 writer. */
