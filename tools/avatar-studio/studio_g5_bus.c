@@ -240,8 +240,16 @@ G5Code g5_bus_submit_trusted(G5Bus *bus,const G5TrustedActor *actor,
  }
  default:code=G5_INVALID_DRAFT;break;
  }
- if(code==G5_OK&&out->committed)
+ if(code==G5_OK&&out->committed){
+  /* Never acknowledge a commit whose receipt cannot be bound to its command.
+     The in-process effect may already exist: UNKNOWN forbids blind replay. */
+  if(!txn->receipt_count||
+     txn->receipts[txn->receipt_count-1].owner!=owner||
+     txn->receipts[txn->receipt_count-1].request_id!=cmd->request_id){
+   out->code=G5_UNKNOWN;out->committed=0;return G5_UNKNOWN;
+  }
   bind_receipt(txn,owner,actor,cmd);
+ }
  out->code=code;
  return code;
 }
