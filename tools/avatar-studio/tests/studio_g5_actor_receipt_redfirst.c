@@ -79,15 +79,16 @@ int main(void){
  /* Recovery must not be a mutation or unquarantine from a bare read. */
  a=command(G5_AGENT,G5_BEGIN,8);
  REQUIRE(g5_bus_submit_trusted(&bus,&alice,&a,&answer)==G5_BUSY);
- REQUIRE(g5_bus_reconcile_trusted(&bus,&bob,99,700)==G5_ID_CONFLICT);
+ REQUIRE(g5_bus_reconcile_trusted(&bus,&bob,99,700)==G5_STALE_SESSION);
  REQUIRE(g5_bus_reconcile_trusted(&bus,&alice,99,700)==G5_OK);
 
  /* The second Agent has no quarantine; can acquire a free lease independently. */
  b=command(G5_AGENT,G5_BEGIN,8);
  REQUIRE(g5_bus_submit_trusted(&bus,&bob,&b,&answer)==G5_OK);
- REQUIRE(answer.draft_id!=0);
+ const uint64_t bob_draft=answer.draft_id;
+ REQUIRE(bob_draft!=0);
  REQUIRE(g5_bus_submit_trusted(&bus,&alice,&a,&answer)==G5_BUSY);
- b=command(G5_AGENT,G5_ABORT,8);b.draft_id=answer.draft_id;
+ b=command(G5_AGENT,G5_ABORT,8);b.draft_id=bob_draft;
  REQUIRE(g5_bus_submit_trusted(&bus,&bob,&b,&answer)==G5_OK);
 
  /* Unknown request never grants replay or clears its own quarantine. */
