@@ -98,6 +98,13 @@ int main(void){
   REQUIRE(receipt.payload_sha256[i]==0);
  REQUIRE(g5_bus_recover_trusted(&bus,&alice,99,700,&receipt)==G5_OK);
  REQUIRE(memcmp(receipt.payload_sha256,expected_digest,32)==0);
+ /* Invalid trusted actor must not leak a previously successful reply. */
+ const G5TrustedActor invalid_recovery_actor={G5_AGENT,0};
+ REQUIRE(g5_bus_recover_trusted(&bus,&invalid_recovery_actor,99,700,&receipt)==G5_STALE_SESSION);
+ REQUIRE(receipt.owner==0&&receipt.request_id==0&&receipt.revision==0);
+ REQUIRE(receipt.operation==0&&receipt.outcome==0);
+ for(unsigned i=0;i<sizeof receipt.payload_sha256;i++)
+  REQUIRE(receipt.payload_sha256[i]==0);
 
 
  /* Recovery must not be a mutation or unquarantine from a bare read. */
