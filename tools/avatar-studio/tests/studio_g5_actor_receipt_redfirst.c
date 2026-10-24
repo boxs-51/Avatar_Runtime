@@ -90,6 +90,14 @@ int main(void){
   0xa9,0x6a,0x2d,0x75,0x77,0xce,0x83,0x3d
  };
  REQUIRE(memcmp(receipt.payload_sha256,expected_digest,32)==0);
+ /* Reuse a populated receipt output: foreign recovery must wipe stale data. */
+ REQUIRE(g5_bus_recover_trusted(&bus,&bob,99,700,&receipt)==G5_STALE_SESSION);
+ REQUIRE(receipt.owner==0&&receipt.request_id==0&&receipt.revision==0);
+ REQUIRE(receipt.operation==0&&receipt.outcome==0);
+ for(unsigned i=0;i<sizeof receipt.payload_sha256;i++)
+  REQUIRE(receipt.payload_sha256[i]==0);
+ REQUIRE(g5_bus_recover_trusted(&bus,&alice,99,700,&receipt)==G5_OK);
+ REQUIRE(memcmp(receipt.payload_sha256,expected_digest,32)==0);
 
 
  /* Recovery must not be a mutation or unquarantine from a bare read. */
