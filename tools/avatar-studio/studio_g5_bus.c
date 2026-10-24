@@ -10,6 +10,8 @@ G5Code g5_bus_init(G5Bus *bus,const StudioRig *rig,uint64_t session,
  memset(bus,0,sizeof *bus);
  return g5_txn_init(&bus->txn,rig,session,generation,revision);
 }
+#ifdef G5_TEST_ONLY_UNBOUND_BUS
+/* Test-only compatibility. Never link this entry point into trusted builds. */
 static G5Code legacy_anchor(G5Bus *bus,const G5BusCommand *cmd,
                             G5BusResult *out){
  G5Txn *t=&bus->txn;
@@ -120,6 +122,8 @@ G5Code g5_bus_reconcile(G5Bus *bus,G5Ingress ingress,uint64_t session,
  return G5_OK;
 }
 
+
+#endif /* G5_TEST_ONLY_UNBOUND_BUS */
 
 /* Actor ID is a trusted local-session label; the high nibble binds ingress.
    A JSON field containing this ID is never an authorization credential. */
