@@ -138,8 +138,11 @@ static void canonical_digest(const G5TrustedActor *actor,
  const uint64_t fields[]={
    (uint64_t)actor->ingress,actor->owner,(uint64_t)cmd->operation,
    cmd->session,cmd->generation,cmd->expected_revision,
-   cmd->draft_id,cmd->request_id,(uint64_t)(int64_t)cmd->vertex,
-   (uint64_t)(int64_t)cmd->enabled
+   cmd->draft_id,cmd->request_id,
+   (cmd->operation==G5_ANCHOR||cmd->operation==G5_LEGACY_ANCHOR)
+      ?(uint64_t)(int64_t)cmd->vertex:0,
+   (cmd->operation==G5_ANCHOR||cmd->operation==G5_LEGACY_ANCHOR)
+      ?(uint64_t)(int64_t)cmd->enabled:0
  };
  G5Sha256 hash;g5_sha_init(&hash);
  g5_sha_update(&hash,domain,sizeof domain-1);
