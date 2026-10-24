@@ -13,6 +13,8 @@ typedef enum {G5_COMMITTED=1,G5_REJECTED=2,G5_ABORTED=3} G5Outcome;
 typedef struct {
  uint64_t owner,request_id,revision;
  G5Outcome outcome;
+ uint32_t operation; /* zero for legacy in-memory tests; bound for trusted bus */
+ unsigned char payload_sha256[32]; /* canonical original request fields, no model bytes */
 } G5Receipt;
 typedef struct {
  uint64_t session_epoch,model_generation,revision,applied_revision;
