@@ -253,6 +253,36 @@ G5Code g5_bus_submit_trusted(G5Bus *bus,const G5TrustedActor *actor,
  out->code=code;
  return code;
 }
+/* Capture the exact original mutation identity BEFORE an ACK is trusted.
+   This is an in-process test primitive, not an authenticated IPC transport. */
+G5Code g5_bus_mark_unknown_command_trusted(G5Bus *bus,
+                                     const G5TrustedActor *actor,
+                                     const G5BusCommand *cmd){
+ uint64_t owner=0;
+ G5Code checked=trusted_owner(actor,&owner);
+ if(checked!=G5_OK||!bus||!cmd||!cmd->request_id||
+    cmd->ingress!=actor->ingress)return G5_STALE_SESSION;
+ if(cmd->session!=bus->txn.session_epoch)return G5_STALE_SESSION;
+ if(cmd->generation!=bus->txn.model_generation)return G5_STALE_MODEL;
+ if(cmd->operation!=G5_COMMIT&&cmd->operation!=G5_UNDO&&
+    cmd->operation!=G5_REDO&&cmd->operation!=G5_LEGACY_ANCHOR)
+  return G5_INVALID_DRAFT;
+ if(cmd->operation==G5_LEGACY_ANCHOR&&actor->ingress!=G5_LEGACY)
+  return G5_STALE_SESSION;
+ if(actor_slot(bus,actor))return G5_BUSY;
+ for(unsigned i=0;i<G5_ACTOR_QUARANTINE_CAP;i++){
+  G5ActorQuarantine *slot=&bus->actor_quarantine[i];
+  if(!slot->request_id){
+   slot->ingress=actor->ingress;slot->owner=actor->owner;
+   slot->request_id=cmd->request_id;slot->operation=(uint32_t)cmd->operation;
+   canonical_digest(actor,cmd,slot->payload_sha256);
+   return G5_OK;
+  }
+ }
+ return G5_OUT_OF_BUDGET;
+}
+#ifdef G5_TEST_ONLY_UNBOUND_BUS
+/* Historical synthetic test API only. No payload proof: NOT FOR IPC. */
 G5Code g5_bus_mark_unknown_trusted(G5Bus *bus,
                                    const G5TrustedActor *actor,uint64_t request){
  uint64_t owner=0;
@@ -268,6 +298,7 @@ G5Code g5_bus_mark_unknown_trusted(G5Bus *bus,
  }
  return G5_OUT_OF_BUDGET;
 }
+#endif /* G5_TEST_ONLY_UNBOUND_BUS */
 G5Code g5_bus_recover_trusted(const G5Bus *bus,
                               const G5TrustedActor *actor,uint64_t session,
                               uint64_t request,G5Receipt *receipt){
@@ -294,6 +325,11 @@ G5Code g5_bus_reconcile_trusted(G5Bus *bus,const G5TrustedActor *actor,
  if(code!=G5_OK)return code;
  if(receipt.outcome!=G5_COMMITTED&&receipt.outcome!=G5_REJECTED&&
     receipt.outcome!=G5_ABORTED)return G5_UNKNOWN;
+ /* Request ID alone is NOT proof of which payload was committed.
+    Keep quarantine on any opcode or fingerprint mismatch. */
+ if(!slot->operation||receipt.operation!=slot->operation||
+    memcmp(receipt.payload_sha256,slot->payload_sha256,
+           sizeof slot->payload_sha256)!=0)return G5_ID_CONFLICT;
  memset(slot,0,sizeof *slot);
  return G5_OK;
 }
