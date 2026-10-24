@@ -93,3 +93,19 @@ add_test(NAME g5_bus_recovery COMMAND studio_g5_bus_recovery_tests)
 add_executable(studio_g5_recovery_wire_tests tests/studio_g5_recovery_wire_tests.c studio_g5_recovery_wire.c studio_g5_bus.c studio_g5_txn.c studio_rig.c)
 target_compile_features(studio_g5_recovery_wire_tests PRIVATE c_std_11)
 add_test(NAME g5_recovery_wire COMMAND studio_g5_recovery_wire_tests)
+
+# Cryptographic receipt fingerprint primitive, model-free and cross-platform C11.
+add_executable(studio_g5_sha256_tests tests/studio_g5_sha256_tests.c)
+target_compile_features(studio_g5_sha256_tests PRIVATE c_std_11)
+add_test(NAME g5_sha256_vectors COMMAND studio_g5_sha256_tests)
+
+# Not included in default CTest until a physical Windows RED/GREEN run.
+# The reviewed Native Studio/V2 G5 writer remains OFF.
+option(STUDIO_G5_ACTOR_RED_FIRST "Build opt-in trusted actor and receipt oracle" OFF)
+if(STUDIO_G5_ACTOR_RED_FIRST)
+  add_executable(studio_g5_actor_receipt_redfirst
+    tests/studio_g5_actor_receipt_redfirst.c
+    studio_g5_bus.c studio_g5_txn.c studio_rig.c)
+  target_compile_features(studio_g5_actor_receipt_redfirst PRIVATE c_std_11)
+  add_test(NAME g5_actor_receipt_redfirst COMMAND studio_g5_actor_receipt_redfirst)
+endif()
