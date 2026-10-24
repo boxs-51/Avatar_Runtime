@@ -116,6 +116,19 @@ int main(void){
  REQUIRE(g5_bus_reconcile_trusted(&bus,&alice,99,999)==G5_UNKNOWN);
  REQUIRE(g5_bus_submit_trusted(&bus,&alice,&a,&answer)==G5_BUSY);
  REQUIRE(bus.txn.revision==8);
+ /* Exhaust the bounded per-actor unknown table: no marker eviction. */
+ G5Bus crowded={0};REQUIRE(g5_bus_init(&crowded,&rig,99,55,7)==G5_OK);
+ for(unsigned i=0;i<G5_ACTOR_QUARANTINE_CAP;i++){
+  G5TrustedActor actor={G5_AGENT,(uint64_t)i+1};
+  REQUIRE(g5_bus_mark_unknown_trusted(&crowded,&actor,(uint64_t)i+100)==G5_OK);
+ }
+ G5TrustedActor overflow_actor={G5_AGENT,999};
+ REQUIRE(g5_bus_mark_unknown_trusted(&crowded,&overflow_actor,999)==G5_OUT_OF_BUDGET);
+ G5TrustedActor invalid_actor={G5_AGENT,0};
+ G5TrustedActor unbounded_actor={G5_AGENT,UINT64_C(0x1000000000000000)};
+ REQUIRE(g5_bus_submit_trusted(&crowded,&invalid_actor,&a,&answer)==G5_STALE_SESSION);
+ REQUIRE(g5_bus_submit_trusted(&crowded,&unbounded_actor,&a,&answer)==G5_STALE_SESSION);
+ REQUIRE(crowded.txn.revision==7);
  puts("G5_ACTOR_RECEIPT_PASS distinct_owner=1 no_replay=1");
  return 0;
 }
