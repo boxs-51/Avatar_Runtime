@@ -118,3 +118,20 @@ if(STUDIO_G5_ACTOR_RED_FIRST)
   target_compile_features(studio_g5_receipt_binding_redfirst PRIVATE c_std_11)
   add_test(NAME g5_receipt_binding_redfirst COMMAND studio_g5_receipt_binding_redfirst)
 endif()
+
+# Offline-only process IPC experiment. Never link into the Studio product.
+option(STUDIO_G5_IPC_FIXTURE "Build model-free G5 recovery IPC test DLL" OFF)
+if(STUDIO_G5_IPC_FIXTURE)
+  add_library(studio_g5_ipc_fixture SHARED
+    tests/studio_g5_ipc_fixture.c studio_g5_bus.c studio_g5_txn.c studio_rig.c)
+  target_compile_features(studio_g5_ipc_fixture PRIVATE c_std_11)
+  # Physically separate process and read-only recovery file lane; test-only.
+  find_package(Python3 QUIET COMPONENTS Interpreter)
+  if(Python3_Interpreter_FOUND)
+    add_test(NAME g5_process_recovery_fixture
+      COMMAND "${Python3_EXECUTABLE}" -B
+      "${ARS_ROOT}/scripts/test_studio_g5_process_recovery.py")
+    set_tests_properties(g5_process_recovery_fixture PROPERTIES
+      WORKING_DIRECTORY "${ARS_ROOT}" TIMEOUT 25)
+  endif()
+endif()
