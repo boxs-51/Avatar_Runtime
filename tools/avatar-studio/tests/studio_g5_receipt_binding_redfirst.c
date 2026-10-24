@@ -37,6 +37,17 @@ int main(void){
  /* A false reconciliation must never clear a marker or replay a write. */
  REQUIRE(bus.txn.revision==8&&bus.actor_quarantine[0].request_id==700);
 
+ /* Matching request number but different opcode is not equivalent. */
+ G5Bus wrong_opcode={0};
+ REQUIRE(g5_bus_init(&wrong_opcode,&rig,99,55,7)==G5_OK);
+ REQUIRE(committed(&wrong_opcode,&alice,700));
+ G5BusCommand undo_claim=cmd(G5_UNDO,7);
+ undo_claim.request_id=700;
+ REQUIRE(g5_bus_mark_unknown_command_trusted(&wrong_opcode,&alice,&undo_claim)==G5_OK);
+ REQUIRE(g5_bus_reconcile_trusted(&wrong_opcode,&alice,99,700)==G5_ID_CONFLICT);
+ REQUIRE(wrong_opcode.actor_quarantine[0].request_id==700);
+ REQUIRE(wrong_opcode.txn.revision==8);
+
  G5Bus okay={0};REQUIRE(g5_bus_init(&okay,&rig,99,55,7)==G5_OK);
  REQUIRE(committed(&okay,&alice,700));
  G5BusCommand original=cmd(G5_COMMIT,7);
