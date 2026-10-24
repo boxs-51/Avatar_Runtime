@@ -18,3 +18,8 @@ __pycache__/
 /private-models/
 /private-assets/
 /captures-private/
+
+# Private 3D model formats (review any intended public fixture separately).
+*.glb
+*.gltf
+*.fbx

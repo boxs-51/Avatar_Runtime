@@ -60,17 +60,26 @@ target_compile_definitions(studio_rig_tests PRIVATE STUDIO_RIG_TEST_FAULT_INJECT
 add_executable(studio_layer_analysis_tests tests/studio_layer_analysis_tests.c studio_layer_analysis.c)
 target_compile_features(studio_layer_analysis_tests PRIVATE c_std_11)
 
+# Reusable internal C11 transaction library; no install/export, model assets
+# or live Studio linkage while the G5 Native writer remains HOLD.
+add_library(studio_g5_txn_core STATIC studio_g5_txn.c studio_rig.c)
+target_compile_features(studio_g5_txn_core PUBLIC c_std_11)
+set_target_properties(studio_g5_txn_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 # G5 T1 Native in-memory transaction RED-first; no Studio ingress or model data.
-add_executable(studio_g5_txn_tests tests/studio_g5_txn_tests.c studio_g5_txn.c studio_rig.c)
+add_executable(studio_g5_txn_tests tests/studio_g5_txn_tests.c)
 target_compile_features(studio_g5_txn_tests PRIVATE c_std_11)
+target_link_libraries(studio_g5_txn_tests PRIVATE studio_g5_txn_core)
 
 # Additional fault, ABA and capacity oracles; synthetic input only.
-add_executable(studio_g5_txn_adversarial tests/studio_g5_txn_adversarial.c studio_g5_txn.c studio_rig.c)
+add_executable(studio_g5_txn_adversarial tests/studio_g5_txn_adversarial.c)
 target_compile_features(studio_g5_txn_adversarial PRIVATE c_std_11)
+target_link_libraries(studio_g5_txn_adversarial PRIVATE studio_g5_txn_core)
 
 # Exact typed G5 draft edit operations; no public editor writer enabled.
-add_executable(studio_g5_txn_edit_ops tests/studio_g5_txn_edit_ops.c studio_g5_txn.c studio_rig.c)
+add_executable(studio_g5_txn_edit_ops tests/studio_g5_txn_edit_ops.c)
 target_compile_features(studio_g5_txn_edit_ops PRIVATE c_std_11)
+target_link_libraries(studio_g5_txn_edit_ops PRIVATE studio_g5_txn_core)
 
 # Local-only G5 synthetic Native tests; no model fixtures or GUI required.
 enable_testing()
@@ -85,14 +94,16 @@ if(MSVC)
 endif()
 
 # Experimental G5 unified owner routing and recovery semantics, test only.
-add_executable(studio_g5_bus_recovery_tests tests/studio_g5_bus_recovery_tests.c studio_g5_bus.c studio_g5_txn.c studio_rig.c)
+add_executable(studio_g5_bus_recovery_tests tests/studio_g5_bus_recovery_tests.c studio_g5_bus.c)
 target_compile_features(studio_g5_bus_recovery_tests PRIVATE c_std_11)
+target_link_libraries(studio_g5_bus_recovery_tests PRIVATE studio_g5_txn_core)
 target_compile_definitions(studio_g5_bus_recovery_tests PRIVATE G5_TEST_ONLY_UNBOUND_BUS=1)
 add_test(NAME g5_bus_recovery COMMAND studio_g5_bus_recovery_tests)
 
 # Fixed read-only recovery message decoder, not connected to Studio IPC.
-add_executable(studio_g5_recovery_wire_tests tests/studio_g5_recovery_wire_tests.c studio_g5_recovery_wire.c studio_g5_bus.c studio_g5_txn.c studio_rig.c)
+add_executable(studio_g5_recovery_wire_tests tests/studio_g5_recovery_wire_tests.c studio_g5_recovery_wire.c studio_g5_bus.c)
 target_compile_features(studio_g5_recovery_wire_tests PRIVATE c_std_11)
+target_link_libraries(studio_g5_recovery_wire_tests PRIVATE studio_g5_txn_core)
 target_compile_definitions(studio_g5_recovery_wire_tests PRIVATE G5_TEST_ONLY_UNBOUND_BUS=1)
 add_test(NAME g5_recovery_wire COMMAND studio_g5_recovery_wire_tests)
 
@@ -107,15 +118,17 @@ option(STUDIO_G5_ACTOR_RED_FIRST "Build opt-in trusted actor and receipt oracle"
 if(STUDIO_G5_ACTOR_RED_FIRST)
   add_executable(studio_g5_actor_receipt_redfirst
     tests/studio_g5_actor_receipt_redfirst.c
-    studio_g5_bus.c studio_g5_txn.c studio_rig.c)
+    studio_g5_bus.c)
   target_compile_features(studio_g5_actor_receipt_redfirst PRIVATE c_std_11)
+  target_link_libraries(studio_g5_actor_receipt_redfirst PRIVATE studio_g5_txn_core)
   add_test(NAME g5_actor_receipt_redfirst COMMAND studio_g5_actor_receipt_redfirst)
 
   # G5-ACK-05: only exact original command identity may clear quarantine.
   add_executable(studio_g5_receipt_binding_redfirst
     tests/studio_g5_receipt_binding_redfirst.c
-    studio_g5_bus.c studio_g5_txn.c studio_rig.c)
+    studio_g5_bus.c)
   target_compile_features(studio_g5_receipt_binding_redfirst PRIVATE c_std_11)
+  target_link_libraries(studio_g5_receipt_binding_redfirst PRIVATE studio_g5_txn_core)
   add_test(NAME g5_receipt_binding_redfirst COMMAND studio_g5_receipt_binding_redfirst)
 endif()
 
@@ -123,8 +136,9 @@ endif()
 option(STUDIO_G5_IPC_FIXTURE "Build model-free G5 recovery IPC test DLL" OFF)
 if(STUDIO_G5_IPC_FIXTURE)
   add_library(studio_g5_ipc_fixture SHARED
-    tests/studio_g5_ipc_fixture.c studio_g5_bus.c studio_g5_txn.c studio_rig.c)
+    tests/studio_g5_ipc_fixture.c studio_g5_bus.c)
   target_compile_features(studio_g5_ipc_fixture PRIVATE c_std_11)
+  target_link_libraries(studio_g5_ipc_fixture PRIVATE studio_g5_txn_core)
   # Physically separate process and read-only recovery file lane; test-only.
   find_package(Python3 QUIET COMPONENTS Interpreter)
   if(Python3_Interpreter_FOUND)

@@ -6,6 +6,8 @@ Embeddable real-time 2D/3D character-rendering SDK under development.
 
 **Principles:** host-owned integration, logical character with optional 2D/3D representations, normalized motion input, secure user-model loading, capability-based renderer, C ABI, testable acceptance gates.
 
+For SDK packaging and the rule **never publish non-public model information**, see [ADR-005](docs/reference/ADR_005_MODEL_INFORMATION_NONPUBLIC_AND_SDK_PACKAGING.md). This governs GitHub/releases/logs, **not** authorized local model editing.
+
 Start with the [documentation index and classification](docs/DOCUMENTATION_INDEX.md). It separates completed scopes, reference material, superseded plans and ongoing implementation, and identifies stale status text in historical documents.
 
 Active integration branch: **alpha**. Follow the [linear issue backlog](docs/in-progress/ALPHA_LINEAR_BACKLOG.md)

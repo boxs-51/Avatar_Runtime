@@ -285,3 +285,7 @@ Inventory **169 files**: completed **49**, reference **86**, obsolete **4**, in-
 ## Interactive Studio ? 22-10-2026
 
 [Thi?t k? v? ki?m ch?ng Studio](in-progress/INTERACTIVE_STUDIO_DESIGN.md): giao di?n desktop m?i ph?c v? ki?m tra model local. C? preset bi?u c?m, ?i?u khi?n t? ??ng, Physics3, camera v? inspector; ch?a thay ??i gate s?n ph?m. Inventory t?ng t? 169 l?n **170 t?i li?u**; t?i li?u Studio gi? `in_progress` ?? nh?n ph?n h?i s? d?ng.
+
+## Non-public model information and reusable SDK components
+
+The active [ADR-005](reference/ADR_005_MODEL_INFORMATION_NONPUBLIC_AND_SDK_PACKAGING.md) establishes a no-publication rule for private model data in GitHub, SDKs, release archives, logs and evidence. It **does not introduce new local UI/Agent model-access restrictions**. The [SDK profile documentation](reference/SDK_DEVELOPMENT_PACKAGE.md) links the staged Git and installed-package privacy gates.

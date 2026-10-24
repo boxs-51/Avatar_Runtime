@@ -1,5 +1,30 @@
 # Development SDK profiles
 
+## Reusable SDK and non-public model information rule
+
+All source-built SDK profiles, installed consumer examples, CI artifacts and
+release archives must comply with
+[ADR-005: non-public model information and SDK packaging](ADR_005_MODEL_INFORMATION_NONPUBLIC_AND_SDK_PACKAGING.md).
+A public SDK profile does **not** grant permission to publish models processed
+with it. Installed SDK files must not contain private models, textures, renders,
+model identities, geometry/rig exports or identifying model-derived evidence.
+Tests may use synthetic data or assets separately approved for public release.
+
+Run the model-publication scanner with --staged before committing and
+--ref HEAD before publishing a Git revision, and independently review the
+installed SDK manifest and external build/CI logs. Also run the scanner
+with --package <sdk-directory> against the installed SDK staging tree before
+creating a distributable archive. The Git mode and package mode are both
+bounded artifact scans; neither proves historical Git objects or arbitrary
+release archives are clear. This policy controls **publication**, not legitimate local Studio
+and Agent read/edit access.
+
+Reusable components should first be delivered as independent internal libraries
+with stable boundaries and synthetic consumer tests, then promoted to public
+SDK packages only after API compatibility, licensing and confidentiality review.
+The G5 native transaction core remains an internal test-only library; it does
+not enable the G5 writer or modify ABI20.
+
 ## Default feature-off profile
 
 This opt-in source-built package is for ABI/lifecycle development. It implements

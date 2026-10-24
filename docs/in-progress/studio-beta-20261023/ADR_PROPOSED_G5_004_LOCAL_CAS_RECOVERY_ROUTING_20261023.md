@@ -107,6 +107,17 @@ Studio is Local-only and Computer Bridge presently reports `USER_CONTEXT_NO_OS_S
 
 Raw/private `.moc3`, model JSON, textures, geometry arrays, embedded payloads, screenshots and original model paths must stay outside Git. E2E uses private local source from `_private_manifest`; exports are limited to categorical PASS/RED/BLOCKED summaries. Any newly introduced local logs belong under ignored `build/studio-user/` or `local-assets/`.
 
+### Clarification: non-public model information, not local model access
+
+Per [ADR-005](../../reference/ADR_005_MODEL_INFORMATION_NONPUBLIC_AND_SDK_PACKAGING.md),
+private model information must **not be published** in the repository, releases,
+SDKs, logs, screenshots, reports or GitHub evidence. Local authorized Studio/UI
+and Agent inspection/editing remains governed by the existing local runtime
+contract; model confidentiality alone is **not** a new deny-read permission
+layer. G5 receipts must contain only bounded transaction metadata and a
+canonical operation fingerprint, never raw geometry, paths or model payloads.
+The G5 writer stays HOLD for the separate CAS/recovery/concurrency gates.
+
 ## Status and rollback
 
 **Status:** PROPOSED, not owner-approved runtime contract. G5 Native writer = **HOLD**. Independent G4 review and GUI Agent concurrency remain pending. Current V2 read-only reject policy stays unchanged. No public SDK ABI20 modifications.
