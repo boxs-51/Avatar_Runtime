@@ -68,7 +68,7 @@ int main(void){
  REQUIRE(bus.txn.live.anchor_count==1);
 
  /* Timeout is post-effect: look up immutable owner + operation + payload. */
- REQUIRE(g5_bus_mark_unknown_trusted(&bus,&alice,700)==G5_OK);
+ REQUIRE(g5_bus_mark_unknown_command_trusted(&bus,&alice,&a)==G5_OK);
  REQUIRE(g5_bus_recover_trusted(&bus,&bob,99,700,&receipt)==G5_STALE_SESSION);
  /* Foreign lookup must scrub previously populated receipt output. */
  REQUIRE(receipt.owner==0&&receipt.request_id==0&&receipt.revision==0);
@@ -131,7 +131,9 @@ int main(void){
  REQUIRE(g5_bus_submit_trusted(&bus,&bob,&b,&answer)==G5_OK);
 
  /* Unknown request never grants replay or clears its own quarantine. */
- REQUIRE(g5_bus_mark_unknown_trusted(&bus,&alice,999)==G5_OK);
+ G5BusCommand never=command(G5_AGENT,G5_COMMIT,8);
+ never.draft_id=999;never.request_id=999;
+ REQUIRE(g5_bus_mark_unknown_command_trusted(&bus,&alice,&never)==G5_OK);
  REQUIRE(g5_bus_recover_trusted(&bus,&alice,99,999,&receipt)==G5_UNKNOWN);
  REQUIRE(g5_bus_reconcile_trusted(&bus,&alice,99,999)==G5_UNKNOWN);
  REQUIRE(g5_bus_submit_trusted(&bus,&alice,&a,&answer)==G5_BUSY);
@@ -140,10 +142,14 @@ int main(void){
  G5Bus crowded={0};REQUIRE(g5_bus_init(&crowded,&rig,99,55,7)==G5_OK);
  for(unsigned i=0;i<G5_ACTOR_QUARANTINE_CAP;i++){
   G5TrustedActor actor={G5_AGENT,(uint64_t)i+1};
-  REQUIRE(g5_bus_mark_unknown_trusted(&crowded,&actor,(uint64_t)i+100)==G5_OK);
+  G5BusCommand uncertain=command(G5_AGENT,G5_COMMIT,7);
+  uncertain.draft_id=(uint64_t)i+1;uncertain.request_id=(uint64_t)i+100;
+  REQUIRE(g5_bus_mark_unknown_command_trusted(&crowded,&actor,&uncertain)==G5_OK);
  }
  G5TrustedActor overflow_actor={G5_AGENT,999};
- REQUIRE(g5_bus_mark_unknown_trusted(&crowded,&overflow_actor,999)==G5_OUT_OF_BUDGET);
+ G5BusCommand full=command(G5_AGENT,G5_COMMIT,7);
+ full.draft_id=77;full.request_id=999;
+ REQUIRE(g5_bus_mark_unknown_command_trusted(&crowded,&overflow_actor,&full)==G5_OUT_OF_BUDGET);
  G5TrustedActor invalid_actor={G5_AGENT,0};
  G5TrustedActor unbounded_actor={G5_AGENT,UINT64_C(0x1000000000000000)};
  REQUIRE(g5_bus_submit_trusted(&crowded,&invalid_actor,&a,&answer)==G5_STALE_SESSION);
