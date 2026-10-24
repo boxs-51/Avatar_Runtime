@@ -271,6 +271,8 @@ G5Code g5_bus_mark_unknown_trusted(G5Bus *bus,
 G5Code g5_bus_recover_trusted(const G5Bus *bus,
                               const G5TrustedActor *actor,uint64_t session,
                               uint64_t request,G5Receipt *receipt){
+ /* Cover the invalid-ingress path which returns before txn receipt lookup. */
+ if(receipt)memset(receipt,0,sizeof *receipt);
  uint64_t owner=0;
  if(!bus||trusted_owner(actor,&owner)!=G5_OK||!receipt||!request)
   return G5_STALE_SESSION;
