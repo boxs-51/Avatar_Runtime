@@ -87,11 +87,13 @@ endif()
 # Experimental G5 unified owner routing and recovery semantics, test only.
 add_executable(studio_g5_bus_recovery_tests tests/studio_g5_bus_recovery_tests.c studio_g5_bus.c studio_g5_txn.c studio_rig.c)
 target_compile_features(studio_g5_bus_recovery_tests PRIVATE c_std_11)
+target_compile_definitions(studio_g5_bus_recovery_tests PRIVATE G5_TEST_ONLY_UNBOUND_BUS=1)
 add_test(NAME g5_bus_recovery COMMAND studio_g5_bus_recovery_tests)
 
 # Fixed read-only recovery message decoder, not connected to Studio IPC.
 add_executable(studio_g5_recovery_wire_tests tests/studio_g5_recovery_wire_tests.c studio_g5_recovery_wire.c studio_g5_bus.c studio_g5_txn.c studio_rig.c)
 target_compile_features(studio_g5_recovery_wire_tests PRIVATE c_std_11)
+target_compile_definitions(studio_g5_recovery_wire_tests PRIVATE G5_TEST_ONLY_UNBOUND_BUS=1)
 add_test(NAME g5_recovery_wire COMMAND studio_g5_recovery_wire_tests)
 
 # Cryptographic receipt fingerprint primitive, model-free and cross-platform C11.
