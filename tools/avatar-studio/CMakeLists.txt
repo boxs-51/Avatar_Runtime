@@ -110,4 +110,11 @@ if(STUDIO_G5_ACTOR_RED_FIRST)
     studio_g5_bus.c studio_g5_txn.c studio_rig.c)
   target_compile_features(studio_g5_actor_receipt_redfirst PRIVATE c_std_11)
   add_test(NAME g5_actor_receipt_redfirst COMMAND studio_g5_actor_receipt_redfirst)
+
+  # G5-ACK-05: only exact original command identity may clear quarantine.
+  add_executable(studio_g5_receipt_binding_redfirst
+    tests/studio_g5_receipt_binding_redfirst.c
+    studio_g5_bus.c studio_g5_txn.c studio_rig.c)
+  target_compile_features(studio_g5_receipt_binding_redfirst PRIVATE c_std_11)
+  add_test(NAME g5_receipt_binding_redfirst COMMAND studio_g5_receipt_binding_redfirst)
 endif()
