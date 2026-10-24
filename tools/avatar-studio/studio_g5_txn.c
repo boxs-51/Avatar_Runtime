@@ -234,6 +234,9 @@ G5Code g5_txn_redo(G5Txn *t,uint64_t session,uint64_t generation,
 }
 G5Code g5_txn_receipt(const G5Txn *t,uint64_t session,uint64_t owner,
                        uint64_t request_id,G5Receipt *receipt){
+ /* Fail closed even when callers reuse a previously successful output buffer:
+    no old owner, request, revision, or fingerprint may survive a denial. */
+ if(receipt)memset(receipt,0,sizeof *receipt);
  if(!t||!session||session!=t->session_epoch||!owner||!receipt)
   return G5_STALE_SESSION;
  for(unsigned i=0;i<t->receipt_count;i++)
