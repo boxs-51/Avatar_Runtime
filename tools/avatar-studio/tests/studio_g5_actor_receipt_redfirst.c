@@ -75,11 +75,30 @@ int main(void){
  REQUIRE(receipt.revision==8);
  REQUIRE(receipt.operation==G5_COMMIT);
  REQUIRE(nonzero_digest(receipt.payload_sha256,sizeof receipt.payload_sha256));
+ /* Independent SHA-256 vector: canonical v1 COMMIT {ingress=3, actor=101,
+    session=99, generation=55, base=7, draft=1, request=700}; ignores stale
+    vertex/enabled fields left from earlier staged anchor operation. */
+ static const unsigned char expected_digest[32]={
+  0x37,0x7c,0x15,0xb6,0x9c,0x76,0xf4,0x8c,
+  0xed,0xb2,0x7a,0xd0,0x38,0xeb,0x33,0xb8,
+  0xbf,0x46,0x70,0x28,0xad,0x42,0x79,0x28,
+  0xa9,0x6a,0x2d,0x75,0x77,0xce,0x83,0x3d
+ };
+ REQUIRE(memcmp(receipt.payload_sha256,expected_digest,32)==0);
+
 
  /* Recovery must not be a mutation or unquarantine from a bare read. */
  a=command(G5_AGENT,G5_BEGIN,8);
  REQUIRE(g5_bus_submit_trusted(&bus,&alice,&a,&answer)==G5_BUSY);
  REQUIRE(g5_bus_reconcile_trusted(&bus,&bob,99,700)==G5_STALE_SESSION);
+ /* A's quarantine must not block B's distinct session identity.
+    B may obtain a draft before A reconciles, but cannot clear A's marker. */
+ b=command(G5_AGENT,G5_BEGIN,8);
+ REQUIRE(g5_bus_submit_trusted(&bus,&bob,&b,&answer)==G5_OK);
+ const uint64_t temporary_bob_draft=answer.draft_id;
+ REQUIRE(temporary_bob_draft!=0);
+ b=command(G5_AGENT,G5_ABORT,8);b.draft_id=temporary_bob_draft;
+ REQUIRE(g5_bus_submit_trusted(&bus,&bob,&b,&answer)==G5_OK);
  REQUIRE(g5_bus_reconcile_trusted(&bus,&alice,99,700)==G5_OK);
 
  /* The second Agent has no quarantine; can acquire a free lease independently. */
