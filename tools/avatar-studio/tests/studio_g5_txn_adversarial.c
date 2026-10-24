@@ -28,6 +28,8 @@ int main(void){
  CHECK(t.revision==8&&t.live.anchor_count==1);
  CHECK(g5_txn_receipt(&t,99,111,17,&rec)==G5_OK&&rec.revision==8);
  CHECK(g5_txn_receipt(&t,99,222,17,&rec)==G5_STALE_SESSION);
+ CHECK(rec.owner==0&&rec.request_id==0&&rec.revision==0&&
+       rec.operation==0&&rec.outcome==0);
  CHECK(g5_txn_commit(&t,99,55,111,draft,7,17,&rev)==G5_ID_CONFLICT);
  CHECK(g5_txn_undo(&t,99,55,8,111,18,&rev)==G5_OK);
  CHECK(rev==9&&t.live.anchor_count==0);
