@@ -69,3 +69,77 @@ G5_TEST_EXPORT int g5_fixture_reconcile(uint64_t request){
  return g5_bus_reconcile_trusted(&owner_bus,&owner_actor,fixture_epoch,request);
 }
 G5_TEST_EXPORT uint64_t g5_fixture_revision(void){return owner_bus.txn.revision;}
+
+
+/* G5 functional Agent tools test surface: never linked into shipping Studio.
+   Numeric receipts only; no paths, geometry export, or network service. */
+G5_TEST_EXPORT int g5_fixture_tool_submit(unsigned opcode,uint64_t session,
+ uint64_t generation,uint64_t expected,uint64_t draft,uint64_t request,
+ int vertex,int enabled,uint64_t *out_draft,uint64_t *out_revision){
+ if(out_draft)*out_draft=0;
+ if(out_revision)*out_revision=0;
+ if(!out_draft||!out_revision||opcode<G5_BEGIN||opcode>G5_REDO)
+  return G5_INVALID_DRAFT;
+ G5BusCommand cmd=command((G5BusOp)opcode,expected);
+ cmd.session=session;cmd.generation=generation;
+ cmd.draft_id=draft;cmd.request_id=request;
+ cmd.vertex=vertex;cmd.enabled=enabled;
+ G5BusResult result={0};
+ G5Code code=g5_bus_submit_trusted(&owner_bus,&owner_actor,&cmd,&result);
+ if(code==G5_OK){
+  *out_draft=result.draft_id;
+  *out_revision=result.document_revision;
+ }
+ return code;
+}
+G5_TEST_EXPORT int g5_fixture_tool_status(uint64_t session,
+ uint64_t generation,uint64_t *out,unsigned capacity){
+ if(!out||capacity<7)return G5_INVALID_DRAFT;
+ for(unsigned i=0;i<7;i++)out[i]=0; /* fixed ABI: never write arbitrary capacity */
+ if(!session||session!=owner_bus.txn.session_epoch)return G5_STALE_SESSION;
+ if(!generation||generation!=owner_bus.txn.model_generation)
+  return G5_STALE_MODEL;
+ out[0]=owner_bus.txn.revision;
+ out[1]=owner_bus.txn.applied_revision;
+ out[2]=owner_bus.txn.has_draft?1:0;
+ out[3]=owner_bus.txn.has_draft?owner_bus.txn.draft_id:0;
+ out[4]=owner_bus.txn.has_draft?owner_bus.txn.base_revision:0;
+ out[5]=owner_bus.txn.undo_count;
+ out[6]=owner_bus.txn.redo_count;
+ return G5_OK;
+}
+G5_TEST_EXPORT int g5_fixture_tool_receipt(uint64_t session,
+ uint64_t generation,uint64_t request,uint64_t *revision,unsigned *op){
+ if(revision)*revision=0;
+ if(op)*op=0;
+ if(!revision||!op||!request)return G5_INVALID_DRAFT;
+ if(session!=owner_bus.txn.session_epoch)return G5_STALE_SESSION;
+ if(generation!=owner_bus.txn.model_generation)return G5_STALE_MODEL;
+ G5Receipt receipt={0};
+ G5Code code=g5_bus_recover_trusted(&owner_bus,&owner_actor,session,request,&receipt);
+ if(code==G5_OK){
+  if(receipt.outcome!=G5_COMMITTED)return G5_UNKNOWN;
+  *revision=receipt.revision;*op=receipt.operation;
+ }
+ return code;
+}
+
+/* Synthetic post-effect ACK-loss injection: bind the exact COMMIT envelope
+   to its original Native receipt. This is NOT a Studio writer API. */
+G5_TEST_EXPORT int g5_fixture_tool_mark_unknown_commit(uint64_t session,
+ uint64_t generation,uint64_t expected,uint64_t draft,uint64_t request){
+ if(!session||session!=owner_bus.txn.session_epoch)return G5_STALE_SESSION;
+ if(!generation||generation!=owner_bus.txn.model_generation)return G5_STALE_MODEL;
+ if(!request||!draft)return G5_INVALID_DRAFT;
+ G5BusCommand cmd=command(G5_COMMIT,expected);
+ cmd.session=session;cmd.generation=generation;
+ cmd.draft_id=draft;cmd.request_id=request;
+ return g5_bus_mark_unknown_command_trusted(&owner_bus,&owner_actor,&cmd);
+}
+G5_TEST_EXPORT int g5_fixture_tool_reconcile(uint64_t session,
+ uint64_t generation,uint64_t request){
+ if(!session||session!=owner_bus.txn.session_epoch)return G5_STALE_SESSION;
+ if(!generation||generation!=owner_bus.txn.model_generation)return G5_STALE_MODEL;
+ if(!request)return G5_INVALID_DRAFT;
+ return g5_bus_reconcile_trusted(&owner_bus,&owner_actor,session,request);
+}

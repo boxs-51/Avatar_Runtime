@@ -68,24 +68,25 @@ def test_codex81_ui_revision_hook_covers_all_edit_surfaces():
     assert "ui_rig_checkpoint=&ui_rig_before;" in c
     assert "studio_note_ui_rig_edit();" in c
     assert "ui_rig_checkpoint=NULL;" in c
+    assert "studio_rig_dispatch(&s.rig,&s.rig_revision" in c
     ui=c[c.index("static void rig_overlay_ui("):c.index("static int studio_selected_topology(")]
     editor=c[c.index("static void rig_ui("):c.index("static int ",c.index("static void rig_ui(")+1)]
     for token in (
-        "studio_rig_toggle_anchor(&s.rig,nearest)",
-        "studio_rig_toggle_beam(&s.rig,s.rig_beam_start,nearest)",
-        "studio_rig_bank_select(&s.rig_bank,&s.rig,d,signature(),n)",
+        "rig_anchor(nearest)",
+        "rig_beam(s.rig_beam_start,nearest)",
+        "rig_select(d,signature(),n)",
     ):
         idx=ui.index(token)
         assert "studio_note_ui_rig_edit();" in ui[idx:idx+160],token
     for token in (
-        "studio_rig_toggle_anchor(&s.rig,s.rig_selected)",
-        "studio_rig_toggle_beam(&s.rig,s.rig_beam_start,s.rig_selected)",
-        "studio_rig_load(&s.rig,path",
-        "studio_rig_parent(&s.rig,s.rig_parent_start",
-        "studio_rig_parent(&s.rig,s.rig.parents[i].parent",
-        "studio_rig_weight(&s.rig,s.rig_selected",
-        "studio_rig_brush(&s.rig,points",
-        "studio_rig_cross(&s.rig,s.rig_selected",
+        "rig_anchor(s.rig_selected)",
+        "rig_beam(s.rig_beam_start,s.rig_selected)",
+        "rig_load(path",
+        "rig_parent(s.rig_parent_start",
+        "rig_parent(s.rig.parents[i].parent",
+        "rig_weight(s.rig_selected",
+        "rig_brush(points",
+        "rig_cross(s.rig_selected",
         "toast(studio_adopt_proposal()?",
     ):
         idx=editor.index(token)

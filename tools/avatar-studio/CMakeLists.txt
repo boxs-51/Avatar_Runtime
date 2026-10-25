@@ -31,7 +31,7 @@ foreach(path IN LISTS support)
 endforeach()
 set(UTF8PROC_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 add_subdirectory("${ARS_ROOT}/build/c-deps/utf8proc" utf8proc EXCLUDE_FROM_ALL)
-add_executable(avatar_studio studio.c studio_render.c studio_backend.cpp studio_xpbd.cpp studio_rig.c studio_layer_analysis.c ${studio_sources}
+add_executable(avatar_studio studio.c studio_render.c studio_backend.cpp studio_xpbd.cpp studio_rig.c studio_layer_analysis.c studio_layer_editor.c studio_geometry_document.c studio_geometry_runtime.c studio_geometry_xpbd.cpp studio_g5_live_status.c studio_rig_dispatch.c studio_rig_history.c studio_v1_recovery.c studio_rig_frame_fence.c ${studio_sources}
   "${ARS_ROOT}/src/moc3/retained_physics.cpp"
   "${ARS_ROOT}/src/moc3/physics_admission.cpp"
   "${ARS_ROOT}/src/validation/strict_json.cpp"
@@ -57,6 +57,14 @@ target_compile_features(studio_rig_tests PRIVATE c_std_11)
 target_compile_definitions(studio_rig_tests PRIVATE STUDIO_RIG_TEST_FAULT_INJECTION=1)
 
 # Pure C deterministic layer analysis: synthetic mesh only.
+add_executable(studio_geometry_document_tests tests/studio_geometry_document_tests.c studio_geometry_document.c studio_geometry_runtime.c)
+target_compile_features(studio_geometry_document_tests PRIVATE c_std_11)
+add_test(NAME studio_geometry_document COMMAND studio_geometry_document_tests)
+
+add_executable(studio_layer_editor_tests tests/studio_layer_editor_tests.c studio_layer_editor.c)
+target_compile_features(studio_layer_editor_tests PRIVATE c_std_11)
+add_test(NAME studio_layer_editor_cursor COMMAND studio_layer_editor_tests)
+
 add_executable(studio_layer_analysis_tests tests/studio_layer_analysis_tests.c studio_layer_analysis.c)
 target_compile_features(studio_layer_analysis_tests PRIVATE c_std_11)
 
@@ -65,6 +73,49 @@ target_compile_features(studio_layer_analysis_tests PRIVATE c_std_11)
 add_library(studio_g5_txn_core STATIC studio_g5_txn.c studio_rig.c)
 target_compile_features(studio_g5_txn_core PUBLIC c_std_11)
 set_target_properties(studio_g5_txn_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+# Real V1 owner read-only recovery receipt core, no model/public SDK export.
+add_executable(studio_v1_recovery_tests
+  tests/studio_v1_recovery_tests.c studio_v1_recovery.c)
+target_compile_features(studio_v1_recovery_tests PRIVATE c_std_11)
+add_test(NAME g5_real_studio_v1_recovery COMMAND studio_v1_recovery_tests)
+
+# Owner-thread Rig dispatch: synthetic CAS/atomicity tests, private C11 API.
+add_executable(studio_rig_dispatch_tests
+  tests/studio_rig_dispatch_tests.c studio_rig_dispatch.c studio_rig.c)
+target_compile_features(studio_rig_dispatch_tests PRIVATE c_std_11)
+add_test(NAME g5_rig_owner_dispatch COMMAND studio_rig_dispatch_tests)
+add_executable(studio_rig_history_tests
+ tests/studio_rig_history_tests.c studio_rig_history.c studio_rig.c)
+target_compile_features(studio_rig_history_tests PRIVATE c_std_11)
+add_test(NAME studio_rig_local_history COMMAND studio_rig_history_tests)
+
+add_executable(studio_rig_authority_tests
+ tests/studio_rig_authority_tests.c studio_rig_authority.c
+ studio_g5_bus.c studio_rig_dispatch.c)
+target_compile_features(studio_rig_authority_tests PRIVATE c_std_11)
+target_link_libraries(studio_rig_authority_tests PRIVATE studio_g5_txn_core)
+add_test(NAME g5_rig_shared_authority COMMAND studio_rig_authority_tests)
+
+
+# Read-only Studio G5 HOLD status, no transaction writer linked into shipping binary.
+add_executable(studio_g5_live_status_tests
+  tests/studio_g5_live_status_tests.c studio_g5_live_status.c)
+target_compile_features(studio_g5_live_status_tests PRIVATE c_std_11)
+add_test(NAME g5_live_status_hold COMMAND studio_g5_live_status_tests)
+
+# Legacy Rig frame witness, separate from G5 document APPLIED status.
+add_executable(studio_rig_frame_fence_tests
+  tests/studio_rig_frame_fence_tests.c studio_rig_frame_fence.c)
+target_compile_features(studio_rig_frame_fence_tests PRIVATE c_std_11)
+add_test(NAME g5_legacy_frame_fence COMMAND studio_rig_frame_fence_tests)
+
+# G5 full Rig candidate staging, Native synthetic and feature-off for Studio.
+add_executable(studio_g5_full_rig_stage_tests
+  tests/studio_g5_full_rig_stage_tests.c studio_g5_bus.c)
+target_compile_features(studio_g5_full_rig_stage_tests PRIVATE c_std_11)
+target_link_libraries(studio_g5_full_rig_stage_tests PRIVATE studio_g5_txn_core)
+add_test(NAME g5_full_rig_native_stage COMMAND studio_g5_full_rig_stage_tests)
 
 # G5 T1 Native in-memory transaction RED-first; no Studio ingress or model data.
 add_executable(studio_g5_txn_tests tests/studio_g5_txn_tests.c)
@@ -147,5 +198,16 @@ if(STUDIO_G5_IPC_FIXTURE)
       "${ARS_ROOT}/scripts/test_studio_g5_process_recovery.py")
     set_tests_properties(g5_process_recovery_fixture PROPERTIES
       WORKING_DIRECTORY "${ARS_ROOT}" TIMEOUT 25)
+    # Synthetic-only Agent workflow via model-free Native fixture.
+    add_test(NAME g5_agent_tools_native
+      COMMAND "${Python3_EXECUTABLE}" -B -m scripts.test_studio_g5_agent_tools_native)
+    set_tests_properties(g5_agent_tools_native PROPERTIES
+      WORKING_DIRECTORY "${ARS_ROOT}" TIMEOUT 25)
+    # Agent task tooling across two test-only file IPC lanes and one Native owner.
+    add_test(NAME g5_agent_tools_ipc
+      COMMAND "${Python3_EXECUTABLE}" -B -m
+      scripts.test_studio_g5_agent_tools_ipc)
+    set_tests_properties(g5_agent_tools_ipc PROPERTIES
+      WORKING_DIRECTORY "${ARS_ROOT}" TIMEOUT 30)
   endif()
 endif()

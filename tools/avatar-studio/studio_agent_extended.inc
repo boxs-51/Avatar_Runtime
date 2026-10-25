@@ -39,6 +39,18 @@ static int studio_agent_from_hex(const char *hex,char *out,size_t cap){
  out[n/2]=0;return 1;
 }
 static int studio_agent_extended(FILE *f,const char *op,char *receipt,size_t cap){
+ /* Read-only capability handshake from the REAL Studio owner thread.
+    V1 Rig revision is NOT a G5 transaction/document revision. */
+ if(!strcmp(op,"G5_LEGACY_FRAME_STATUS")){
+  if(!studio_agent_eof(f))return 0;
+  return studio_rig_frame_format(&s.legacy_frame_fence,receipt,cap,
+                                 s.model_generation,s.rig_revision);
+ }
+ if(!strcmp(op,"G5_LOCAL_STATUS")){
+  if(!studio_agent_eof(f))return 0;
+  return studio_g5_live_status_format(receipt,cap,
+                                       s.model_generation,s.rig_revision);
+ }
  int a=0,b=0,c=0;float x=0,y=0;
  char name[48]={0};
  /* Rig revision is scoped to the live editor, not to a render frame.
@@ -361,7 +373,7 @@ static int studio_agent_extended(FILE *f,const char *op,char *receipt,size_t cap
   snprintf(path,sizeof path,"%s/rig-layer-%d.txt",s.folder,s.rig.drawable);
   int done=0;
   if(!strcmp(name,"save"))done=studio_rig_save(&s.rig,path);
-  if(!strcmp(name,"load"))done=studio_rig_load(&s.rig,path,
+  if(!strcmp(name,"load"))done=rig_load(path,
            signature(),s.rig.vertex_count);
   if(!done)return 0;
   snprintf(receipt,cap,"rig=%s success=1",name);return 1;
@@ -410,11 +422,13 @@ static int studio_agent_extended(FILE *f,const char *op,char *receipt,size_t cap
   void *next=studio_xpbd_bind(s.core.model,o);
   if(!next)return 0;
   studio_xpbd_disable(s.xpbd);s.xpbd=next;
+  studio_rig_frame_unbind(&s.legacy_frame_fence);
   snprintf(receipt,cap,"xpbd=applied");return 1;
  }
  if(!strcmp(op,"XPBD_DISABLE")){
   if(!studio_agent_eof(f))return 0;
   studio_xpbd_disable(s.xpbd);s.xpbd=NULL;
+  studio_rig_frame_unbind(&s.legacy_frame_fence);
   snprintf(receipt,cap,"xpbd=off");return 1;
  }
  if(!strcmp(op,"XPBD_INSPECT")){

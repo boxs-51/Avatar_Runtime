@@ -1,6 +1,6 @@
 #pragma once
-/* Experimental single-owner command bus. NOT connected to Studio/IPC/V2.
-   Ingress is supplied by trusted Native routing, never decoded from user JSON. */
+/* Single-owner Native transaction bus. Actor provenance is supplied by
+   trusted local routing, never by caller-authored wire fields. */
 #include "studio_g5_txn.h"
 typedef enum {G5_UI=1,G5_LEGACY=2,G5_AGENT=3} G5Ingress;
 /* The authenticated Host/session adapter creates this; never deserialize from JSON.
@@ -43,13 +43,18 @@ G5Code g5_bus_recover(const G5Bus*,G5Ingress,uint64_t session,
 G5Code g5_bus_reconcile(G5Bus*,G5Ingress,uint64_t session,
                         uint64_t original_request);
 #endif /* G5_TEST_ONLY_UNBOUND_BUS */
-/* G5 T2 trusted-owner API: new integrations MUST use these calls.
-   The legacy unbound methods above exist solely for existing standalone tests
-   and MUST NOT be connected to Studio IPC, UI or V2 writer. */
+/* All Native integrations must bind an ingress to a trusted owner.
+   Unbound entrypoints are test-only and must not service product IPC. */
 G5Code g5_bus_submit_trusted(G5Bus*,const G5TrustedActor*,
                               const G5BusCommand*,G5BusResult*);
 /* Record intended command identity in the owner-scoped quarantine.
    Never accept a caller-provided hash or a bare request ID in production. */
+/* Native-origin candidate; NEVER deserialize a raw StudioRig or actor
+   from IPC. Supports role/brush/load/selection only after native validation.
+   This stages but never commits, applies, exports or acknowledges a frame. */
+G5Code g5_bus_stage_native_candidate_trusted(G5Bus*,const G5TrustedActor*,
+     uint64_t session,uint64_t generation,uint64_t draft_id,
+     const StudioRig *candidate);
 G5Code g5_bus_mark_unknown_command_trusted(G5Bus*,const G5TrustedActor*,
                                             const G5BusCommand*);
 #ifdef G5_TEST_ONLY_UNBOUND_BUS

@@ -28,6 +28,9 @@ class AgentApiContract(unittest.TestCase):
         self.assertEqual(validate_command({"op": "rig.anchor", "vertex": 12, "enabled": True}), "RIG_ANCHOR 12 1")
         self.assertEqual(validate_command({"op": "rig.beam", "a": 2, "b": 9, "enabled": False}), "RIG_BEAM 2 9 0")
         self.assertEqual(validate_command({"op": "rig.apply"}), "RIG_APPLY")
+        self.assertEqual(validate_command({"op":"rig.history","generation":123}),"RIG_HISTORY 123")
+        self.assertEqual(validate_command({"op":"rig.undo","generation":123,"revision":4}),"RIG_UNDO 123 4")
+        self.assertEqual(validate_command({"op":"rig.redo","generation":123,"revision":5}),"RIG_REDO 123 5")
         self.assertEqual(validate_command({"op": "rig.inspect"}), "RIG_INSPECT")
         self.assertEqual(validate_command({"op": "layer.scan"}), "LAYER_SCAN")
         self.assertEqual(validate_command({"op": "layer.suggest"}), "LAYER_SUGGEST")
@@ -61,6 +64,10 @@ class AgentApiContract(unittest.TestCase):
             {"op":"layer.label","kind":True},
             {"op":"layer.scan","path":"../private"},
             {"op":"rig.select","drawable":-1},
+            {"op":"rig.undo","generation":0,"revision":1},
+            {"op":"rig.undo","generation":123,"revision":True},
+            {"op":"rig.redo","generation":123,"revision":2**63},
+            {"op":"rig.history","generation":123,"revision":2},
             {"op":"rig.anchor","vertex":3,"enabled":"yes"},
             {"op":"rig.beam","a":2,"b":2,"enabled":True},
             {"op":"rig.apply","file":"../../private"},
@@ -114,6 +121,57 @@ class AgentApiContract(unittest.TestCase):
         for command,wire in cases:
             with self.subTest(op=command["op"]):
                 self.assertEqual(validate_command(command),wire)
+    def test_layer_editor_cursor_wire_contract(self):
+        accepted=[
+            ({"op":"layer.cursor","generation":9},"LAYER_CURSOR 9"),
+            ({"op":"layer.vertex.select","generation":9,"revision":4,"index":2},
+             "LAYER_VERTEX_SELECT 9 4 2"),
+            ({"op":"layer.triangle.select","generation":9,"revision":4,"index":1},
+             "LAYER_TRIANGLE_SELECT 9 4 1"),
+            ({"op":"layer.overlay","generation":9,"revision":4,"enabled":True},
+             "LAYER_OVERLAY 9 4 1"),
+            ({"op":"layer.isolate","generation":9,"revision":4,"enabled":False},
+             "LAYER_ISOLATE 9 4 0"),
+        ]
+        for request,expected in accepted:
+            with self.subTest(request=request):
+                self.assertEqual(validate_command(request),expected)
+        denied=[
+            {"op":"layer.cursor","generation":0},
+            {"op":"layer.vertex.select","generation":9,"revision":4,"index":-1},
+            {"op":"layer.triangle.select","generation":9,"revision":4,"index":2**63},
+            {"op":"layer.isolate","generation":9,"revision":4,"enabled":1},
+            {"op":"layer.overlay","generation":True,"revision":4,"enabled":True},
+            {"op":"layer.vertex.select","generation":9,"revision":4,"index":0,"path":"secret"},
+        ]
+        for request in denied:
+            with self.subTest(request=request),self.assertRaises(ValueError):
+                validate_command(request)
+
+    def test_rig_selection_epoch_and_layer_read_contract(self):
+        valid=[
+            ({"op":"rig.selection","generation":42},"RIG_SELECTION 42"),
+            ({"op":"rig.select.at","generation":42,"revision":7,"drawable":3},
+             "RIG_SELECT_AT 42 7 3"),
+            ({"op":"layer.select","generation":42,"revision":7,"drawable":3},
+             "LAYER_SELECT 42 7 3"),
+            ({"op":"layer.inspect","generation":42},"LAYER_INSPECT 42"),
+        ]
+        for request,wire in valid:
+            with self.subTest(request=request):
+                self.assertEqual(validate_command(request),wire)
+        invalid=[
+            {"op":"rig.selection","generation":0},
+            {"op":"rig.select.at","generation":True,"revision":1,"drawable":0},
+            {"op":"rig.select.at","generation":42,"revision":-1,"drawable":0},
+            {"op":"rig.select.at","generation":42,"revision":2**63,"drawable":0},
+            {"op":"layer.select","generation":42,"revision":0,"drawable":-1},
+            {"op":"layer.inspect","generation":42,"path":".."},
+        ]
+        for request in invalid:
+            with self.subTest(request=request),self.assertRaises(ValueError):
+                validate_command(request)
+
     def test_live_bridge_receipt_correlates_and_removes_request(self):
         with tempfile.TemporaryDirectory() as root:
             folder=Path(root)

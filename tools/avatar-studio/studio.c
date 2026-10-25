@@ -1,8 +1,18 @@
 /* Avatar Studio: local interactive model lab, not public SDK qualification. */
 #include "viewer.h"
+#include "rlgl.h"
 #include "studio_backend.h"
 #include "studio_xpbd.h"
 #include "studio_layer_analysis.h"
+#include "studio_layer_editor.h"
+#include "studio_geometry_document.h"
+#include "studio_geometry_runtime.h"
+#include "studio_geometry_xpbd.h"
+#include "studio_g5_live_status.h"
+#include "studio_rig_dispatch.h"
+#include "studio_rig_history.h"
+#include "studio_rig_frame_fence.h"
+#include "studio_v1_recovery.h"
 extern __declspec(dllimport) void __stdcall glFinish(void);
 extern __declspec(dllimport) unsigned int __stdcall glGetError(void);
 #define GL_NO_ERROR 0
@@ -30,14 +40,36 @@ typedef struct {
     int history;float scroll;char search[96],model_name[256],folder[1024],notice[192];
     double notice_until;void *linked;int physics_reset,step_requested;
     int failures,checks,physics_expected,xpbd_smoke,xpbd_smoke_frames,xpbd_motion_case,xpbd_motion_rebinds;float paused_time;double paused_checksum;
-    void *xpbd;int xpbd_first,xpbd_second,xpbd_joint,xpbd_page,rig_selected,rig_beam_start,rig_overlay,rig_parent_start,rig_advanced,rig_cross_child;float rig_brush_radius,rig_brush_target;StudioRig rig;StudioRigBank rig_bank;StudioLayerSuggestion layer_proposal;StudioLayerTopology layer_topology;int layer_topology_valid;
+    void *xpbd;int xpbd_first,xpbd_second,xpbd_joint,xpbd_page,rig_selected,rig_beam_start,rig_overlay,rig_parent_start,rig_advanced,rig_cross_child;float rig_brush_radius,rig_brush_target;StudioRig rig;StudioRigBank rig_bank;StudioRigHistory rig_history;StudioLayerEditor layer_editor;StudioV1Recovery v1_recovery;StudioRigFrameFence legacy_frame_fence;StudioLayerSuggestion layer_proposal;StudioLayerTopology layer_topology;int layer_topology_valid;
      int layer_proposal_valid,layer_proposal_drawable;uint64_t layer_proposal_signature;float xpbd_gravity,xpbd_wind,xpbd_compliance,xpbd_collision,xpbd_mass,xpbd_damping,xpbd_contact_compliance,xpbd_step,xpbd_iters,xpbd_pin,xpbd_substeps,xpbd_pose_compliance,xpbd_source_transfer,xpbd_bending,xpbd_surface,xpbd_anchors;
     uint64_t model_generation; /* fresh OS random 63-bit tag per successful load */
     uint64_t rig_revision; /* monotonic within model generation; owner thread only */
     Settings settings;RenderTexture2D target;Rectangle viewport;
 } Studio;
 static Studio s;
+static StudioGeometryDocument geometry;
+static int geometry_selected=-1,geometry_vertex=-1,geometry_mode=1;
+static int geometry_triangle=0,geometry_add_mode=0;
+static int geometry_property_tab=0,studio_left_collapsed=0,studio_right_collapsed=0;
+static int geometry_link_parent_id=0,geometry_link_page=0;
+static uint32_t geometry_link_parent_vertex_id=0;
+static uint64_t geometry_link_mark_revision=0,geometry_link_mark_signature=0;
+static uint64_t geometry_model_fingerprint;
+static Texture2D geometry_checker;
+static void *geometry_xpbd;
+static int geometry_bound_layer=-1,geometry_physics_pending=0;
+static uint64_t geometry_bound_revision=0,geometry_accepted_revision=0;
+static int geometry_accepted_frames=0;
+
+
 static void verify(int pass,const char *name);
+static uint64_t signature(void);
+static uint64_t geometry_signature(void);
+static uint64_t geometry_file_fingerprint(const char*);
+static int geometry_project_io(int save);
+static int geometry_runtime_io(int compile);
+static int geometry_bind_physics(void);
+static void geometry_stop_physics(void);
 static void studio_note_rig_revision(const StudioRig *before){
     if(memcmp(before,&s.rig,sizeof s.rig)!=0&&
        s.rig_revision<UINT64_C(0x7fffffffffffffff))++s.rig_revision;
@@ -45,12 +77,128 @@ static void studio_note_rig_revision(const StudioRig *before){
 /* The UI owner thread increments per accepted edit rather than from the
    net byte difference at end of a frame (which misses two inverse edits). */
 static StudioRig *ui_rig_checkpoint=NULL;
+static uint64_t ui_checkpoint_revision=0;
 static void studio_note_ui_rig_edit(void){
     if(ui_rig_checkpoint){
-        studio_note_rig_revision(ui_rig_checkpoint);
+        /* Dispatcher already counted this accepted logical command.
+           Preserve old fallback only to detect as-yet-unrouted edits. */
+        if(s.rig_revision==ui_checkpoint_revision)
+            studio_note_rig_revision(ui_rig_checkpoint);
         *ui_rig_checkpoint=s.rig;
+        ui_checkpoint_revision=s.rig_revision;
     }
 }
+/* All UI and local IPC Rig edits use the owner-thread candidate dispatcher. */
+typedef enum {
+ RC_ANCHOR,RC_BEAM,RC_ROLE,RC_PARENT,RC_WEIGHT,RC_CROSS,RC_BRUSH,
+ RC_LOAD,RC_REPLACE
+} RigCommandKind;
+typedef struct {
+ RigCommandKind kind;int a,b,c,enabled,vertices,*affected;
+ float value,radius;
+ uint64_t signature;
+ const StudioRigPoint *points;
+ const char *path;
+ const StudioRig *replacement;
+ StudioRigBank *bank;
+} RigCommand;
+static int rig_command_apply(StudioRig *draft,void *opaque){
+ RigCommand *w=(RigCommand*)opaque;
+ switch(w->kind){
+ case RC_ANCHOR:return studio_rig_toggle_anchor(draft,w->a);
+ case RC_BEAM:return studio_rig_toggle_beam(draft,w->a,w->b);
+ case RC_ROLE:return studio_rig_set_role(draft,w->a);
+ case RC_PARENT:return studio_rig_parent(draft,w->a,w->b,w->value,w->enabled);
+ case RC_WEIGHT:return studio_rig_weight(draft,w->a,w->value);
+ case RC_CROSS:return studio_rig_cross(draft,w->a,w->b,w->c,w->vertices,w->value,w->enabled);
+ case RC_BRUSH:return studio_rig_brush(draft,w->points,w->vertices,w->a,
+                                        w->radius,w->value,w->affected);
+ case RC_LOAD:return studio_rig_load(draft,w->path,w->signature,w->vertices);
+ case RC_REPLACE:if(!w->replacement)return 0;*draft=*w->replacement;return 1;
+ default:return 0;
+ }
+}
+static int rig_submit(RigCommand *work){
+ if(!s.core.model||!s.model_generation)return 0;
+ StudioRig before=s.rig;
+ uint64_t previous=s.rig_revision;
+ StudioRigDispatchCode result=studio_rig_dispatch(&s.rig,&s.rig_revision,
+   s.model_generation,s.model_generation,s.rig_revision,rig_command_apply,work);
+ if(result==STUDIO_RIG_DISPATCH_OK&&
+    !studio_rig_history_record(&s.rig_history,s.model_generation,
+                               previous,s.rig_revision,&before,&s.rig))
+   studio_rig_history_reset(&s.rig_history,s.model_generation,
+                            s.rig_revision,&s.rig);
+ return result==STUDIO_RIG_DISPATCH_OK||result==STUDIO_RIG_DISPATCH_UNCHANGED;
+}
+static int rig_anchor(int vertex){RigCommand w={.kind=RC_ANCHOR,.a=vertex};return rig_submit(&w);}
+static int rig_beam(int first,int second){RigCommand w={.kind=RC_BEAM,.a=first,.b=second};return rig_submit(&w);}
+static int rig_role(int role){RigCommand w={.kind=RC_ROLE,.a=role};return rig_submit(&w);}
+static int rig_parent(int parent,int child,float stiffness,int enable){
+ RigCommand w={.kind=RC_PARENT,.a=parent,.b=child,.value=stiffness,.enabled=enable};
+ return rig_submit(&w);
+}
+static int rig_weight(int vertex,float weight){
+ RigCommand w={.kind=RC_WEIGHT,.a=vertex,.value=weight};return rig_submit(&w);
+}
+static int rig_cross(int parent,int target,int child,int target_vertices,float stiff,int enable){
+ RigCommand w={.kind=RC_CROSS,.a=parent,.b=target,.c=child,.vertices=target_vertices,
+               .value=stiff,.enabled=enable};
+ return rig_submit(&w);
+}
+static int rig_brush(const StudioRigPoint*pts,int n,int center,float radius,
+                     float value,int *touched){
+ RigCommand w={.kind=RC_BRUSH,.points=pts,.vertices=n,.a=center,
+               .radius=radius,.value=value,.affected=touched};
+ return rig_submit(&w);
+}
+static int rig_load(const char *path,uint64_t sig,int vertices){
+ RigCommand w={.kind=RC_LOAD,.path=path,.signature=sig,.vertices=vertices};
+ return rig_submit(&w);
+}
+static int rig_replace(const StudioRig *candidate){
+ RigCommand w={.kind=RC_REPLACE,.replacement=candidate};return rig_submit(&w);
+}
+static int rig_select(int drawable,uint64_t sig,int vertices){
+ if(!s.core.model||!s.model_generation||sig!=signature())return 0;
+ const int total=csmGetDrawableCount(s.core.model);
+ const int *counts=csmGetDrawableVertexCounts(s.core.model);
+ if(!counts||drawable<0||drawable>=total||drawable>=4096||
+    vertices<1||vertices>2048||counts[drawable]!=vertices)return 0;
+ StudioRigDispatchCode result=studio_rig_dispatch_select(
+   &s.rig,&s.rig_bank,&s.rig_revision,
+   s.model_generation,s.model_generation,s.rig_revision,
+   drawable,sig,vertices);
+ if(result==STUDIO_RIG_DISPATCH_OK){
+  studio_rig_history_reset(&s.rig_history,s.model_generation,
+                           s.rig_revision,&s.rig);
+  s.rig_selected=0;s.rig_beam_start=-1;s.rig_parent_start=-1;
+  s.layer_proposal_valid=0;s.layer_topology_valid=0;
+  studio_layer_editor_reset(&s.layer_editor,s.model_generation,drawable);
+  s.opt.onlyDrawable=-1;
+ }
+ if(result==STUDIO_RIG_DISPATCH_OK||result==STUDIO_RIG_DISPATCH_UNCHANGED){
+  s.xpbd_first=drawable;
+  if(s.layer_editor.generation!=s.model_generation||
+     s.layer_editor.drawable!=drawable)
+   studio_layer_editor_reset(&s.layer_editor,s.model_generation,drawable);
+  return 1;
+ }
+ return 0;
+}
+static int rig_select_relative(int direction){
+ const int total=csmGetDrawableCount(s.core.model);
+ const int *counts=csmGetDrawableVertexCounts(s.core.model);
+ int next=studio_rig_selectable_next(counts,total,s.xpbd_first,direction);
+ if(next<0)return 0;
+ return rig_select(next,signature(),counts[next]);
+}
+static int rig_history_step(int redo,uint64_t generation,uint64_t revision){
+ if(!s.core.model||!s.model_generation)return 0;
+ return studio_rig_history_step(&s.rig_history,&s.rig,&s.rig_revision,
+                    s.model_generation,generation,revision,redo);
+}
+
 static float bound(float v,float a,float b){return fminf(b,fmaxf(a,v));}
 static float mix(float a,float b,float t){return a+(b-a)*t;}
 static int hit(Rectangle r){return CheckCollisionPointRec(GetMousePosition(),r);}
@@ -91,8 +239,38 @@ static void defaults(void){
     s.rig_parent_start=-1;s.rig_advanced=0;s.rig_cross_child=1;s.rig_brush_radius=.7f;s.rig_brush_target=.35f;s.xpbd_first=0;s.xpbd_second=-1;s.xpbd_joint=0;s.xpbd_gravity=-12;s.xpbd_wind=3;s.xpbd_compliance=.0000001f;s.xpbd_collision=0;s.xpbd_mass=1;s.xpbd_damping=.96f;s.xpbd_contact_compliance=0;s.xpbd_step=1.f/60;s.xpbd_iters=8;s.xpbd_pin=0;s.xpbd_substeps=4;s.xpbd_pose_compliance=.004f;s.xpbd_source_transfer=.03f;s.xpbd_bending=.00001f;s.xpbd_surface=.02f;s.xpbd_anchors=2;
     memset(s.weights,0,sizeof s.weights);s.weights[0]=1;s.physics_reset=1;
 }
+static void geometry_stop_physics(void){
+ studio_geometry_xpbd_free(geometry_xpbd);geometry_xpbd=NULL;
+ geometry_bound_layer=-1;geometry_bound_revision=0;
+ geometry_physics_pending=0;geometry_accepted_revision=0;
+ geometry_accepted_frames=0;
+}
+static int geometry_bind_physics(void){
+ if(!s.core.model||geometry_selected<0||
+     geometry_selected>=geometry.active.count)return 0;
+ void*next=geometry.active.link_count?
+       studio_geometry_xpbd_bind_linked(&geometry,geometry.revision,geometry_selected):
+       studio_geometry_xpbd_bind(
+        &geometry.active.layers[geometry_selected],geometry.revision);
+ if(!next)return 0;
+ geometry_stop_physics();geometry_xpbd=next;
+ geometry_bound_layer=geometry_selected;
+ geometry_bound_revision=geometry.revision;
+ return 1;
+}
 static void free_model(void){
-    memset(&s.rig,0,sizeof s.rig);memset(&s.rig_bank,0,sizeof s.rig_bank);s.layer_proposal_valid=0;s.layer_topology_valid=0;
+    geometry_stop_physics();
+    memset(&s.rig,0,sizeof s.rig);memset(&s.rig_bank,0,sizeof s.rig_bank);
+    memset(&s.rig_history,0,sizeof s.rig_history);
+    memset(&s.layer_editor,0,sizeof s.layer_editor);s.opt.onlyDrawable=-1;
+    geometry_model_fingerprint=0;
+    geometry_link_parent_id=0;geometry_link_parent_vertex_id=0;
+    geometry_link_mark_revision=0;geometry_link_mark_signature=0;
+    geometry_link_page=0;
+    studio_geometry_init(&geometry,0);geometry_selected=-1;geometry_vertex=-1;
+    memset(&s.v1_recovery,0,sizeof s.v1_recovery); /* no cross-model receipt inference */
+    studio_rig_frame_reset(&s.legacy_frame_fence,0);
+    s.layer_proposal_valid=0;s.layer_topology_valid=0;
     studio_xpbd_disable(s.xpbd);s.xpbd=NULL;
     if(s.core.model){studio_physics_free(s.linked);s.linked=NULL;RendererFree(&s.renderer);FreeCore(&s.core);}
     free(s.sorted);free(s.manual);free(s.pins);free(s.part_values);free(s.part_defaults);s.part_defaults=NULL;
@@ -127,11 +305,16 @@ static int load_model(const char *path){
         if(physics)studio_physics_free(physics);
          toast("Model generation unavailable; previous model kept.");return 0;
     }
+    uint64_t model_fingerprint=geometry_file_fingerprint(input.moc);
     free_model();s.core=core;s.renderer=renderer;s.sorted=sorted;s.manual=manual;s.pins=pins;s.part_values=part_values;
+    geometry_model_fingerprint=model_fingerprint;
     s.model_generation=generation;s.rig_revision=0;
+    studio_rig_frame_reset(&s.legacy_frame_fence,generation);
     s.part_defaults=part_defaults;s.count=count;s.parts=parts;s.linked=physics;memcpy(manual,csmGetParameterDefaultValues(core.model),(size_t)count*sizeof(float));
     memcpy(part_values,csmGetPartOpacities(core.model),(size_t)parts*sizeof(float));
     memcpy(part_defaults,part_values,(size_t)parts*sizeof(float));
+    studio_geometry_init(&geometry,geometry_signature());
+    geometry_selected=-1;geometry_vertex=-1;
     s.scroll=0;s.search[0]=0;defaults();FitView(&s.view,s.core.model);s.base_zoom=s.view.zoom;
     snprintf(s.model_name,sizeof s.model_name,"%s",GetFileName(path));
     toast(physics?"Model ready. Linked Physics3 active.":"Model ready. No supported linked Physics3.");return 1;
@@ -188,6 +371,22 @@ static void update(float dt){
     float *parts=csmGetPartOpacities(s.core.model);for(int i=0;i<s.parts;++i)parts[i]=s.part_values[i];
     csmUpdateModel(s.core.model);
     if(!s.dragging){s.pull_x*=expf(-dt*6);s.pull_y*=expf(-dt*6);}
+}
+static uint64_t geometry_file_fingerprint(const char*path){
+ if(!path||!path[0])return 0;
+ FILE*f=fopen(path,"rb");if(!f)return 0;
+ uint64_t h=UINT64_C(1469598103934665603);unsigned char chunk[8192];
+ size_t n=0;unsigned long long total=0;
+ while((n=fread(chunk,1,sizeof chunk,f))>0){
+  total+=n;
+  if(total>UINT64_C(536870912)){h=0;break;}
+  for(size_t i=0;i<n;i++){h^=chunk[i];h*=UINT64_C(1099511628211);}
+ }
+ int failed=ferror(f);fclose(f);
+ return failed||!total?0:h;
+}
+static uint64_t geometry_signature(void){
+ return geometry_model_fingerprint?(signature()^geometry_model_fingerprint):0;
 }
 static uint64_t signature(void){
     uint64_t h=1469598103934665603ull;const char **ids=csmGetParameterIds(s.core.model);
@@ -286,10 +485,10 @@ static void rig_overlay_ui(void){
  if(d<0||d>=count)return;
  const int *counts=csmGetDrawableVertexCounts(s.core.model);
  const csmVector2 **vertices=csmGetDrawableVertexPositions(s.core.model);
- if(!counts||!vertices||!vertices[d]||counts[d]<1)return;
+ if(!counts||!vertices||!vertices[d]||counts[d]<1||counts[d]>2048||d>=4096)return;
  int n=counts[d];
  if(s.rig.vertex_count!=n||s.rig.drawable!=d){
-   if(!studio_rig_bank_select(&s.rig_bank,&s.rig,d,signature(),n))return;
+   if(!rig_select(d,signature(),n))return;
    studio_note_ui_rig_edit();
  }
  Vector2 mouse=GetMousePosition();
@@ -307,10 +506,10 @@ static void rig_overlay_ui(void){
  if(CheckCollisionPointRec(mouse,s.viewport)&&nearest>=0&&IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
   s.rig_selected=nearest;
   if(IsKeyDown(KEY_LEFT_SHIFT)||IsKeyDown(KEY_RIGHT_SHIFT))
-   {studio_rig_toggle_anchor(&s.rig,nearest);studio_note_ui_rig_edit();}
+   {rig_anchor(nearest);studio_note_ui_rig_edit();}
   else if(IsKeyDown(KEY_LEFT_CONTROL)||IsKeyDown(KEY_RIGHT_CONTROL)){
    if(s.rig_beam_start<0)s.rig_beam_start=nearest;
-   else {studio_rig_toggle_beam(&s.rig,s.rig_beam_start,nearest);studio_note_ui_rig_edit();s.rig_beam_start=-1;}
+   else {rig_beam(s.rig_beam_start,nearest);studio_note_ui_rig_edit();s.rig_beam_start=-1;}
   }
  }
  const Color rigAnchor={252,166,76,240},rigBeam={104,222,190,230};
@@ -336,6 +535,171 @@ static void rig_overlay_ui(void){
   Color color=pinned?rigAnchor:rigBeam;
   DrawCircleV((Vector2){x,y},j==s.rig_selected?8:5,color);
  }
+}
+static void layer_overlay_ui(void){
+ if(s.tab!=1||!s.core.model)return;
+ int d=s.xpbd_first,total=csmGetDrawableCount(s.core.model);
+ const int *vc=csmGetDrawableVertexCounts(s.core.model);
+ const int *ic=csmGetDrawableIndexCounts(s.core.model);
+ const csmVector2 **pos=csmGetDrawableVertexPositions(s.core.model);
+ const unsigned short **indices=csmGetDrawableIndices(s.core.model);
+ if(d<0||d>=total||!vc||!ic||!pos||!indices||
+    vc[d]<1||vc[d]>2048||!pos[d]||
+    s.layer_editor.generation!=s.model_generation||
+    s.layer_editor.drawable!=d)return;
+ StudioLayerVertex projected[2048];
+ for(int i=0;i<vc[d];i++){
+  float x=NAN,y=NAN;
+  if(isfinite(pos[d][i].X)&&isfinite(pos[d][i].Y))
+   WorldToScreen(&s.view,pos[d][i].X,pos[d][i].Y,&x,&y);
+  projected[i]=(StudioLayerVertex){
+    s.viewport.x+x*s.viewport.width/s.view.sw,
+    s.viewport.y+y*s.viewport.height/s.view.sh
+  };
+ }
+ Vector2 mouse=GetMousePosition();
+ int hovered=studio_layer_editor_pick(projected,vc[d],mouse.x,mouse.y,13);
+ if(CheckCollisionPointRec(mouse,s.viewport)&&hovered>=0&&
+    IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+  studio_layer_editor_select_vertex(&s.layer_editor,s.model_generation,d,hovered,vc[d]);
+ BeginScissorMode((int)s.viewport.x,(int)s.viewport.y,
+                  (int)s.viewport.width,(int)s.viewport.height);
+ const Color edge={98,207,226,115},selection={249,176,79,240};
+ int triangles=(ic[d]>=3&&ic[d]<=65535&&ic[d]%3==0&&indices[d])?ic[d]/3:0;
+ if(s.layer_editor.wireframe&&triangles<=2048){
+  for(int i=0;i<triangles;i++){
+   int a=indices[d][i*3],b=indices[d][i*3+1],c=indices[d][i*3+2];
+   if(a>=vc[d]||b>=vc[d]||c>=vc[d]||a==b||b==c||a==c)continue;
+   StudioLayerVertex p=projected[a],q=projected[b],r=projected[c];
+   if(isfinite(p.x)&&isfinite(p.y)&&isfinite(q.x)&&isfinite(q.y)&&
+      isfinite(r.x)&&isfinite(r.y)){
+    DrawLineV((Vector2){p.x,p.y},(Vector2){q.x,q.y},edge);
+    DrawLineV((Vector2){q.x,q.y},(Vector2){r.x,r.y},edge);
+    DrawLineV((Vector2){r.x,r.y},(Vector2){p.x,p.y},edge);
+   }
+  }
+ }
+ int t=s.layer_editor.triangle;
+ if(t>=0&&t<triangles){
+  int a=indices[d][t*3],b=indices[d][t*3+1],c=indices[d][t*3+2];
+  if(a<vc[d]&&b<vc[d]&&c<vc[d]){
+   StudioLayerVertex p=projected[a],q=projected[b],r=projected[c];
+   if(isfinite(p.x)&&isfinite(p.y)&&isfinite(q.x)&&isfinite(q.y)&&
+      isfinite(r.x)&&isfinite(r.y)){
+    DrawLineEx((Vector2){p.x,p.y},(Vector2){q.x,q.y},3,selection);
+    DrawLineEx((Vector2){q.x,q.y},(Vector2){r.x,r.y},3,selection);
+    DrawLineEx((Vector2){r.x,r.y},(Vector2){p.x,p.y},3,selection);
+   }
+  }
+ }
+ int vertex=s.layer_editor.vertex;
+ if(vertex<0)vertex=hovered;
+ if(vertex>=0&&vertex<vc[d]&&isfinite(projected[vertex].x)&&
+    isfinite(projected[vertex].y))
+  DrawCircleV((Vector2){projected[vertex].x,projected[vertex].y},7,selection);
+ EndScissorMode();
+}
+
+static void geometry_draw_textured(const StudioGeometryLayer*l,
+                                  const Vector2*screen){
+ if(!l||!screen||!l->tri_count||!geometry_checker.id)return;
+ rlSetTexture(geometry_checker.id);
+ rlBegin(RL_TRIANGLES);
+ rlColor4ub((unsigned char)(l->tint[0]*255),
+           (unsigned char)(l->tint[1]*255),
+           (unsigned char)(l->tint[2]*255),
+           (unsigned char)(l->tint[3]*255));
+ for(int t=0;t<l->tri_count;t++){
+  int a=l->triangles[t][0],b=l->triangles[t][1],c=l->triangles[t][2];
+  int v[3]={a,b,c};
+  if(a>=l->vertex_count||b>=l->vertex_count||c>=l->vertex_count)continue;
+  for(int side=0;side<2;side++)
+   for(int i=0;i<3;i++){
+    int index=v[side?(2-i):i];
+    rlTexCoord2f(l->uv[index].x,l->uv[index].y);
+    rlVertex2f(screen[index].x,screen[index].y);
+   }
+ }
+ rlEnd();rlSetTexture(0);
+}
+static void geometry_overlay_ui(void){
+ if(geometry.active.count==0)return;
+ int geometry_interactive=s.tab==1&&geometry_mode;
+ if(geometry_selected<0||geometry_selected>=geometry.active.count)
+  geometry_selected=0;
+ StudioGeometryLayer*l=&geometry.active.layers[geometry_selected];
+ Vector2 projected[STUDIO_GEOM_VERTICES];
+ for(int i=0;i<l->vertex_count;i++){
+  float x=0,y=0;
+  const StudioGeometryPoint*phys=geometry_xpbd&&
+    geometry_bound_layer==geometry_selected?
+      studio_geometry_xpbd_positions(geometry_xpbd):NULL;
+  StudioGeometryPoint at=phys?phys[i]:l->vertices[i];
+  WorldToScreen(&s.view,at.x,at.y,&x,&y);
+  projected[i]=(Vector2){s.viewport.x+x*s.viewport.width/s.view.sw,
+                           s.viewport.y+y*s.viewport.height/s.view.sh};
+ }
+ BeginScissorMode((int)s.viewport.x,(int)s.viewport.y,
+                  (int)s.viewport.width,(int)s.viewport.height);
+ for(int li=0;li<geometry.active.count;li++){
+  if(li==geometry_selected)continue;
+  const StudioGeometryLayer*other=&geometry.active.layers[li];
+  Vector2 coords[STUDIO_GEOM_VERTICES];
+  for(int i=0;i<other->vertex_count;i++){
+   float a=0,b=0;
+   const StudioGeometryPoint*phys_other=geometry_xpbd?
+     studio_geometry_xpbd_positions_for_layer(geometry_xpbd,li):NULL;
+   StudioGeometryPoint at=phys_other?phys_other[i]:other->vertices[i];
+   WorldToScreen(&s.view,at.x,at.y,&a,&b);
+   coords[i]=(Vector2){s.viewport.x+a*s.viewport.width/s.view.sw,
+                         s.viewport.y+b*s.viewport.height/s.view.sh};
+  }
+  geometry_draw_textured(other,coords);
+  for(int k=0;k<other->tri_count;k++){
+   int a=other->triangles[k][0],b=other->triangles[k][1],c=other->triangles[k][2];
+   if(a<other->vertex_count&&b<other->vertex_count&&c<other->vertex_count){
+
+    DrawLineV(coords[a],coords[b],(Color){80,137,155,130});
+    DrawLineV(coords[b],coords[c],(Color){80,137,155,130});
+    DrawLineV(coords[c],coords[a],(Color){80,137,155,130});
+   }
+  }
+ }
+ Color fill={68,170,210,60},edge={128,233,255,230},picked={255,191,81,255};
+ geometry_draw_textured(l,projected);
+ for(int t=0;t<l->tri_count;t++){
+  int a=l->triangles[t][0],b=l->triangles[t][1],c=l->triangles[t][2];
+  if(a<l->vertex_count&&b<l->vertex_count&&c<l->vertex_count){
+
+   DrawLineEx(projected[a],projected[b],2,edge);
+   DrawLineEx(projected[b],projected[c],2,edge);
+   DrawLineEx(projected[c],projected[a],2,edge);
+  }
+ }
+ if(geometry_interactive)
+  for(int i=0;i<l->vertex_count;i++)
+   DrawCircleV(projected[i],i==geometry_vertex?8:5,
+               i==geometry_vertex?picked:edge);
+ EndScissorMode();
+ Vector2 mouse=GetMousePosition();
+ if(!geometry_interactive||!CheckCollisionPointRec(mouse,s.viewport)||
+    !IsMouseButtonPressed(MOUSE_BUTTON_LEFT))return;
+ int nearest=-1;float distance=13.f*13;
+ for(int i=0;i<l->vertex_count;i++){
+  float dx=mouse.x-projected[i].x,dy=mouse.y-projected[i].y;
+  float d=dx*dx+dy*dy;
+  if(d<distance){distance=d;nearest=i;}
+ }
+ if(nearest>=0){geometry_vertex=nearest;return;}
+ if(!geometry_add_mode||s.view.zoom==0||s.viewport.width<=0||s.viewport.height<=0)
+  return;
+ float gx=(mouse.x-s.viewport.x)*s.view.sw/s.viewport.width;
+ float gy=(mouse.y-s.viewport.y)*s.view.sh/s.viewport.height;
+ float x=(gx-s.view.sw*.5f-s.view.panx)/s.view.zoom+s.view.cx;
+ float y=-((gy-s.view.sh*.5f-s.view.pany)/s.view.zoom+s.view.cy);
+ if(studio_geometry_vertex_add(&geometry,geometry_signature(),geometry.revision,
+                                geometry_selected,x,y))
+  geometry_vertex=l->vertex_count-1;
 }
 static int studio_model_y_bounds(float *low,float *high){
  if(!s.core.model||!low||!high)return 0;
@@ -425,15 +789,25 @@ static int studio_adopt_proposal(void){
   for(int j=0;j<next.anchor_count;++j)if(next.anchors[j]==v)present=1;
   if(!present&&!studio_rig_toggle_anchor(&next,v))return 0;
  }
- s.rig=next;
- return 1;
+ return rig_replace(&next);
 }
 static void rig_ui(float x){
  int d=s.xpbd_first,n=csmGetDrawableCount(s.core.model);
  if(d>=n||d<0)return;
  const int *vc=csmGetDrawableVertexCounts(s.core.model);
+ if(!vc)return;
+ if(d>=4096||vc[d]<1||vc[d]>2048){
+  label("RIG SELECTION",x,190,16,ACCENT);
+  label("This drawable cannot be edited as Rig.",x,222,13,MUTED);
+  label("Choose another supported drawable:",x,252,12,MUTED);
+  if(button((Rectangle){x,283,132,31},"Previous",0)&&!rig_select_relative(-1))
+   toast("No selectable Rig drawable.");
+  if(button((Rectangle){x+144,283,136,31},"Next",0)&&!rig_select_relative(1))
+   toast("No selectable Rig drawable.");
+  return;
+ }
  if(s.rig.vertex_count!=vc[d]||s.rig.drawable!=d){
-     if(!studio_rig_bank_select(&s.rig_bank,&s.rig,d,signature(),vc[d]))return;
+     if(!rig_select(d,signature(),vc[d]))return;
    studio_note_ui_rig_edit();
    s.rig_selected=0;s.rig_beam_start=-1;s.rig_parent_start=-1;
  }
@@ -442,27 +816,35 @@ static void rig_ui(float x){
        (s.rig_advanced==0?"Hierarchy":(s.rig_advanced==1?"Cross":"Basic")),s.rig_advanced!=0))
     s.rig_advanced=(s.rig_advanced+1)%3;
  label(TextFormat("Drawable %d / %d",d,n),x,224,14,TEXT);
- if(button((Rectangle){x+176,218,40,27},"-",0))s.xpbd_first=(d+n-1)%n;
- if(button((Rectangle){x+226,218,40,27},"+",0))s.xpbd_first=(d+1)%n;
+ if(button((Rectangle){x+176,218,40,27},"-",0)&&!rig_select_relative(-1))
+  toast("No selectable Rig drawable.");
+ if(button((Rectangle){x+226,218,40,27},"+",0)&&!rig_select_relative(1))
+  toast("No selectable Rig drawable.");
  label(TextFormat("Vertex: %d / %d",s.rig_selected,vc[d]),x,264,14,TEXT);
  if(button((Rectangle){x+176,260,40,27},"-",0))s.rig_selected=(s.rig_selected+vc[d]-1)%vc[d];
  if(button((Rectangle){x+226,260,40,27},"+",0))s.rig_selected=(s.rig_selected+1)%vc[d];
  if(button((Rectangle){x,315,280,33},"Toggle anchor",0)){
-   studio_rig_toggle_anchor(&s.rig,s.rig_selected);
+   rig_anchor(s.rig_selected);
    studio_note_ui_rig_edit();
  }
  if(button((Rectangle){x,358,280,33},s.rig_beam_start<0?"Start support beam":"Finish support beam",0)){
    if(s.rig_beam_start<0)s.rig_beam_start=s.rig_selected;
-   else {studio_rig_toggle_beam(&s.rig,s.rig_beam_start,s.rig_selected);studio_note_ui_rig_edit();s.rig_beam_start=-1;}
+   else {rig_beam(s.rig_beam_start,s.rig_selected);studio_note_ui_rig_edit();s.rig_beam_start=-1;}
  }
  label(TextFormat("Anchors %d / Support beams %d",s.rig.anchor_count,s.rig.beam_count),x,410,14,ACCENT);
+ if(button((Rectangle){x,425,132,26},"Undo rig",0))
+  toast(rig_history_step(0,s.model_generation,s.rig_revision)?
+        "Rig edit undone; Apply rig to XPBD.":"No undo available.");
+ if(button((Rectangle){x+144,425,136,26},"Redo rig",0))
+  toast(rig_history_step(1,s.model_generation,s.rig_revision)?
+        "Rig edit redone; Apply rig to XPBD.":"No redo available.");
  if(button((Rectangle){x,454,132,31},"Save rig",0)){
   char path[1200];snprintf(path,sizeof path,"%s/rig-layer-%d.txt",s.folder,d);
   toast(studio_rig_save(&s.rig,path)?"Rig saved locally.":"Save rig failed.");
  }
  if(button((Rectangle){x+144,454,136,31},"Load rig",0)){
   char path[1200];snprintf(path,sizeof path,"%s/rig-layer-%d.txt",s.folder,d);
-  int loaded=studio_rig_load(&s.rig,path,signature(),vc[d]);
+  int loaded=rig_load(path,signature(),vc[d]);
   studio_note_ui_rig_edit();
   toast(loaded?"Rig loaded.":"Rig signature mismatch.");
  }
@@ -475,7 +857,9 @@ static void rig_ui(float x){
     s.xpbd_pose_compliance,s.xpbd_source_transfer,s.xpbd_bending,s.xpbd_surface,
     (int)s.xpbd_anchors};
   void *next=studio_xpbd_bind_rig(s.core.model,o,&s.rig);
-  if(next){studio_xpbd_disable(s.xpbd);s.xpbd=next;toast("Rig and support beams activated.");}
+  if(next){studio_xpbd_disable(s.xpbd);s.xpbd=next;
+      (void)studio_rig_frame_bind(&s.legacy_frame_fence,s.model_generation,s.rig_revision);
+      toast("Rig and support beams activated.");}
   else toast("Rig rejected: invalid vertex/mesh.");
   }
  label("Click vertex to select, Shift+click anchor",x,580,12,MUTED);
@@ -487,7 +871,7 @@ static void rig_ui(float x){
      s.rig_parent_start=s.rig_selected;
    if(button((Rectangle){x+145,660,135,32},"Attach child",0)){
      int ok=s.rig_parent_start>=0&&
-       studio_rig_parent(&s.rig,s.rig_parent_start,s.rig_selected,.85f,1);
+       rig_parent(s.rig_parent_start,s.rig_selected,.85f,1);
      studio_note_ui_rig_edit();
      toast(ok?"Parent added; Apply rig separately.":"Parent rejected: invalid/cycle.");
      s.rig_parent_start=-1;
@@ -496,7 +880,7 @@ static void rig_ui(float x){
      int done=0;
      for(int i=0;i<s.rig.parent_count;++i)
        if(s.rig.parents[i].child==s.rig_selected){
-         done=studio_rig_parent(&s.rig,s.rig.parents[i].parent,
+         done=rig_parent(s.rig.parents[i].parent,
              s.rig_selected,s.rig.parents[i].stiffness,0);break;
        }
      studio_note_ui_rig_edit();
@@ -505,7 +889,7 @@ static void rig_ui(float x){
    float influence=studio_rig_weight_get(&s.rig,s.rig_selected);
    label(TextFormat("Selected vertex weight: %.2f",influence),x,753,14,TEXT);
    if(slider(7701,(Rectangle){x,786,270,7},&influence,0,1)){
-     studio_rig_weight(&s.rig,s.rig_selected,influence);
+     rig_weight(s.rig_selected,influence);
      studio_note_ui_rig_edit();
    }
    label("0=fixed; 1=full motion. Apply rig separately.",x,822,12,MUTED);
@@ -520,7 +904,7 @@ static void rig_ui(float x){
         for(int j=0;j<vc[d];++j)
           points[j]=(StudioRigPoint){pos[d][j].X,pos[d][j].Y};
         int touched=0;
-        toast(studio_rig_brush(&s.rig,points,vc[d],s.rig_selected,
+        toast(rig_brush(points,vc[d],s.rig_selected,
           s.rig_brush_radius,s.rig_brush_target,&touched)?
           "Region painted; Apply rig separately.":
           "Weight brush rejected: geometry or capacity.");
@@ -544,7 +928,7 @@ static void rig_ui(float x){
       if(button((Rectangle){x+112,740,100,30},"Child +",0))
         s.rig_cross_child=(s.rig_cross_child+1)%count;
       if(button((Rectangle){x,784,280,31},"Attach to selected parent",0))
-        toast(studio_rig_cross(&s.rig,s.rig_selected,target,
+        toast(rig_cross(s.rig_selected,target,
           s.rig_cross_child,count,.85f,1)?
           "Cross link added; Apply rig.":"Cross link rejected.");
         studio_note_ui_rig_edit();
@@ -579,7 +963,7 @@ static void rig_ui(float x){
    const char *roles[]={"Unknown","Hair","Skirt","Strap"};
    for(int i=0;i<4;++i)
      if(button((Rectangle){x+i*71.f,815,67,29},roles[i],s.rig.role==i))
-       studio_rig_set_role(&s.rig,i);
+       rig_role(i);
  }
 
 }
@@ -615,14 +999,43 @@ static void xpbd_ui(float x){
    s.xpbd_compliance,s.xpbd_collision,s.xpbd_mass,s.xpbd_damping,s.xpbd_contact_compliance,
    s.xpbd_step,(int)s.xpbd_iters,(int)s.xpbd_pin,(int)s.xpbd_substeps,s.xpbd_pose_compliance,s.xpbd_source_transfer,s.xpbd_bending,s.xpbd_surface,(int)s.xpbd_anchors};
   void *next=studio_xpbd_bind(s.core.model,o);
-  if(next){studio_xpbd_disable(s.xpbd);s.xpbd=next;toast("XPBD enabled with new parameters.");}
+  if(next){studio_xpbd_disable(s.xpbd);s.xpbd=next;
+      studio_rig_frame_unbind(&s.legacy_frame_fence);
+      toast("XPBD enabled with new parameters.");}
   else toast("XPBD rejected: invalid geometry or settings.");
  }
  if(button((Rectangle){x+145,771,135,32},"Disable",0)){
-  studio_xpbd_disable(s.xpbd);s.xpbd=NULL;toast("Original MOC3 geometry restored.");
+  studio_xpbd_disable(s.xpbd);s.xpbd=NULL;
+     studio_rig_frame_unbind(&s.legacy_frame_fence);
+     toast("Original MOC3 geometry restored.");
  }
  label(s.xpbd?"XPBD ON":"XPBD OFF",x,815,14,s.xpbd?ACCENT:MUTED);
 }
+static int geometry_import_drawable(int drawable,int id){
+ int total=csmGetDrawableCount(s.core.model);
+ const int*vc=csmGetDrawableVertexCounts(s.core.model);
+ const int*ic=csmGetDrawableIndexCounts(s.core.model);
+ const csmVector2**positions=csmGetDrawableVertexPositions(s.core.model);
+ const csmVector2**uvs=csmGetDrawableVertexUvs(s.core.model);
+ const unsigned short**indices=csmGetDrawableIndices(s.core.model);
+ if(!vc||!ic||!positions||!indices||drawable<0||drawable>=total||
+    vc[drawable]<3||vc[drawable]>STUDIO_GEOM_VERTICES||
+    ic[drawable]<3||ic[drawable]>STUDIO_GEOM_TRIANGLES*3||
+    ic[drawable]%3||!positions[drawable]||!uvs||
+    !uvs[drawable]||!indices[drawable])return 0;
+ StudioGeometryPoint points[STUDIO_GEOM_VERTICES],texture_uv[STUDIO_GEOM_VERTICES];
+ for(int i=0;i<vc[drawable];i++){
+  points[i]=(StudioGeometryPoint){positions[drawable][i].X,positions[drawable][i].Y};
+  texture_uv[i]=(StudioGeometryPoint){uvs[drawable][i].X,uvs[drawable][i].Y};
+ }
+ int ok=studio_geometry_import_with_uv(&geometry,geometry_signature(),
+       geometry.revision,id,points,texture_uv,vc[drawable],
+       indices[drawable],ic[drawable]);
+ if(ok){geometry_selected=geometry.active.count-1;geometry_vertex=-1;}
+ return ok;
+}
+#include "studio_geometry_properties.inc"
+#include "studio_geometry_ui.inc"
 static void inspector(void){
     float x=GetScreenWidth()-316.0f;label("MODEL INSPECTOR",x,110,12,MUTED);
     if(button((Rectangle){x,136,68,32},"Params",s.tab==0)){s.tab=0;s.scroll=0;}
@@ -631,12 +1044,90 @@ static void inspector(void){
     if(button((Rectangle){x+219,136,61,32},"Rig",s.tab==3)){s.tab=3;s.scroll=0;}
     if(s.tab==3){rig_ui(x);return;}
     if(s.tab==2){xpbd_ui(x);return;}
-    Rectangle search={x,180,280,32};DrawRectangleRounded(search,.2f,6,s.search_focus?LINE:BG);
-    label(s.search[0]?s.search:"Search by ID...",x+10,188,14,s.search[0]?TEXT:MUTED);
+    if(s.tab==1){
+        const int *layer_counts=csmGetDrawableVertexCounts(s.core.model);
+        int layer_drawable=s.xpbd_first,layer_total=csmGetDrawableCount(s.core.model);
+        if(layer_counts&&layer_drawable>=0&&layer_drawable<layer_total&&
+           layer_counts[layer_drawable]>=1&&layer_counts[layer_drawable]<=2048&&
+           (s.rig.drawable!=layer_drawable||
+            s.rig.vertex_count!=layer_counts[layer_drawable])){
+            (void)rig_select(layer_drawable,signature(),layer_counts[layer_drawable]);
+        }
+        if(button((Rectangle){x,182,132,29},"Previous layer",0)&&
+           !rig_select_relative(-1))toast("No selectable layer.");
+        if(button((Rectangle){x+144,182,136,29},"Next layer",0)&&
+           !rig_select_relative(1))toast("No selectable layer.");
+        const int *counts=csmGetDrawableVertexCounts(s.core.model);
+        int drawable=s.xpbd_first,total=csmGetDrawableCount(s.core.model);
+        if(counts&&drawable>=0&&drawable<total)
+            label(TextFormat("Layer %d  Vertices %d",drawable,counts[drawable]),
+                  x,218,12,ACCENT);
+        label("Select vertex in viewport | Private preview",x,240,11,MUTED);
+        if(button((Rectangle){x,262,134,29},
+                  s.layer_editor.wireframe?"Wireframe ON":"Wireframe OFF",
+                  s.layer_editor.wireframe))
+           s.layer_editor.wireframe=!s.layer_editor.wireframe;
+        if(button((Rectangle){x+144,262,136,29},
+                  s.layer_editor.isolate?"Isolate ON":"Isolate OFF",
+                  s.layer_editor.isolate)){
+           s.layer_editor.isolate=!s.layer_editor.isolate;
+           s.opt.onlyDrawable=s.layer_editor.isolate?drawable:-1;
+        }
+        if(counts&&drawable>=0&&drawable<total&&
+           counts[drawable]>=1&&counts[drawable]<=2048){
+          int vc=counts[drawable];
+          label(TextFormat("Vertex %d / %d",s.layer_editor.vertex,vc),x,302,12,TEXT);
+          if(button((Rectangle){x+176,297,45,25},"-",0))
+             (void)studio_layer_editor_select_vertex(&s.layer_editor,s.model_generation,
+                       drawable,s.layer_editor.vertex<0?vc-1:
+                       (s.layer_editor.vertex+vc-1)%vc,vc);
+          if(button((Rectangle){x+233,297,45,25},"+",0))
+             (void)studio_layer_editor_select_vertex(&s.layer_editor,s.model_generation,
+                       drawable,(s.layer_editor.vertex+1)%vc,vc);
+          const int *ic=csmGetDrawableIndexCounts(s.core.model);
+          const unsigned short **idx=csmGetDrawableIndices(s.core.model);
+          int tris=ic&&idx&&idx[drawable]&&ic[drawable]>=3&&
+                   ic[drawable]<=65535&&ic[drawable]%3==0?
+                   ic[drawable]/3:0;
+          label(TextFormat("Triangle %d / %d",s.layer_editor.triangle,tris),x,335,12,TEXT);
+          if(tris>0){
+           if(button((Rectangle){x+176,330,45,25},"-",0))
+             (void)studio_layer_editor_select_triangle(&s.layer_editor,s.model_generation,
+                        drawable,s.layer_editor.triangle<0?tris-1:
+                        (s.layer_editor.triangle+tris-1)%tris,
+                        idx[drawable],ic[drawable],vc);
+           if(button((Rectangle){x+233,330,45,25},"+",0))
+             (void)studio_layer_editor_select_triangle(&s.layer_editor,s.model_generation,
+                        drawable,(s.layer_editor.triangle+1)%tris,
+                        idx[drawable],ic[drawable],vc);
+          }
+          const csmVector2 **pos=csmGetDrawableVertexPositions(s.core.model);
+          int selected=s.layer_editor.vertex;
+          if(pos&&pos[drawable]&&selected>=0&&selected<vc)
+            label(TextFormat("Vertex XY: %.3f , %.3f",
+                            pos[drawable][selected].X,pos[drawable][selected].Y),
+                  x,367,11,MUTED);
+          else if(s.layer_editor.triangle>=0&&s.layer_editor.triangle<tris){
+            int at=s.layer_editor.triangle*3;
+            label(TextFormat("Triangle vertices: %u, %u, %u",
+                    idx[drawable][at],idx[drawable][at+1],idx[drawable][at+2]),
+                  x,367,11,MUTED);
+          }
+        }
+    }
+    if(s.tab==1){
+        if(button((Rectangle){x,397,280,30},
+                  geometry_mode?"CUSTOM GEOMETRY EDITOR":"PART OPACITY INSPECTOR",
+                  geometry_mode))
+          geometry_mode=!geometry_mode;
+        if(geometry_mode){geometry_editor_ui(x);return;}
+    }
+    Rectangle search={x,s.tab==1?400:180,280,32};DrawRectangleRounded(search,.2f,6,s.search_focus?LINE:BG);
+    label(s.search[0]?s.search:"Search by ID...",x+10,search.y+8,14,s.search[0]?TEXT:MUTED);
     if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT))s.search_focus=hit(search);
     if(s.search_focus){int key;while((key=GetCharPressed())>0)if(key>=32&&key<127&&strlen(s.search)<sizeof(s.search)-1){size_t n=strlen(s.search);s.search[n]=(char)key;s.search[n+1]=0;s.scroll=0;}
         if(IsKeyPressed(KEY_BACKSPACE)&&s.search[0]){s.search[strlen(s.search)-1]=0;s.scroll=0;}}
-    Rectangle list={x,226,280,(float)GetScreenHeight()-352};
+    Rectangle list={x,s.tab==1?444:226,280,(float)GetScreenHeight()-(s.tab==1?570:352)};
     const char **ids=s.tab?csmGetPartIds(s.core.model):csmGetParameterIds(s.core.model);
     int count=s.tab?s.parts:s.count,matches=0;for(int i=0;i<count;++i)if(contains(ids[i],s.search))++matches;
     float max_scroll=fmaxf(0,matches*66-list.height);if(hit(list))s.scroll=bound(s.scroll-GetMouseWheelMove()*48,0,max_scroll);
@@ -671,7 +1162,7 @@ static void input(float dt){
         Vector2 p=GetMousePosition();float gx=bound((p.x-s.viewport.x)/s.viewport.width*2-1,-1,1),gy=bound((p.y-s.viewport.y)/s.viewport.height*2-1,-1,1);
         s.gaze_x=mix(s.gaze_x,gx,1-expf(-dt*8));s.gaze_y=mix(s.gaze_y,gy,1-expf(-dt*8));
         s.settings.zoom=bound(s.settings.zoom*powf(1.1f,GetMouseWheelMove()),.3f,3);
-        if(s.tab!=3&&IsMouseButtonPressed(MOUSE_BUTTON_LEFT)&&!s.active_slider)s.dragging=(p.y-s.viewport.y)/s.viewport.height<.4f?1:(p.y-s.viewport.y)/s.viewport.height<.7f?2:3;
+        if(s.tab!=3&&s.tab!=1&&IsMouseButtonPressed(MOUSE_BUTTON_LEFT)&&!s.active_slider)s.dragging=(p.y-s.viewport.y)/s.viewport.height<.4f?1:(p.y-s.viewport.y)/s.viewport.height<.7f?2:3;
         if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT)||IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)){Vector2 d=GetMouseDelta();s.view.panx+=d.x*s.view.sw/s.viewport.width;s.view.pany+=d.y*s.view.sh/s.viewport.height;}
     }else{s.gaze_x*=expf(-dt*3);s.gaze_y*=expf(-dt*3);}
     if(s.dragging&&IsMouseButtonDown(MOUSE_BUTTON_LEFT)){Vector2 d=GetMouseDelta();s.pull_x=bound(s.pull_x+d.x*.35f,-35,35);s.pull_y=bound(s.pull_y-d.y*.25f,-25,25);}
@@ -700,7 +1191,9 @@ static void verify(int pass,const char *name){
     ++s.checks;if(!pass){++s.failures;fprintf(stderr,"Studio check FAILED: %s\n",name);}
 }
 #include "studio_agent_extended.inc"
+#include "studio_geometry_agent.inc"
 static void process_agent_request(void){
+ studio_v1_recovery_poll(&s.v1_recovery,s.folder,studio_replace_file);
  /* Do not admit another command until the complete prior ACK is published.
     Retrying publication never retries or re-applies the command itself. */
  static int pending_ack=0;
@@ -724,18 +1217,134 @@ static void process_agent_request(void){
  long wire_bytes=-1;
  if(fseek(f,0,SEEK_END)==0){wire_bytes=ftell(f);rewind(f);}
  if(fscanf(f,"%47s %47s",token,op)!=2){fclose(f);remove(path);return;}
- int ok=0;char receipt[96]="rejected";
+ /* Includes fixed-width 63-bit generation plus bounded legacy frame counters;
+   the complete local receipt stays below the 512-byte V1 wire ceiling. */
+ int ok=0;char receipt[192]="rejected";
  int header_valid=strlen(token)==24;
  for(int k=0;k<24&&header_valid;++k)
   if(!((token[k]>='0'&&token[k]<='9')||
        (token[k]>='a'&&token[k]<='f')))header_valid=0;
  if(wire_bytes<27||wire_bytes>512||!header_valid)goto finish_request;
+ if(studio_v1_recovery_lookup(&s.v1_recovery,token)>=0){
+  snprintf(receipt,sizeof receipt,"duplicate_request_query_recovery");
+  goto finish_request;
+ }
  int d=s.xpbd_first,n=csmGetDrawableCount(s.core.model);
- if(!strcmp(op,"RIG_SELECT")){
+ if(!strcmp(op,"LAYER_CURSOR")){
+  unsigned long long epoch=0;char extra;
+  if(fscanf(f,"%llu",&epoch)==1&&fscanf(f," %c",&extra)==EOF&&
+     epoch>0&&epoch==s.model_generation&&s.rig.drawable==s.xpbd_first&&
+     s.layer_editor.generation==epoch&&s.layer_editor.drawable==s.rig.drawable){
+    ok=1;
+    snprintf(receipt,sizeof receipt,
+       "drawable=%d vertex=%d triangle=%d wireframe=%d isolated=%d revision=%llu",
+       s.layer_editor.drawable,s.layer_editor.vertex,s.layer_editor.triangle,
+       s.layer_editor.wireframe,s.layer_editor.isolate,
+       (unsigned long long)s.rig_revision);
+  }
+ }else if(!strcmp(op,"LAYER_VERTEX_SELECT")||
+          !strcmp(op,"LAYER_TRIANGLE_SELECT")||
+          !strcmp(op,"LAYER_OVERLAY")||!strcmp(op,"LAYER_ISOLATE")){
+  unsigned long long epoch=0,revision=0;int value=-1;char extra;
+  if(fscanf(f,"%llu %llu %d",&epoch,&revision,&value)==3&&
+     fscanf(f," %c",&extra)==EOF&&epoch>0&&epoch==s.model_generation&&
+     revision==s.rig_revision&&s.rig.drawable==s.xpbd_first&&
+     s.layer_editor.generation==epoch&&s.layer_editor.drawable==s.rig.drawable){
+    const int selected=s.rig.drawable;
+    const int *vc=csmGetDrawableVertexCounts(s.core.model);
+    const int *ic=csmGetDrawableIndexCounts(s.core.model);
+    const unsigned short **indices=csmGetDrawableIndices(s.core.model);
+    if(selected>=0&&selected<n&&vc&&ic&&indices){
+     if(!strcmp(op,"LAYER_VERTEX_SELECT"))
+      ok=studio_layer_editor_select_vertex(&s.layer_editor,epoch,selected,value,vc[selected]);
+     else if(!strcmp(op,"LAYER_TRIANGLE_SELECT"))
+      ok=studio_layer_editor_select_triangle(&s.layer_editor,epoch,selected,value,
+                               indices[selected],ic[selected],vc[selected]);
+     else if(value==0||value==1){
+      ok=1;
+      if(!strcmp(op,"LAYER_OVERLAY"))s.layer_editor.wireframe=value;
+      else {
+       s.layer_editor.isolate=value;
+       s.opt.onlyDrawable=value?selected:-1;
+      }
+     }
+     if(ok)snprintf(receipt,sizeof receipt,
+       "drawable=%d vertex=%d triangle=%d wireframe=%d isolated=%d revision=%llu",
+       selected,s.layer_editor.vertex,s.layer_editor.triangle,
+       s.layer_editor.wireframe,s.layer_editor.isolate,
+       (unsigned long long)s.rig_revision);
+    }
+  }
+ }else if(!strcmp(op,"RIG_SELECTION")||!strcmp(op,"LAYER_INSPECT")){
+  unsigned long long generation=0;char trailing;
+  if(fscanf(f,"%llu",&generation)==1&&fscanf(f," %c",&trailing)==EOF&&
+     generation>0&&generation==s.model_generation&&
+     s.rig.vertex_count>0&&s.rig.drawable==s.xpbd_first){
+   const int drawable=s.rig.drawable;
+   if(!strcmp(op,"RIG_SELECTION")){
+    ok=1;
+    snprintf(receipt,sizeof receipt,
+      "drawable=%d vertices=%d revision=%llu saved=%d",
+      drawable,s.rig.vertex_count,(unsigned long long)s.rig_revision,
+      s.rig_bank.count);
+   }else{
+    const int *indices=csmGetDrawableIndexCounts(s.core.model);
+    StudioLayerTopology topology={0};
+    int topology_ready=studio_selected_topology(drawable,&topology);
+    if(indices&&drawable>=0&&drawable<n){
+     ok=1;
+     snprintf(receipt,sizeof receipt,
+       "drawable=%d vertices=%d triangles=%d topology=%d islands=%d loose=%d revision=%llu",
+       drawable,s.rig.vertex_count,indices[drawable]/3,topology_ready,
+       topology_ready?topology.islands:0,topology_ready?topology.isolated:0,
+       (unsigned long long)s.rig_revision);
+    }
+   }
+  }
+ }else if(!strcmp(op,"RIG_SELECT_AT")||!strcmp(op,"LAYER_SELECT")){
+  unsigned long long generation=0,expected=0;int drawable=-1;char trailing;
+  if(fscanf(f,"%llu %llu %d",&generation,&expected,&drawable)==3&&
+     fscanf(f," %c",&trailing)==EOF&&
+     generation>0&&generation==s.model_generation&&
+     expected==s.rig_revision&&drawable>=0&&drawable<n){
+   const int *counts=csmGetDrawableVertexCounts(s.core.model);
+   if(counts&&rig_select(drawable,signature(),counts[drawable])){
+    ok=1;
+    s.tab=!strcmp(op,"LAYER_SELECT")?1:3;s.scroll=0;
+    snprintf(receipt,sizeof receipt,"drawable=%d revision=%llu",
+      drawable,(unsigned long long)s.rig_revision);
+   }
+  }
+ }else if(!strcmp(op,"RIG_HISTORY")){
+  unsigned long long generation=0;char extra;
+  if(fscanf(f,"%llu",&generation)==1&&fscanf(f," %c",&extra)==EOF&&
+     generation>0&&generation<UINT64_C(0x8000000000000000)&&
+     generation==s.model_generation&&s.rig.vertex_count>0&&
+     s.rig_history.generation==s.model_generation&&
+     s.rig_history.revision==s.rig_revision){
+   ok=1;
+   snprintf(receipt,sizeof receipt,"revision=%llu undo=%u redo=%u",
+      (unsigned long long)s.rig_revision,
+      s.rig_history.undo_count,s.rig_history.redo_count);
+  }
+ }else if(!strcmp(op,"RIG_UNDO")||!strcmp(op,"RIG_REDO")){
+  unsigned long long generation=0,revision=0;char extra;
+  if(fscanf(f,"%llu %llu",&generation,&revision)==2&&
+     fscanf(f," %c",&extra)==EOF&&
+     generation>0&&generation<UINT64_C(0x8000000000000000)&&
+     revision<UINT64_C(0x8000000000000000)&&
+     rig_history_step(!strcmp(op,"RIG_REDO"),generation,revision)){
+   ok=1;
+   snprintf(receipt,sizeof receipt,
+      "revision=%llu undo=%u redo=%u pending_apply=1",
+      (unsigned long long)s.rig_revision,
+      s.rig_history.undo_count,s.rig_history.redo_count);
+  }
+ }else if(!strcmp(op,"RIG_SELECT")){
   int v,tail;if(fscanf(f,"%d",&v)==1&&studio_agent_eof(f)&&v>=0&&v<n){
     const int *vc=csmGetDrawableVertexCounts(s.core.model);
-    ok=studio_rig_bank_select(&s.rig_bank,&s.rig,v,signature(),vc[v]);
-    if(ok){s.xpbd_first=v;s.tab=3;s.rig_selected=0;s.rig_beam_start=-1;s.rig_parent_start=-1;
+    ok=rig_select(v,signature(),vc[v]);
+    if(ok){s.tab=3;s.scroll=0;
       snprintf(receipt,sizeof receipt,"drawable=%d",v);}
   }
  }else if(!strcmp(op,"RIG_INSPECT")){
@@ -759,7 +1368,7 @@ static void process_agent_request(void){
        s.rig.model_signature!=signature())changing=-1;
     if(changing>0)for(int j=0;j<s.rig.anchor_count;++j)
      if(s.rig.anchors[j]==detail.anchor)present=1;
-    if(changing>0&&!present&&!studio_rig_toggle_anchor(&s.rig,detail.anchor))changing=-1;
+    if(changing>0&&!present&&!rig_anchor(detail.anchor))changing=-1;
    }
    ok=changing>=0;
    snprintf(receipt,sizeof receipt,
@@ -848,7 +1457,7 @@ static void process_agent_request(void){
    if(!strcmp(name,"hair"))role=1;
    if(!strcmp(name,"skirt"))role=2;
    if(!strcmp(name,"strap"))role=3;
-   if(role>=0&&studio_rig_set_role(&s.rig,role)){
+   if(role>=0&&rig_role(role)){
      ok=1;snprintf(receipt,sizeof receipt,"role=%s save_pending=1",name);
    }
   }
@@ -867,10 +1476,9 @@ static void process_agent_request(void){
       s.rig.drawable==s.xpbd_first&&target>=0&&
       target<csmGetDrawableCount(s.core.model)){
      const int *vc=csmGetDrawableVertexCounts(s.core.model);
-     StudioRig draft=s.rig;
-     if(vc&&studio_rig_cross(&draft,parent,target,child,vc[target],
+     if(vc&&rig_cross(parent,target,child,vc[target],
                              stiffness,enabled)){
-       s.rig=draft;ok=1;
+       ok=1;
        snprintf(receipt,sizeof receipt,"cross=%d target=%d pending_apply=1",
          s.rig.cross_count,target);
      }
@@ -889,7 +1497,7 @@ static void process_agent_request(void){
        for(int i=0;i<counts[d];++i)
          points[i]=(StudioRigPoint){positions[d][i].X,positions[d][i].Y};
        int affected=0;
-       if(studio_rig_brush(&s.rig,points,counts[d],s.rig_selected,
+       if(rig_brush(points,counts[d],s.rig_selected,
                            radius,weight,&affected)){
          ok=1;snprintf(receipt,sizeof receipt,
            "touched=%d weights=%d pending_apply=1",
@@ -923,9 +1531,8 @@ static void process_agent_request(void){
    int vertex,tail;float weight;
    if(fscanf(f,"%d %f",&vertex,&weight)==2&&
       studio_agent_eof(f)&&s.rig.vertex_count>0){
-     StudioRig candidate=s.rig;
-     if(studio_rig_weight(&candidate,vertex,weight)){
-       s.rig=candidate;ok=1;
+     if(rig_weight(vertex,weight)){
+       ok=1;
        snprintf(receipt,sizeof receipt,
          "vertex=%d weight=%.7g pending_apply=1",vertex,weight);
      }
@@ -934,9 +1541,8 @@ static void process_agent_request(void){
    int parent,child,enabled,tail;float stiffness;
    if(fscanf(f,"%d %d %f %d",&parent,&child,&stiffness,&enabled)==4&&
       studio_agent_eof(f)&&s.rig.vertex_count>0){
-     StudioRig candidate=s.rig;
-     if(studio_rig_parent(&candidate,parent,child,stiffness,enabled)){
-       s.rig=candidate;ok=1;
+     if(rig_parent(parent,child,stiffness,enabled)){
+       ok=1;
        snprintf(receipt,sizeof receipt,
          "parents=%d pending_apply=1",s.rig.parent_count);
      }
@@ -973,11 +1579,11 @@ static void process_agent_request(void){
    if(beam){
     int exists=0;for(int i=0;i<s.rig.beam_count;++i)
       if(s.rig.beams[i].a==(a<b?a:b)&&s.rig.beams[i].b==(a<b?b:a))exists=1;
-    ok=(exists==e)||studio_rig_toggle_beam(&s.rig,a,b);
+    ok=(exists==e)||rig_beam(a,b);
     snprintf(receipt,sizeof receipt,"beams=%d",s.rig.beam_count);
    }else{
     int exists=0;for(int i=0;i<s.rig.anchor_count;++i)if(s.rig.anchors[i]==a)exists=1;
-    ok=(exists==e)||studio_rig_toggle_anchor(&s.rig,a);
+    ok=(exists==e)||rig_anchor(a);
     snprintf(receipt,sizeof receipt,"anchors=%d",s.rig.anchor_count);
    }
   }
@@ -1004,11 +1610,19 @@ static void process_agent_request(void){
     s.xpbd_step,(int)s.xpbd_iters,(int)s.xpbd_pin,(int)s.xpbd_substeps,
     s.xpbd_pose_compliance,s.xpbd_source_transfer,s.xpbd_bending,s.xpbd_surface,(int)s.xpbd_anchors};
   void *next=studio_xpbd_bind_rig(s.core.model,opt,&s.rig);
-  if(next){studio_xpbd_disable(s.xpbd);s.xpbd=next;ok=1;snprintf(receipt,sizeof receipt,"rig=applied");}
+  if(next){studio_xpbd_disable(s.xpbd);s.xpbd=next;
+      (void)studio_rig_frame_bind(&s.legacy_frame_fence,s.model_generation,s.rig_revision);
+      ok=1;snprintf(receipt,sizeof receipt,"rig=applied");}
  }
- if(!ok){int extra=studio_agent_extended(f,op,receipt,sizeof receipt);if(extra>=0)ok=extra;}
+ if(!ok){
+   int result=studio_geometry_agent(f,op,receipt,sizeof receipt);
+   if(result>=0)ok=result;
+   else{int extra=studio_agent_extended(f,op,receipt,sizeof receipt);if(extra>=0)ok=extra;}
+  }
 finish_request:
  fclose(f);remove(path);
+ if(header_valid&&wire_bytes>=27&&wire_bytes<=512)
+   (void)studio_v1_recovery_store(&s.v1_recovery,token,ok);
  char temp_reply[1200];
  int nout=snprintf(out,sizeof out,"%s/api/response.txt",s.folder);
  int ntmp=snprintf(temp_reply,sizeof temp_reply,"%s/api/response.tmp",s.folder);
@@ -1032,7 +1646,9 @@ finish_request:
 }
 static void frame(void){
     float dt=bound(GetFrameTime(),.001f,.05f);int w=GetScreenWidth(),h=GetScreenHeight();
-    s.viewport=(Rectangle){288,136,(float)w-636,(float)h-250};
+    float left=studio_left_collapsed?24:288;
+     float right=studio_right_collapsed?24:348;
+     s.viewport=(Rectangle){left,136,(float)w-left-right,(float)h-250};
     int rw=(int)(s.viewport.width*STUDIO_RENDER_SCALE),rh=(int)(s.viewport.height*STUDIO_RENDER_SCALE);
     if(rw>1280){rh=(int)(rh*1280.0f/rw);rw=1280;}
     if(s.target.texture.width!=rw||s.target.texture.height!=rh){
@@ -1040,10 +1656,13 @@ static void frame(void){
             float ratio=s.view.sw?(float)rw/s.view.sw:1;s.view.sw=rw;s.view.sh=rh;s.base_zoom*=ratio;RendererResize(&s.renderer,rw,rh);SetTextureFilter(s.target.texture,TEXTURE_FILTER_BILINEAR);}
     }
     StudioRig agent_rig_before=s.rig;
+    uint64_t agent_revision_before=s.rig_revision;
     process_agent_request();
-    studio_note_rig_revision(&agent_rig_before);
+    if(s.rig_revision==agent_revision_before)
+        studio_note_rig_revision(&agent_rig_before);
     StudioRig ui_rig_before=s.rig;
     ui_rig_checkpoint=&ui_rig_before;
+    ui_checkpoint_revision=s.rig_revision;
     if(!s.smoke)input(dt);update(dt);s.view.zoom=s.base_zoom*s.settings.zoom;
     if(s.xpbd_smoke&&s.frame==12){int count=csmGetDrawableCount(s.core.model);const int *vertices=csmGetDrawableVertexCounts(s.core.model);
       for(int d=0;d<count;++d)if(vertices[d]>=3&&vertices[d]<=2048){StudioXpbdOptions o={d,-1,0,-12,3,.0000001f,0,1,.995f,0,1.f/120,8,0,3,.004f,.08f,.00001f,.02f,2};
@@ -1061,10 +1680,34 @@ static void frame(void){
         for(int i=0;i<s.count;++i)if(!isfinite(v[i])||v[i]<lo[i]||v[i]>hi[i]){verify(0,"finite bounded parameters");break;}
         if(s.physics_expected&&!s.linked)verify(0,"linked physics continuity");}
     studio_xpbd_set_interaction(s.xpbd,s.pull_x*8.f,s.pull_y*8.f);
-    if(s.xpbd&&!studio_xpbd_prepare(s.xpbd,s.core.model)){studio_xpbd_disable(s.xpbd);s.xpbd=NULL;toast("XPBD stopped: invalid geometry.");}
+    if(s.xpbd&&!studio_xpbd_prepare(s.xpbd,s.core.model)){
+         studio_xpbd_disable(s.xpbd);s.xpbd=NULL;
+         studio_rig_frame_unbind(&s.legacy_frame_fence);
+         toast("XPBD stopped: invalid geometry.");
+       }else if(s.xpbd){
+         (void)studio_rig_frame_prepare(&s.legacy_frame_fence,
+                s.model_generation,s.rig_revision,(uint64_t)s.frame+1);
+       }
+    if(geometry_xpbd&&
+       (geometry_bound_layer<0||geometry_bound_layer>=geometry.active.count||
+        geometry.revision!=geometry_bound_revision))geometry_stop_physics();
+    geometry_physics_pending=0;
+    if(geometry_xpbd){
+      geometry_physics_pending=studio_geometry_xpbd_prepare(geometry_xpbd,
+         &geometry.active.layers[geometry_bound_layer],geometry.revision);
+      if(!geometry_physics_pending)geometry_stop_physics();
+    }
     BeginTextureMode(s.target);stage_background();RenderModel(s.core.model,&s.renderer,&s.view,1,&s.opt,s.sorted);EndTextureMode();
     if(s.xpbd){rlDrawRenderBatchActive();glFinish();
-        if(glGetError()!=GL_NO_ERROR||!studio_xpbd_accept(s.xpbd)){studio_xpbd_disable(s.xpbd);s.xpbd=NULL;toast("XPBD render failed.");}else if(s.xpbd_smoke)++s.xpbd_smoke_frames;
+        if(glGetError()!=GL_NO_ERROR||!studio_xpbd_accept(s.xpbd)){
+          studio_xpbd_disable(s.xpbd);s.xpbd=NULL;
+          studio_rig_frame_unbind(&s.legacy_frame_fence);
+          toast("XPBD render failed.");
+        }else{
+          (void)studio_rig_frame_accept(&s.legacy_frame_fence,
+                  s.model_generation,s.rig_revision,(uint64_t)s.frame+1,1);
+          if(s.xpbd_smoke)++s.xpbd_smoke_frames;
+        }
     }
     BeginDrawing();ClearBackground(BG);
     DrawRectangle(0,0,w,74,CARD);DrawCircle(35,34,13,ACCENT);label("A",29,23,22,BG);
@@ -1076,6 +1719,16 @@ static void frame(void){
     camera_ui();
     DrawTexturePro(s.target.texture,(Rectangle){0,0,(float)s.target.texture.width,-(float)s.target.texture.height},s.viewport,(Vector2){0,0},0,WHITE);
     rig_overlay_ui();
+    layer_overlay_ui();
+    geometry_overlay_ui();
+    if(geometry_physics_pending&&geometry_xpbd){
+      rlDrawRenderBatchActive();glFinish();
+      if(glGetError()==GL_NO_ERROR&&studio_geometry_xpbd_accept(geometry_xpbd)){
+        geometry_accepted_frames=studio_geometry_xpbd_frames(geometry_xpbd);
+        geometry_accepted_revision=geometry_bound_revision;
+      }else geometry_stop_physics();
+      geometry_physics_pending=0;
+    }
     DrawRectangleLinesEx(s.viewport,1,LINE);label(s.linked?"LINKED PHYSICS3":"NO LINKED PHYSICS3",s.viewport.x+14,s.viewport.y+14,11,s.linked?ACCENT:MUTED);
     if(s.dragging)label(s.dragging==1?"PULL / HEAD":s.dragging==2?"PULL / ARMS":"PULL / BODY",s.viewport.x+14,s.viewport.y+35,12,ACCENT);
     float y=s.viewport.y+s.viewport.height+14;
@@ -1087,7 +1740,13 @@ static void frame(void){
     y+=42;label(TextFormat("FRAME %.1f ms",dt*1000),s.viewport.x,y,12,MUTED);
     for(int i=1;i<120;++i){float a=s.fps_history[(s.history+i-1)%120],b=s.fps_history[(s.history+i)%120];
         DrawLine((int)(s.viewport.x+150+(i-1)*(s.viewport.width-150)/120),(int)(y+20-bound(a,0,50)*.4f),(int)(s.viewport.x+150+i*(s.viewport.width-150)/120),(int)(y+20-bound(b,0,50)*.4f),Fade(ACCENT,.6f));}
-    left_ui();inspector();
+    if(!studio_left_collapsed)left_ui();
+     if(!studio_right_collapsed)inspector();
+     if(button((Rectangle){16,75,60,20},studio_left_collapsed?"SHOW L":"HIDE L",0))
+      studio_left_collapsed=!studio_left_collapsed;
+     if(button((Rectangle){(float)w-82,75,68,20},
+               studio_right_collapsed?"SHOW R":"HIDE R",0))
+      studio_right_collapsed=!studio_right_collapsed;
     /* UI and viewport edit paths run on this owner thread; record their
        completed Rig transaction before admitting the next IPC request. */
     studio_note_ui_rig_edit();
@@ -1117,8 +1776,14 @@ int main(int argc,char **argv){
     for(int i=1;i<argc;++i){if(!strcmp(argv[i],"--model")&&i+1<argc)model=argv[++i];else if(!strcmp(argv[i],"--evidence")&&i+1<argc){const char *folder=argv[++i];if(strlen(folder)>=sizeof s.folder)return 2;snprintf(s.folder,sizeof s.folder,"%s",folder);}else if(!strcmp(argv[i],"--frames")&&i+1<argc){char *end;long n=strtol(argv[++i],&end,10);if(*end||n<1||n>1000000)return 2;s.limit=(int)n;}else if(!strcmp(argv[i],"--smoke"))s.smoke=1;else if(!strcmp(argv[i],"--xpbd-smoke"))s.xpbd_smoke=1;else if(!strcmp(argv[i],"--xpbd-motion-case")&&i+1<argc){s.xpbd_motion_case=atoi(argv[++i]);if(s.xpbd_motion_case<1||s.xpbd_motion_case>3)return 2;s.xpbd_smoke=1;}else return 2;}
     if(!model||(s.smoke&&s.limit<270))return 2;SetTraceLogLevel(LOG_WARNING);csmSetLogFunction(NULL);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE|FLAG_VSYNC_HINT|FLAG_MSAA_4X_HINT);InitWindow(1460,1000,"Avatar Studio | Interactive Model Lab");SetWindowMinSize(1250,920);SetTargetFPS(60);SetExitKey(KEY_NULL);
-    s.font=LoadUiFont();s.view.sw=824;s.view.sh=750;s.opt.maskScale=.75f;s.opt.maxOrder=1<<30;s.opt.onlyDrawable=-1;
-    if(!load_model(model)){fprintf(stderr,"Studio model load failed: %s\n",s.notice);if(s.font.texture.id!=GetFontDefault().texture.id)UnloadFont(s.font);CloseWindow();return 3;}
+    Image checker=GenImageChecked(64,64,8,8,
+       (Color){170,180,196,255},(Color){242,246,252,255});
+     geometry_checker=LoadTextureFromImage(checker);
+     UnloadImage(checker);
+     s.font=LoadUiFont();s.view.sw=824;s.view.sh=750;s.opt.maskScale=.75f;s.opt.maxOrder=1<<30;s.opt.onlyDrawable=-1;
+    if(!load_model(model)){fprintf(stderr,"Studio model load failed: %s\n",s.notice);if(s.font.texture.id!=GetFontDefault().texture.id)UnloadFont(s.font);
+     if(geometry_checker.id)UnloadTexture(geometry_checker);
+     CloseWindow();return 3;}
     s.physics_expected=s.linked!=NULL;if(s.smoke)s.settings.gaze=0;
     while(!WindowShouldClose()&&(!s.limit||s.frame<s.limit))frame();
     state_file();
@@ -1129,5 +1794,9 @@ int main(int argc,char **argv){
         char path[1200];snprintf(path,sizeof path,"%s/smoke.json",s.folder);FILE *f=fopen(path,"w");
         if(f){fprintf(f,"{\"checks\":%d,\"failures\":%d,\"frames\":%d,\"linked_physics\":%d}\n",s.checks,s.failures,s.frame,s.linked!=NULL);fclose(f);}else ++s.failures;
     }
-    free_model();if(s.target.id)UnloadRenderTexture(s.target);if(s.font.texture.id!=GetFontDefault().texture.id)UnloadFont(s.font);CloseWindow();return s.failures?4:0;
+    free_model();
+     if(s.target.id)UnloadRenderTexture(s.target);
+     if(geometry_checker.id)UnloadTexture(geometry_checker);
+     if(s.font.texture.id!=GetFontDefault().texture.id)UnloadFont(s.font);
+     CloseWindow();return s.failures?4:0;
 }
