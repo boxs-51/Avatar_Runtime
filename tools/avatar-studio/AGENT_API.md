@@ -4,6 +4,27 @@ This API is public to trusted local agents inside the enrolled Avatar_Runtime
 Windows workspace. It does not extend SDK ABI20 or register new Computer Bridge
 MCP tools. The interface is JSON -> validated ASCII request -> native receipt.
 
+## Purpose: callable tools, not Agent account management
+
+This Local-only API exposes useful Studio work operations to Agents. It is a
+**calling interface**, not an Agent-registration or per-Agent permissions
+service. "Public" API naming does not authorize publication of private model
+information; see [ADR-005](../../docs/reference/ADR_005_MODEL_INFORMATION_NONPUBLIC_AND_SDK_PACKAGING.md)
+and [ADR-006](../../docs/reference/ADR_006_AGENT_CALLABLE_STUDIO_API.md).
+
+The existing AgentBridge can be wrapped without a new server or identity:
+
+    from scripts.studio_agent_api import AgentBridge
+    from scripts.studio_agent_tools import AgentStudioTools
+    tools = AgentStudioTools(AgentBridge(existing_studio_ipc_folder))
+    catalog = tools.catalog()
+    status = tools.call("studio.status")
+    capabilities = tools.read_v2("avatar.capabilities")
+
+The local IPC directory is provided by the existing Studio setup. Never
+publish its path or private model outputs. The wrapper does not retry
+uncertain outcomes or activate the G5 V2 writer.
+
 ## Invoke
 
 Start launch_layer_physics_studio.bat, then use:
@@ -16,6 +37,29 @@ Computer Bridge can invoke the CLI with terminal_run:
 workspace_alias="beta", program="python", cwd=".",
 arguments=["scripts/studio_agent_cli.py", "<JSON command>"].
 The enrolled default alpha workspace is not changed.
+
+The test-only process adapter `scripts/studio_g5_fixture_ipc.py`
+routes functional calls to a synthetic Native owner through bounded
+mutation and recovery file lanes. Run
+`python -B -m scripts.test_studio_g5_agent_tools_ipc` after building the
+opt-in Native fixture. This is not the real Studio Host transport or
+a public writer SDK and must not be released as such.
+
+## G5 draft/transaction Agent tools — synthetic Native proof, not live writer
+
+The new `scripts/studio_g5_tools.py` offers task-oriented `G5DraftTools`
+and `g5_tool_catalog()` for `draft.begin`, `draft.anchor.set`,
+`draft.validate`, `draft.commit`, `draft.abort`, `draft.undo`,
+`draft.redo`, `draft.status`, `draft.receipt.status` and
+`draft.reconcile` (only synthetic Native, explicit recovery).
+It is separately tested against the real **model-free** C11 transaction
+core via the opt-in Native DLL and does not route writes to the live Studio.
+
+See [local G5 Agent-tool test/report](../../docs/in-progress/studio-beta-20261023/G5_AGENT_TASK_TOOLS_LOCAL_T2_20261024.md).
+Production V2 G5 writer remains HOLD; continue using established V1 tools
+for currently supported Studio operations. Never replay a lost-ACK
+mutation blindly. No Agent registration, per-Agent identity-management
+system, or private model export is introduced.
 
 ## Public command groups
 
@@ -34,7 +78,7 @@ The enrolled default alpha workspace is not changed.
 - Parameters: param.set (index,value), param.clear (index),
   param.inspect (index), param.reset.
 - Parts: part.opacity (index,value 0..1), part.inspect (index).
-- Rig: rig.select, rig.vertex, rig.inspect, rig.anchor, rig.beam,
+- Rig: rig.select, rig.vertex, rig.inspect, rig.history, rig.undo, rig.redo, rig.anchor, rig.beam,
   rig.store (action save/load), rig.apply.
 - Semantic hints: layer.scan, layer.suggest, layer.adopt,
   layer.label (kind unknown/hair/skirt/strap).
@@ -51,6 +95,175 @@ bending, surface, anchors. Integer: iterations, pin, substeps, anchors.
 
 Changing parameters does not automatically rebind XPBD: call xpbd.apply
 or rig.apply separately. No semantic unknown is automatically adopted.
+
+## Shared Rig and Layer selection
+
+The real Native Studio owner exposes generation-fenced selection/readback
+through the existing validated Local AgentBridge:
+
+    epoch = int(tools.call("studio.epoch")["receipt"].split("=", 1)[1])
+    state = tools.call("rig.selection", generation=epoch)
+    # Parse bounded receipt fields: drawable, vertices, revision, saved.
+    # Select only after validating the actual revision from this receipt.
+    tools.call("rig.select.at", generation=epoch, revision=revision, drawable=target)
+    tools.call("layer.select", generation=epoch, revision=new_revision, drawable=layer_index)
+    selected_layer = tools.call("layer.inspect", generation=epoch)
+
+Both selectors use the same live RigBank; layer.select opens the existing
+Layers/Part inspector, which is **NOT** a geometry authoring tool. The
+layer.inspect receipt includes selected drawable, vertex/triangle aggregates,
+topology flag/islands/loose counts, and Rig revision, not private IDs/geometry.
+The legacy rig.select API remains supported and uses the same owner selector.
+
+Rig/Layer selection rejects stale model generation, stale revision,
+out-of-range/unsupported drawables and malformed wire tails. The UI picker
+skips drawables with zero or more than 2048 vertices; unsupported geometry
+does not trap the Rig Editor navigation. Swapping drawables retains
+per-layer RigBank edits and resets active undo history; an old bound
+XPBD frame is not accepted as a new G5 APPLIED frame.
+
+## Layer Editor Local toolkit (native owner thread)
+
+The Layers tab and the local Agent share the selected drawable. View-only and
+selection operations (not geometry writes) are:
+
+- layer.cursor(generation): selected drawable, vertex, triangle, wireframe,
+  isolated-view flag and current Rig revision; unset selections are -1.
+- layer.vertex.select(generation,revision,index): select a validated vertex.
+- layer.triangle.select(generation,revision,index): select a triangle only if
+  all three vertex indices are distinct and within the current mesh bounds.
+- layer.overlay(generation,revision,enabled): toggle viewport wireframe.
+- layer.isolate(generation,revision,enabled): display only the active layer or
+  restore all layers; the original model remains unchanged.
+
+Read the current generation from studio.epoch and current revision from
+rig.selection or layer.inspect, and refresh them after switching drawable.
+Changing a layer resets its cursor; all operations reject stale generation and
+revision. For full local private vertex coordinates or triangle members use
+the existing G4 read-only operations with their respective epoch fences.
+Do not publish model coordinates, textures, IDs or other private receipts.
+
+The current layer editor does NOT yet modify MOC3 geometry/UV/topology or
+serialize layer edits. The product G5 writer stays HOLD.
+
+## Stable authored-layer identity (P0 contract)
+
+Studio-authored layers have numeric ID values in 1..9999. Identity is
+preserved through reorder; list index is NOT a durable reference.
+Read layer.project.status(generation) to obtain current document revision:
+
+- layer.project.by_id(generation,revision,id): resolves the current
+  presentation index and metadata without changing selection.
+- layer.active.id(generation,revision,id): selects that exact layer.
+
+Stale revision or deleted ID is rejected. Reusing an ID after deletion
+is a new object and needs a refreshed revision (ABA guard); numeric IDs
+are not globally persistent across deletion/recreation. Historical
+position-only APIs remain for compatibility and must NOT be stored as
+long-lived Rig references. Other geometry mutations continue to be
+index-based and revision-fenced; they require a freshly resolved index
+before editing. Stable authored vertex IDs and cross-layer links are implemented
+within the bounded Native Studio document. Per-vertex identity is
+monotonic within its layer lifetime; vertex deletion shifts only
+presentation indices, not the identity of surviving vertices.
+
+- layer.project.point includes vertex_id.
+- layer.project.vertex_by_id(generation,revision,id,vertex_id) resolves a
+  stable authored vertex, rejecting stale epochs/revisions and unknown IDs.
+- layer.rig.link(generation,revision,parent_id,parent_vertex_id,child_id,
+  child_vertex_id,stiffness) creates a typed Rig link across two layers.
+- layer.rig.unlink(...) removes that exact link.
+- layer.rig.links(generation) reports count, and
+  layer.rig.link.inspect(generation,revision,index) reads a bounded link.
+- layer.physics.point_by_id(generation,id,vertex_id) reads a per-layer
+  physical point only after GPU frame acceptance at the bound revision.
+
+Links survive reorder, undo/redo, source reload, new-process restart and
+binary load. Deleting a referenced vertex or layer is denied. Directed
+link cycles are rejected. Current authored source is
+STUDIO_GEOMETRY_5 (V1–V4 backward readers); runtime ARSMESH3
+(reads ARSMESH1 and ARSMESH2). Neither is Cubism MOC3.
+
+The Native Studio Links tab provides a minimal UI to mark a parent,
+choose another layer/vertex as child, create, inspect pages and unlink.
+Parent marking is invalidated by model/revision changes. The UI route
+builds, but actual mouse-driven acceptance is GUI HOLD pending
+authorized isolated-window input; it is not an independently certified
+usability gate.
+
+## Editable custom geometry layers
+
+The locally running Studio now owns a bounded sidecar geometry document,
+**separate from compiled MOC3 and RigBank**. Agent calls are through the
+existing validated V1 bridge, with no network service or Agent registry:
+
+- layer.project.status(generation): geometry document revision, layer count,
+  selected authored layer and undo/redo depth.
+- layer.project.layer(generation,layer), layer.project.point(generation,layer,
+  vertex), and layer.project.face(generation,layer,triangle): bounded private
+  readback of authored geometry and current editor revision. These receipts
+  are local model data and must not be put in public logs.
+
+- layer.create(generation,revision,id), layer.copy.drawable(generation,
+  revision,drawable,id), layer.delete(generation,revision,layer),
+  layer.duplicate(generation,revision,layer,id),
+  layer.reorder(generation,revision,layer,target).
+- layer.active(generation,layer) selects a custom layer without writing
+  geometry. layer.point.add/move/delete and layer.face.add/delete edit a
+  custom layer with strict epoch/revision CAS and topology validation.
+- layer.edit.undo/redo(generation,revision) and
+  layer.project.save/load(generation,revision). Save/load uses a fixed
+  sidecar under the active local Studio evidence folder; no API path input.
+
+Read project.status before each mutation and use its latest revision;
+unknown-outcome requests must be recovered, not blindly retried.
+Operations never modify the original compiled MOC3. Import captures an
+eligible drawable's current geometry into a private editable snapshot.
+The bounded document currently supports 8 layers, 128 vertices and 256
+triangles per layer and six history snapshots. It is not an MOC3 source
+writer, nor does it support custom geometry XPBD/UV/material rendering yet.
+
+## UV, material and custom mesh physical preview
+
+The Studio-owned editable layer document provides Local Agent calls:
+
+- layer.uv.set(generation,revision,layer,vertex,u,v) changes a bounded per-vertex UV.
+- layer.material.set(generation,revision,layer,r,g,b,opacity) edits local
+  RGBA tint in the interval [0,1], including transparency.
+- layer.rig.pin(generation,revision,layer,vertex) sets the local XPBD pin,
+  or vertex=-1 to remove an explicit pin.
+- layer.physics.bind(generation,revision,layer) binds the authored mesh
+  to the native XPBD solver using its current document revision.
+- layer.physics.status(generation) reports bound revision, number of
+  accepted GPU frames and G5_APPLIED=0.
+- layer.physics.point(generation,vertex) reads the latest physically
+  deformed coordinate only after at least one GPU-accepted frame.
+- layer.physics.stop(generation,revision) disables the local binding.
+- layer.project.layer / layer.project.point provide private authored
+  material/pin and UV readback.
+
+Operations use the existing local IPC and sidecar revision fence, not a
+public API or G5 writer. The original MOC3 remains unchanged. UV texture
+display is a procedural checker preview, not source texture export.
+Direct edits after binding invalidate the physical witness and require
+re-binding. Native RigBank weights, interlayer joints, MOC3 material
+serialization and full final image parity remain separate work.
+
+## Live Rig history tools
+
+The product Studio V1 API provides `rig.history(generation)`,
+`rig.undo(generation,revision)`, and `rig.redo(generation,revision)`.
+Use the generation read from `studio.epoch` and the latest revision from
+`rig.history`. The native Studio owner compares both values before modifying
+a Rig. Each successful undo/redo increments revision once and requires a fresh
+`rig.apply` to update XPBD; it is **not** a G5 frame-APPLIED acknowledgment.
+
+The current history keeps up to 16 previous edits in local memory for the
+selected drawable. New edits clear redo. Switching drawable/model clears
+history, so an Agent cannot accidentally undo a different layer. Studio
+restart also resets history. These commands use the existing local
+AgentBridge recovery/uncertain-ACK handling; never blindly retry after
+a timeout. They do not enable the G5 transaction writer.
 
 ## Receipts, security and limitations
 
@@ -361,3 +574,52 @@ generation fences and private-access guards remain mandatory.
 Unicode unit fixtures passed, as did Native Release grammar and
 current physical model E2E. A true Unicode-ID MOC3 physical fixture
 is NOT_RUN, so G4 remains PARTIAL and product release stays HOLD.
+
+
+## Real Studio G5 readiness (read-only, writer HOLD)
+
+The existing local V1 Studio bridge now supports `studio.g5.status`.
+Agent code may call `AgentStudioTools(existing_bridge).g5_status()` to
+inspect `g5_writer_enabled=False`, `g5_transaction_connected=False`,
+`frame_acceptance_verified=False`, model generation and legacy Rig revision.
+The shipped Studio returns only bounded LOCAL_PRIVATE metadata. Legacy Rig
+revision is **not** the G5 CAS document revision, and this feature **does not
+enable** G5 writing or certify solver/GPU frame acceptance. See
+[real Studio read-only checkpoint](../../docs/in-progress/studio-beta-20261023/G5_REAL_STUDIO_READONLY_STATUS_20261024.md).
+
+## Real Studio UI/V1 Rig dispatch and recovery — G5 stage
+
+The real Studio now routes UI and V1/Agent Rig edit operations through
+a shared private C11 owner-thread candidate/commit dispatcher with
+generation/revision validation. This preserves legacy Rig edit semantics
+and does NOT enable the experimental G5Bus draft writer or claim a frame
+was applied to XPBD/GPU.
+
+The production local AgentBridge offers `recover(original_token)` and
+`reconcile(original_token)`. A command timeout raises
+`StudioUnknownOutcome` carrying the original local request token.
+The Studio's separate `api/recovery` lane returns only the original
+OK/ERR receipt metadata or UNKNOWN. Reconciliation can clear the
+local uncertain-outcome marker only after a matching FOUND receipt;
+UNKNOWN never causes retry or automatic clearance.
+
+The Agent's callable helpers are `AgentStudioTools.recover_v1` and
+`AgentStudioTools.reconcile_v1`. No Agent accounts, registration or public
+network permissions are introduced. See [implementation and gate
+report](../../docs/in-progress/studio-beta-20261023/G5_LIVE_RIG_DISPATCH_V1_RECOVERY_20261024.md).
+
+
+## Local legacy Rig frame witness (not G5 APPLIED)
+
+The existing local V1 bridge supports
+`studio.g5.legacy_frame.status` and the Agent helper
+`AgentStudioTools(existing_bridge).legacy_frame_status()`.
+It reports only bounded LOCAL_PRIVATE model-generation, legacy revision,
+Rig bind, frame-accept and currentness metadata. The Studio records this
+after a successful XPBD preparation AND GL/GPU render acceptance. Any Rig
+edit makes the old accepted revision stale until a new bind/render succeeds.
+
+The result explicitly sets `g5_writer_enabled=False` and
+`g5_applied=False`. Do not report an accepted legacy Rig frame as a G5
+transaction APPLIED. The actual G5Bus document-to-frame gate is still HOLD.
+See [G5 T3 local checkpoint](../../docs/in-progress/studio-beta-20261023/G5_T3_NATIVE_CANDIDATE_FRAME_WITNESS_20261024.md).

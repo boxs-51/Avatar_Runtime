@@ -104,7 +104,7 @@ G5Code g5_txn_begin(G5Txn *t,uint64_t session,uint64_t generation,
  G5Code c=fence(t,session,generation,expected);if(c!=G5_OK)return c;
  if(t->has_draft)return G5_BUSY;
  if(!owner||!draft_id||t->draft_serial==G5_REV_MAX)return G5_OUT_OF_BUDGET;
- t->draft=t->live;t->base_revision=t->revision;t->lease_owner=owner;
+ t->draft=t->live;t->base_revision=t->revision;t->lease_owner=owner;t->native_candidate_staged=0;
  t->draft_id=++t->draft_serial;t->has_draft=1;t->validated=0;
  *draft_id=t->draft_id;
  return G5_OK;
@@ -166,6 +166,22 @@ G5Code g5_txn_cross(G5Txn *t,uint64_t session,uint64_t generation,
  if(!studio_rig_cross(&next,parent,target,child,target_vertices,stiffness,enabled))
   return G5_INVALID_DRAFT;
  t->draft=next;t->validated=0;return G5_OK;
+}
+G5Code g5_txn_stage_native_candidate(G5Txn *t,uint64_t session,
+              uint64_t generation,uint64_t owner,uint64_t draft,
+              const StudioRig *candidate){
+ G5Code c=stage_owner(t,session,generation,owner,draft);
+ if(c!=G5_OK)return c;
+ if(!candidate||!rig_valid(candidate)||
+    candidate->model_signature!=t->live.model_signature||
+    candidate->drawable!=t->live.drawable||
+    candidate->vertex_count!=t->live.vertex_count)
+  return G5_INVALID_DRAFT;
+ /* Local snapshot copy is all-or-nothing. Never update the live model here. */
+ t->draft=*candidate;
+ t->native_candidate_staged=1;
+ t->validated=0;
+ return G5_OK;
 }
 G5Code g5_txn_validate(G5Txn *t,uint64_t session,uint64_t generation,
                         uint64_t owner,uint64_t draft){

@@ -1,3 +1,5 @@
+**Active Studio work:** [Pinned Rig selection → Layer → Model goal](ACTIVE_STUDIO_GOAL.md).
+
 # Mục lục và phân loại tài liệu
 
 Rà soát ngày **21-10-2026, Asia/Bangkok**, nhánh `alpha`. Inventory hiện tại: **166 tệp**, gồm `README.md` và toàn bộ `docs/`. Mốc phân loại ban đầu có 125 tệp; PUB-02-A/B + PUB-04-A/B + alpha audit thêm 41 tài liệu. Xem checkpoint mới nhất ở cuối trang và catalog cho danh sách đầy đủ.
@@ -289,3 +291,37 @@ Inventory **169 files**: completed **49**, reference **86**, obsolete **4**, in-
 ## Non-public model information and reusable SDK components
 
 The active [ADR-005](reference/ADR_005_MODEL_INFORMATION_NONPUBLIC_AND_SDK_PACKAGING.md) establishes a no-publication rule for private model data in GitHub, SDKs, release archives, logs and evidence. It **does not introduce new local UI/Agent model-access restrictions**. The [SDK profile documentation](reference/SDK_DEVELOPMENT_PACKAGE.md) links the staged Git and installed-package privacy gates.
+
+## Agent-callable Studio API — Owner clarification 2026-10-24
+
+[ADR-006](reference/ADR_006_AGENT_CALLABLE_STUDIO_API.md) defines functional
+Studio tools for Agents. It excludes Agent registration and per-Agent ACL
+management. [ADR-005](reference/ADR_005_MODEL_INFORMATION_NONPUBLIC_AND_SDK_PACKAGING.md)
+governs non-publication of private model information separately.
+
+- [G5 Agent callable task tools local T2](in-progress/studio-beta-20261023/G5_AGENT_TASK_TOOLS_LOCAL_T2_20261024.md): model-free Native end-to-end fixture, G5 begin/edit/validate/commit/abort/undo/redo/status, writer HOLD.
+
+
+- [G5 Real Studio read-only status](in-progress/studio-beta-20261023/G5_REAL_STUDIO_READONLY_STATUS_20261024.md): local owner-thread V1 handshake; G5 writer remains HOLD.
+- [G5 Live Rig dispatcher and V1 recovery](in-progress/studio-beta-20261023/G5_LIVE_RIG_DISPATCH_V1_RECOVERY_20261024.md): owner-thread Rig candidate/CAS and read-only local receipt recovery; G5 writer HOLD.
+
+- [G5 Native ingress convergence](in-progress/studio-beta-20261023/G5_NATIVE_INGRESS_CONVERGENCE_20261025.md): chung mot G5Bus Native cho UI/V1/Agent trong test, source chi giu contract, product writer HOLD.
+- [G5 T3 Native candidate and physical frame witness](in-progress/studio-beta-20261023/G5_T3_NATIVE_CANDIDATE_FRAME_WITNESS_20261024.md): trusted full-Rig draft staging and live legacy XPBD/GPU frame evidence; product G5 writer HOLD.
+
+- [Studio Local Agent Toolkit API coverage and next Layer/Model editor scope](in-progress/studio-beta-20261023/STUDIO_LOCAL_AGENT_TOOLKIT_CAPABILITY_AUDIT_20261025.md): live Rig API parity, local undo/redo, RigBank E2E and next layer/model design after Rig stability.
+
+- [Studio Rig Agent / XPBD physical frame E2E](in-progress/studio-beta-20261023/STUDIO_RIG_AGENT_XPBD_FRAME_E2E_20261025.md): real local Rig edit, undo/redo, GPU-accepted frame checks, and XPBD disable frame-fence fix.
+
+- [Layer Editor design and acceptance](in-progress/studio-beta-20261023/LAYER_EDITOR_PRODUCT_DESIGN_20261025.md): bounded selection/inspect first, separate reversible layer writes only after the Rig gate.
+
+- [Rig selection → Layer Editor handoff evidence](in-progress/studio-beta-20261023/RIG_SELECTION_TO_LAYER_HANDOFF_20261025.md): RED/green selection, real Studio integration and remaining GUI acceptance.
+
+- [Layer Editor Native viewport and Local Agent tools](in-progress/studio-beta-20261023/LAYER_EDITOR_NATIVE_VIEWPORT_20261025.md): real Studio vertex/triangle selection, wireframe/isolate, private E2E, next geometry-authoring gates.
+
+- [Local Layer Editor geometry authoring](in-progress/studio-beta-20261023/LAYER_EDITOR_LOCAL_GEOMETRY_20261025.md): create/edit/delete/import custom layers, native GUI test, local sidecar and remaining model-authoring gaps.
+\n- [Shared Studio UI, UV/Material and custom XPBD](in-progress/studio-beta-20261023/SHARED_UI_UV_MATERIAL_XPBD_20261025.md): implementation and physical frame evidence.\n- [Editable viewport-first layout diagram](ui/AVATAR_STUDIO_SHARED_LAYOUT.svg): project sidebar, contextual inspector and planned bottom dock.\n
+- [Rig-linked Layer and native runtime mesh](in-progress/studio-beta-20261023/LAYER_RIG_NATIVE_MODEL_RUNTIME_20261025.md): compilation, source, evidence and Cubism boundary.
+
+- [Avatar Studio consolidated roadmap — Owner-approved implementation scope P0–P4A]("in-progress/studio-beta-20261023/AVATAR_STUDIO_ROADMAP_OWNER_REVIEW_20261025.md"): phases P0–P5, shared UX, Rig/Layer, native model vs Cubism MOC3, owner DEC-01..08.
+
+- [P1 Rig–Layer cross-link and GPU gate](in-progress/studio-beta-20261023/P1_LAYER_RIG_GRAPH_GATE_20261025.md): stable vertex identities, graph source, UI, Native E2E and outstanding review.

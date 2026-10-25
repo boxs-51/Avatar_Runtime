@@ -134,6 +134,47 @@ static G5Code trusted_owner(const G5TrustedActor *actor,uint64_t *key){
  *key=((uint64_t)actor->ingress<<60)|actor->owner;
  return G5_OK;
 }
+/* Private semantic Rig digest: explicitly encoded fields, no C padding,
+   file paths, texture bytes or raw model geometry in the receipt. */
+static void hash_u64(G5Sha256 *sha,uint64_t value){
+ unsigned char bytes[8];
+ for(unsigned i=0;i<8;i++)bytes[i]=(unsigned char)(value>>(56-8*i));
+ g5_sha_update(sha,bytes,sizeof bytes);
+}
+static void hash_i32(G5Sha256 *sha,int value){
+ hash_u64(sha,(uint64_t)(int64_t)value);
+}
+static void hash_f32(G5Sha256 *sha,float value){
+ uint32_t bits=0;memcpy(&bits,&value,sizeof bits);
+ hash_u64(sha,(uint64_t)bits);
+}
+static void hash_native_rig(G5Sha256 *sha,const StudioRig *rig){
+ static const char domain[]="ARS-G5-NATIVE-RIG-v1";
+ g5_sha_update(sha,domain,sizeof domain-1);
+ hash_u64(sha,rig->model_signature);
+ hash_i32(sha,rig->drawable);hash_i32(sha,rig->vertex_count);
+ hash_i32(sha,rig->role);
+ hash_i32(sha,rig->anchor_count);hash_i32(sha,rig->beam_count);
+ hash_i32(sha,rig->parent_count);hash_i32(sha,rig->weight_count);
+ hash_i32(sha,rig->cross_count);
+ for(int i=0;i<rig->anchor_count;i++)hash_i32(sha,rig->anchors[i]);
+ for(int i=0;i<rig->beam_count;i++){
+  hash_i32(sha,rig->beams[i].a);hash_i32(sha,rig->beams[i].b);
+ }
+ for(int i=0;i<rig->parent_count;i++){
+  hash_i32(sha,rig->parents[i].parent);hash_i32(sha,rig->parents[i].child);
+  hash_f32(sha,rig->parents[i].stiffness);
+ }
+ for(int i=0;i<rig->weight_count;i++){
+  hash_i32(sha,rig->weights[i].vertex);hash_f32(sha,rig->weights[i].weight);
+ }
+ for(int i=0;i<rig->cross_count;i++){
+  hash_i32(sha,rig->cross_links[i].parent);
+  hash_i32(sha,rig->cross_links[i].drawable);
+  hash_i32(sha,rig->cross_links[i].child);
+  hash_f32(sha,rig->cross_links[i].stiffness);
+ }
+}
 static void canonical_digest(const G5TrustedActor *actor,
                              const G5BusCommand *cmd,unsigned char digest[32]){
  /* Versioned canonical semantic envelope. No padding or raw C floats/geometry.
@@ -165,6 +206,11 @@ static void bind_receipt(G5Txn *txn,uint64_t owner,
  if(r->owner==owner&&r->request_id==cmd->request_id){
   r->operation=(uint32_t)cmd->operation;
   canonical_digest(actor,cmd,r->payload_sha256);
+   if(cmd->operation==G5_COMMIT&&txn->native_candidate_staged){
+    G5Sha256 semantic;g5_sha_init(&semantic);
+    hash_native_rig(&semantic,&txn->live);
+    g5_sha_final(&semantic,r->native_candidate_sha256);
+   }
  }
 }
 static G5ActorQuarantine *actor_slot(G5Bus *bus,
@@ -252,6 +298,17 @@ G5Code g5_bus_submit_trusted(G5Bus *bus,const G5TrustedActor *actor,
  }
  out->code=code;
  return code;
+}
+G5Code g5_bus_stage_native_candidate_trusted(G5Bus *bus,
+               const G5TrustedActor *actor,uint64_t session,
+               uint64_t generation,uint64_t draft_id,
+               const StudioRig *candidate){
+ uint64_t owner=0;
+ G5Code c=trusted_owner(actor,&owner);
+ if(c!=G5_OK||!bus)return G5_STALE_SESSION;
+ if(actor_slot(bus,actor))return G5_BUSY;
+ return g5_txn_stage_native_candidate(&bus->txn,session,generation,
+                                       owner,draft_id,candidate);
 }
 /* Capture the exact original mutation identity BEFORE an ACK is trusted.
    This is an in-process test primitive, not an authenticated IPC transport. */

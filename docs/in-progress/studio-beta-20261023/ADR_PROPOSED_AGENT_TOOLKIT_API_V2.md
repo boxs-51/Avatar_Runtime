@@ -7,6 +7,20 @@
 - Authority: design handoff; no production/runtime source change, no public SDK ABI change, no merge/release permission
 - Privacy: PUBLIC-SAFE DESIGN. No real model paths, bytes, images, coordinates, derived hashes or private evidence.
 
+## Owner clarification — useful Agent tools, not Agent governance
+
+**2026-10-24:** Build callable Studio functions for the Agent: inspect, edit,
+configure and verify using existing local APIs. Do not build Agent accounts,
+registration, per-Agent ACLs, permissions UIs, or public API access-management
+services. Session/model-generation/document-revision fields remain transaction
+**consistency fences**, not Agent identities.
+
+The local convenience layer `scripts/studio_agent_tools.py` reuses the V1
+validator and bridge, and existing V2 read-only adapter. It does not publish
+private model data or enable G5 Native writer, which remains HOLD.
+See [ADR-006](../../reference/ADR_006_AGENT_CALLABLE_STUDIO_API.md) and
+[ADR-005](../../reference/ADR_005_MODEL_INFORMATION_NONPUBLIC_AND_SDK_PACKAGING.md).
+
 ## 1. Problem and observed baseline
 
 The current experimental tools/avatar-studio/AGENT_API.md describes JSON -> Python

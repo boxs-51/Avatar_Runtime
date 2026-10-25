@@ -7,13 +7,13 @@ import secrets
 import re
 import time
 VERSION="1.0"
-def validate_command(cmd:dict)->str:
-    if not isinstance(cmd,dict) or not isinstance(cmd.get("op"),str):
-        raise ValueError("invalid operation")
-    op=cmd["op"]
-    fields={
+def operation_fields()->dict[str,set[str]]:
+    """Existing V1 operation contract for local Agent tool discovery."""
+    return {
         "studio.status":{"op"}, "studio.metrics":{"op"},
         "studio.epoch":{"op"},
+        "studio.g5.status":{"op"},
+        "studio.g5.legacy_frame.status":{"op"},
         "g4.mesh.meta":{"op","generation","drawable"},
         "g4.mesh.vertex_count":{"op","generation","drawable"},
         "g4.mesh.vertex":{"op","generation","drawable","index"},
@@ -46,6 +46,56 @@ def validate_command(cmd:dict)->str:
         "layer.component.inspect":{"op","component"},
         "layer.component.adopt":{"op","component"},
         "rig.select":{"op","drawable"},
+        "rig.selection":{"op","generation"},
+        "rig.select.at":{"op","generation","revision","drawable"},
+        "layer.select":{"op","generation","revision","drawable"},
+        "layer.inspect":{"op","generation"},
+        "layer.physics.status":{"op","generation"},
+        "layer.physics.point":{"op","generation","vertex"},
+        "layer.physics.bind":{"op","generation","revision","layer"},
+        "layer.physics.stop":{"op","generation","revision"},
+        "layer.model.compile":{"op","generation","revision"},
+        "layer.model.open":{"op","generation","revision"},
+        "layer.project.status":{"op","generation"},
+        "layer.project.by_id":{"op","generation","revision","id"},
+        "layer.project.vertex_by_id":{"op","generation","revision","id","vertex_id"},
+        "layer.active.id":{"op","generation","revision","id"},
+        "layer.project.layer":{"op","generation","layer"},
+        "layer.project.point":{"op","generation","layer","vertex"},
+        "layer.project.face":{"op","generation","layer","triangle"},
+        "layer.project.save":{"op","generation","revision"},
+        "layer.project.load":{"op","generation","revision"},
+        "layer.create":{"op","generation","revision","id"},
+        "layer.copy.drawable":{"op","generation","revision","drawable","id"},
+        "layer.delete":{"op","generation","revision","layer"},
+        "layer.duplicate":{"op","generation","revision","layer","id"},
+        "layer.reorder":{"op","generation","revision","layer","target"},
+        "layer.active":{"op","generation","layer"},
+        "layer.point.add":{"op","generation","revision","layer","x","y"},
+        "layer.uv.set":{"op","generation","revision","layer","vertex","u","v"},
+        "layer.material.set":{"op","generation","revision","layer","r","g","b","opacity"},
+        "layer.rig.pin":{"op","generation","revision","layer","vertex"},
+        "layer.rig.weight":{"op","generation","revision","layer","vertex","weight"},
+        "layer.rig.parent":{"op","generation","revision","layer","vertex","parent","stiffness"},
+        "layer.rig.links":{"op","generation"},
+        "layer.rig.link.inspect":{"op","generation","revision","index"},
+        "layer.physics.point_by_id":{"op","generation","id","vertex_id"},
+        "layer.rig.link":{"op","generation","revision","parent_id","parent_vertex_id","child_id","child_vertex_id","stiffness"},
+        "layer.rig.unlink":{"op","generation","revision","parent_id","parent_vertex_id","child_id","child_vertex_id"},
+        "layer.point.move":{"op","generation","revision","layer","vertex","x","y"},
+        "layer.point.delete":{"op","generation","revision","layer","vertex"},
+        "layer.face.add":{"op","generation","revision","layer","a","b","c"},
+        "layer.face.delete":{"op","generation","revision","layer","triangle"},
+        "layer.edit.undo":{"op","generation","revision"},
+        "layer.edit.redo":{"op","generation","revision"},
+        "layer.cursor":{"op","generation"},
+        "layer.vertex.select":{"op","generation","revision","index"},
+        "layer.triangle.select":{"op","generation","revision","index"},
+        "layer.overlay":{"op","generation","revision","enabled"},
+        "layer.isolate":{"op","generation","revision","enabled"},
+        "rig.history":{"op","generation"},
+        "rig.undo":{"op","generation","revision"},
+        "rig.redo":{"op","generation","revision"},
         "rig.anchor":{"op","vertex","enabled"},
         "rig.beam":{"op","a","b","enabled"},
         "rig.parent":{"op","parent","child","stiffness","enabled"},
@@ -65,6 +115,12 @@ def validate_command(cmd:dict)->str:
         "physics.set":{"op","gravity","wind","damping"},
         "action.trigger":{"op","kind","strength"},
     }
+
+def validate_command(cmd:dict)->str:
+    if not isinstance(cmd,dict) or not isinstance(cmd.get("op"),str):
+        raise ValueError("invalid operation")
+    op=cmd["op"]
+    fields=operation_fields()
     if op not in fields or set(cmd)!=fields[op]:raise ValueError("invalid fields")
     def integer(k):
         v=cmd[k]
@@ -78,7 +134,7 @@ def validate_command(cmd:dict)->str:
     def boolean(k):
         if type(cmd[k]) is not bool:raise ValueError("expected bool")
         return int(cmd[k])
-    singles={"studio.epoch":"STUDIO_EPOCH","studio.status":"STUDIO_STATUS","studio.step":"STUDIO_STEP",
+    singles={"studio.g5.legacy_frame.status":"G5_LEGACY_FRAME_STATUS","studio.g5.status":"G5_LOCAL_STATUS","studio.epoch":"STUDIO_EPOCH","studio.status":"STUDIO_STATUS","studio.step":"STUDIO_STEP",
              "studio.reset":"STUDIO_RESET","studio.metrics":"STUDIO_METRICS",
              "param.reset":"PARAM_RESET","xpbd.apply":"XPBD_APPLY",
              "xpbd.disable":"XPBD_DISABLE","xpbd.inspect":"XPBD_INSPECT"}
@@ -193,6 +249,166 @@ def validate_command(cmd:dict)->str:
         return ("LAYER_COMPONENT_INSPECT" if op.endswith("inspect") else "LAYER_COMPONENT_ADOPT")+f" {integer('component')}"
     if op=="layer.topology":return "LAYER_TOPOLOGY"
     if op=="layer.topology.scan":return "LAYER_TOPOLOGY_SCAN"
+    if op in ("rig.history","rig.undo","rig.redo"):
+        gen=cmd["generation"]
+        if type(gen) is not int or not 0<gen<2**63:
+            raise ValueError("invalid generation")
+        if op=="rig.history":
+            return f"RIG_HISTORY {gen}"
+        revision=cmd["revision"]
+        if type(revision) is not int or not 0<=revision<2**63:
+            raise ValueError("invalid revision")
+        return f"RIG_{'UNDO' if op=='rig.undo' else 'REDO'} {gen} {revision}"
+    if op in ("rig.selection","layer.inspect","rig.select.at","layer.select"):
+        generation=cmd["generation"]
+        if type(generation) is not int or not 0<generation<2**63:
+            raise ValueError("invalid model generation")
+        if op=="rig.selection":return f"RIG_SELECTION {generation}"
+        if op=="layer.inspect":return f"LAYER_INSPECT {generation}"
+        revision=cmd["revision"]
+        if type(revision) is not int or not 0<=revision<2**63:
+            raise ValueError("invalid Rig revision")
+        drawable=integer("drawable")
+        return ("RIG_SELECT_AT" if op=="rig.select.at" else "LAYER_SELECT")+f" {generation} {revision} {drawable}"
+    if op in ("layer.cursor","layer.vertex.select","layer.triangle.select",
+              "layer.overlay","layer.isolate"):
+        generation=cmd["generation"]
+        if type(generation) is not int or not 0<generation<2**63:
+            raise ValueError("invalid layer generation")
+        if op=="layer.cursor":return f"LAYER_CURSOR {generation}"
+        revision=cmd["revision"]
+        if type(revision) is not int or not 0<=revision<2**63:
+            raise ValueError("invalid layer revision")
+        if op in ("layer.vertex.select","layer.triangle.select"):
+            index=integer("index")
+            return ("LAYER_VERTEX_SELECT" if op=="layer.vertex.select"
+                    else "LAYER_TRIANGLE_SELECT")+f" {generation} {revision} {index}"
+        if type(cmd["enabled"]) is not bool:raise ValueError("invalid layer view flag")
+        return ("LAYER_OVERLAY" if op=="layer.overlay"
+                else "LAYER_ISOLATE")+f" {generation} {revision} {int(cmd['enabled'])}"
+    if op=="layer.physics.point_by_id":
+        generation=cmd["generation"]
+        if type(generation) is not int or not 0<generation<2**63:
+            raise ValueError("invalid generation")
+        id=integer("id")
+        vertex_id=integer("vertex_id")
+        if not 1<=id<=9999 or not 1<=vertex_id<2**32:
+            raise ValueError("invalid physics identity")
+        return f"GEOM_PHYSICS_POINT_BY_ID {generation} {id} {vertex_id}"
+    if op=="layer.rig.link.inspect":
+        generation=cmd["generation"]
+        revision=cmd["revision"]
+        index=integer("index")
+        if type(generation) is not int or not 0<generation<2**63 or (
+            type(revision) is not int or not 0<=revision<2**63) or index<0 or index>=16:
+            raise ValueError("invalid Rig link inspect")
+        return f"GEOM_RIG_LINK_INSPECT {generation} {revision} {index}"
+    if op in ("layer.rig.links","layer.rig.link","layer.rig.unlink"):
+        generation=cmd["generation"]
+        if type(generation) is not int or not 0<generation<2**63:
+            raise ValueError("invalid generation")
+        if op=="layer.rig.links":return f"GEOM_RIG_LINKS {generation}"
+        revision=cmd["revision"]
+        if type(revision) is not int or not 0<=revision<2**63:
+            raise ValueError("invalid revision")
+        keys=("parent_id","parent_vertex_id","child_id","child_vertex_id")
+        values=[]
+        for k in keys:
+            n=integer(k)
+            if not 1<=n<2**32:raise ValueError("invalid link key")
+            values.append(n)
+        if values[0]>9999 or values[2]>9999 or values[0]==values[2]:
+            raise ValueError("invalid cross-layer identity")
+        base=f"{'GEOM_RIG_LINK' if op=='layer.rig.link' else 'GEOM_RIG_UNLINK'} {generation} {revision} "+' '.join(map(str,values))
+        return base+(f" {finite('stiffness',0,1)}" if op=="layer.rig.link" else "")
+    if op in ("layer.project.by_id","layer.active.id","layer.project.vertex_by_id"):
+        generation=cmd["generation"]
+        revision=cmd["revision"]
+        if type(generation) is not int or not 0<generation<2**63:
+            raise ValueError("invalid model generation")
+        if type(revision) is not int or not 0<=revision<2**63:
+            raise ValueError("invalid geometry revision")
+        id=integer("id")
+        if not 1<=id<=9999:raise ValueError("invalid layer id")
+        if op=="layer.project.vertex_by_id":
+            vertex_id=integer("vertex_id")
+            if not 1<=vertex_id<2**32:raise ValueError("invalid vertex id")
+            return f"GEOM_VERTEX_BY_ID {generation} {revision} {id} {vertex_id}"
+        name="GEOM_LAYER_BY_ID" if op=="layer.project.by_id" else "GEOM_ACTIVE_ID"
+        return f"{name} {generation} {revision} {id}"
+    if op in ("layer.project.layer","layer.project.point","layer.project.face"):
+        generation=cmd["generation"]
+        if type(generation) is not int or not 0<generation<2**63:
+            raise ValueError("invalid model generation")
+        layer=integer("layer")
+        if op=="layer.project.layer":return f"GEOM_LAYER {generation} {layer}"
+        if op=="layer.project.point":
+            return f"GEOM_POINT {generation} {layer} {integer('vertex')}"
+        return f"GEOM_FACE {generation} {layer} {integer('triangle')}"
+    if op in ("layer.model.compile","layer.model.open"):
+        epoch=cmd["generation"]
+        rev=cmd["revision"]
+        if type(epoch) is not int or not 0<epoch<2**63:
+            raise ValueError("invalid generation")
+        if type(rev) is not int or not 0<=rev<2**63:
+            raise ValueError("invalid revision")
+        return f"{'GEOM_COMPILE' if op=='layer.model.compile' else 'GEOM_OPEN_COMPILED'} {epoch} {rev}"
+    if op in ("layer.physics.status","layer.physics.point",
+              "layer.physics.bind","layer.physics.stop"):
+        gen=cmd["generation"]
+        if type(gen) is not int or not 0<gen<2**63:raise ValueError("invalid generation")
+        if op=="layer.physics.status":return f"GEOM_PHYSICS_STATUS {gen}"
+        if op=="layer.physics.point":return f"GEOM_PHYSICS_POINT {gen} {integer('vertex')}"
+        rev=cmd["revision"]
+        if type(rev) is not int or not 0<=rev<2**63:
+            raise ValueError("invalid revision")
+        if op=="layer.physics.stop":return f"GEOM_PHYSICS_STOP {gen} {rev}"
+        return f"GEOM_PHYSICS_BIND {gen} {rev} {integer('layer')}"
+    if op.startswith("layer.") and op in (
+        "layer.project.status","layer.project.save","layer.project.load",
+        "layer.create","layer.copy.drawable","layer.delete","layer.duplicate","layer.reorder","layer.active","layer.point.add",
+        "layer.point.move","layer.point.delete","layer.uv.set","layer.material.set","layer.rig.pin","layer.rig.weight","layer.rig.parent","layer.face.add",
+        "layer.face.delete","layer.edit.undo","layer.edit.redo"):
+        gen=cmd["generation"]
+        if type(gen) is not int or not 0<gen<2**63:raise ValueError("invalid generation")
+        prefix={
+            "layer.project.status":"GEOM_STATUS","layer.project.save":"GEOM_SAVE",
+            "layer.project.load":"GEOM_LOAD","layer.create":"GEOM_CREATE",
+            "layer.delete":"GEOM_DELETE","layer.duplicate":"GEOM_DUPLICATE","layer.reorder":"GEOM_REORDER","layer.copy.drawable":"GEOM_COPY_DRAWABLE","layer.active":"GEOM_ACTIVE",
+            "layer.point.add":"GEOM_VERTEX_ADD","layer.point.move":"GEOM_VERTEX_MOVE",
+            "layer.point.delete":"GEOM_VERTEX_DELETE","layer.uv.set":"GEOM_UV_SET","layer.material.set":"GEOM_MATERIAL_SET","layer.rig.pin":"GEOM_PIN_SET","layer.rig.weight":"GEOM_RIG_WEIGHT","layer.rig.parent":"GEOM_RIG_PARENT","layer.face.add":"GEOM_TRIANGLE_ADD",
+            "layer.face.delete":"GEOM_TRIANGLE_DELETE","layer.edit.undo":"GEOM_UNDO",
+            "layer.edit.redo":"GEOM_REDO"}[op]
+        if op=="layer.project.status":return f"{prefix} {gen}"
+        rev=cmd.get("revision")
+        if op=="layer.active":return f"{prefix} {gen} {integer('layer')}"
+        if type(rev) is not int or not 0<=rev<2**63:raise ValueError("invalid geometry revision")
+        if op in ("layer.uv.set","layer.material.set","layer.rig.pin",
+                   "layer.rig.weight","layer.rig.parent"):
+            start=f"{prefix} {gen} {rev} {integer('layer')}"
+            if op=="layer.uv.set":
+                return start+f" {integer('vertex')} {finite('u',-8,8)} {finite('v',-8,8)}"
+            if op=="layer.rig.weight":
+                return start+f" {integer('vertex')} {finite('weight',0,1)}"
+            if op=="layer.rig.parent":
+                parent=cmd["parent"]
+                if type(parent) is not int or parent< -1 or parent>4096:
+                    raise ValueError("invalid parent")
+                return start+f" {integer('vertex')} {parent} {finite('stiffness',0,1)}"
+            if op=="layer.rig.pin":
+                vertex=cmd["vertex"]
+                if type(vertex) is not int or vertex< -1 or vertex>4096:
+                    raise ValueError("invalid anchor")
+                return start+f" {vertex}"
+            return start+" "+" ".join(str(finite(k,0,1)) for k in ("r","g","b","opacity"))
+        params=[]
+        for k in (("layer","id") if op=="layer.duplicate" else
+                  ("layer","target") if op=="layer.reorder" else
+                  ("drawable","id","layer","vertex","triangle","a","b","c")):
+            if k in cmd:params.append(str(integer(k)))
+        for k in ("x","y"):
+            if k in cmd:params.append(str(finite(k,-10000,10000)))
+        return f"{prefix} {gen} {rev}"+(" "+" ".join(params) if params else "")
     if op=="rig.select":return f"RIG_SELECT {integer('drawable')}"
     if op=="rig.anchor":
         v=integer("vertex")
@@ -273,6 +489,13 @@ def _writer_release(fd:int)->None:
     finally:
         os.close(fd)
 
+class StudioUnknownOutcome(TimeoutError):
+    """One V1 request outcome is uncertain: inspect by original local token."""
+    def __init__(self, request_token: str):
+        super().__init__("Studio request outcome unknown; use read-only recovery")
+        self.request_token = request_token
+
+
 class AgentBridge:
     def __init__(self,folder:Path,timeout:float=5):
         self.folder=Path(folder);self.timeout=timeout
@@ -314,7 +537,7 @@ class AgentBridge:
                         acknowledged=True
                         return {"ok":fields[1]=="OK","receipt":fields[2]}
                 time.sleep(.015)
-            raise TimeoutError("Native Studio did not acknowledge command")
+            raise StudioUnknownOutcome(token)
         finally:
             temporary.unlink(missing_ok=True)
             if request.exists():
@@ -335,3 +558,92 @@ class AgentBridge:
             if acknowledged and not request.exists() and not response.exists():
                 intent.unlink(missing_ok=True)
             _writer_release(writer_fd)
+
+    def recover(self, original_token: str) -> dict:
+        """Read-only original-request metadata from real Studio IPC.
+
+        UNKNOWN does not mean the operation was not applied. The volatile
+        store is not crash-durable; no replay or queue-unquarantine here.
+        """
+        if (type(original_token) is not str or
+            re.fullmatch(r"[0-9a-f]{24}", original_token, re.ASCII) is None):
+            raise ValueError("invalid recovery token")
+        recovery=self.folder/"recovery"
+        recovery.mkdir(parents=True, exist_ok=True)
+        if recovery.is_symlink():
+            raise RuntimeError("Recovery directory cannot be a symlink")
+        claim=_writer_claim(recovery)
+        token=secrets.token_hex(12)
+        request=recovery/"request.txt"
+        response=recovery/"response.txt"
+        temp=recovery/("request-"+token+".tmp")
+        try:
+            if request.exists() or response.exists() or (recovery/"response.tmp").exists():
+                raise RuntimeError("Recovery lane busy")
+            temp.write_text(token+" RECOVER "+original_token+"\n",encoding="ascii")
+            os.replace(temp,request)
+            deadline=time.monotonic()+self.timeout
+            while time.monotonic()<deadline:
+                if response.is_file():
+                    with response.open("rb") as f:
+                        raw=f.read(96)
+                    if len(raw)>95:
+                        raise RuntimeError("Recovery response over budget")
+                    try:line=raw.decode("ascii")
+                    except UnicodeError as exc:
+                        raise RuntimeError("Malformed recovery frame") from exc
+                    if line==token+" UNKNOWN\n":
+                        return {"state":"UNKNOWN"}
+                    if line==token+" FOUND OK\n":
+                        return {"state":"FOUND","ok":True}
+                    if line==token+" FOUND ERR\n":
+                        return {"state":"FOUND","ok":False}
+                    raise RuntimeError("Recovery response token or result mismatch")
+                time.sleep(.015)
+            raise TimeoutError("Read-only Studio recovery did not acknowledge")
+        finally:
+            temp.unlink(missing_ok=True)
+            for path in (request,response):
+                try:
+                    if path.is_file() and path.stat().st_size<96:
+                        if path.read_text(encoding="ascii").startswith(token+" "):
+                            path.unlink()
+                except (OSError, UnicodeError):
+                    pass
+            _writer_release(claim)
+
+    def reconcile(self, original_token: str) -> dict:
+        """Resolve local V1 ACK uncertainty only from a matching Native receipt.
+
+        Does not retry the original command. UNKNOWN leaves quarantine intact.
+        """
+        if type(original_token) is not str or re.fullmatch(
+                r"[0-9a-f]{24}",original_token,re.ASCII) is None:
+            raise ValueError("invalid recovery token")
+        claim=_writer_claim(self.folder)
+        marker=self.folder/"uncertain_outcome"
+        try:
+            if any((self.folder/name).exists() for name in
+                   ("request.txt","response.txt","response.tmp")):
+                raise RuntimeError("Cannot reconcile while mutation ACK is pending")
+            if not marker.is_file() or marker.is_symlink():
+                raise RuntimeError("Missing original uncertain intent")
+            with marker.open("rb") as f:
+                raw=f.read(64)
+            # Windows text-mode creation writes CRLF; accept only that or LF.
+            expected=original_token.encode("ascii")
+            if raw not in (expected+b"\n",expected+b"\r\n"):
+                raise RuntimeError("Original request mismatch")
+            result=self.recover(original_token)
+            if (type(result) is not dict or result.get("state")!="FOUND" or
+                    type(result.get("ok")) is not bool):
+                raise RuntimeError("Outcome UNKNOWN; mutation lane stays quarantined")
+            if any((self.folder/name).exists() for name in
+                   ("request.txt","response.txt","response.tmp")):
+                raise RuntimeError("Mutation response changed during reconciliation")
+            if marker.read_bytes()!=raw:
+                raise RuntimeError("Original uncertain intent changed")
+            marker.unlink()
+            return {"state":"RECONCILED","ok":result["ok"]}
+        finally:
+            _writer_release(claim)

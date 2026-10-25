@@ -125,3 +125,13 @@ The G5 writer stays HOLD for the separate CAS/recovery/concurrency gates.
 Rollout sequence after separate approval: frozen schema → true Native RED-first tests with disposable fixture → owner-thread controller behind explicit opt-in → UI/V1/V2 migration with bypass denial → fault-injected lost-ACK, undo/redo, frame-acceptance and privacy qualification → independent review. Failure restores disabled writer flag without altering G4 readback.
 
 No source changes, merge, deployment or automatic activation are authorized by this ADR.
+
+## Owner clarification: G5 consistency is not Agent identity management
+
+The Agent API supports useful Studio operations. Retain CAS, one edit owner,
+model-generation fences and lost-ACK recovery because they protect transaction
+correctness, but do not turn this work into Agent registration, per-Agent
+authorization, or public consumer administration. Owner markers in internal
+synthetic tests are for correlating edits and receipts, not Agent accounts.
+See [ADR-006](../../reference/ADR_006_AGENT_CALLABLE_STUDIO_API.md).
+G5 Native writer remains HOLD until real Studio concurrency and frame proof.

@@ -23,3 +23,16 @@ __pycache__/
 *.glb
 *.gltf
 *.fbx
+
+# Native Studio authoring source, compiled runtime and backups contain private
+# coordinates, rig weights, UVs and potentially recoverable model data.
+# Public only after an explicit reviewed declassification workflow.
+*.armesh
+*.armesh.bak
+*.armesh.tmp
+layer_geometry.txt
+layer_geometry.txt.bak
+layer_geometry.tmp
+model_runtime.tmp
+model_runtime.bak
+layer_geometry.bak
